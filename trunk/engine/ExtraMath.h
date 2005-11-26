@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: ExtraMath.h $
-// Version     : $Revision: 8 $ 
+// Version     : $Revision: 9 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:44 $ 
+//               $Date: 27/08/04 2:08 $ 
 // Description :
 //    this header is intended to include functions and macros
 //    which are available on unix but unavailable on windows
@@ -28,8 +28,8 @@
 
 #include "core/Defs.h"
 
-#  include "Legacy/MathFunctions.h"
-#  include "Legacy/MathPlus.h"
+#  include "legacy/MathFunctions.h"
+#  include "legacy/MathPlus.h"
 #  include <math.h>
 
 

@@ -87,7 +87,11 @@ LIB32=link.exe -lib
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
-SOURCE=..\Util\ConfReader.cpp
+SOURCE=.\Argv.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\ConfReader.cpp
 # End Source File
 # Begin Source File
 
@@ -99,7 +103,15 @@ SOURCE=.\dlmalloc.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\FixedStr.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\HashTable.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Parser.cpp
 # End Source File
 # Begin Source File
 
@@ -109,6 +121,14 @@ SOURCE=.\Str.cpp
 # Begin Group "Header Files"
 
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
+# Begin Source File
+
+SOURCE=.\AllocPolicy.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Argv.h
+# End Source File
 # Begin Source File
 
 SOURCE=.\AutoPtr.h
@@ -127,7 +147,7 @@ SOURCE=.\Compiler.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\Util\ConfReader.h
+SOURCE=.\ConfReader.h
 # End Source File
 # Begin Source File
 
@@ -139,7 +159,23 @@ SOURCE=.\dlmalloc.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\FixedStr.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\HashTable.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\ImplList.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Parser.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\PoolAllocated.h
 # End Source File
 # Begin Source File
 

@@ -1,7 +1,7 @@
 #ifndef   _SeedSearcher_Core_ImplList_h
 #define   _SeedSearcher_Core_ImplList_h
 
-#include "Core/Defs.h"
+#include "core/Defs.h"
 
 template<class T>
 inline void zapPointer(T*& ptr) {
@@ -550,9 +550,9 @@ private:
 //
 // File        : $RCSfile: $ 
 //               $Workfile: ImplList.h $
-// Version     : $Revision: 3 $ 
+// Version     : $Revision: 4 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:45 $ 
+//               $Date: 27/08/04 2:09 $ 
 // Description :
 //	The Core library contains contains basic definitions and classes
 // which are useful to any highly-portable applications

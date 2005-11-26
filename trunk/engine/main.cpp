@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: main.cpp $
-// Version     : $Revision: 53 $ 
+// Version     : $Revision: 54 $ 
 //               $Author: Aviad $
-//               $Date: 25/08/04 22:36 $ 
+//               $Date: 27/08/04 2:08 $ 
 // Description :
 //    main routine for the seed-searcher program
 //
@@ -266,7 +266,7 @@ static void printMotif (FeatureInvestigator& printer,
       //
       // print neg only if Parser::_motif_all_ is specified
       if (  (gMotif!= Parser::_out_none_) &&
-            (gMotif == Parser::_out_all_) || isPos) {
+            ((gMotif == Parser::_out_all_) || isPos)) {
          //
          // we open a file for the motif
          TextWriter motifFile (
@@ -280,8 +280,8 @@ static void printMotif (FeatureInvestigator& printer,
 
       //
       // now we print the PSSM files
-      if (  (gPSSM != Parser::_out_none_) &&
-            (gPSSM == Parser::_out_all_) || isPos) {
+      if (  (gPSSM!= Parser::_out_none_) &&
+            ((gPSSM == Parser::_out_all_) || isPos)) {
          TextWriter pssmFile (
             openFile (isPos, results.featureIndex (), fileStub, PSSM_FILE_STUB)
             );
@@ -292,7 +292,7 @@ static void printMotif (FeatureInvestigator& printer,
       //
       // now we print the bayesian sample files
       if (  (gSample!= Parser::_out_none_) &&
-            (gSample == Parser::_out_all_) || isPos) {
+            ((gSample == Parser::_out_all_) || isPos)) {
          TextWriter sampleFile (
             openFile (isPos, results.featureIndex (), fileStub, SAMPLE_FILE_STUB)
             );
@@ -321,9 +321,7 @@ static void printSeedFile (TextWriter& seedsFile,
    char buffer [8096];
    for (int i=0 ; i<3; i++) {
       if (outputs[i] != Parser::_out_none_) 
-         getOutputFileName(buffer, true, 
-         results.featureIndex (),
-         fileStub, names [i]);
+         getOutputFileName(buffer, true, results.featureIndex (), fileStub, names [i]);
       else
          strcpy (buffer , "-----");
 
@@ -367,6 +365,7 @@ protected:
       Parser::OutputType gPSSM = params.parser ().__generatePSSM;
       Parser::OutputType gMotif = params.parser ().__generateMotif;
       Parser::OutputType gBayesian = params.parser ().__generateBayesian;
+      
 
       //
       // should we generate a file that contains only the seeds?
@@ -378,8 +377,7 @@ protected:
 
       TextWriter seedsFile (
          gSeeds? 
-            openFile (true, -1, fileStub, SEEDS_FILE_STUB) :
-            NULL
+            openFile (true, -1, fileStub, SEEDS_FILE_STUB) : new NullOutputStream ()
       );
 
       //
@@ -401,13 +399,16 @@ protected:
                      fileStub, results
                      );
 
-         printSeedFile (seedsFile, printer,
-                        gPSSM, gMotif, gBayesian,
-                        pos, neg, 
-                        fileStub, results
-                        );
-
+	 if (gSeeds) {
+	   printSeedFile (seedsFile, printer,
+			  gPSSM, gMotif, gBayesian,
+			  pos, neg, 
+			  fileStub, results
+			  );
+	 }
       }
+
+      seedsFile.flush ();
    }
 }; 
 

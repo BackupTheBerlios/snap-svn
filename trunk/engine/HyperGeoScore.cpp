@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: HyperGeoScore.cpp $
-// Version     : $Revision: 15 $ 
+// Version     : $Revision: 16 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:44 $ 
+//               $Date: 27/08/04 2:08 $ 
 // Description :
 //    Concrete Score function classes - 
 //      based on Hyper-Geometric distribution
@@ -24,7 +24,7 @@
 
 #include "Assignment.h"
 #include "HyperGeoScore.h"
-#include "Legacy/MathPlus.h"
+#include "legacy/MathPlus.h"
 
 
 

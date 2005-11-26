@@ -1,7 +1,7 @@
 #ifndef SeedSearcher_Persistance_IODefs_h
 #define SeedSearcher_Persistance_IODefs_h
 
-#include "Core/Defs.h"
+#include "core/Defs.h"
 
 BEGIN_NAMESPACE (Persistance);
 
@@ -27,9 +27,9 @@ END_NAMESPACE (Persistance);
 //
 // File        : $RCSfile: $ 
 //               $Workfile: IODefs.h $
-// Version     : $Revision: 6 $ 
+// Version     : $Revision: 7 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:45 $ 
+//               $Date: 27/08/04 2:08 $ 
 // Description :
 //	The Persistence library contains both high & low level IO classes
 //	and is high-performance, highly reusable framework 

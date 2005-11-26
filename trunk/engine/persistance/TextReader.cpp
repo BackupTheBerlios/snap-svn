@@ -1,7 +1,7 @@
 #include "TextReader.h"
 #include "InputStream.h"
 
-#include "Core/Str.h"
+#include "core/Str.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -476,9 +476,9 @@ InputStream::Offset TextReader::getPos ()
 //
 // File        : $RCSfile: $ 
 //               $Workfile: TextReader.cpp $
-// Version     : $Revision: 10 $ 
+// Version     : $Revision: 11 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:45 $ 
+//               $Date: 27/08/04 2:08 $ 
 // Description :
 //	The Persistence library contains both high & low level IO classes
 //	and is high-performance, highly reusable framework 

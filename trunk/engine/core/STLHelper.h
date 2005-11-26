@@ -1,7 +1,7 @@
 #ifndef _SeedSearcher_STLHelper_h
 #define _SeedSearcher_STLHelper_h
 
-#include "Core/Defs.h"
+#include "core/Defs.h"
 #include <vector>
 
 
@@ -292,9 +292,9 @@ protected:
 //
 // File        : $RCSfile: $ 
 //               $Workfile: STLHelper.h $
-// Version     : $Revision: 21 $ 
+// Version     : $Revision: 22 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:45 $ 
+//               $Date: 27/08/04 2:09 $ 
 // Description :
 //	The Core library contains contains basic definitions and classes
 // which are useful to any highly-portable applications

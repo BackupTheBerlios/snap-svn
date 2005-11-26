@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Parser.cpp $
-// Version     : $Revision: 27 $ 
+// Version     : $Revision: 28 $ 
 //               $Author: Aviad $
-//               $Date: 25/08/04 17:57 $ 
+//               $Date: 27/08/04 2:08 $ 
 // Description :
 //    Concrete Parser for seed-searcher options
 //
@@ -145,7 +145,7 @@ int Parser::getInt (const char* in, const char* option_name)
    if (result != 1)
       usage (StrBuffer ("not an integer: ", in));
 
-   return result;
+   return out;
 }
 
 #define GET_SEED_PARSER_OPTION_CLASS(name) Option_##name

@@ -194,6 +194,10 @@ SOURCE=.\PrefixTreePreprocessor.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\PrefixTreeWalker.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\Preprocessor.cpp
 
 !IF  "$(CFG)" == "SeedSearcher - Win32 Release"
@@ -233,6 +237,10 @@ SOURCE=.\RandomProjections.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\SeedConf.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\SeedHash.cpp
 
 !IF  "$(CFG)" == "SeedSearcher - Win32 Release"
@@ -243,6 +251,10 @@ SOURCE=.\SeedHash.cpp
 
 !ENDIF 
 
+# End Source File
+# Begin Source File
+
+SOURCE=.\SeedPerformance.cpp
 # End Source File
 # Begin Source File
 
@@ -366,6 +378,10 @@ SOURCE=.\RandomProjections.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\SeedConf.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\SeedHash.h
 # End Source File
 # Begin Source File
@@ -457,6 +473,18 @@ SOURCE=.\boost\timer.hpp
 SOURCE=.\boost\type.hpp
 # End Source File
 # End Group
+# Begin Group "status"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\status_reporter\BaseStatusReporter.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\status_reporter\DummyStatusReporter.cpp
+# End Source File
+# End Group
 # Begin Source File
 
 SOURCE=.\boost\test\cpp_main.cpp
@@ -468,13 +496,6 @@ SOURCE=.\boost\test\execution_monitor.cpp
 # Begin Source File
 
 SOURCE=.\main.cpp
-
-!IF  "$(CFG)" == "SeedSearcher - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "SeedSearcher - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 

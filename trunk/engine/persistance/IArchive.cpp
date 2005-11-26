@@ -4,8 +4,8 @@
 
 #include "Error.h"
 
-#include "Core/AutoPtr.h"
-#include "Core/Str.h"
+#include "core/AutoPtr.h"
+#include "core/Str.h"
 
 using namespace Persistance;
 
@@ -511,9 +511,9 @@ void IArchive::readDoubleBuffer (double b [], int s, int* l)
 //
 // File        : $RCSfile: $ 
 //               $Workfile: IArchive.cpp $
-// Version     : $Revision: 11 $ 
+// Version     : $Revision: 12 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:45 $ 
+//               $Date: 27/08/04 2:08 $ 
 // Description :
 //	The Persistence library contains both high & low level IO classes
 //	and is high-performance, highly reusable framework 

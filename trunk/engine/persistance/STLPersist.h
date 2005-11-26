@@ -1,4 +1,4 @@
-#include "Core/Defs.h"
+#include "core/Defs.h"
 #include <map>
 
 //
@@ -494,9 +494,9 @@ END_NAMESPACE (Persistance);
 //
 // File        : $RCSfile: $ 
 //               $Workfile: STLPersist.h $
-// Version     : $Revision: 7 $ 
+// Version     : $Revision: 8 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:45 $ 
+//               $Date: 27/08/04 2:08 $ 
 // Description :
 //	The Persistence library contains both high & low level IO classes
 //	and is high-performance, highly reusable framework 

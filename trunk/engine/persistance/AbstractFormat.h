@@ -1,8 +1,8 @@
 #ifndef _SeedSearcher_Persistance_AbstractFormat_h
 #define _SeedSearcher_Persistance_AbstractFormat_h
 
-#include "Persistance/Defs.h"
-#include "Core/AutoPtr.h"
+#include "persistance/Defs.h"
+#include "core/AutoPtr.h"
 
 BEGIN_NAMESPACE (Persistance);
 
@@ -65,9 +65,9 @@ END_NAMESPACE (Persistance);
 //
 // File        : $RCSfile: $ 
 //               $Workfile: AbstractFormat.h $
-// Version     : $Revision: 6 $ 
+// Version     : $Revision: 7 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:45 $ 
+//               $Date: 27/08/04 2:08 $ 
 // Description :
 //	The Persistence library contains both high & low level IO classes
 //	and is high-performance, highly reusable framework 

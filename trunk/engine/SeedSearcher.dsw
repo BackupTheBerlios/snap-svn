@@ -7,10 +7,6 @@ Project: "Core"=.\Core\Core.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
-    begin source code control
-    "$/SeedSearcher", ECAAAAAA
-    .
-    end source code control
 }}}
 
 Package=<4>
@@ -23,10 +19,6 @@ Project: "Persistance"=.\Persistance\Persistance.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
-    begin source code control
-    "$/SeedSearcher", ECAAAAAA
-    .
-    end source code control
 }}}
 
 Package=<4>
@@ -39,10 +31,6 @@ Project: "SeedSearcher"=.\SeedSearcher.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
-    begin source code control
-    "$/SeedSearcher", ECAAAAAA
-    .
-    end source code control
 }}}
 
 Package=<4>
@@ -53,18 +41,6 @@ Package=<4>
     Begin Project Dependency
     Project_Dep_Name Persistance
     End Project Dependency
-}}}
-
-###############################################################################
-
-Project: "TestSharedPtr"=.\TestSharedPtr\TestSharedPtr.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
 }}}
 
 ###############################################################################

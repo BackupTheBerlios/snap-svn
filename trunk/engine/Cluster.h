@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Cluster.h $
-// Version     : $Revision: 19 $ 
+// Version     : $Revision: 20 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:44 $ 
+//               $Date: 27/08/04 2:08 $ 
 // Description :
 //    Concrete class for sets of sequences, sets of sequence positions
 //
@@ -25,7 +25,7 @@
 //
 
 #include "Sequence.h"
-#include "Legacy/MathPlus.h"
+#include "legacy/MathPlus.h"
 
 #include "core/AutoPtr.h"
 #include "core/STLHelper.h"

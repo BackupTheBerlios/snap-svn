@@ -234,5 +234,13 @@ SOURCE=.\Error.h
 
 SOURCE=.\STLPersist.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\TextTableReport.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\TextTableReport.h
+# End Source File
 # End Target
 # End Project

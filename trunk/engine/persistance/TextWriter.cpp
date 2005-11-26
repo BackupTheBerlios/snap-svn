@@ -1,6 +1,6 @@
 #include "TextWriter.h"
 #include "OutputStream.h"
-#include "Core/Str.h"
+#include "core/Str.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -134,9 +134,9 @@ void TextWriter::write(const void* inPtr) {
 //
 // File        : $RCSfile: $ 
 //               $Workfile: TextWriter.cpp $
-// Version     : $Revision: 9 $ 
+// Version     : $Revision: 10 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:45 $ 
+//               $Date: 27/08/04 2:09 $ 
 // Description :
 //	The Persistence library contains both high & low level IO classes
 //	and is high-performance, highly reusable framework 

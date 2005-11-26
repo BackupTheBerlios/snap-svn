@@ -1,7 +1,7 @@
 #ifndef _Persistance_TextReader_h
 #define _Persistance_TextReader_h
 
-#include "Core/Defs.h"
+#include "core/Defs.h"
 
 #include "StreamBuffer.h"
 //#include <string>
@@ -106,9 +106,9 @@ END_NAMESPACE (Persistance);
 //
 // File        : $RCSfile: $ 
 //               $Workfile: TextReader.h $
-// Version     : $Revision: 10 $ 
+// Version     : $Revision: 11 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:45 $ 
+//               $Date: 27/08/04 2:08 $ 
 // Description :
 //	The Persistence library contains both high & low level IO classes
 //	and is high-performance, highly reusable framework 

@@ -10,9 +10,9 @@
 */
 
 #include "boost/shared_ptr.hpp"
-#include "Core/Defs.h"
-#include "Core/Str.h"
-#include "Core/Argv.h"
+#include "core/Defs.h"
+#include "core/Str.h"
+#include "core/Argv.h"
 
 class BaseStatusReporter {
 protected:

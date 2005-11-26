@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "Core/Defs.h"
+#include "core/Defs.h"
 
 using namespace std;
 

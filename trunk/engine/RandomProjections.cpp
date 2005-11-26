@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: RandomProjections.cpp $
-// Version     : $Revision: 17 $ 
+// Version     : $Revision: 18 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:44 $ 
+//               $Date: 27/08/04 2:08 $ 
 // Description :
 //    Concrete classes for creating and retrieving random projections
 //    from given <l,d> parameters
@@ -25,7 +25,7 @@
 #include "RandomProjections.h"
 #include "ExtraMath.h"
 
-#include "Legacy/RandomGenerator.h"
+#include "legacy/RandomGenerator.h"
 
 #include "DebugLog.h"
 

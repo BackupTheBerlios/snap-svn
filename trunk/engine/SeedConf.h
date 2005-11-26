@@ -3,7 +3,7 @@
 
 //
 // File        : $RCSfile: $ $Workfile: SeedConf.h $
-// Version     : $Revision: 7 $ $Author: Aviad $
+// Version     : $Revision: 8 $ $Author: Aviad $
 // Description :
 //    implementation classes for reading SeedSearcher's conf files.
 //
@@ -70,8 +70,8 @@ public:
       Parser _parser;
    };
    typedef std::list <Options*> OptionList;
-   typedef CIteratorWrapper <SeedConfList::OptionList> COptionIterator;
-   typedef IteratorWrapper <SeedConfList::OptionList> OptionIterator;
+   typedef CIteratorWrapper <OptionList> COptionIterator;
+   typedef IteratorWrapper <OptionList> OptionIterator;
 
    //
    // returns the list of options

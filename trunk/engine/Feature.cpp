@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Feature.cpp $
-// Version     : $Revision: 13 $ 
+// Version     : $Revision: 14 $ 
 //               $Author: Aviad $
-//               $Date: 25/08/04 22:36 $ 
+//               $Date: 27/08/04 2:08 $ 
 // Description :
 //    Concrete cache for Hyper-Geometric distribution values
 //
@@ -29,7 +29,7 @@
 #include "Sequence.h"
 #include "PSSM.h"
 
-#include "Legacy/MathFunctions.h"
+#include "legacy/MathFunctions.h"
 #include "ExtraMath.h"
 
 #include "persistance/TextWriter.h"

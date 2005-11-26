@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: SeedSearcherMain.h $
-// Version     : $Revision: 13 $ 
+// Version     : $Revision: 14 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:44 $ 
+//               $Date: 27/08/04 2:08 $ 
 // Description :
 //    Concrete and interface classes for seting-up 
 //    a seed-searching environment or program
@@ -83,18 +83,11 @@ public:
    //
    // use search parameters to perform actual seed searching!
    // returns the number of seeds found
-   AutoPtr <Results> search (boost::shared_ptr <SeedSearcherMain::Parameters> in);
+   AutoPtr <Results> search (boost::shared_ptr <Parameters> in);
 
    //
    // conduct multiple searches using multiple parameters
    void search (ParameterIterator&);
-
-public:
-   
-
-
-   //
-   //
 
 protected:
    boost::shared_ptr <Parameters> _params;

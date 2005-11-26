@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Cluster.cpp $
-// Version     : $Revision: 19 $ 
+// Version     : $Revision: 20 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:44 $ 
+//               $Date: 27/08/04 2:08 $ 
 // Description :
 //    Concrete class for sets of sequences, sets of sequence positions
 //
@@ -23,7 +23,7 @@
 
 #include "Cluster.h"
 #include "SequenceDB.h"
-#include "Legacy/MathPlus.h"
+#include "legacy/MathPlus.h"
 
 #include <limits.h>
 

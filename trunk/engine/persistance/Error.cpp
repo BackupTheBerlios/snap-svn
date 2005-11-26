@@ -1,5 +1,5 @@
 #include "Error.h"
-#include "Core/Defs.h"
+#include "core/Defs.h"
 
 using namespace Persistance;
 
@@ -17,9 +17,9 @@ void Error::raise (int line, const char* error)
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Error.cpp $
-// Version     : $Revision: 6 $ 
+// Version     : $Revision: 7 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:45 $ 
+//               $Date: 27/08/04 2:08 $ 
 // Description :
 //	The Persistence library contains both high & low level IO classes
 //	and is high-performance, highly reusable framework 

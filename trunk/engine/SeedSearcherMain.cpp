@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: SeedSearcherMain.cpp $
-// Version     : $Revision: 21 $ 
+// Version     : $Revision: 22 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:44 $ 
+//               $Date: 27/08/04 2:08 $ 
 // Description :
 //    Concrete and interface classes for seting-up 
 //    a seed-searching environment or program
@@ -93,7 +93,7 @@ void SeedSearcherMain::afterProjection (int /* search handle */,
 AutoPtr <SeedSearcherMain::Results> 
 SeedSearcherMain::search (boost::shared_ptr <Parameters> inParams) 
 {
-   mustbe (inParams);
+   mustbe (inParams.get ());
    _params = inParams;
 
    int totalNumOfSeedsFound = 0;
