@@ -44,7 +44,7 @@ public:
       return _weight;
    }
    Str data (int startPos, int length, Strand strand = _strand_pos_) const {
-      return Str (data (strand), startPos, length);
+      return Str (data (strand), startPos, startPos + length);
    }
 
 #if SEED_CHUNK_ALLOCATION_OPTIMIZATION
@@ -154,7 +154,7 @@ public:
    //
    // ctor is called in a loop, so must be very effiecient
 	inline SeqPosition (Sequence const * seq, int pos) 
-   :  _sequence (seq), _position (pos) {
+   :  _sequence (seq), _position (pos), _strand (_strand_pos_) {
    }
 	inline SeqPosition (Sequence const * seq, int pos, Strand strand) 
    :  _sequence (seq), _position (pos), _strand (strand) {
@@ -209,6 +209,18 @@ public:
                         int inDesiredLength,  // length after expansion
                         char alignment = '-'  // alignment for missing pos
                         ) const;
+
+   //
+   //
+   static int getSeedString (
+	                     Sequence const* sequence,
+	                     int position,
+                        Strand strand,
+                        StrBuffer& outBuffer, 
+                        int inLength,         // length of seed before expansion
+                        int inDesiredLength,  // length after expansion
+                        char alignment = '-'  // alignment for missing pos
+                        );
 
    //
    // the 1st argument (in/out) provides the offset from this position

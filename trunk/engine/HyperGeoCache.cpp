@@ -99,7 +99,7 @@ HyperGeoCache::~HyperGeoCache ()
 }
 
 
-double HyperGeoCache::logTail (int x, int k, ScoreParameters** params)
+double HyperGeoCache::log2Tail (int x, int k, ScoreParameters** params)
 {
    XK xk (x, k);
    Score* cachedScore = _cache->find (xk);
@@ -112,9 +112,9 @@ double HyperGeoCache::logTail (int x, int k, ScoreParameters** params)
       //
       // change from ln to 2-base log
       static const double LN_2 = ::log (2);
-      score = score / LN_2;
+      double log2score = score / LN_2;
 
-      cachedScore = new Score (xk, score); 
+      cachedScore = new Score (xk, log2score); 
       _cache->add (cachedScore);
    }
    if (params != NULL)
@@ -123,9 +123,9 @@ double HyperGeoCache::logTail (int x, int k, ScoreParameters** params)
    return cachedScore->score ();
 }
 
-double HyperGeoCache::logTail (int x, int k)
+double HyperGeoCache::log2Tail (int x, int k)
 {
-   return logTail (x, k, NULL);
+   return log2Tail (x, k, NULL);
 }
 
 void HyperGeoCache::writeAsText (
@@ -193,7 +193,10 @@ public:
 
    typedef HyperGeoTotalCache::XKNM Key;
    
-   inline Score (const XKNM& xknm, double score) : _xknm (xknm), _score (score) {
+   inline Score (const XKNM& xknm, double score) 
+      :  _xknm (xknm), 
+         _score (score) 
+   {
    }
    inline bool fitsKey (const Key& key) {
       return (_xknm == key);
@@ -249,7 +252,7 @@ HyperGeoTotalCache::~HyperGeoTotalCache ()
 }
 
 
-double HyperGeoTotalCache::logTail (int x, int k, int n, int m, 
+double HyperGeoTotalCache::log2Tail (int x, int k, int n, int m, 
                                     ScoreParameters** p)
 {
    XKNM xknm (x, k, n, m);
@@ -263,9 +266,9 @@ double HyperGeoTotalCache::logTail (int x, int k, int n, int m,
       //
       // change from ln to 2-base log
       static const double LN_2 = ::log (2);
-      score = score / LN_2;
+      double log2score = score / LN_2;
 
-      cachedScore = new Score (xknm, score); 
+      cachedScore = new Score (xknm, log2score); 
       _cache->add (cachedScore);
    }
 
@@ -275,9 +278,9 @@ double HyperGeoTotalCache::logTail (int x, int k, int n, int m,
    return cachedScore->score ();
 }
 
-double HyperGeoTotalCache::logTail (int x, int k, int n, int m)
+double HyperGeoTotalCache::log2Tail (int x, int k, int n, int m)
 {
-   return logTail (x, k, n, m, NULL);
+   return log2Tail (x, k, n, m, NULL);
 }
 
 void HyperGeoTotalCache::writeAsText (

@@ -122,7 +122,7 @@ void FeatureInvestigator::printSeedScore (
                                  )
 {
    static const double LOG2_10 = ::log2 (10);
-   double log10_of_score = (feature.score ()) / LOG2_10;
+   double log10_of_score = (feature.log2score ()) / LOG2_10;
 
    //
    // print bonf correction

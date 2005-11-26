@@ -200,17 +200,18 @@ static int buildReverse (
       //
       // stuff every position in this sequence to table
       // except those that dont have enough lookahead
-      int length = seq->length () - seedLength + 1;
-      numberOfPositions += length ;
+      int seqLength = seq->length ();
+      int lastPosition =  seqLength - seedLength;
+      numberOfPositions += (lastPosition + 1);
 
       //
       //
-      for (int i=0 ; i<=length - seedLength ; i++)   {
+      for (int i=0 ; i<=lastPosition ; i++)   {
          SeqPosition* posPosition = 
             new SeqPosition (seq, i, _strand_pos_);
 
          SeqPosition* negPosition = 
-            new SeqPosition (seq, length - i - 1, _strand_neg_);
+            new SeqPosition (seq, seqLength - i - 1, _strand_neg_);
          
          Str data = posPosition->getSeedString (seedLength);
          Str rev_data = negPosition->getSeedString (seedLength);
@@ -260,12 +261,12 @@ static int buildNoReverse (
       //
       // stuff every position in this sequence to table
       // except those that dont have enough lookahead
-      int length = seq->length () - seedLength + 1;
-      numberOfPositions += length ;
+      int lastPosition = seq->length () - seedLength;
+      numberOfPositions += (lastPosition + 1) ;
 
       //
       //
-      for (int i=0 ; i<=length - seedLength ; i++)   {
+      for (int i=0 ; i<=lastPosition ; i++)   {
          SeqPosition* position = 
             new SeqPosition (seq, i);
 
@@ -296,6 +297,7 @@ LeafPreprocessor::Rep* LeafPreprocessor::build (
 
    DLOG << '#' << DLOG.EOL () 
         << "# LeafPreprocessor" << DLOG.EOL ();
+   DLOG.flush ();
 
    const int TABLE_SIZE = 1024 * 1024 - 1;
    //

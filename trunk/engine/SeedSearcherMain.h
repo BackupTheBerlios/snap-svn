@@ -20,7 +20,7 @@ public:
       // convienience class.
       // encapsulates results obtained from seed searching.
       // all the functionality implemented here could be easily replicated
-      // by going over the features in the 'BestFeatures' container
+      // by going over the features in the 'FeatureFilter' container
       // and querying the preprocessor about those features.
       // please use the 'FeatureInvestigator' class to print or query
       // individual features
@@ -43,7 +43,7 @@ public:
       //
       // feature iteration interface
       bool hasMoreFeatures () const {
-         return _index < _params.bestFeatures ().size ();
+         return _index < _numFound;
       }
       void nextFeature () {
          _index++;
@@ -52,6 +52,9 @@ public:
       // go to the first feature (used to reset iteration)
       void firstFeature () {
          _index = 0;
+      }
+      void lastFeature () {
+         _index = _numFound - 1;
       }
 
       //
@@ -63,15 +66,15 @@ public:
       //
       // get the current feature in the iteration
       const Feature& getFeature () const {
-         return _params.bestFeatures ().get (_index);
+         return _params.bestFeatures ()->get (_index);
       }
       Feature& getFeature () {
-         return _params.bestFeatures ().get (_index);
+         return _params.bestFeatures ()->get (_index);
       }
 
       //
       // used to retrieve preprocessed data about feature
-//      void (Preprocessor::NodeCluster&) const
+      // void (Preprocessor::NodeCluster&) const
 
    protected:
       int _index;
@@ -163,17 +166,11 @@ public:
       void interpret (int argc, char** argv) {
          _parser.parse (argc, argv);
       }
-
-      //
-      // call these functions to explicitly set 
-      void setupLogFilename (const Str&);
-      void setupSeqFilename (const Str&);
-      void setupWgtFilename (const Str&);
       
       //
       // call this function to initialize the parameters, 
       // after the appropriate options have been set 
-      void setup ();
+      void setup (const Str& seqFilename, const Str& wgtFilename);
 
       virtual void setupParameters ();
       virtual void setupLangauge ();
@@ -190,7 +187,6 @@ public:
       
    protected:
       Parser _parser;
-      StrBuffer _logFilename;
       StrBuffer _seqFilename;
       StrBuffer _wgtFilename;
 

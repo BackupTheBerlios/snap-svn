@@ -56,6 +56,25 @@ public:
    static Persistance::TextWriter* setupFileLogging (
       const StrBuffer& filename, bool supressConsole);
 
+   class Sentry {
+   public:
+      Sentry (bool suppressConsole = false) {
+         Persistance::TextWriter* old = 
+            SeedSearcherLog::setupConsoleLogging (suppressConsole);
+         delete old;
+      }
+      ~Sentry () {
+         Persistance::TextWriter* old = 
+            SeedSearcherLog::setup ((Persistance::TextWriter*) NULL);
+         delete old;
+      }
+      void setupFileLogging (const StrBuffer& filename, bool suppressConsole = false) {
+         Persistance::TextWriter* old =  
+            SeedSearcherLog::setupFileLogging (filename, suppressConsole);
+         delete old;
+      }
+   };
+
 private:
    static Persistance::TextWriter* __textWriter;
    static Langauge* __langauge;

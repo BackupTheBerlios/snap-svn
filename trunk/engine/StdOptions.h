@@ -17,6 +17,56 @@
 // this header contains the standard definitions used for SeedSearcher
 //
 
+class ExpScore : public ScoreFunction {
+public:
+   virtual ~ExpScore () {
+   }    
+   ExpScore(double alpha, double beta, const SeqWeightFunction& wf) 
+      :  _log2alpha(log2(alpha)),
+         _log2beta(log2(beta)),
+         _wf(wf) 
+   {
+   }
+
+    struct ExpParameters : public ScoreParameters {
+       ExpParameters (int pos, int neg) : _pos (pos), _neg (neg) {
+       }
+       virtual ~ExpParameters () {
+       }
+
+       int _pos, _neg;
+    };
+
+
+   //
+   // if 'parameters' is NULL, do not return ScoreParameters.
+    virtual double log2score (  const Assignment& feature,
+                           const Assignment& projection,
+                           const SeqCluster& containingFeature, // k
+                           ScoreParameters** parameters
+                           ) const 
+   {
+       SeqCluster::CountSequences pos_cs,neg_cs;
+       containingFeature.performDivided(_wf,pos_cs,neg_cs);
+
+       *parameters = new ExpParameters (pos_cs.result(), neg_cs.result());
+       return (neg_cs.result()*_log2beta - pos_cs.result()*_log2alpha);
+   }
+
+   //
+   // print the score parameters 
+   virtual void writeAsText ( Persistance::TextWriter& writer, 
+                              const ScoreParameters* params) const 
+   {
+      const ExpParameters* p = dynamic_cast<const ExpParameters*> (params);
+      writer << "beta^" << p->_neg << "/alpha^" << p->_pos;
+   }
+
+private:
+    double _log2alpha, _log2beta;
+    const SeqWeightFunction & _wf;   
+};
+
 
 class ACGTLangauge : public Langauge{
    //
@@ -167,16 +217,16 @@ protected:
 
 //
 //
-class BestFeaturesLink : public SeedSearcher::BestFeatures {
+class FeatureFilterLink : public SeedSearcher::FeatureFilter {
    //
-   // this class is the base class of all BestFeatures classes
+   // this class is the base class of all FeatureFilter classes
    // that do only partial processing of a feature, before passing
-   // the feature along to the next BestFeatures link
+   // the feature along to the next FeatureFilter link
 public:
-   BestFeaturesLink (SeedSearcher::BestFeatures* next, bool owner) 
+   FeatureFilterLink (SeedSearcher::FeatureFilter* next, bool owner) 
    : _owner (owner), _next (next) {
    }
-   virtual ~BestFeaturesLink () {
+   virtual ~FeatureFilterLink () {
       if (_owner)
          delete _next;
    }
@@ -184,63 +234,95 @@ public:
       return _next->add (feature);
    }
 
-   virtual int size () const {
-      return _next->size ();
+   virtual const SeedSearcher::FeatureArray& getArray () const {
+      return _next->getArray ();
    }
-
-   virtual const Feature& get (int index) const {
-      return _next->get (index);
-   }
-   virtual Feature& get (int index) {
-      return _next->get (index);
-   }
-
-   virtual bool isSorted () const {
-      return _next->isSorted ();
-   }
-   virtual void sort () {
-      _next->sort ();
+   virtual SeedSearcher::FeatureArray& getArray () {
+      return _next->getArray ();
    }
 
 protected:
    bool _owner;
-   SeedSearcher::BestFeatures* _next;
+   SeedSearcher::FeatureFilter* _next;
 };
 
 
+class BookkeeperFilter : public FeatureFilterLink {
+   //
+   // this class maintains information about the candidate features
+public:
+   BookkeeperFilter (SeedSearcher::FeatureFilter* next, bool owner) 
+      :  FeatureFilterLink (next, owner), 
+         _dirty (false), 
+         _log2Sum (-HUGE_VAL), 
+         _noFeatures (0)
+   {
+   }
 
+   //
+   // takes ownership of Assignment & Cluster
+   virtual bool add (Feature_var feature) {
+      if (_dirty) {
+         _noFeatures++;
+         _log2Sum = AddLog2 (_log2Sum, feature->log2score ());
+      }
+      else {
+         _noFeatures++;
+         _log2Sum = feature->log2score ();
+         _dirty = true;
+      }
 
-class KBestFeatures : public SeedSearcher::BestFeatures {
+      return FeatureFilterLink::add (feature);
+   }
+
+   //
+   // returns the number of candidates seen
+   int noFeaturesSeen () const {
+      return _noFeatures;
+   }
+
+   //
+   // we return the sum over each candidate i:
+   // log2 (sum (2^score(i)))
+   double log2SumScoresSeen () const {
+      return _log2Sum;
+   }
+
+   //
+   // for each 'best' feature i we perform
+   // log2(score (i)) = log2(score(i)) - log2SumScoresSeen ()
+   //                 = log2( score(i) / sumScoresSeen () )
+   void normalizeBackgroundScoresLinear () {
+      SeedSearcher::FeatureArray& arr = getArray ();
+      for (int i=0 ; i < arr.size () ; i++) {
+         arr[i].log2score (arr[i].log2score () - log2SumScoresSeen ());
+      }
+   }
+
+protected:
+   bool _dirty;
+   double _log2Sum;
+   int _noFeatures;
+};
+
+class KBestFilter : public SeedSearcher::FeatureFilter {
    //
    // this class is intended to maintain a buffer of the K-best
    // features found.
 public:
-   KBestFeatures (int k, int maxRedundancyOffset);
-   virtual ~KBestFeatures ();
+   KBestFilter (int k, int maxRedundancyOffset);
+   virtual ~KBestFilter ();
 
    //
    // takes ownership of Assignment & Cluster
    virtual bool add (Feature_var feature);
 
-   virtual int size () const {
-      return _size;
+   virtual SeedSearcher::FeatureArray& getArray () {
+      return _features;
    }
-
-   virtual const Feature& get (int index) const {
-      debug_mustbe (index >= 0);
-      debug_mustbe (index < _size);
-      return _features [index];
+   virtual const SeedSearcher::FeatureArray& getArray () const {
+      return _features;
    }
-   virtual Feature& get (int index) {
-      debug_mustbe (index >= 0);
-      debug_mustbe (index < _size);
-      return _features [index];
-   }
-
-   bool isSorted () const {
-      return _sorted;
-   }
-   void sort ();
 
 protected:
    virtual bool checkRedundancy (int index, const Assignment&);
@@ -248,24 +330,21 @@ protected:
    static bool checkSimilarity (int, const Assignment&, const Assignment&);
 
 protected:
-   int _k;
-   int _size;
    int _maxRedundancyOffset;
-   Feature* _features;
-   bool _sorted;
+   SeedSearcher::FeatureArray _features;
 };
 
 
 //
 //
-class KBestFeaturesComplement : public KBestFeatures {
+class KBestComplementFilter : public KBestFilter {
 public:
-   KBestFeaturesComplement (  int k, int maxRedundancyOffset, 
+   KBestComplementFilter (  int k, int maxRedundancyOffset, 
                               const Langauge& langauge)
-   :  KBestFeatures (k, maxRedundancyOffset), _langauge (langauge)
+   :  KBestFilter (k, maxRedundancyOffset), _langauge (langauge)
    {
    }
-   virtual ~KBestFeaturesComplement () {
+   virtual ~KBestComplementFilter () {
    }
 
    virtual bool checkRedundancy (int index, const Assignment& assg) {
@@ -286,14 +365,14 @@ protected:
 
 
 
-class GoodFeatures : public BestFeaturesLink {
+class GoodFeaturesFilter : public FeatureFilterLink {
    //
    // this class is intended to allow only features that
    // are good enough - (1) have a score high enough
    //                   (2) are present in at least k positive sequences
    //                   (3) are presnt in at least n percent of positive sequences
 public:
-   GoodFeatures (SeedSearcher::BestFeatures* next, bool owner,
+   GoodFeaturesFilter (SeedSearcher::FeatureFilter* next, bool owner,
                   const SeqCluster& db,
                   const SeqWeightFunction& wf,
                   double minScore, 
@@ -311,8 +390,6 @@ public:
       return _minPositiveSeqs;
    }
 
-
-
 private:
    double _minScore;
    int _minPositiveSeqs;
@@ -327,7 +404,7 @@ struct StatFix {
    //
    // if no feature fits, returns 0
    // TODO: is this correct?
-   static int FDR (SeedSearcher::BestFeatures&, int N, double P);
+   static int FDR (SeedSearcher::FeatureFilter&, int N, double P);
 
    //
    // given a list of features with decreasing scores (best ones first)
@@ -336,7 +413,7 @@ struct StatFix {
    //
    // if no feature fits, returns 0
    // TODO: is this correct?
-   static int bonferroni (SeedSearcher::BestFeatures&, int N, double P);
+   static int bonferroni (SeedSearcher::FeatureFilter&, int N, double P);
 };
 
 #endif // _SeedSearcher_StdOption_h

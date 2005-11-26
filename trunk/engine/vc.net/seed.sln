@@ -5,35 +5,42 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Persistance", "Persistance.
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SeedSearcher", "SeedSearcher.vcproj", "{3071C567-8503-473B-A530-6D93E43B1809}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SeedSearcherCore", "SeedSearcherCore.vcproj", "{80D22A42-7429-4BA2-8136-0AF6FADBEB11}"
+EndProject
 Global
 	GlobalSection(SourceCodeControl) = preSolution
-		SccNumberOfProjects = 3
+		SccNumberOfProjects = 5
 		SccProjectUniqueName0 = Core.vcproj
-		SccProjectName0 = \u0022$/SeedSearcher\u0022,\u0020ECAAAAAA
 		SccLocalPath0 = ..
-		SccProvider0 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
 		CanCheckoutShared = false
-		SccProjectFilePathRelativizedFromConnection0 = net\\
+		SccProjectFilePathRelativizedFromConnection0 = vc.net\\
 		SccProjectUniqueName1 = Persistance.vcproj
-		SccProjectName1 = \u0022$/SeedSearcher\u0022,\u0020ECAAAAAA
 		SccLocalPath1 = ..
-		SccProvider1 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
 		CanCheckoutShared = false
-		SccProjectFilePathRelativizedFromConnection1 = net\\
+		SccProjectFilePathRelativizedFromConnection1 = vc.net\\
 		SccProjectUniqueName2 = SeedSearcher.vcproj
-		SccProjectName2 = \u0022$/SeedSearcher\u0022,\u0020ECAAAAAA
 		SccLocalPath2 = ..
-		SccProvider2 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
 		CanCheckoutShared = false
-		SccProjectFilePathRelativizedFromConnection2 = net\\
+		SccProjectFilePathRelativizedFromConnection2 = vc.net\\
+		SccProjectUniqueName3 = SeedSearcherCore.vcproj
+		SccLocalPath3 = ..
+		CanCheckoutShared = false
+		SccProjectFilePathRelativizedFromConnection3 = vc.net\\
+		SccProjectName4 = \u0022$/SeedSearcher\u0022,\u0020ECAAAAAA
+		SccLocalPath4 = ..
+		SccProvider4 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
+		CanCheckoutShared = false
+		SccProjectFilePathRelativizedFromConnection4 = vc.net\\
+		SolutionUniqueID = {565832E6-16DF-4638-AFBD-4B5909BF0212}
 	EndGlobalSection
 	GlobalSection(SolutionConfiguration) = preSolution
 		ConfigName.0 = Debug
 		ConfigName.1 = Release
 	EndGlobalSection
 	GlobalSection(ProjectDependencies) = postSolution
-		{3071C567-8503-473B-A530-6D93E43B1809}.0 = {A9E58B03-3A1B-4F52-9BC8-2376A2D6CAF5}
-		{3071C567-8503-473B-A530-6D93E43B1809}.1 = {16C4D29E-6206-48AF-AE0E-E413B563CE75}
+		{3071C567-8503-473B-A530-6D93E43B1809}.0 = {16C4D29E-6206-48AF-AE0E-E413B563CE75}
+		{3071C567-8503-473B-A530-6D93E43B1809}.1 = {80D22A42-7429-4BA2-8136-0AF6FADBEB11}
+		{3071C567-8503-473B-A530-6D93E43B1809}.2 = {A9E58B03-3A1B-4F52-9BC8-2376A2D6CAF5}
 	EndGlobalSection
 	GlobalSection(ProjectConfiguration) = postSolution
 		{A9E58B03-3A1B-4F52-9BC8-2376A2D6CAF5}.Debug.ActiveCfg = Debug|Win32
@@ -48,6 +55,10 @@ Global
 		{3071C567-8503-473B-A530-6D93E43B1809}.Debug.Build.0 = Debug|Win32
 		{3071C567-8503-473B-A530-6D93E43B1809}.Release.ActiveCfg = Release|Win32
 		{3071C567-8503-473B-A530-6D93E43B1809}.Release.Build.0 = Release|Win32
+		{80D22A42-7429-4BA2-8136-0AF6FADBEB11}.Debug.ActiveCfg = Debug|Win32
+		{80D22A42-7429-4BA2-8136-0AF6FADBEB11}.Debug.Build.0 = Debug|Win32
+		{80D22A42-7429-4BA2-8136-0AF6FADBEB11}.Release.ActiveCfg = Release|Win32
+		{80D22A42-7429-4BA2-8136-0AF6FADBEB11}.Release.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection

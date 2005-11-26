@@ -72,15 +72,17 @@ AutoPtr <SeedSearcherMain::Results> SeedSearcherMain::search () {
 
    //
    // now output all the seeds
-   _params.bestFeatures().sort ();
+   _params.bestFeatures()->sort ();
 
    return new Results (_params, totalNumOfSeedsFound);
 }
 
 
 
-void SeedSearcherMain::CmdLineParameters::setup ()
+void SeedSearcherMain::CmdLineParameters::setup (const Str& seq, const Str& wgt)
 {
+   this->_seqFilename = seq;
+   this->_wgtFilename = wgt;
    //
    //
    setupParameters ();
@@ -114,6 +116,12 @@ void SeedSearcherMain::CmdLineParameters::setup ()
    // TODO: what should we do when _parser.__seed_r 
    // is too large for the length of seed?
    setupFeatureContainer ();
+
+   //
+   // TODO: this is a HACK!
+   // searches should ignore assignments with N's
+   // so now we disable the N
+   dynamic_cast <ACGTLangauge*> (_langauge.get ())->includeN (false);
 }
 
 void SeedSearcherMain::CmdLineParameters::setupParameters ()
@@ -151,11 +159,11 @@ void SeedSearcherMain::CmdLineParameters::setupDB ()
         << "# SequenceDB: " << DLOG.EOL ();
 
    DLOG  << "Reading Sequence File: " 
-         << _parser.__argv[_parser.__firstFileArg] 
+         << _seqFilename
          << DLOG.EOL ();
 
    DLOG  << "Reading Weights File: " 
-         << _parser.__argv[_parser.__firstFileArg+1] 
+         << _wgtFilename
          << DLOG.EOL ();
 
    DLOG.flush ();
@@ -164,14 +172,16 @@ void SeedSearcherMain::CmdLineParameters::setupDB ()
    // load the sequence files
    time_t start, finish;
    time (&start);
-   _db = SequenceDB::TextFileStorage::loadFastaAndWeights (*_langauge,
-      _parser.__argv[_parser.__firstFileArg],
-      _parser.__argv[_parser.__firstFileArg+1]);
+   _db = SequenceDB::TextFileStorage::loadFastaAndWeights (
+      *_langauge,
+      _seqFilename, 
+      _wgtFilename);
 
    time (&finish);
 
    DLOG << "Loaded " << _db->size () <<  " Sequences. ("
         << (finish - start) << " seconds )." << DLOG.EOL ();
+   DLOG.flush ();
 }
 
 void SeedSearcherMain::CmdLineParameters::setupWeightFunction ()
@@ -215,50 +225,66 @@ void SeedSearcherMain::CmdLineParameters::setupPreprocessor ()
 
 void SeedSearcherMain::CmdLineParameters::setupScoreFunc ()
 {
-   if (_parser.__count == _count_total_) {
-      _score = 
-         new HyperGeoScore::FixedTotalCount (_parser.__seed_l, 
-                                             _parser.__score_partial, 
-                                             *_wf, 
-                                             *_db);
+   if (_parser.__scoreType == _score_hypegeo_) {
+      if (_parser.__count == _count_total_) {
+         _score = 
+            new HyperGeoScore::FixedTotalCount (_parser.__seed_l, 
+                                                _parser.__score_partial, 
+                                                *_wf, 
+                                                *_db);
+      }
+      else {
+         _score = 
+            new HyperGeoScore::Simple (_parser.__score_partial, 
+                                       *_wf, 
+                                       *_db);
+      }
    }
    else {
-      _score = 
-         new HyperGeoScore::Simple (_parser.__score_partial, 
-                                    *_wf, 
-                                    *_db);
+      mustbe (_parser.__scoreType == _score_exp_);
+      _score = new ExpScore (1.2, 1.2, *_wf);
    }
 }
 
 void SeedSearcherMain::CmdLineParameters::setupFeatureContainer ()
 {
-   KBestFeatures* container = NULL;
-   if (useReverse ()) {
+   KBestFilter* container = NULL;
+   if (_parser.__seed_rr) {
       container  = 
-         new KBestFeaturesComplement ( _parser.__seed_n, 
+         new KBestComplementFilter ( _parser.__seed_n, 
                                        _parser.__seed_r, 
                                        *_langauge);
    }
    else {
       container = 
-         new KBestFeatures (_parser.__seed_n, _parser.__seed_r);
+         new KBestFilter (_parser.__seed_n, _parser.__seed_r);
    }
 
    //
-   // use GoodFeatures to allow only features above a threshold
-   _bestFeatures = new GoodFeatures (
-      container,
-      true,
-      SeqCluster (*_db),
-      *_wf,
-      _parser.__score_min,
-      _parser.__score_min_seq,
-      _parser.__score_min_seq_per);
+   // use GoodFeaturesFilter to allow only features above a threshold
+   _bestFeatures = new BookkeeperFilter (
+         new GoodFeaturesFilter (
+            container,
+            true,
+            SeqCluster (*_db),
+            *_wf,
+            _parser.__score_min,
+            _parser.__score_min_seq,
+            _parser.__score_min_seq_per
+         ), 
+         true
+      );
 }
 
 void SeedSearcherMain::CmdLineParameters::setupLangauge ()
 {
-   _langauge = new ACGTLangauge (_parser.__count_reverse);
+   //
+   // at first N is considered to be a part of the langauge
+   // this is in order to allow reading of seq files with N's
+   _langauge = 
+      new ACGTLangauge (_parser.__count_reverse, // support reverse
+                        true // N is considered to be part of the langauge
+                        );
 
    Langauge* old = SeedSearcherLog::setup (_langauge);
    delete old;
@@ -269,7 +295,7 @@ SeedSearcherMain::Results::Results (Parameters& params, int n)
 : _index (0), _numSearched (n),
   _params (params)
 {
-   _numFound = _params.bestFeatures ().size ();
+   _numFound = _params.bestFeatures ()->size ();
 }
 
 SeedSearcherMain::Results::~Results ()
@@ -322,3 +348,6 @@ Preprocessor*
 
    return prep.release ();
 }
+
+
+

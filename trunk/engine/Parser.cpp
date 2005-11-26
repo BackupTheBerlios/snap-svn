@@ -63,6 +63,16 @@ Parser::Parser ()
    __weight_lowt = 0.5;
    __weightType = _weight_simple_;
    __searchType = _search_default_;
+   __scoreType = _score_hypegeo_;
+
+   __generatePSSM = true;
+   __generateMotif = _motif_all_;
+
+   __perf_m = 5;
+   __seed_rr = true;
+
+   __perf_comp_l = _perflencomp_none_;
+   __score_norm = _norm_none_;
 }
 
    
@@ -75,6 +85,7 @@ enum {
    __SEED_N,
    __SEED_L,
    __SEED_R,
+   __SEED_RR,
    __SEED_O,
    __PREP,
    __PREP_NONEG,
@@ -86,25 +97,19 @@ enum {
    __SCORE_MIN,
    __SCORE_MIN_SEQ,
    __SCORE_MIN_SEQ_PER,
+   __SCORE_NORM,
    __WEIGHT_T,
    __WEIGHT_INTERVAL,
    __WEIGHT_BORDER,
    __WEIGHT_INVERT,
-   __SEARCH_TYPE
+   __SEARCH_TYPE,
+   __SCORE_TYPE,
+   __PSSM,
+   __MOTIF,
+   __PERF_M,
+   __PERF_COMP_L
 };
 
-char* puk [] =      {"[on | off] use exhaustive random projections", 
-      NULL
-};
-
-MyOptions kuku = 
-   { "Sproj-e", 
-     {"[on | off] use exhaustive random projections", 
-      NULL
-     },
-     "off", 
-     optional_argument
-   };
 
 static MyOptions my_options [] = { 
    { "Sproj-e", 
@@ -170,6 +175,14 @@ static MyOptions my_options [] = {
       },
       "2",
       required_argument
+   },
+
+   {  "Sseed-rr",
+      {"[on | off] should check for reverse-redundancy in seeds",
+       NULL,
+      },
+      "on",
+      optional_argument
    },
 
    {  "Sseed-o",
@@ -241,7 +254,7 @@ static MyOptions my_options [] = {
    },
 
    {  "Sscore-min",
-      {"<min-score> for seed",
+      {"<min-score or off> for seed",
        NULL
       },
       "0.5",
@@ -261,6 +274,16 @@ static MyOptions my_options [] = {
        NULL
       },
       "10",
+      required_argument
+   },
+
+   {  "Sscore-norm",
+      {"<none | linear-bg | logit> type of normalization to perform",
+       "linear-bg - divides each score by the score-sum of all features found",
+       "logit - score = 1 - (e^score / (1 + e^score) )",
+       NULL
+      },
+      "none",
       required_argument
    },
 
@@ -306,6 +329,52 @@ static MyOptions my_options [] = {
        NULL
       },
       "default",
+      required_argument
+   },
+
+   {  "Sscore-t",
+      {"<hypegeo, exp> type of score function",
+       "choose between hyper-geometric or exponential scoring function",
+       NULL
+      },
+      "hypegeo",
+      required_argument
+   },
+
+   {  "Spssm",
+      {"[on, off] enable/supress generation of .PSSM files",
+       NULL
+      },
+      "on",
+      required_argument
+   },
+
+   {  "Smotif",
+      {"[on, pos, off] enable/supress generation of .Motif files",
+      "on => generate all motif files.",
+      "pos => gnerate only positive motif files.",
+      "off => suppress genration of all motif files.",
+       NULL
+      },
+      "on",
+      optional_argument
+   },
+
+   {  "Sperf_m",
+      {  "<number> determine the number of 'best-positions' to consider",
+         "when evaluating a sequence, during seed-performance check",
+         NULL
+      },
+      "5",
+      required_argument
+   },
+
+   {  "Sperf-comp-l",
+      {  "<none | log | linear> type of compensation for sequence length",
+         "used in seed performance evaluation",
+         NULL
+      },
+      "none",
       required_argument
    },
 };
@@ -356,7 +425,7 @@ void Parser::usage (const char* error)
 
 
 
-static bool getOptBoolean (char* in)
+static bool getOptBoolean (char* in, bool* optUnknown = NULL)
 {
    if (in == NULL)
       return true;
@@ -367,7 +436,11 @@ static bool getOptBoolean (char* in)
    else if (opt.equalsIgnoreCase ("off") || opt.equalsIgnoreCase ("false"))
       return false;
    else {
-      Parser::usage (StrBuffer ("unknown option", in));
+      if (optUnknown == NULL)
+         Parser::usage (StrBuffer ("unknown option", in));
+      else
+         *optUnknown = true;
+
       return false;
    }
 }
@@ -396,6 +469,12 @@ void Parser::parse (int argc, char* argv[])
    //
    // initialize projection seed here
    __proj_i = time (NULL);
+
+   //
+   // very important:
+   // we re-initialize getopt's static optind variable back to 0
+   // in order to parse the entire argv
+   optind = 0;
 
    char c;
    int opt_ind;
@@ -431,6 +510,10 @@ void Parser::parse (int argc, char* argv[])
 
       case __SEED_R:
          __seed_r = atoi (optarg);
+         break;
+
+      case __SEED_RR:
+         __seed_rr = getOptBoolean (optarg);
          break;
 
       case __SEED_O:
@@ -479,17 +562,41 @@ void Parser::parse (int argc, char* argv[])
          __score_bonf = getOptBoolean (optarg);
          break;
 
-      case __SCORE_MIN:
-         __score_min = atof (optarg);
+      case __SCORE_MIN: {
+         bool notBoolean = false;
+         bool result = getOptBoolean (optarg, &notBoolean);
+         if (notBoolean) {
+            __score_min = atof (optarg);
+         }
+         else {
+            if (result == true)
+               usage (StrBuffer ("bad minimum score: ", optarg));
+            else
+               __score_min = -1;
+         }
          break;
+      }
 
       case __SCORE_MIN_SEQ:
          __score_min_seq = atoi (optarg);
          break;
 
       case __SCORE_MIN_SEQ_PER:
-         __score_min_seq_per = getOptBoolean (optarg);
+         __score_min_seq_per = atoi (optarg);
          break;
+
+      case __SCORE_NORM: {
+         Str opt (optarg);
+         if (opt.equalsIgnoreCase ("none"))
+            __score_norm = _norm_none_;
+         else if (opt.equalsIgnoreCase ("linear-bg"))
+            __score_norm = _norm_linear_background_;
+         else if (opt.equalsIgnoreCase ("logit"))
+            __score_norm = _norm_logit_;
+         else
+            usage (StrBuffer ("bad score-norm: ", optarg));
+         break;
+      };
 
       case __WEIGHT_T:
          __weight_t = atof (optarg);
@@ -521,6 +628,55 @@ void Parser::parse (int argc, char* argv[])
             usage (StrBuffer ("Unknown counting type: ", opt));
          break;
       }
+      case __SCORE_TYPE: {
+         Str opt (optarg);
+         if (opt.equalsIgnoreCase ("hypegeo"))
+            __scoreType = _score_hypegeo_;
+         else if (opt.equalsIgnoreCase ("exp"))
+            __scoreType = _score_exp_;
+         else
+            usage (StrBuffer ("Unknown counting type: ", opt));
+         break;
+       };
+
+      case __PSSM:
+         __generatePSSM = getOptBoolean (optarg);
+         break;
+
+      case __MOTIF: {
+         bool notBoolean = false;
+         bool result = getOptBoolean (optarg, &notBoolean);
+         if (notBoolean) {
+            Str opt (optarg);
+            if (opt.equalsIgnoreCase ("pos"))
+               __generateMotif = _motif_pos_;
+            else {
+               usage (StrBuffer ("bad motif parameter: ", optarg));
+            }
+         }
+         else {
+            __generateMotif = result? _motif_all_ : _motif_none_;
+         }
+         break;
+      };
+
+      case __PERF_M:
+         __perf_m = atoi (optarg);
+         break;
+
+      case __PERF_COMP_L: {
+         Str opt (optarg);
+         if (opt.equalsIgnoreCase ("none"))
+            __perf_comp_l = _perflencomp_none_;
+         else if (opt.equalsIgnoreCase ("log"))
+            __perf_comp_l = _perflencomp_log_;
+         else if (opt.equalsIgnoreCase ("linear"))
+            __perf_comp_l = _perflencomp_linear_;
+         else
+            usage (StrBuffer ("bad perf-comp-l: ", optarg));
+         break;
+      };
+
 
       default:
          usage (StrBuffer ("unknown argument: ", __argv [optind]));
@@ -562,9 +718,16 @@ void Parser::logParams (Persistance::TextWriter& out) const
    out << "Seed length: " << __seed_l << out.EOL ();
    out << "No of Random Positions (dist): " << __proj_d << out.EOL ();
 
-   out << "Preprocessor Type: " << (__prep == _prep_leaf_? "Table" : "Tree") << out.EOL ();
-   out << "Count Type: " << (__count == _count_total_? "Total" : "Gene") << out.EOL ();
-   out << "Search Type: " << (__searchType == _search_table_? "Table" : "Tree") << out.EOL ();
+   out << "Preprocessor Type: " << (__prep == _prep_leaf_? "Table" : "Tree") 
+       << out.EOL ();
+   out << "Count Type: " << (__count == _count_total_? "Total" : "Gene") 
+       << out.EOL ();
+   out << "Search Type: " 
+       << (__searchType == _search_table_? "Table" : "Tree") 
+       << out.EOL ();
+   out << "Score-Function Type: " 
+       << ((__scoreType == _score_hypegeo_)? "HyperGeometric" : "Exponential")
+       << out.EOL ();
    out << "Use reverse: " << __count_reverse << out.EOL ();
    out << "Partial count: " << __score_partial << out.EOL ();
    out << "Projection Specialization (expert): " << __proj_spec << out.EOL ();
@@ -593,13 +756,73 @@ void Parser::logParams (Persistance::TextWriter& out) const
    };
    out << "Weight Function invert: " << (__weight_invert? "on" : "off") << out.EOL ();
    out << "Maximum offset to check for seed redundancy: " << __seed_r << out.EOL ();
+   out << "Check for seed reverse redundancy: " << __seed_rr << out.EOL ();
 
    out << "Minimum positive sequences a Seed must contain: " << __score_min_seq << out.EOL ();
    out << "Minimum positive sequences a Seed must contain: " << __score_min_seq_per << '%' << out.EOL ();
-   out << "Minimum score for seed: -log10 (" << __score_min << ") = " << -log10 (__score_min) << out.EOL ();
+   out << "Minimum score for seed: ";
+   if (__score_min > 0)
+      out << "-log10 (" << __score_min << ") = " << -log10 (__score_min) << out.EOL ();
+   else
+      out << "off" << out.EOL ();
+
 
    out << "Use Bonferroni statistical fix: " << __score_bonf << out.EOL ();
    out << "Use FDR statistical fix: " << __score_fdr << out.EOL ();
    out << "Randomization seed: " << __proj_i << out.EOL ();
+
+   out << "Generate PSSM: " << __generatePSSM << out.EOL ();
+   out << "Genrate Motif: ";
+   switch (__generateMotif) {
+      case _motif_all_: out << "all"; break;
+      case _motif_pos_: out << "pos"; break;
+      case _motif_none_: out << "off"; break;
+      default: mustfail ();
+   }
+   out << out.EOL ();
+   out << "#positions considered for sequence during seed-performance check: " 
+       << __perf_m << out.EOL ();
+
+   out << "Seq length compensation in performance evaluation: ";
+   switch (__perf_comp_l)  {
+      case _perflencomp_none_: 
+         out << "none"; 
+         break;
+
+      case _perflencomp_linear_:
+         out << "linear"; 
+         break;
+
+      case _perflencomp_log_:
+         out << "log"; 
+         break;
+
+      default:
+         mustfail ();
+   }
+   out << out.EOL ();
+
+
+   out << "Score normalization: ";
+   switch (__score_norm)  {
+      case _norm_none_: 
+         out << "none"; 
+         break;
+
+      case _norm_linear_background_:
+         out << "linear-bg"; 
+         break;
+
+      case _norm_logit_:
+         out << "logit"; 
+         break;
+
+      default:
+         mustfail ();
+   }
+   out << out.EOL ();
+
+
+
    out.flush ();
 }

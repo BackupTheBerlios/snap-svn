@@ -31,6 +31,7 @@
 				BasicRuntimeChecks="3"
 				SmallerTypeCheck="TRUE"
 				RuntimeLibrary="5"
+				StructMemberAlignment="0"
 				ForceConformanceInForLoopScope="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="0"
@@ -51,7 +52,8 @@
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCPostBuildEventTool"
+				CommandLine="copy $(TargetPath) $(SolutionDir)\..\winseed.exe"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -107,7 +109,8 @@
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCPostBuildEventTool"
+				CommandLine="copy $(TargetPath) $(SolutionDir)\..\winseed.exe"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -121,170 +124,9 @@
 		</Configuration>
 	</Configurations>
 	<Files>
-		<Filter
-			Name="Source Files"
-			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm">
-			<File
-				RelativePath="..\..\seedsearcher\Alphabet.cpp">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\Assignment.cpp">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\Cluster.cpp">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\DebugLog.cpp">
-			</File>
-			<File
-				RelativePath="..\Feature.cpp">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\HyperGeoCache.cpp">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\HyperGeoScore.cpp">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\LeafPreprocessor.cpp">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\Legacy\Multinomial.cpp">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\PSSM.cpp">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\Parser.cpp">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\PrefixTreePreprocessor.cpp">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\PrefixTreeWalker.cpp">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\Preprocessor.cpp">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\Legacy\RandomGenerator.cpp">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\RandomProjections.cpp">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\SeedHash.cpp">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\SeedSearcher.cpp">
-			</File>
-			<File
-				RelativePath="..\SeedSearcherMain.cpp">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\Sequence.cpp">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\SequenceDB.cpp">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\StdOptions.cpp">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\Legacy\getopt.c">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\main.cpp">
-			</File>
-		</Filter>
-		<Filter
-			Name="Header Files"
-			Filter="h;hpp;hxx;hm;inl;inc">
-			<File
-				RelativePath="..\..\seedsearcher\Alphabet.h">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\Assignment.h">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\AssignmentFormat.h">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\Cluster.h">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\DebugLog.h">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\Defs.h">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\ExtraMath.h">
-			</File>
-			<File
-				RelativePath="..\Feature.h">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\Legacy\Getopt.h">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\HyperGeoCache.h">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\HyperGeoScore.h">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\LeafPreprocessor.h">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\Legacy\MathFunctions.h">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\Legacy\Multinomial.h">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\PSSM.h">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\Parser.h">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\PrefixTreePreprocessor.h">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\Preprocessor.h">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\Legacy\RandomGenerator.h">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\RandomProjections.h">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\SeedHash.h">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\SeedSearcher.h">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\SeedSearcherMain.h">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\Sequence.h">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\SequenceDB.h">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\StdOptions.h">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\Legacy\config.h">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\Legacy\mathplus.h">
-			</File>
-		</Filter>
+		<File
+			RelativePath="..\main.cpp">
+		</File>
 	</Files>
 	<Globals>
 	</Globals>

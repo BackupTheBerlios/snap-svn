@@ -9,40 +9,89 @@
 
 class SeedSearcher {
 public:
-   class BestFeatures;
+   class FeatureFilter;
    class BasicParameters;
    class SearchParameters;
    typedef SeqWeightFunction WeightFunction;
 
 public:
 
-
-
-   class BestFeatures {
-      //
-      // this is an interface for a container of features
-      // which may implement user-defined strategies as to which
-      // features to keep and which to discard
+   class FeatureArray {
    public:
-      virtual ~BestFeatures () {
+      FeatureArray (int k);
+      ~FeatureArray ();
+
+      int maxSize () const {
+         return _k;
       }
-
-      //
-      // takes ownership of Assignment & Cluster
-      virtual bool add (Feature_var feature) =0;
-
-      virtual int size () const = 0;
-      virtual const Feature& get (int) const = 0;
-      virtual Feature& get (int) = 0;
+      int size () const {
+         return _size;
+      }
+      void increaseSize () {
+         debug_mustbe (_size < _k);
+         _size++;
+      }
+      const Feature& get (int i) const {
+         debug_mustbe (i<_size);
+         return _features [i];
+      }
+      Feature& get (int i) {
+         debug_mustbe (i<_size);
+         return _features [i];
+      }
       const Feature& operator [] (int index) const {
          return get (index);
       };
       Feature& operator [] (int index) {
          return get (index);
       };
+      void isSorted (bool in) {
+         _sorted = in;
+      }
+      bool isSorted () const {
+         return _sorted;
+      }
+      void sort ();
 
-      virtual bool isSorted () const = 0;
-      virtual void sort () = 0;
+      //
+      // score = 1 - e^score / 1 + e^score
+      void normalizeScoresSigmoid ();
+
+      //
+      // if highest score is negative multiply all scores by -1
+      // t = 1 - lowest_score
+      // for each i score(i) += t
+      // SIGMA = sum (score(i))
+      // for each i score(i) = score(i) / 
+      void normalizeScoresLinear ();
+
+   protected:
+      int _k;
+      int _size;
+      Feature* _features;
+      bool _sorted;
+   };
+
+
+
+   class FeatureFilter {
+      //
+      // this is an interface for a container of features
+      // which may implement user-defined strategies as to which
+      // features to keep and which to discard
+   public:
+      virtual ~FeatureFilter () {
+      }
+
+      //
+      // takes ownership of Assignment & Cluster
+      virtual bool add (Feature_var feature) =0;
+
+      FeatureArray* operator -> () { return &(getArray ()); }
+      const FeatureArray* operator -> () const { return &(getArray ()); }
+
+      virtual const FeatureArray& getArray () const = 0;
+      virtual FeatureArray& getArray () = 0;
    };
 
    class SearchParameters : public FeatureInvestigator::Parameters {
@@ -54,10 +103,10 @@ public:
 
       //
       // stores the best features
-      const BestFeatures& bestFeatures () const {
+      const FeatureFilter& bestFeatures () const {
          return *_bestFeatures;
       }
-      BestFeatures& bestFeatures () {
+      FeatureFilter& bestFeatures () {
          return *_bestFeatures;
       }
       //
@@ -73,7 +122,7 @@ public:
       }
 
    protected:
-      AutoPtr <BestFeatures> _bestFeatures;
+      AutoPtr <FeatureFilter> _bestFeatures;
       bool _useSpecialization;
       CountType _count;
    };

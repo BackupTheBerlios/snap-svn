@@ -3,6 +3,7 @@
 
 #include "Defs.h"
 #include <vector>
+#include <typeinfo>
 
 #if CORE_DL_MALLOC_OPTIMIZATION
 #  include "dlmalloc.h"

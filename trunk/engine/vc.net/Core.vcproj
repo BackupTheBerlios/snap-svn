@@ -72,6 +72,7 @@
 				ImproveFloatingPointConsistency="TRUE"
 				FavorSizeOrSpeed="1"
 				OmitFramePointers="FALSE"
+				OptimizeForWindowsApplication="FALSE"
 				AdditionalIncludeDirectories=".."
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB"
 				StringPooling="TRUE"
@@ -112,6 +113,9 @@
 				RelativePath="..\..\seedsearcher\Core\ChunkAllocator.cpp">
 			</File>
 			<File
+				RelativePath="..\Util\ConfReader.cpp">
+			</File>
+			<File
 				RelativePath="..\..\seedsearcher\Core\Defs.cpp">
 			</File>
 			<File
@@ -140,10 +144,16 @@
 				RelativePath="..\..\seedsearcher\Core\Compiler.h">
 			</File>
 			<File
+				RelativePath="..\Util\ConfReader.h">
+			</File>
+			<File
 				RelativePath="..\..\seedsearcher\Core\Defs.h">
 			</File>
 			<File
 				RelativePath="..\..\seedsearcher\Core\HashTable.h">
+			</File>
+			<File
+				RelativePath="..\CORE\ImplList.h">
 			</File>
 			<File
 				RelativePath="..\..\seedsearcher\Core\STLHelper.h">
@@ -159,9 +169,6 @@
 			Name="Resource Files"
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
 		</Filter>
-		<File
-			RelativePath="ReadMe.txt">
-		</File>
 	</Files>
 	<Globals>
 	</Globals>

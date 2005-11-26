@@ -20,7 +20,7 @@ struct HyperGeoScore {
          delete _cache;
       }
 
-      virtual double score (const Assignment& feature,
+      virtual double log2score (const Assignment& feature,
                            const Assignment& projection,
                            const SeqCluster& containingFeature, // k
                            ScoreParameters** parameters
@@ -56,7 +56,7 @@ struct HyperGeoScore {
          delete _cache;
       }
 
-      virtual double score (const Assignment& feature,
+      virtual double log2score (const Assignment& feature,
                            const Assignment& projection,
                            const SeqCluster& containingFeature, // k
                            ScoreParameters** parameters
@@ -88,7 +88,7 @@ struct HyperGeoScore {
          delete _totalCache;
       }
 
-      virtual double score (const Assignment& feature,
+      virtual double log2score (const Assignment& feature,
                            const Assignment& projection,
                            const SeqCluster& containingFeature, // k
                            ScoreParameters** parameters

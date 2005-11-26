@@ -39,7 +39,7 @@ TextWriter* SeedSearcherLog::setupFileLogging (
    // open the file
    ofstream* logOut = new ofstream;
    logOut->open (filename.getCString (), 
-                  ios_base::out | ios_base::trunc | ios_base::binary);
+                  ios::out | ios::trunc | ios::binary);
    
    mmustbe ( logOut->is_open(), 
             StrBuffer (Str ("Cannot open logFile for "), filename));

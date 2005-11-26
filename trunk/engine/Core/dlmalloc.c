@@ -1,4 +1,7 @@
 #define USE_DL_PREFIX 1
+//
+// uncomment for debugging
+// #define DEBUG 1
 
 /*
   This is a version (aka dlmalloc) of malloc/free/realloc written by

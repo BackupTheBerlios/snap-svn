@@ -10,7 +10,10 @@
 #include "Persistance/TextWriter.h"
 #include "Persistance/StrOutputStream.h"
 
+#include "boost/timer.hpp"
+
 #include <iostream>
+#include <time.h>
 
 using namespace std;
 
@@ -326,6 +329,7 @@ int SeedSearcher::prefixTreeSearch (
    debug_mustbe (firstPosition.strategy () == Assignment::discrete);
 
    int totalSeedsFound = 0;
+   double totalTimeEvaluatingSeeds = 0;
 
    //
    // optimization: we keep the vector here in order to avoid
@@ -346,9 +350,11 @@ int SeedSearcher::prefixTreeSearch (
          childIndex    // index of the chlid
       );
 
+      boost::timer t;
+
       //
       // now we have all the relevant features from our child
-      // insert them all to the BestFeatures container
+      // insert them all to the FeatureFilter container
       int size = childFeatures.size ();
       for (int i=0 ; i < size ; i++) {
          const FeaturePair feature = childFeatures [i];
@@ -364,7 +370,7 @@ int SeedSearcher::prefixTreeSearch (
 
          ScoreParameters* scoreParams = NULL;
          double score = 
-            params.score ().score (
+            params.score ().log2score (
                *feature.first,         // the assignment
                projection,             // the projection,
                *feature.second,        // sequences containing the feature
@@ -383,11 +389,15 @@ int SeedSearcher::prefixTreeSearch (
          // this also cleans up memory, if necessary
          params.bestFeatures ().add (&seed_feature);
       }
+      //
+      // accumolate times
+      totalTimeEvaluatingSeeds += t.elapsed ();
 
       totalSeedsFound += size;
       childFeatures.resize (0);
    }
 
+   DLOG << "[Evaluating seeds: " << (time_t) totalTimeEvaluatingSeeds << "seconds] ";
    return totalSeedsFound;
 }
 
@@ -561,6 +571,10 @@ int SeedSearcher::tableSearch (  SearchParameters& params,
                            node);
    }
 
+   time_t start = time (NULL), finish;
+   DLOG << "[Evaluating seeds: ";
+   DLOG.flush ();
+
    //
    // now spit out all the features...
    TableSearcher::Table::Iterator featureIt (hashTable);
@@ -582,9 +596,9 @@ int SeedSearcher::tableSearch (  SearchParameters& params,
       ScoreParameters* scoreParams = NULL;
       //
       // ok. now we have to score each feature 
-      // and insert it to a BestFeatures container
+      // and insert it to a FeatureFilter container
       double score = 
-         params.score ().score (
+         params.score ().log2score (
                   feature->assignment (),
                   projection,
                   feature->getCluster (),// k
@@ -609,6 +623,9 @@ int SeedSearcher::tableSearch (  SearchParameters& params,
       
       params.bestFeatures ().add (&seed_feature);
    }
+
+   finish = time (NULL);
+   DLOG << (finish - start) << " seconds.] ";
 
    return hashTable.getSize ();
 }
@@ -656,4 +673,43 @@ static void compareSeedResult (const PrefixTreePreprocessor& tree,
 
 
 
+
+void SeedSearcher::FeatureArray::normalizeScoresSigmoid ()
+{
+   for (int i=0 ; i<_size;i++) {
+      Feature& feature = get (i);
+      double score = feature.log2score ();
+      double P = pow (M_E, score);
+      feature.log2score (1 - (P / (1+P)));
+   }
+}
+
+struct SortComparator{
+   //
+   // put the best scores first
+   bool operator () (const Feature& a, const Feature& b) {
+      return a.log2score () < b.log2score ();
+   }
+};
+
+void SeedSearcher::FeatureArray::sort ()
+{
+   std::sort (_features, _features + _size, SortComparator ());
+   _sorted = true;
+}
+
+SeedSearcher::FeatureArray::FeatureArray (int k)
+: _k (k), _size (0)
+{
+   debug_mustbe (_k > 0);
+   _features = new Feature [_k];
+}
+
+SeedSearcher::FeatureArray::~FeatureArray ()
+{
+   for (int i=0 ; i<_size ; i++)
+      _features [i].dispose ();
+
+   delete [] _features;
+}
 

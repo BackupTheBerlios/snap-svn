@@ -386,6 +386,10 @@ static TreeRep* build(bool optimize,
    time_t start, finish;
    time (&start);
 
+   DLOG << '#' << DLOG.EOL () 
+        << "# PrefixTreePreprocessor" << DLOG.EOL ();
+   DLOG.flush ();
+
    const AlphabetCode& code = langauge.code ();
    int cardinality = code.cardinality ();
 

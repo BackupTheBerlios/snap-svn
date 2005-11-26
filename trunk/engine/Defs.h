@@ -51,10 +51,17 @@ enum CountType {
    _count_gene_
 };
 
+enum ScoreType {
+    _score_hypegeo_,
+    _score_exp_
+
+};
+
 enum Strand {
    _strand_pos_= true,
    _strand_neg_ = false,
 };
+
 
 
 
@@ -64,11 +71,14 @@ enum Strand {
 
 //
 // allocate objects in chunks (reduces calls to new/delete)
-#define SEED_CHUNK_ALLOCATION_OPTIMIZATION 1
+// #define SEED_CHUNK_ALLOCATION_OPTIMIZATION 1
+#define SEED_CHUNK_ALLOCATION_OPTIMIZATION 0
+
 
 //
 // use Doug Lee's malloc - much better than Microsoft's malloc!
 #define SEED_DL_MALLOC_OPTIMIZATION CORE_DL_MALLOC_OPTIMIZATION
+
 
 
 #endif // _SeedSearcher_Defs_h

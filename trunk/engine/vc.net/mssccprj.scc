@@ -15,3 +15,7 @@ SCC_Project_Name = "$/SeedSearcher/vc.net", BJAAAAAA
 [SeedSearcher.vcproj]
 SCC_Aux_Path = "C:\Aviad\Dev\SNAP\VSS"
 SCC_Project_Name = "$/SeedSearcher/vc.net", BJAAAAAA
+
+[SeedSearcherCore.vcproj]
+SCC_Aux_Path = "C:\Aviad\Dev\SNAP\VSS"
+SCC_Project_Name = "$/SeedSearcher/vc.net", BJAAAAAA

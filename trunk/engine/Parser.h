@@ -45,6 +45,9 @@ public:
    // offset for checking seed redundancy
    int __seed_r;
    //
+   // flag for checking reverse redundancy
+   bool __seed_rr;
+   //
    // length of seed to output (PSSM length)
    int __seed_o;
    //
@@ -89,6 +92,47 @@ public:
    // which type of search to perform: tree search or table search
    // note: tree search only works with tree preprocessor
    SearchType __searchType;
+   ScoreType __scoreType;
+
+   enum MotifType {
+      _motif_all_,
+      _motif_pos_,
+      _motif_none_,
+   };
+   //
+   // flag that determines if PSSM files should be created
+   bool __generatePSSM;
+   //
+   // flag that determines if .Motif files should be created
+   MotifType __generateMotif;
+   //
+   // (in seed performance test)
+   // the number of BestPositions used for each sequence evaluation
+   // during seed performance testing
+   int __perf_m;
+   //
+   // performance length compensation
+   enum PerfLenComp{
+      _perflencomp_none_,
+      _perflencomp_linear_,
+      _perflencomp_log_
+   };
+   //
+   // (in seed performance test)
+   // how to compensate for sequence length 
+   PerfLenComp __perf_comp_l;
+   //
+   // (in seed performance test)
+   // 
+   enum NormType {
+      _norm_none_,
+//    _norm_linear_,
+      _norm_linear_background_,
+//      _norm_log_linear_,
+//      _norm_exp_linear_,
+      _norm_logit_,
+   };
+   NormType __score_norm;
 
    //
    //

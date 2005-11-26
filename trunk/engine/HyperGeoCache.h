@@ -139,8 +139,8 @@ public:
    HyperGeoCache (int n, int m);
    ~HyperGeoCache ();
 
-   double logTail (int x, int k);
-   double logTail (int x, int k, ScoreParameters**);
+   double log2Tail (int x, int k);
+   double log2Tail (int x, int k, ScoreParameters**);
 
    void writeAsText (Persistance::TextWriter&, const ScoreParameters*) const;
 
@@ -162,8 +162,8 @@ public:
    HyperGeoTotalCache ();
    ~HyperGeoTotalCache ();
 
-   double logTail (int x, int k, int n, int m);
-   double logTail (int x, int k, int n, int m, ScoreParameters**);
+   double log2Tail (int x, int k, int n, int m);
+   double log2Tail (int x, int k, int n, int m, ScoreParameters**);
 
    void writeAsText (Persistance::TextWriter&, const ScoreParameters*) const;
 

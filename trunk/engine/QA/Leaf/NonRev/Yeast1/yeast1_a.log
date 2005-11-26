@@ -1,0 +1,60 @@
+SeedSearcher v2.1 Compiled on Fri Mar 19 04:54:37 2004
+by Yoseph Barash (hoan@cs.huji.ac.il)
+and Aviad Rozenhek (aviadr@cs.huji.ac.il) 
+
+Execution started on Thu Mar 25 12:12:05 2004
+
+#
+# command line
+seed yeast.seq yeast.wgt yeast1_a 
+
+#
+# execution parameters 
+Seed length: 9
+No of Random Positions (dist): 4
+Preprocessor Type: Table
+Count Type: Gene
+Search Type: Table
+Score-Function Type: HyperGeometric
+Use reverse: false
+Partial count: false
+Projection Specialization (expert): false
+Remove negatives (expert): false
+No of Random Projections: 3
+Use all possible projections: false
+PSSM length: 20
+No of PSSMs: 5
+Threshold for pos/neg cluster assignment: 0.5
+Weight Function Type: Simple
+Weight Function invert: off
+Maximum offset to check for seed redundancy: 2
+Minimum positive sequences a Seed must contain: 1
+Minimum positive sequences a Seed must contain: 10%
+Minimum score for seed: -log10 (0.5) = 0.301029995664
+Use Bonferroni statistical fix: true 
+Use FDR statistical fix: false
+Randomization seed: 1080209525
+#
+# SequenceDB: 
+Reading Sequence File: yeast.seq
+Reading Weights File: yeast.wgt
+Loaded 46 Sequences. (1 seconds ).
+#
+# LeafPreprocessor
+LeafPreprocessor created: (0 seconds)
+24062 SeqPosition objects each of 12 Bytes.
+19529 Node objects each of 40 Bytes.
+1044 KBytes (loose) lower bound to preprocessor size.
+
+Searching for *?**?*??*: 0 seconds, Found 1024 seeds.
+Searching for *?*?*??**: 1 seconds, Found 1024 seeds.
+Searching for *????****: 0 seconds, Found 1023 seeds.
+Bonf(-log10)	Score(-log10)	Seed		Parameters			Projection
+-1.55999612914	1.9272836873	T?CC?A??C	[X=3, K=6, N=5, M=46]	*?**?*??*
+-1.7708371258	1.71644269064	A?G?T??CT	[X=5, K=22, N=5, M=46]	*?*?*??**
+-1.78681688587	1.70046293058	G?G?G??TG	[X=3, K=7, N=5, M=46]	*?*?*??**
+-1.87729245671	1.60998735973	A?A?T??GA	[X=5, K=23, N=5, M=46]	*?*?*??**
+-1.9744373065	1.51284250994	T????CCGT	[X=3, K=8, N=5, M=46]	*????****
+#
+# summary
+Execution ended on Thu Mar 25 12:12:07 2004 after running 2 seconds.

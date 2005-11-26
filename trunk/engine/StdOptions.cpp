@@ -245,26 +245,20 @@ void ACGTLangauge::complement (const Str& in, StrBuffer& out) const
 
 
 //
-// KBestFeatures
+// KBestFilter
 //
 
-KBestFeatures::KBestFeatures (int k, int maxRedundancyOffset)
-: _k (k), _size (0), _maxRedundancyOffset (maxRedundancyOffset)
+KBestFilter::KBestFilter (int k, int maxRedundancyOffset)
+: _maxRedundancyOffset (maxRedundancyOffset), _features (k)
 {
-   debug_mustbe (_k > 0);
    debug_mustbe (_maxRedundancyOffset>=0);
-   _features = new Feature [_k];
 }
 
-KBestFeatures::~KBestFeatures ()
+KBestFilter::~KBestFilter ()
 {
-   for (int i=0 ; i<_size ; i++)
-      _features [i].dispose ();
-
-   delete [] _features;
 }
 
-bool KBestFeatures::checkSimilarity (int offset,
+bool KBestFilter::checkSimilarity (int offset,
                              const Assignment& a, 
                              const Assignment& b)
 {
@@ -302,13 +296,13 @@ bool KBestFeatures::checkSimilarity (int offset,
    return true;
 }
 
-bool KBestFeatures::checkRedundancy (int index, const Assignment& b)
+bool KBestFilter::checkRedundancy (int index, const Assignment& b)
 {
    const Assignment& a = _features [index].assignment ();
    return checkSimilarity (a, b);
 }
 
-bool KBestFeatures::checkSimilarity (const Assignment& a, const Assignment& b)
+bool KBestFilter::checkSimilarity (const Assignment& a, const Assignment& b)
 {
 #if 0 
    debug_only (
@@ -341,22 +335,30 @@ bool KBestFeatures::checkSimilarity (const Assignment& a, const Assignment& b)
 
 //
 // takes ownership of Assignment & Cluster
-bool KBestFeatures::add (Feature_var daFeature)
+bool KBestFilter::add (Feature_var daFeature)
 {
-   _sorted = false;
+   _features.isSorted (false);
+   const int _size = _features.size ();
+   const int _k = _features.maxSize ();
+
+   if (_size == 0) {
+      _features.increaseSize ();
+      _features [0] = *(daFeature.release ());
+      return true;
+   }
 
    //
    // we have to check if the assg is similar enough to some 
    // other in the array 
    int worst = 0;
-   double worstScore = _features [0].score ();
+   double worstScore = _features [0].log2score ();
    for (int i=0 ; i < _size ; i++) {
       //
       // we dont allow 'duplicates' in our features
       if (checkRedundancy (i, daFeature->assignment ())               ) {
          //
          // the smaller the score, the better.
-         if (_features [i].score ()> daFeature->score ()) {
+         if (_features [i].log2score ()> daFeature->log2score ()) {
             //
             // replace this similar feature with a better one
             _features [i] = *(daFeature.release ());
@@ -371,8 +373,8 @@ bool KBestFeatures::add (Feature_var daFeature)
 
       //
       // search for the worst feature in the array
-      if (_features [i].score () > worstScore) {
-         worstScore = _features [i].score ();
+      if (_features [i].log2score () > worstScore) {
+         worstScore = _features [i].log2score ();
          worst = i;
       }
    }
@@ -380,10 +382,11 @@ bool KBestFeatures::add (Feature_var daFeature)
    if (_size < _k) {
       //
       // there is room in the array, so just stick it somewhere
-      _features [_size++] = *(daFeature.release ());
+      _features.increaseSize ();
+      _features [_size] = *(daFeature.release ());
       return true;
    }
-   else if (worstScore > daFeature->score ()) {
+   else if (worstScore > daFeature->log2score ()) {
       debug_mustbe (_size == _k);
       //
       // we have no room in the array, so we have to replace
@@ -397,41 +400,25 @@ bool KBestFeatures::add (Feature_var daFeature)
    return false;
 }
 
-struct FeatureComparator{
-   //
-   // put the best scores first
-   bool operator () (const Feature& a, const Feature& b) {
-      return a.score () < b.score ();
-   }
-};
-
-void KBestFeatures::sort ()
-{
-   std::sort (_features, _features + _size, FeatureComparator ());
-   _sorted = true;
-}
-
-
-
 
 //
-// GoodFeatures
+// GoodFeaturesFilter
 //
 
-GoodFeatures::GoodFeatures (
-                           SeedSearcher::BestFeatures* next, 
+GoodFeaturesFilter::GoodFeaturesFilter (
+                           SeedSearcher::FeatureFilter* next, 
                            bool owner                    ,
                            const SeqCluster& db          ,
                            const SeqWeightFunction& wf   ,
                            double minScore               , 
                            int minPos                    , 
                            int minPosPercent             )
-:  BestFeaturesLink (next, owner),
+:  FeatureFilterLink (next, owner),
    _wf (wf)
 {
    //
    // scores are 'logged' so the minScore should be 'logged' too.
-   _minScore = log (minScore);
+   _minScore = (minScore > 0)? log10 (minScore) : minScore;
 
    debug_mustbe (minPos >= 0);
    debug_mustbe (minPosPercent >= 0);
@@ -450,10 +437,11 @@ GoodFeatures::GoodFeatures (
 
 //
 // takes ownership of Assignment & Cluster
-bool GoodFeatures::add (Feature_var daFeature)
+bool GoodFeaturesFilter::add (Feature_var daFeature)
 {
-   if (daFeature->score () > _minScore)
-      return false;
+   if (_minScore > 0)
+      if (daFeature->log2score () > _minScore)
+         return false;
 
    if (_minPositiveSeqs > 0) {
       SeqCluster::CountSequences count;
@@ -467,20 +455,20 @@ bool GoodFeatures::add (Feature_var daFeature)
 }
 
 
-int StatFix::FDR (SeedSearcher::BestFeatures& features, int N, double P) 
+int StatFix::FDR (SeedSearcher::FeatureFilter& features, int N, double P) 
 {
-   debug_mustbe (features.isSorted ());
-   if (features.size () <= 0)
+   debug_mustbe (features->isSorted ());
+   if (features->size () <= 0)
       return 0;
 
    //
-   // because we use scores after 'log', we have to also 'log' N, P & K
+   // because we use scores after 'log2', we have to also 'log' N, P & K
    int K = 1;
-   double LOG_P_div_N = ::log (P) - ::log (N);
+   double LOG_P_div_N = ::log2 (P) - ::log2 (N);
    //
    // first, check that the best feature is good enough, other-wise
    // there is no point in searching at all
-   if (features.get (K-1).score ()> LOG_P_div_N + ::log (K)) {
+   if (features->get (K-1).log2score ()> LOG_P_div_N + ::log (K)) {
       //
       // no feature is actually good enough
       return 0;
@@ -489,9 +477,9 @@ int StatFix::FDR (SeedSearcher::BestFeatures& features, int N, double P)
    //
    // now seek backwards the last element (with lowest score)
    // that is still good enough to face the requirements
-   for (K = features.size () ; K >= 1 ; K--) {
-      double featureScore = features.get (K-1).score ();
-      double LOG_P_div_N_MUL_K = LOG_P_div_N + ::log(K);
+   for (K = features->size () ; K >= 1 ; K--) {
+      double featureScore = features->get (K-1).log2score ();
+      double LOG_P_div_N_MUL_K = LOG_P_div_N + ::log2(K);
       if (featureScore <= LOG_P_div_N_MUL_K) {
          return K;
       }
@@ -503,21 +491,21 @@ int StatFix::FDR (SeedSearcher::BestFeatures& features, int N, double P)
    return 0;
 }
 
-int StatFix::bonferroni (SeedSearcher::BestFeatures& features, int N, double P) 
+int StatFix::bonferroni (SeedSearcher::FeatureFilter& features, int N, double P) 
 {
-   debug_mustbe (features.isSorted ());
-   if (features.size () <= 0)
+   debug_mustbe (features->isSorted ());
+   if (features->size () <= 0)
       return 0;
 
    //
    // because we use scores after 'log', we have to also 'log' N, P & K
 
    int K= 1;
-   double LOG_P_div_N = ::log (P) - ::log (N);
+   double LOG_P_div_N = ::log2 (P) - ::log2 (N);
    //
    // first, check that the best feature is good enough, other-wise
    // there is no point in searching at all
-   if (features.get (K-1).score ()> LOG_P_div_N) {
+   if (features->get (K-1).log2score ()> LOG_P_div_N) {
       //
       // no feature is actually good enough
       return 0;
@@ -526,8 +514,8 @@ int StatFix::bonferroni (SeedSearcher::BestFeatures& features, int N, double P)
    //
    // now seek backwards the last element (with lowest score)
    // that is still good enough to face the requirements
-   for (K = features.size () ; K >= 1 ; K--) {
-      if (features.get (K-1).score () <= LOG_P_div_N) {
+   for (K = features->size () ; K >= 1 ; K--) {
+      if (features->get (K-1).log2score () <= LOG_P_div_N) {
          return K;
       }
    }

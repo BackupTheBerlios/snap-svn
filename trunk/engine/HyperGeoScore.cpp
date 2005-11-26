@@ -30,7 +30,7 @@ HyperGeoScore::Simple::Simple (
    }
 }
 
-double HyperGeoScore::Simple::score (const Assignment& feature,
+double HyperGeoScore::Simple::log2score (const Assignment& feature,
                      const Assignment& projection,
                      const SequenceDB::Cluster& containingFeature,// k
                      ScoreParameters** parameters
@@ -60,7 +60,7 @@ double HyperGeoScore::Simple::score (const Assignment& feature,
       containingCount = negCountPred.result () + posCount;
    }
 
-   return _cache->logTail (posCount, containingCount, parameters);
+   return _cache->log2Tail (posCount, containingCount, parameters);
 }
 
 //
@@ -111,7 +111,7 @@ HyperGeoScore::FixedTotalCount::FixedTotalCount (int seedLength,
 }
 
 
-double HyperGeoScore::FixedTotalCount::score (const Assignment& feature,
+double HyperGeoScore::FixedTotalCount::log2score (const Assignment& feature,
                      const Assignment& projection,
                      const SequenceDB::Cluster& containingFeature,// k
                      ScoreParameters** parameters
@@ -139,7 +139,7 @@ double HyperGeoScore::FixedTotalCount::score (const Assignment& feature,
       containingCount = ROUND (pos.result () + neg.result ());
    }
 
-   return _cache->logTail (posCount, containingCount, parameters);
+   return _cache->log2Tail (posCount, containingCount, parameters);
 }
 
 //
@@ -170,7 +170,7 @@ HyperGeoScore::TotalCount::TotalCount (
 }
 
 
-double HyperGeoScore::TotalCount::score (const Assignment& feature,
+double HyperGeoScore::TotalCount::log2score (const Assignment& feature,
                      const Assignment& projection,
                      const SequenceDB::Cluster& containingFeature,// k
                      ScoreParameters** parameters
@@ -221,7 +221,7 @@ double HyperGeoScore::TotalCount::score (const Assignment& feature,
       m = _allSequences.maxPositionsNoOverlaps (feature.length ());
    }
 
-   return _totalCache->logTail (posCount, containingCount, n, m, parameters);
+   return _totalCache->log2Tail (posCount, containingCount, n, m, parameters);
 }
 
 //

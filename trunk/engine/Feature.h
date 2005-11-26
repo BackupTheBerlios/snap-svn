@@ -7,6 +7,7 @@
 #include "AssignmentFormat.h"
 #include "PSSM.h"
 #include "DebugLog.h"
+#include "Preprocessor.h"
 
 #include "Persistance/Defs.h"
 #include "Core/AutoPtr.h"
@@ -38,7 +39,7 @@ public:
 
    //
    // if 'parameters' is NULL, do not return ScoreParameters.
-   virtual double score (  const Assignment& feature,
+   virtual double log2score (  const Assignment& feature,
                            const Assignment& projection,
                            const SeqCluster& containingFeature, // k
                            ScoreParameters** parameters
@@ -68,8 +69,11 @@ public:
    }
    void dispose ();
 
-   inline double score () const {
+   inline double log2score () const {
 	   return _score;
+   }
+   void log2score (double in) {
+      _score = in;
    }
    inline const Assignment& assignment () const {
 	   return *_assg;
@@ -173,6 +177,28 @@ public:
       const Langauge& langauge () const {
          return *_langauge;
       }
+
+      Feature* createFeature (Assignment const& assg, 
+                              Assignment const& proj) {
+         Preprocessor::NodeCluster nodes;
+         _preprocessor->add2Cluster (nodes, assg);
+
+         SeqCluster* cluster = new SeqCluster;
+         nodes.add2SeqClusterPositions (*cluster);
+
+         ScoreParameters* scoreParams = NULL;
+         double featureScore = _score->log2score (  assg, 
+                                                proj, 
+                                                *cluster, 
+                                                &scoreParams);
+
+         return new Feature ( new Assignment (assg), 
+                              cluster,
+                              new Assignment (proj),
+                              scoreParams,
+                              featureScore);
+      }
+
 
    protected:
       AutoPtr <SeqWeightFunction> _wf;

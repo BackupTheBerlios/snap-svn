@@ -177,19 +177,6 @@ SOURCE=.\LeafPreprocessor.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\main.cpp
-
-!IF  "$(CFG)" == "SeedSearcher - Win32 Release"
-
-# ADD CPP /O2 /Ob1
-
-!ELSEIF  "$(CFG)" == "SeedSearcher - Win32 Debug"
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
 SOURCE=.\Parser.cpp
 # End Source File
 # Begin Source File
@@ -446,6 +433,35 @@ SOURCE=.\Legacy\RandomGenerator.cpp
 SOURCE=.\Legacy\RandomGenerator.h
 # End Source File
 # End Group
+# Begin Group "boost"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\boost\config.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\boost\limits.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\boost\non_type.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\boost\timer.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\boost\type.hpp
+# End Source File
+# End Group
+# Begin Source File
+
+SOURCE=.\main.cpp
+# PROP Exclude_From_Build 1
+# End Source File
 # Begin Source File
 
 SOURCE=.\TODO.TXT

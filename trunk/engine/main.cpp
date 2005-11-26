@@ -21,6 +21,8 @@
 #include <iostream>
 #include <fstream>
 #include <time.h>
+#include <stdio.h>
+#include <queue>
 
 using namespace std;
 using namespace Persistance;
@@ -34,7 +36,9 @@ enum {
    SeqFileIndex = 0,
    WgtFileIndex = 1,
    StubFileIndex = 2,
-   RequiredParams = 3
+   RequiredParams = 3,
+   TestWgtFileIndex = 3,
+   ConfFileIndex = 3,
 };
 
 
@@ -57,253 +61,6 @@ static void Err(std::string const & s) {
 }
 
 
-
-
-#if 0
-static void printMotif (TextWriter& writer, 
-                        const Assignment& assg,
-                        const SeqPosition& position,
-                        const std::string& allignment)
-{
-   //
-   // write the motif: LeftPadding Seed RightPadding
-   
-   //
-   // left padding
-   const int leftPaddingLength = 
-      getMotifLeftOffset (parser.__seed_o, assg.length ());
-
-   if (leftPaddingLength > 0) {
-      Str leftPad = 
-	position.getDataString (-leftPaddingLength, leftPaddingLength);
-      writer.write (allignment.c_str (), leftPaddingLength - leftPad.length ());
-      writer.write (leftPad);
-   }
-   
-   //
-   // separate left padding from seed
-   writer << ' ';
-   
-   //
-   // write the actual seed
-   const int seedLength = 
-     tmin (parser.__seed_o - 2 * leftPaddingLength, assg.length ());
-   Str motif = position.getSeedString (seedLength);
-   writer << motif;
-
-   //
-   // separate right padding from seed
-   writer << ' ';
-
-   //
-   // right padding
-   const int rightPaddingPosition =
-     parser.__seed_o - seedLength - leftPaddingLength;
-   const int rightPaddingLength =  rightPaddingPosition;
-   if (rightPaddingLength > 0) {
-      Str rightPad = 
-	position.getDataString (rightPaddingPosition, rightPaddingLength);
-      writer.write (rightPad);
-      writer.write (allignment.c_str (), 
-		    rightPaddingLength - rightPad.length ());
-   }
-  
-   //
-   // write seq id and name
-   writer << '\t' << position.sequence ()->id () 
-          << '\t' << position.sequence ()->name ();
-   
-   //
-   // TODO: what does [iYML101C 13 70088 70624 TSL1] [0.0000] mean?
-   
-   //
-   // output sequence weight 
-   debug_mustbe (position.sequence ()->hasWeight ());
-   writer << " [" << position.sequence ()->weight () << ']';
-   
-   //
-   // output the position index
-   writer << '\t' << position.position ();
-   
-   //
-   // TODO: print +/- if it is on normal/reverse strand
-   writer.writeln ();
-}
-
-
-
-
-//
-// print the positions in the positively labels set in .motif file
-// the other positions are printed in .net.motifs file  
-static void printMotifFile (bool isPositives,
-                            const Feature& feature_i,
-                            const PositionVector& positions,
-                            const std::string& allignment,
-                            int index)
-{
-   //
-   // create the motif file name
-   char motifFileName [256];
-   if (isPositives)
-      sprintf (motifFileName, "%s.%d.motifs", 
-	       parser.__argv[parser.__lastFileArg], (index+1));
-   else
-      sprintf (motifFileName, "%s.%d.neg.motifs", 
-	       parser.__argv[parser.__lastFileArg], (index+1));
-
-   ofstream motifFile (motifFileName,
-                   ios_base::out | ios_base::trunc | ios_base::binary);
-
-   if( ! motifFile.is_open() )
-      Err(string("Cannot open logFile for ") + motifFileName);
-
-   TextWriter writer (new StdOutputStream (motifFile));
-
-   CPositionIterator it (positions.begin (), positions.end ());
-   for (; it.hasNext () ; it.next ()) {
-      printMotif (writer, feature_i.assignment (), *(*it), allignment);
-   }
-
-   writer.flush ();
-}
-
-
-
-static void printSeeds (SeqWeightFunction& wf,
-                        ScoreFunction& scoreFunc,
-                        const AlphabetCode& code,
-                        Preprocessor& preprocessor,
-                        int totalNumOfSeedsFound,
-                        SeedSearcher::BestFeatures& bestFeatures)
-{
-   int size = bestFeatures.size ();
-
-   DLOG << '#' << DLOG.EOL ()
-      << "# Seeds: " << totalNumOfSeedsFound << " found, kept the "
-      << size << " best."
-      << DLOG.EOL ();
-
-   //
-   // apply stat fixes
-   int lastIndexToShow = bestFeatures.size ();
-   if (parser.__score_fdr) {
-      int K = StatFix::FDR (  bestFeatures, 
-                              totalNumOfSeedsFound, 
-                              parser.__score_min);
-
-      lastIndexToShow = tmin (lastIndexToShow, K);
-
-      DLOG << "# Using FDR fix: showing "
-         << lastIndexToShow << " of " << size << " seeds."
-         << DLOG.EOL ();
-   }
-   if (parser.__score_bonf) {
-      int K = StatFix::bonferroni ( bestFeatures, 
-                                    totalNumOfSeedsFound, 
-                                    parser.__score_min);
-
-      lastIndexToShow = tmin (lastIndexToShow, K);
-
-      DLOG << "# Using Bonferroni fix: showing "
-         << lastIndexToShow << " of " << size << " seeds."
-         << DLOG.EOL ();
-   }
-
-   DLOG.flush ();
-
-   //
-   // print header
-   DLOG << DLOG.EOL ();
-   if (parser.__score_bonf) {
-      DLOG <<"Bonf(-log10)\t";
-   }
-   DLOG << "Score(-log10)\tSeed\t\tParameters\t\t\tProjection" << DLOG.EOL ();
-
-   static const double Log_2_10 = ::log2 (10);
-   const double log_10_numOfSeeds = ::log10 (totalNumOfSeedsFound);
-
-   //
-   // print (do not print less than 3)
-   int index;
-   lastIndexToShow = tmin (size, tmax (lastIndexToShow, 3));
-   for (index=0 ; index<lastIndexToShow ; index++) {
-      const Feature& feature_i = bestFeatures [index];
-      
-      double log_10_of_score = (feature_i.score ()) / Log_2_10;
-      
-      //
-      // print bonf correction
-      if (parser.__score_bonf) {
-         //
-         // log10 (score * K) = log10 (score) + log10 (K)
-         double bonfScore = log_10_of_score + log_10_numOfSeeds;
-         DLOG  <<  (- bonfScore)
-               << '\t';
-      }
-
-      DLOG  <<  (- log_10_of_score)
-            << '\t'
-            << Format (feature_i.assignment ());
-
-      //
-      // print score params if available
-      if (feature_i.scoreParameters ()) {
-         DLOG << "\t[";
-         scoreFunc.writeAsText (DLOG, feature_i.scoreParameters ());
-         DLOG << ']';
-      }
-
-      //
-      // print projection details if available
-      if (feature_i.projection ()) {
-         DLOG << '\t' << Format (*feature_i.projection ());
-      }
-
-      DLOG << DLOG.EOL ();
-   }
-
-   //
-   // now print the motif files
-   std::string allignment (parser.__seed_o, '-');
-   for (index=0 ; index<lastIndexToShow ; index++) {
-      const Feature& feature_i = bestFeatures [index];
-
-      //
-      // TODO: use the positions in the cluster if they are available
-      Preprocessor::NodeCluster motifNodes;
-      preprocessor.add2Cluster (motifNodes, feature_i.assignment ());
-      //motifNodes.addAssignmentNodes (tree, *feature_i._assg);
-
-      PositionVector posPositions;
-      PositionVector negPositions;
-      motifNodes.positions (wf, posPositions, negPositions);
-
-      //
-      // print motif in positive set
-      printMotifFile (  true,
-                        feature_i, 
-                        posPositions, 
-                        allignment, 
-                        index);
-
-      //
-      // print motif in negative set
-      printMotifFile (  false,
-                        feature_i, 
-                        negPositions, 
-                        allignment, 
-                        index);
-
-      //
-      // build PSSM from positive positions only
-      // TODO: is this correct?
-      printPSSMFile (code, feature_i, posPositions, index);
-   }
-}
-
-#endif
-
 static void printGoodbye (time_t start, time_t finish)
 {
    std::string timeStr = ctime (&finish);
@@ -317,6 +74,17 @@ static void printGoodbye (time_t start, time_t finish)
       << " after running " << (finish - start) << " seconds."
       << DLOG.EOL ();
    DLOG.flush ();
+}
+
+static Persistance::OutputStream* openFile (const char* filename)
+{
+    ofstream* file = new ofstream (filename,
+                    ios::out | ios::trunc | ios::binary);
+
+   if( ! file->is_open() )
+      Err(string("Cannot open file for ") + filename);
+
+   return new StdOutputStream (file, true);
 }
 
 
@@ -336,13 +104,7 @@ static Persistance::OutputStream* openMotifFile (
       sprintf (motifFileName, "%s.%d.neg.motifs", 
 	       fileStub, (index+1));
 
-   ofstream* motifFile = new ofstream (motifFileName,
-                   ios_base::out | ios_base::trunc | ios_base::binary);
-
-   if( ! motifFile->is_open() )
-      Err(string("Cannot open logFile for ") + motifFileName);
-
-   return new StdOutputStream (motifFile, true);
+   return openFile (motifFileName);
 }
 
 
@@ -357,13 +119,19 @@ static Persistance::OutputStream* openPSSMFile (
    sprintf (motifFileName, "%s.%d.PSSM", 
 	      fileStub, (index+1));
 
-   ofstream* motifFile = new ofstream (motifFileName,
-                   ios_base::out | ios_base::trunc | ios_base::binary);
+   return openFile (motifFileName);
+}
 
-   if( ! motifFile->is_open() )
-      Err(string("Cannot open logFile for ") + motifFileName);
-
-   return new StdOutputStream (motifFile, true);
+//
+//
+static Persistance::OutputStream* openPerfFile (  
+      const char* fileStub)
+{
+   //
+   // create the motif file name
+   char motifFileName [1024];
+   sprintf (motifFileName, "%s.perf", fileStub);
+   return openFile (motifFileName);
 }
 
 
@@ -405,113 +173,274 @@ static void welcomeMessage (const Parser& parser)
    parser.logParams (DLOG);
 }
 
+
+//
+// how to score position for which no feature in
+// the results matches?
+//
+// IDEA: the score for each of the features is > 0
+// so the unrecognizedPosition score should be 
+// somehow compareable with the worst feature score
+// but not too close.
+// 
+// we choose unrecognizedPositionScore = worstFeatureScore / (M+1)
+static double unrecognizedPositionScore (
+            SeedSearcherMain::Results& results,
+            SeedSearcherMain::CmdLineParameters& trainParams)
+{
+   const int MBestPositions = trainParams.parser ().__perf_m;
+
+   results.lastFeature ();
+   const Feature& worstFeature = results.getFeature ();
+   double worstFeatureScore = - worstFeature.log2score ();
+   if (worstFeatureScore > 0)
+      return (worstFeatureScore / (MBestPositions + 1));
+   else
+      return (worstFeatureScore * (MBestPositions + 1));
+}
+
+static void initPositionScoreQueue (
+                  SeedSearcherMain::Results& results,
+                  SeedSearcherMain::CmdLineParameters& trainParams,
+                  std::priority_queue <double>& q)
+{
+   const int MBestPositions = trainParams.parser ().__perf_m;
+
+   mustbe (q.empty ());
+
+   double dblUnrecognizedPositionScore = 
+      unrecognizedPositionScore (results, trainParams);
+
+   std::priority_queue <double> M_unrecognizedPositionScores;
+   for (int i=0 ; i<MBestPositions ; i++)
+      q.push (dblUnrecognizedPositionScore);
+}
+
+//
+// 0) print seed scores on test data
+// a) normalize scores
+// b) score each position in each sequence
+// c) the sequence's score is the average of the best M position scores
+// D) output all positions with likelihood of having binding site
+//   Name best-position-score average-sequence-score
+static void testSeedPerformance (
+            int argc, char* argv[],
+            SeedSearcherMain::Results& results,
+            SeedSearcherMain::CmdLineParameters& trainParams)
+{
+   const int MBestPositions = trainParams.parser ().__perf_m;
+   const Parser::PerfLenComp comp_l = trainParams.parser ().__perf_comp_l;
+
+   DLOG << "#" << DLOG.EOL ()
+        << "# Performing on test data:" << DLOG.EOL ();
+
+   //
+   // the fourth arguemnt is a wgt test file
+   SeedSearcherMain::CmdLineParameters testParams (argc, argv);
+   testParams.setup ( 
+      argv [trainParams.parser ().__firstFileArg + SeqFileIndex],
+      argv [trainParams.parser ().__firstFileArg + TestWgtFileIndex]);
+   DLOG.flush ();
+
+   FeatureInvestigator printer ( testParams                     , 
+                                 testParams.parser ().__seed_o  );
+   printer.printSeedHeader (DLOG);
+
+   for (results.firstFeature ();results.hasMoreFeatures();results.nextFeature ()) {
+      //
+      // create a feature for the seed in the test data
+      const Feature& trainFeature = results.getFeature ();;
+      AutoPtr <Feature> feature = 
+         testParams.createFeature ( trainFeature.assignment (), 
+                                    *trainFeature.projection ());
+
+      //
+      // discover positive/negative 
+      PositionVector posPositions;
+      PositionVector negPositions;
+      printer.addPositions (*feature, posPositions, negPositions);
+
+      //
+      // now print the seed score on the test data
+      printer.printSeed (DLOG, *feature, posPositions);
+      DLOG.flush ();
+   }
+
+   //
+   // first we normalize the seeds (if necessary)
+   switch (trainParams.parser ().__score_norm) {
+      case Parser::_norm_none_:
+         break;
+
+      case Parser::_norm_logit_:
+         trainParams.bestFeatures ()->normalizeScoresSigmoid ();
+         break;
+
+      case Parser::_norm_linear_background_: {
+         BookkeeperFilter& bookkeeper = 
+            dynamic_cast <BookkeeperFilter&> (trainParams.bestFeatures ());
+         bookkeeper.normalizeBackgroundScoresLinear ();
+      }
+      break;
+
+         //case Parser::_norm_linear_:
+         //trainParams.bestFeatures ()->normalizeScoresLinear ();
+         //break;
+      default:
+         mustfail ();
+         break;
+   }
+
+   //
+   // we open file for test-data performance output
+   // and begin with header line
+   TextWriter perfWriter (openPerfFile (
+      argv [trainParams.parser ().__firstFileArg + StubFileIndex]));
+
+   perfWriter << "SeqName\t\tSeqWeight\tBestScoringPosition\t\tSeqScore" 
+              << perfWriter.EOL ();
+
+   std::priority_queue <double> MUnrecognizedPositions;
+   initPositionScoreQueue (results,
+                           trainParams,
+                           MUnrecognizedPositions);
+
+   //
+   // for each sequence in the training data,
+   // we want to know the score of each position 
+   // (e.g. what is the best feature that it matches)
+   SequenceDB::SequenceIterator seqit = testParams.db().sequenceIterator ();
+   for (; seqit.hasNext (); seqit.next ()) {
+      //
+      // create a priority queue to hold the scores of
+      // each position in this sequence.
+      // the priority queue is initialized with M scores
+      // for the unrecognized positions
+/*
+      std::priority_queue <double> positionScores =
+         MUnrecognizedPositions;
+*/
+      std::priority_queue <double> positionScores;
+
+      //
+      // score each position in the sequence
+      int seqlen = (*seqit)->length ();
+      for (int i=0 ; i<seqlen ; i++) {
+         bool foundMatch = false;
+         results.firstFeature ();
+         //
+         // find the first feature that matches
+         // the first feature is the 'best' feature
+         // (e.g. it has the best (lowest) score
+         // we negate the scores to get a positive score on a position
+         do {
+            const Feature& trainFeature = results.getFeature ();
+            int trainFeatureLength = trainFeature.assignment ().length ();
+            Str posData = (*seqit)->data (i, trainFeatureLength);
+            //
+            // if the position's lookahead is small than the feature's length
+            // then this is not considered to be a matching
+            if (posData.length () < trainFeatureLength) {
+               results.nextFeature ();
+               continue;
+            }
+
+            Assignment posAssignment (posData, testParams.langauge ().code ());
+            if (trainFeature.assignment ().contains (posAssignment)) {
+               //
+               // we score this position with this best feature's score (negated)
+               positionScores.push (- trainFeature.log2score ());
+               foundMatch = true;
+            }
+
+            results.nextFeature ();
+         }
+         while (!foundMatch && results.hasMoreFeatures ());
+      }
+      //
+      // now I know the best scores of positions in the sequence
+      // we need the average of the M best
+      // 
+      // 
+      if (positionScores.empty ()) {
+         //
+         // no score available
+         perfWriter << (*seqit)->name () << "\t\t"
+                    << (*seqit)->weight () << '\t'
+                    << "-----" << "\t\t"
+                    << "-----"
+                    << perfWriter.EOL ();
+      }
+      else {
+         double score = 0;
+         double bestScore = positionScores.top (); 
+/*
+      for (int i=0 ; i<MBestPositions ; i++) {
+         score += positionScores.top ();
+         positionScores.pop ();
+      }
+      score = (score / MBestPositions);
+*/
+         int j;
+         for (j=0 ; !positionScores.empty () && j<MBestPositions ; j++) {
+            score += positionScores.top ();
+            positionScores.pop ();
+         }
+         score = (score / j);
+
+         //
+         // we compensate sequence's score by dividing
+         switch (comp_l) {
+            case Parser::_perflencomp_none_:
+               break;
+
+            case Parser::_perflencomp_linear_: 
+               score = (score / seqlen);
+               break;
+
+            case Parser::_perflencomp_log_:
+               score = (score / log2 (seqlen));
+               break;
+
+            default:
+               mustfail ();
+         };
+         
+         //
+         // now we print the sequence information
+         perfWriter << (*seqit)->name () << "\t\t"
+                  << (*seqit)->weight () << '\t'
+                  << bestScore << "\t\t"
+                  << score
+                  << perfWriter.EOL ();
+      }
+   }
+}
+
+static time_t cleanupStart = 0, cleanupFinish;
+static time_t start = time (NULL), finish;
+
+static void mainRoutine (int argc, 
+                        char* argv [], 
+                        SeedSearcherLog::Sentry& logging);
+
 //
 // Copied/Adapted from legacy SeedSearcher
 int main(int argc, char* argv [])
 {
-   time_t cleanupStart =0, cleanupFinish;
-   time_t start, finish;
    int exit_value = 0;
 
-   time(&start);
    try {
       //
       // setup basic logging
-      SeedSearcherLog::setupConsoleLogging (false);
+      SeedSearcherLog::Sentry logging;
+      mainRoutine (argc, argv, logging);
 
-      //
-      // initialize parameters
-      SeedSearcherMain::CmdLineParameters params (argc, argv);
-
-
-      //
-      // check that we have enough arguments
-      // needs SeqFile RegFile and output-stub
-      int numOfFileArgs = params.parser ().__lastFileArg - 
-            params.parser ().__firstFileArg +1;
-
-      if(numOfFileArgs < RequiredParams)
-         params.parser ().usage ("Missing arguments");
-
-      //
-      // now setup file logging
-      int fileStubArg = 
-         params.parser ().__firstFileArg + StubFileIndex;
-
-      const char* fileStub = 
-         params.parser ().__argv [fileStubArg];
-      
-      {  TextWriter* oldWriter = 
-            SeedSearcherLog::setupFileLogging (
-		       StrBuffer (fileStub, ".log"), false);
-         delete oldWriter;
+      if (cleanupStart) {
+         cleanupFinish = time(NULL);
+         DLOG << (cleanupFinish - cleanupStart) << " seconds." << DLOG.EOL ();
+         DLOG.flush ();
       }
-
-      //
-      // write welcome message
-      welcomeMessage(params.parser ());
-
-      //
-      // begin 
-      params.setup ();
-      SeedSearcherMain main (params);
-      AutoPtr <SeedSearcherMain::Results> results = main.search ();
-
-      int bonfN = 
-         params.parser ().__score_bonf? results->numSeedsSearched () : 0;
-      FeatureInvestigator printer ( params                     , 
-                                    params.parser ().__seed_o  ,
-                                    bonfN                      );
-      printer.printSeedHeader (DLOG);
-
-      //
-      // we print the results to the log
-      for (; results->hasMoreFeatures () ; results->nextFeature ()) {
-
-         Feature& feature = results->getFeature ();
-
-         //
-         // first we find the positive and negative positions
-         // of this feature
-         PositionVector pos;
-         PositionVector neg;
-         printer.addPositions (feature, pos, neg);
-
-         //
-         // now we print the seed result line,
-         // which includes the seed, score projection etc.
-         printer.printSeed (DLOG, feature, pos);
-
-         
-         //
-         // now we print pos & neg motif files
-         bool isPos = true;
-         for (int i = 0 ; i <= 1; i++) {
-            //
-            // we open a file for the motif
-            TextWriter motifFile (openMotifFile (  isPos, 
-                                                results->featureIndex (),
-                                                fileStub
-                                                ));
-            printer.printMotif ( motifFile, 
-                                 feature, 
-                                 isPos? pos : neg);
-            isPos = !isPos;
-         }
-
-         //
-         // now we print the PSSM files
-         TextWriter pssmFile (openPSSMFile ( results->featureIndex (),
-                                             fileStub
-                                             ));
-
-         printer.printPSSM (pssmFile, feature, pos);
-      }
-
-      finish = time(NULL);
-      printGoodbye (start, finish);
-      cerr << endl << "Cleaning up...";
-      time (&cleanupStart);
    }
    catch (BaseException& x) {
       cerr << endl;
@@ -527,12 +456,134 @@ int main(int argc, char* argv [])
       cerr << endl << "Unknown Error! aborting..." << endl;
       exit_value = 3;
    }
-   if (cleanupStart) {
-      time(&cleanupFinish);
-      cerr << (cleanupFinish - cleanupStart) << " seconds." << endl;
-   }
 
    return exit_value;
+}
+
+
+
+static AutoPtr <SeedSearcherMain::Results> 
+   mainSearch (SeedSearcherMain::CmdLineParameters& params)
+{
+   //
+   // 
+   const char* fileStub = 
+      params.parser ().__argv [params.parser ().__firstFileArg + StubFileIndex];
+
+   SeedSearcherMain main (params);
+   AutoPtr <SeedSearcherMain::Results> results = main.search ();
+
+   int bonfN = 
+      params.parser ().__score_bonf? results->numSeedsSearched () : 0;
+   FeatureInvestigator printer ( params                     , 
+                                 params.parser ().__seed_o  ,
+                                 bonfN                      );
+   printer.printSeedHeader (DLOG);
+
+   bool gPSSM = params.parser ().__generatePSSM;
+   Parser::MotifType gMotif = params.parser ().__generateMotif;
+
+   //
+   // we print the results to the log
+   for (; results->hasMoreFeatures () ; results->nextFeature ()) {
+
+      Feature& feature = results->getFeature ();
+
+      //
+      // first we find the positive and negative positions
+      // of this feature
+      PositionVector pos;
+      PositionVector neg;
+      printer.addPositions (feature, pos, neg);
+
+      //
+      // now we print the seed result line,
+      // which includes the seed, score projection etc.
+      printer.printSeed (DLOG, feature, pos);
+
+      if (gMotif != Parser::_motif_none_) {
+         //
+         // now we print pos & neg motif files
+         bool isPos = true;
+         for (int i = 0 ; i <= 1; i++) {
+            //
+            // print neg only if Parser::_motif_all_ is specified
+            if ((gMotif == Parser::_motif_all_) || isPos) {
+               //
+               // we open a file for the motif
+               TextWriter motifFile (openMotifFile (  isPos, 
+                                                   results->featureIndex (),
+                                                   fileStub
+                                                   ));
+               printer.printMotif ( motifFile, 
+                                    feature, 
+                                    isPos? pos : neg);
+            }
+
+            isPos = !isPos;
+         }
+      }
+
+      //
+      // now we print the PSSM files
+      if (gPSSM) {
+         TextWriter pssmFile (openPSSMFile ( results->featureIndex (),
+                                             fileStub
+                                             ));
+
+         printer.printPSSM (pssmFile, feature, pos);
+      }
+   }
+
+   return results;
+}
+
+static void mainRoutine (int argc, 
+                        char* argv [], 
+                        SeedSearcherLog::Sentry& logging)
+{
+   //
+   // initialize parameters
+   SeedSearcherMain::CmdLineParameters params (argc, argv);
+
+
+   //
+   // check that we have enough arguments
+   // needs SeqFile RegFile and output-stub
+   int numOfFileArgs = params.parser ().__lastFileArg - 
+         params.parser ().__firstFileArg +1;
+
+   if(numOfFileArgs < RequiredParams)
+      params.parser ().usage ("Missing arguments");
+
+   //
+   // now setup file logging
+   const char* fileStub = 
+      argv [params.parser ().__firstFileArg + StubFileIndex];
+
+   logging.setupFileLogging (StrBuffer (fileStub, ".log"));
+
+   //
+   // write welcome message
+   welcomeMessage(params.parser ());
+
+   //
+   // begin 
+   params.setup ( argv [params.parser ().__firstFileArg + SeqFileIndex],
+                  argv [params.parser ().__firstFileArg + WgtFileIndex]);
+
+   AutoPtr <SeedSearcherMain::Results> results = mainSearch (params);
+   //
+   //
+   if (numOfFileArgs > RequiredParams) {
+      testSeedPerformance (argc, argv, *results, params);
+   }
+
+
+   finish = time(NULL);
+   printGoodbye (start, finish);
+   cerr << endl << "Cleaning up...";
+   time (&cleanupStart);
 }
 
 
@@ -540,20 +591,162 @@ int main(int argc, char* argv [])
 
 #include "Core/dlmalloc.h"
 
+#if ENV_COMPILER==ENV_MICROSOFT
+#  define SEED_CDECL __cdecl
+#else
+#  define SEED_CDECL
+#endif
 
-void * operator new (size_t size)
+
+void* SEED_CDECL operator new (size_t inSize) throw (std::bad_alloc)
 {
-   return dlmalloc (size);
+	void* ptr = dlmalloc (inSize);
+	debug_mustbe (ptr);
+	return ptr;
 }
 
-void operator delete (void* p)
+void* SEED_CDECL operator new (size_t inSize, const std::nothrow_t&) throw ()
 {
-   dlfree (p);
+	void* ptr = dlmalloc (inSize);
+	debug_mustbe (ptr);
+	return ptr;
+}
+
+void SEED_CDECL operator delete (void* inPtr) throw ()
+{
+   if (inPtr)
+	   dlfree (inPtr);
+}
+
+void* operator new[] (size_t inSize) throw (std::bad_alloc) 
+{
+	void* ptr = dlmalloc (inSize);
+	debug_mustbe (ptr);
+	return ptr;
+}
+
+void* operator new[] (size_t inSize, const std::nothrow_t& nothrow) throw () 
+{
+	void* ptr = dlmalloc (inSize);
+	debug_mustbe (ptr);
+	return ptr;
+}
+
+void operator delete[] (void* inPtr) throw () 
+{
+   if (inPtr)
+	   dlfree (inPtr);
 }
 
 #endif
 
+/*
+#include "Core/ConfReader.h"
+
+class StrUtil {
+public:
+   static 
+};
+
+class SeedRunner {
+public:
+   SeedRunner (int argc, char* argv);
+   
+   void setup () {
+      int numOfFileArgs = params.parser ().__lastFileArg - 
+            params.parser ().__firstFileArg +1;
+
+      //
+      // seq wgt stub conf
+      if(numOfFileArgs < 4)
+         params.parser ().usage ("Missing arguments");
+
+   //
+   // initialize parameters
+   SeedSearcherMain::CmdLineParameters params (argc, argv);
+
+
+   //
+   // check that we have enough arguments
+   // needs SeqFile RegFile and output-stub
+   int numOfFileArgs = params.parser ().__lastFileArg - 
+         params.parser ().__firstFileArg +1;
+
+   if(numOfFileArgs < RequiredParams)
+      params.parser ().usage ("Missing arguments");
+
+   //
+   // now setup file logging
+   const char* fileStub = 
+      argv [params.parser ().__firstFileArg + StubFileIndex];
+
+//   logging.setupFileLogging (StrBuffer (fileStub, ".log"));
+
+   //
+   // write welcome message
+   welcomeMessage(params.parser ());
+
+   //
+   // initialize the conf
+   ConfReader conf (argv [params.parser ().__firstFileArg + ConfFileIndex]);
+   if (!conf.valid ()) {
+      DLOG << "conf file " << conf.source () << " not found." << DLOG.EOL ();
+      mustfail ();
+   }
+
+   //
+   // begin initiale setup
+   params.setup ( argv [params.parser ().__firstFileArg + SeqFileIndex],
+                  argv [params.parser ().__firstFileArg + WgtFileIndex]);
+
+
+   StrBuffer args;
+   StrBuffer name;
+   StrBuffer test;
+   bool shouldTest;
+   int runNumber = 1;
+
+   //
+   // now we read our run parameters from the conf
+   ConfReader::Package runs (conf.getPackage ("Runs"));
+   ConfReader::Iterator it (runs);
+   for (; !it.atEnd () ; it.next ()) {
+      DLOG << "Performing: << it.get () << DLOG.EOL ();
+
+   _setargv (
+
+      runs.mustGet (it + "Args", args);
+
+      bool kkk = runs.get (it + "Test", test);
+      if (kkk) {
+         shouldTest = !test.empty ();
+      }
+
+      mainSearch (params);
+
+      runNumber++;
+   }
 
 
 
+   SeedSearcherMain main (params);
+   AutoPtr <SeedSearcherMain::Results> results = main.search ();
 
+   int bonfN = 
+      params.parser ().__score_bonf? results->numSeedsSearched () : 0;
+   FeatureInvestigator printer ( params                     , 
+                                 params.parser ().__seed_o  ,
+                                 bonfN                      );
+   printer.printSeedHeader (DLOG);
+
+   bool gPSSM = params.parser ().__generatePSSM;
+   Parser::MotifType gMotif = params.parser ().__generateMotif;
+
+
+   }
+
+
+
+   Parser _parser;
+};
+*/
