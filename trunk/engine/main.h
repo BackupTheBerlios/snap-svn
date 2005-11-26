@@ -13,7 +13,7 @@ struct main_definitions {
 
    enum {
       __versionMajor = 2,
-      __versionMinor = 331
+      __versionMinor = 332
    };
 
    //
@@ -99,7 +99,8 @@ struct main_definitions {
 
    //
    //
-   static void printMotif (Persistance::TextTableReport::Output& out,
+   static void printMotif (PositionWeightType positionWeightType,
+      Persistance::TextTableReport::Output& out,
       FeatureInvestigator& printer,
       Parser::OutputType gPSSM,
       Parser::OutputType gMotif,
@@ -143,7 +144,7 @@ struct main_definitions {
                openFile (isPos, featureIndex, fileStub, PSSM_FILE_STUB)
                );
 
-            printer.printPSSM (pssmFile, feature, pos);
+            printer.printPSSM (positionWeightType, pssmFile, feature, pos);
          }
 
          //

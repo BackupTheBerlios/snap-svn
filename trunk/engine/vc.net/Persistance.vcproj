@@ -217,6 +217,9 @@
 				RelativePath="..\..\seedsearcher\Persistance\StreamBuffer.h">
 			</File>
 			<File
+				RelativePath="..\persistance\StrInputStream.h">
+			</File>
+			<File
 				RelativePath="..\..\seedsearcher\Persistance\StrOutputStream.h">
 			</File>
 			<File

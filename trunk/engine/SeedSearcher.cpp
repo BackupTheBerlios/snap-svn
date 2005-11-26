@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: SeedSearcher.cpp $
-// Version     : $Revision: 32 $ 
+// Version     : $Revision: 33 $ 
 //               $Author: Aviad $
-//               $Date: 16/12/04 6:20 $ 
+//               $Date: 10/01/05 1:55 $ 
 // Description :
 //    Concrete class for seed-searching in a preprocessor
 //
@@ -266,7 +266,7 @@ static int rec_prefixTreeSearch (
       AutoPtr <SequenceDB::Cluster> seqInNode =
          new SequenceDB::Cluster;
    
-      if (params.countType () == _count_total_) 
+      if (params.useTotalCount()) 
 		   node.add2SeqClusterPositions (*seqInNode);
       else
          node.add2SeqCluster (*seqInNode);
@@ -320,7 +320,7 @@ static int rec_prefixTreeSearch (
                                    myFeatures, 
                                    newEntries, 
                                    myDepth,
-                                   params.countType () == _count_total_);
+                                   params.useTotalCount ());
 
    //
    // add our position to all the features
@@ -784,7 +784,7 @@ int SeedSearcher::tableSearch (  SearchParameters& params,
    if (projection.length () <= params.preprocessor ().maxAssignmentSize ()) {
       
       TableSearcher::Table hashTable ( 
-         params.countType() == _count_total_,
+         params.useTotalCount (),
          params.useSpecialization (),
          DEFAULT_SEED_HASH_TABLE_SIZE,
          params.langauge ());

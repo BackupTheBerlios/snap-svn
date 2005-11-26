@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Assignment.h $
-// Version     : $Revision: 21 $ 
+// Version     : $Revision: 22 $ 
 //               $Author: Aviad $
-//               $Date: 22/11/04 9:14 $ 
+//               $Date: 10/01/05 1:43 $ 
 // Description :
 //    Concrete class describing an assignment - 
 //       which is a sequence of assignment positions.
@@ -447,15 +447,15 @@ public:
    }
    virtual bool contains (const AssignmentBase& in, int startIndex = 0, int cmp_length = assg_end) const {
       debug_mustbe (length () == in.length ());
-      return _assg.contains (in, _begin + startIndex, (cmp_length == assg_end)? _length : cmp_length);
+      return _assg.contains (in, startIndex, (cmp_length == assg_end)? _length : cmp_length);
    }
    virtual int compare (const AssignmentBase& in, int startIndex = 0, int cmp_length = assg_end) const {
       debug_mustbe (length () == in.length ());
-      return _assg.compare(in, _begin + startIndex, (cmp_length == assg_end)? _length : cmp_length);
+      return _assg.compare(in, startIndex, (cmp_length == assg_end)? _length : cmp_length);
    }
    virtual bool equals (const AssignmentBase& in, int startIndex = 0, int cmp_length = assg_end) const {
       debug_mustbe (length () == in.length ());
-      return _assg.equals (in, _begin + startIndex, (cmp_length == assg_end)? _length : cmp_length);
+      return _assg.equals (in, startIndex, (cmp_length == assg_end)? _length : cmp_length);
    }
 
    //

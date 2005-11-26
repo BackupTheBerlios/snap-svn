@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: SequenceDB.cpp $
-// Version     : $Revision: 21 $ 
+// Version     : $Revision: 22 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:44 $ 
+//               $Date: 10/01/05 1:53 $ 
 // Description :
 //    Concrete repository for sequences
 //
@@ -65,7 +65,6 @@ static inline Str toStr (const string& in) {
 }
 
 static void insertSequence (  SequenceDB& db          , 
-                              double weight          ,
                               const std::string& name ,
                               const std::string& seq  , 
                               SequenceDB::ID id       ,
@@ -77,7 +76,7 @@ static void insertSequence (  SequenceDB& db          ,
    }
 
    Sequence* newSeq = 
-      new Sequence (id, toStr (seq),  toStr (name), weight, reverse);
+      new Sequence (id, toStr (seq),  toStr (name), reverse);
 
    db.insertSequence (  id, 
                         toStr (name), 
@@ -162,11 +161,8 @@ SequenceDB*
    SequenceDB::TextFileStorage::loadFastaAndWeights (
       const Langauge& langauge   ,
       const char* seqFileName    ,
-      const char* weightFileName )
+      SeqWeightDB::Name2Weight& weights)
 {
-   map<StrBuffer,double> weights;
-   readWeights(weightFileName, weights);
-   
    ifstream in(seqFileName);
    if (! in.is_open())
       Err(string("unable to open SeqData file ")+ seqFileName);
@@ -184,11 +180,11 @@ SequenceDB*
    
    while (in>>s) {
       if ((s[0]=='>') && seq.size()){
-         if (weights.find(Str (name)) != weights.end()) {	
+         SeqWeightDB::Name2Weight::iterator node = weights.find(Str (name));
+         if (node != weights.end ()) {	
             //
             //
             ::insertSequence (   *db, 
-                                 (weights.find(Str (name)))->second,
                                  name, 
                                  seq, 
                                  id++,
@@ -223,9 +219,9 @@ SequenceDB*
       //
       // BUG FIX: (Aviad). the last sequence (exactly like those before it)
       // should be used only if it has an associated weight
-      if (weights.find(Str (name)) != weights.end()) {	
+      SeqWeightDB::Name2Weight::iterator node = weights.find(Str (name));
+      if (node != weights.end ()) {
          ::insertSequence (*db, 
-                           (weights.find(Str (name)))->second, 
                            name, 
                            seq, 
                            id,
@@ -248,16 +244,6 @@ SequenceDB::~SequenceDB ()
    _sequences.clear ();
 }
 
-void SequenceDB::getSequencesAbove (double weight, Cluster& out) const
-{
-   out.clear ();
-   SequenceIterator it (sequenceIterator ());
-   for (; it.hasNext () ; it.next ()) {
-      Sequence* seq = it.get ();
-      if (seq->weight () >= weight)
-         out.addSequence (it.get ());
-   }
-}
 
 bool SequenceDB::insertSequence (Sequence::ID id, const Str& name, Sequence* seq)
 {

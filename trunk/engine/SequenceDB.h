@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: SequenceDB.h $
-// Version     : $Revision: 21 $ 
+// Version     : $Revision: 22 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:44 $ 
+//               $Date: 10/01/05 1:52 $ 
 // Description :
 //    Concrete repository for sequences
 //
@@ -64,19 +64,21 @@ public:
    int size () const {
       return _sequences.size ();
    }
-   void getSequencesAbove (double weight, Cluster&) const;
-
    //
    // interface for adding sequences
    bool insertSequence (SequenceDB::ID id, const Str& name, Sequence*);
-
+   
+   Sequence* getSequence (const Sequence::Name& name) const{
+      Name2ID::const_iterator it = _name2ID.find (name);
+      return (it != _name2ID.end ())? _sequences [it->second] : NULL;
+   }
    
    struct TextFileStorage {
       //
       // for loading a fasta file and a corresponding weight file
       static SequenceDB* loadFastaAndWeights (const Langauge&,
                                               const char* seqFileName,
-                                              const char* weightFileName);
+                                              SeqWeightDB::Name2Weight&);
    };
 
 private:

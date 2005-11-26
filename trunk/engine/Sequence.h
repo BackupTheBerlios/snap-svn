@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $
 //               $Workfile: Sequence.h $
-// Version     : $Revision: 30 $
+// Version     : $Revision: 31 $
 //               $Author: Aviad $
-//               $Date: 12/12/04 12:16 $
+//               $Date: 10/01/05 1:53 $
 // Description :
 //    Concrete classes for sequences, sequence positions
 //
@@ -37,10 +37,9 @@ public:
    Sequence (ID id,
             const Str& data,
             const Str& name,
-            double wgt,
             Str reverse = NULL)
    : _id (id), _data (data), _reverse (reverse),
-     _name (name), _weight (wgt)
+     _name (name)
    {
       debug_mustbe ((reverse.length () == 0) || 
                     (reverse.length () == data.length ()));
@@ -61,12 +60,6 @@ public:
    const Name& name () const {
       return _name;
    }
-   void weight (double inWeight) {
-      _weight = inWeight;
-   }
-   inline double weight () const {
-      return _weight;
-   }
    Str data (int startPos, int length, Strand strand = _strand_pos_) const {
       return Str (data (strand), startPos, startPos + length);
    }
@@ -76,90 +69,7 @@ private:
    StrBuffer _data;
    StrBuffer _reverse;
    Name _name;
-   double _weight;
 };
-
-
-
-//
-// basic interface for deciding if a sequence is positive / negative
-class SeqWeightFunction {
-public:
-   SeqWeightFunction () : _invert (false), _partialCount (false) {
-   }
-   virtual ~SeqWeightFunction () {
-   }
-
-   void invert () {
-      _invert = !_invert;
-   }
-
-   //
-   // get/set the partialCount property.
-   // if partialCount is false, weights are assg_discrete.
-   // if partialCount is true, weights are real values
-   bool partialCount () const {
-      return _partialCount;
-   }
-   void partialCount (bool in)  {
-      _partialCount = in;
-   }
-   //
-   // returns the weight of the seq, as determined by this weight function
-   virtual double weight (const Sequence& seq) const {
-      return _partialCount? seq.weight () : 1;
-   }
-
-   //
-   // returns true iff the weight belongs to the positive or negative set.
-   // if so, 'outIsPositive' is set to true iff the weight belongs to the
-   // positive set.
-   inline bool isRelevant (const Sequence& seq, bool& outIsPositive) const {
-      return isRelevant (seq.weight (), outIsPositive);
-   }
-   inline bool isRelevant (double weight, bool& outIsPositive) const {
-      bool result =
-         isRelevantImpl (weight, outIsPositive);
-      if (_invert)
-       outIsPositive = ! outIsPositive;
-      return result;
-   }
-
-   //
-   // returns true iff the weight belongs to the positive set
-   bool isPositive (double weight) const {
-      bool isPositive = false;
-      bool res = isRelevant (weight, isPositive);
-      return res && isPositive;
-   }
-   bool isPositive (const Sequence& sequence) const {
-      return isPositive (sequence.weight ());
-   }
-
-   //
-   // returns true iff the weight belongs to the negative set
-   bool isNegative (double weight) const{
-      bool isPositive = false;
-      bool res = isRelevant (weight, isPositive);
-      return res && (!isPositive);
-   }
-   bool isNegative (const Sequence& sequence) const {
-      return isNegative (sequence.weight ());
-   }
-   //
-   // is positive or negative
-   bool isRelevant (const Sequence& sequence) const {
-      bool unused;
-      return isRelevant (sequence.weight (), unused);
-   }
-
-protected:
-   virtual bool isRelevantImpl (double weight, bool& outIsPositive) const = 0;
-   bool _invert;
-   bool _partialCount;
-};
-
-
 
 
 class SeqPosition : public POOL_ALLOCATED(SeqPosition) {
@@ -203,7 +113,15 @@ public:
    Strand strand () const {
       return _strand;
    }
-
+   //
+   // returns the offsets from the 'positive' strand
+   // of a seed of length 'seedLength' that begins in this position
+   int tssPosition (int seedLength) const {
+      if (_strand == _strand_pos_)
+         return position ();
+      else
+         return maxLookahead () - seedLength;
+   }
    //
    // returns the sequence string starting at this position,
    // modified by 'offset'with length 'length'.

@@ -2,12 +2,8 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="7.10"
-	Name="SeedSearcher"
-	ProjectGUID="{3071C567-8503-473B-A530-6D93E43B1809}"
-	SccProjectName="&quot;$/SeedSearcher&quot;, ECAAAAAA"
-	SccAuxPath=""
-	SccLocalPath=".."
-	SccProvider="MSSCCI:Microsoft Visual SourceSafe"
+	Name="UnitTests"
+	ProjectGUID="{E9BDC8BD-E4FD-4CD2-B855-9C997E13DEB5}"
 	Keyword="Win32Proj">
 	<Platforms>
 		<Platform
@@ -19,8 +15,7 @@
 			OutputDirectory="Debug"
 			IntermediateDirectory="Debug"
 			ConfigurationType="1"
-			CharacterSet="2"
-			WholeProgramOptimization="FALSE">
+			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/EHa"
@@ -33,7 +28,7 @@
 				BasicRuntimeChecks="3"
 				SmallerTypeCheck="TRUE"
 				RuntimeLibrary="5"
-				StructMemberAlignment="0"
+				TreatWChar_tAsBuiltInType="FALSE"
 				ForceConformanceInForLoopScope="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="0"
@@ -45,18 +40,16 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(OutDir)/SeedSearcher.exe"
+				OutputFile="$(OutDir)/UnitTests.exe"
 				LinkIncremental="2"
-				IgnoreDefaultLibraryNames=""
 				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile="$(OutDir)/SeedSearcher.pdb"
+				ProgramDatabaseFile="$(OutDir)/UnitTests.pdb"
 				SubSystem="1"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
-				Name="VCPostBuildEventTool"
-				CommandLine="copy $(TargetPath) $(SolutionDir)\..\winseedD.exe"/>
+				Name="VCPostBuildEventTool"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -79,51 +72,30 @@
 			OutputDirectory="Release"
 			IntermediateDirectory="Release"
 			ConfigurationType="1"
-			CharacterSet="0"
-			WholeProgramOptimization="TRUE">
+			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/EHa"
-				Optimization="2"
-				GlobalOptimizations="TRUE"
-				InlineFunctionExpansion="2"
-				EnableIntrinsicFunctions="TRUE"
-				ImproveFloatingPointConsistency="TRUE"
-				FavorSizeOrSpeed="1"
-				OmitFramePointers="FALSE"
-				AdditionalIncludeDirectories=".."
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
-				StringPooling="TRUE"
-				ExceptionHandling="FALSE"
-				BasicRuntimeChecks="0"
 				RuntimeLibrary="4"
-				BufferSecurityCheck="FALSE"
-				EnableFunctionLevelLinking="FALSE"
-				ForceConformanceInForLoopScope="TRUE"
-				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="0"
-				BrowseInformation="1"
 				WarningLevel="3"
-				Detect64BitPortabilityProblems="FALSE"
+				Detect64BitPortabilityProblems="TRUE"
 				DebugInformationFormat="3"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalOptions="/LTCG"
-				OutputFile="$(OutDir)/SeedSearcher.exe"
+				OutputFile="$(OutDir)/UnitTests.exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="TRUE"
 				SubSystem="1"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
-				OptimizeForWindows98="1"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
-				Name="VCPostBuildEventTool"
-				CommandLine="copy $(TargetPath) $(SolutionDir)\..\winseed.exe"/>
+				Name="VCPostBuildEventTool"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -149,26 +121,32 @@
 			Name="boost"
 			Filter="">
 			<File
-				RelativePath="..\boost\test\cpp_main.cpp">
+				RelativePath="..\boost\test\supplied_log_formatters.cpp">
+			</File>
+			<File
+				RelativePath="..\boost\test\test_tools.cpp">
+			</File>
+			<File
+				RelativePath="..\boost\test\unit_test_log.cpp">
+			</File>
+			<File
+				RelativePath="..\boost\test\unit_test_monitor.cpp">
+			</File>
+			<File
+				RelativePath="..\boost\test\unit_test_parameters.cpp">
+			</File>
+			<File
+				RelativePath="..\boost\test\unit_test_result.cpp">
+			</File>
+			<File
+				RelativePath="..\boost\test\unit_test_suite.cpp">
 			</File>
 		</Filter>
 		<File
-			RelativePath="..\main.cpp">
+			RelativePath="..\boost\test\unit_test_main.cpp">
 		</File>
 		<File
-			RelativePath="..\main.h">
-		</File>
-		<File
-			RelativePath="..\makefile">
-		</File>
-		<File
-			RelativePath="..\seed.conf">
-		</File>
-		<File
-			RelativePath="..\SeedPerformance.cpp">
-		</File>
-		<File
-			RelativePath="..\Todo.txt">
+			RelativePath="..\UnitTestMain.cpp">
 		</File>
 	</Files>
 	<Globals>

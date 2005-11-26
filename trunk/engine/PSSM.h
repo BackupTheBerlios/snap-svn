@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: PSSM.h $
-// Version     : $Revision: 11 $ 
+// Version     : $Revision: 12 $ 
 //               $Author: Aviad $
-//               $Date: 18/10/04 7:57 $ 
+//               $Date: 10/01/05 1:55 $ 
 // Description :
 //    Concrete class for describing a PSSM
 //
@@ -20,7 +20,7 @@
 // this file and as well as its library are released for academic research 
 // only. the LESSER GENERAL PUBLIC LICENSE (LPGL) license
 // as well as any other restrictions as posed by the computational biology lab
-// and the library authors appliy.
+// and the library authors apply.
 // see http://www.cs.huji.ac.il/labs/compbio/LibB/LICENSE
 //
 
@@ -28,6 +28,7 @@
 #include "Assignment.h"
 #include "Alphabet.h"
 #include "Sequence.h"
+#include "SeqWeight.h"
 
 //
 // Adapted from Legacy SeedSearcher
@@ -96,11 +97,12 @@ public:
    // creates an empty pssm 
    PSSM () {
    }
-   PSSM (const AlphabetCode& code,
-	 int motifLength, int pssmLength,
+   PSSM (PositionWeightType positionWeightType,
+         const AlphabetCode& code,
+	      int motifLength, int pssmLength,
          const PositionVector& posVec  ,
          const SeqWeightFunction& wf) {
-     set (code, motifLength, pssmLength, posVec, wf);
+     set (positionWeightType, code, motifLength, pssmLength, posVec, wf);
    }
    ~PSSM () {
    }
@@ -110,15 +112,15 @@ public:
    // 'length' is the length of the PSSM
    // 'offset' is the (often negative) 
    // offset from the position to start building
-   void set (  const AlphabetCode& code, 
-	       const int motifLength,
-	       const int pssmLength,
+   void set (  PositionWeightType positionWeightType,
+               const AlphabetCode& code, 
+	            const int motifLength,
+	            const int pssmLength,
                const PositionVector& posVec  ,
                const SeqWeightFunction& wf   ) 
    {
+      _positionWeightType = positionWeightType;
       _length = pssmLength;
-      //
-      // TODO: support partial counts?
       double positions [MAX_PSSM_LENGTH][ASSG_MAX_ALPHABET_SIZE];
       memset (positions, 0, sizeof (positions));
 
@@ -126,31 +128,45 @@ public:
       // for all the places the motif exists
       CPositionIterator it (posVec.begin (), posVec.end ());
       for (; it.hasNext () ; it.next ()) {
-	 //
-	 // the following line is wrong, since it itroduces offset errors
+         //
+         // the following line is wrong, since it introduces offset errors
          // (*it)->getModifiedOffsets (myOffset, myLength);
-	 // the following line replaces it
-	StrBuffer buf(_length);
-	(*it)->getSeedString (buf,  motifLength, _length);
+         // the following line replaces it
+         StrBuffer buf(_length);
+         (*it)->getSeedString (buf,  motifLength, _length);
+         const SeqPosition& position = *(*it);
 
-	//
-	// get the weight of the seq
-	double weight = wf.weight (*(*it)->sequence ());
-	
-	//
-	// 
-	for (int i=0; i<_length ; i++) {
-	  AlphabetCode::Char c = buf [i];
-	  if (c != SeqPosition::_DEFAULT_ALLIGNMENT_CHAR_) {
-	    AlphabetCode::CodedChar cc = code.code (c);
-	    //
-	    // keep gcc happy
-	    int cc_index = static_cast <int> (cc);
-	    positions [i][cc_index] += weight;
-	  }
-	}
+         //
+         // get the weight of the seq
+         double weight = 0;
+         switch (_positionWeightType)  {
+            case _position_weight_discrete_: weight = 1; break;
+            case _position_weight_real_:     
+               weight = wf.weight(position.sequence()->id ());
+               break;
+            case _position_weight_hotspots_:
+               weight = wf.weight(position, motifLength);
+               break;
+            default:
+               mustfail ();
+               break;
+         };
+          
+
+         //
+         // 
+         for (int i=0; i<_length ; i++) {
+         AlphabetCode::Char c = buf [i];
+         if (c != SeqPosition::_DEFAULT_ALLIGNMENT_CHAR_) {
+               AlphabetCode::CodedChar cc = code.code (c);
+               //
+               // keep gcc happy
+               int cc_index = static_cast <int> (cc);
+               positions [i][cc_index] += weight;
+            }
+         }
       }
-      
+
       //
       //
       for (int i=0 ; i <_length ; i++) {
@@ -173,6 +189,7 @@ public:
 
 private:
    int _length;
+   PositionWeightType _positionWeightType;
    Multinomial _positionScores [MAX_PSSM_LENGTH];
 };
 

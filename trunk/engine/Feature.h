@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Feature.h $
-// Version     : $Revision: 17 $ 
+// Version     : $Revision: 18 $ 
 //               $Author: Aviad $
-//               $Date: 10/12/04 21:04 $ 
+//               $Date: 10/01/05 1:45 $ 
 // Description :
 //    Concrete cache for Hyper-Geometric distribution values
 //
@@ -338,7 +338,8 @@ public:
 
    //
    // creates a PSSM from a feature
-   virtual void createPSSM (  Feature&             , 
+   virtual void createPSSM (  PositionWeightType   ,
+                              Feature&             , 
                               const PositionVector&, 
                               PSSM&                );
    //
@@ -349,11 +350,12 @@ public:
 
    //
    // creates and prints a PSSM for a feature
-   virtual void printPSSM (Persistance::TextWriter& writer, 
+   virtual void printPSSM (PositionWeightType positionWeightType,
+                           Persistance::TextWriter& writer, 
                            Feature& feature,
                            const PositionVector& pos) {
       PSSM pssm;
-      createPSSM (feature, pos, pssm);
+      createPSSM (positionWeightType, feature, pos, pssm);
       printPSSM (writer, feature, pssm);
    }
    virtual void printBayesian (Persistance::TextWriter& , 

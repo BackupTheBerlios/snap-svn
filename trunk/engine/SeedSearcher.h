@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: SeedSearcher.h $
-// Version     : $Revision: 24 $ 
+// Version     : $Revision: 25 $ 
 //               $Author: Aviad $
-//               $Date: 10/12/04 21:15 $ 
+//               $Date: 10/01/05 1:54 $ 
 // Description :
 //    Concrete class for seed-searching in a preprocessor
 //
@@ -82,7 +82,7 @@ public:
 
          _bestFeatures = in._bestFeatures;
          _useSpecialization = in._useSpecialization;
-         _count = in._count;
+         _useTotalCount = in._useTotalCount;
       }
 
       //
@@ -98,8 +98,8 @@ public:
       }
       //
 		// should keep track of all positions
-      CountType countType () const {
-         return _count;
+      bool useTotalCount() const {
+         return _useTotalCount;
       }
       //
       // should specialize projections?
@@ -111,7 +111,7 @@ public:
    protected:
       boost::shared_ptr <FeatureFilter> _bestFeatures;
       bool _useSpecialization;
-      CountType _count;
+      bool _useTotalCount;
    };
 
    //

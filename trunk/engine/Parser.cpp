@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Parser.cpp $
-// Version     : $Revision: 38 $ 
+// Version     : $Revision: 39 $ 
 //               $Author: Aviad $
-//               $Date: 9/12/04 3:05 $ 
+//               $Date: 10/01/05 1:56 $ 
 // Description :
 //    Concrete Parser for seed-searcher options
 //
@@ -357,13 +357,36 @@ DEFINE_BOOL_SEED_PARSER_OPTION(
    __count_reverse
 );
 
-DEFINE_BOOL_SEED_PARSER_OPTION(
+DEFINE_SEED_PARSER_OPTION(
    score_partial,
    "Sscore-partial",
-   "[=on | =off] use partial counts for scores",
+   "[=on | =off | =hotspots] use partial counts for scores",
    "off",
    GetOptWrapper::_optional_argument_,
-   __score_partial
+   {
+      bool notBoolean = false;
+      bool result = parser->getOptBoolean (optarg, &notBoolean);
+      if (notBoolean) {
+         Str opt (optarg);
+         if (opt.equalsIgnoreCase ("hotspots"))
+            parser->__score_partial = _position_weight_hotspots_;
+         else {
+            parser->usage (StrBuffer ("bad partial score parameter: ", optarg));
+         }
+      }
+      else {
+         parser->__score_partial = 
+            result? _position_weight_real_ : _position_weight_discrete_;
+      }
+   },
+   {
+      switch (parser->__score_partial) {
+         case _position_weight_hotspots_: out = "hotspots"; break;
+         case _position_weight_real_:     out = "on"; break;
+         case _position_weight_discrete_: out = "off"; break;
+         default: mustfail ();
+      };
+   }
 );
 
 DEFINE_SEED_PARSER_OPTION(
@@ -377,9 +400,9 @@ DEFINE_SEED_PARSER_OPTION(
       Str opt (optarg);
       if (opt.equalsIgnoreCase ("hypegeo"))
          parser->__scoreType = _score_hypegeo_;
-      else if (opt.startsWith ("exp", true)) {
+      else if (opt.startsWith ("exp:", true)) {
          parser->__scoreType = _score_exp_;
-         int result = sscanf (optarg, "exp:%f:%f", 
+         int result = sscanf (optarg + 4, "%f:%f", 
                   &parser->__expLossPos, &parser->__expLossNeg);
          if (result != 2) 
             parser->usage (StrBuffer ("Bad exp score format: ", opt));

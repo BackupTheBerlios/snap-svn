@@ -230,7 +230,7 @@ public:
             else                 desc_field.append(ddef);
             desc_field.append ('}');
          }
-         data.writeInto (output);
+         output << data;
          output.writeln ();
       }
    }
@@ -328,9 +328,9 @@ public:
 //
 // File        : $RCSfile: $ 
 //               $Workfile: GetOptParser.h $
-// Version     : $Revision: 6 $ 
+// Version     : $Revision: 7 $ 
 //               $Author: Aviad $
-//               $Date: 9/12/04 3:06 $ 
+//               $Date: 16/12/04 17:18 $ 
 // Description :
 //	The Core library contains contains basic definitions and classes
 // which are useful to any highly-portable applications

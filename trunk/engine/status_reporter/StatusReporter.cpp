@@ -92,8 +92,8 @@ StatusReporter::setJobStarted()
   
   sprintf( query, "UPDATE jobs SET job_status='%d', pid='%d', start_time=now() WHERE id='%d'", 
 	   PROCESSING_STATUS, mPid, mJobID );
-  
-  printf( query );
+
+  debug_only (printf( query ););
   
   if( mysql_query( &mSQLObj, query ) ) {
     
@@ -167,7 +167,10 @@ StatusReporter::disconnect()
 
 StatusReportManager::Sentry::Sentry( int argc, char **argv, Argv &outArgv )
 {
-   printf("\nConnecting to DB...\n");
+   debug_only (
+      printf("\nConnecting to DB...\n");
+   );
+
    /* 
    In Server mode, the first parameters on the command
    line are: db_host, db_name, db_user, db_pass, job_id
@@ -179,8 +182,10 @@ StatusReportManager::Sentry::Sentry( int argc, char **argv, Argv &outArgv )
    const char *db_pass = argv[4];
    int job_id = atoi( argv[5] );
 
-   printf("Arguments: (%s) (%s) (%s) (%s) (%d)\n", db_host, db_name,
-      db_user, db_pass, job_id);
+   debug_only (
+      printf("Arguments: (%s) (%s) (%s) (%s) (%d)\n", db_host, db_name,
+               db_user, db_pass, job_id);
+   );
 
    outArgv.set( argv[0], argc-6, argv+6 );
 

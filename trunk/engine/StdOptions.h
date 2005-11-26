@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: StdOptions.h $
-// Version     : $Revision: 31 $ 
+// Version     : $Revision: 32 $ 
 //               $Author: Aviad $
-//               $Date: 10/12/04 21:15 $ 
+//               $Date: 10/01/05 1:52 $ 
 // Description :
 //    Concrete implmentations for Langauge, ScoreFunction, WeightFunction etc
 //
@@ -200,7 +200,9 @@ protected:
 //
 class SimpleWeightFunction : public SeqWeightFunction {
 public:
-   SimpleWeightFunction (double inThreshold) : _threshold (inThreshold) {
+   SimpleWeightFunction (boost::shared_ptr <SeqWeightDB::ID2Weight> weights,
+                        double inThreshold) 
+   : SeqWeightFunction (weights), _threshold (inThreshold) {
    }
    virtual ~SimpleWeightFunction () {
    }
@@ -217,7 +219,7 @@ protected:
    double _threshold;
 };
 
-
+/*
 //
 //
 class IntervalWeightFunction : public SeqWeightFunction {
@@ -270,7 +272,7 @@ protected:
    double _hi;
    double _lo;
 };
-
+*/
 
 //
 //

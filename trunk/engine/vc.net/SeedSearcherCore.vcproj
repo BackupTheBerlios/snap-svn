@@ -192,6 +192,9 @@
 				RelativePath="..\SequenceDB.cpp">
 			</File>
 			<File
+				RelativePath="..\SeqWeight.cpp">
+			</File>
+			<File
 				RelativePath="..\StdOptions.cpp">
 			</File>
 		</Filter>
@@ -267,6 +270,9 @@
 				RelativePath="..\SequenceDB.h">
 			</File>
 			<File
+				RelativePath="..\SeqWeight.h">
+			</File>
+			<File
 				RelativePath="..\StdOptions.h">
 			</File>
 		</Filter>
@@ -302,6 +308,25 @@
 			</File>
 			<File
 				RelativePath="..\status_reporter\DummyStatusReporter.hpp">
+			</File>
+		</Filter>
+		<Filter
+			Name="boost"
+			Filter="">
+			<File
+				RelativePath="..\boost\filesystem\convenience.cpp">
+			</File>
+			<File
+				RelativePath="..\boost\filesystem\exception.cpp">
+			</File>
+			<File
+				RelativePath="..\boost\test\execution_monitor.cpp">
+			</File>
+			<File
+				RelativePath="..\boost\filesystem\operations_posix_windows.cpp">
+			</File>
+			<File
+				RelativePath="..\boost\filesystem\path_posix_windows.cpp">
 			</File>
 		</Filter>
 	</Files>

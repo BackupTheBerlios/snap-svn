@@ -2,6 +2,7 @@
 #define _SeedSearcher_Core_HashTable_h
 
 #include "Defs.h"
+#include "Str.h"
 
 template<class Parm, class Result>
 class Functor1R {
@@ -228,8 +229,45 @@ class HashTable {
       TableIter _tableIt;
       Entry* _entry;
    };
+   class CIterator {
+   public:
+      CIterator (const HashTable& table) 
+         : _tableIt (table._table, table._table + table.getTableSize ()), _entry (NULL)
+      {
+         next ();
+      }
+
+      bool hasNext () const {
+         return (_entry != NULL);
+      }
+
+      void next () {
+         if (_entry != NULL)
+            _entry = _entry->next ();
+
+         while ((_entry == NULL) && _tableIt.hasNext ()) {
+            _tableIt.next ();
+            _entry = *_tableIt;
+         }
+      }
+
+      const Entry* operator->() const{
+         return _entry;
+      }
+      const Entry& operator*() const{
+         return _entry;
+      }
+      const Entry* get() const {
+         return _entry;
+      }
+
+   private:
+      TableIter _tableIt;
+      Entry* _entry;
+   };
 
    friend class Iterator;
+   friend class CIterator;
 
 
 	Entry* find(const Key& inKey) const {
@@ -319,7 +357,7 @@ class HashTable {
 //		typedef HashTable< HashTableEntry<int, string> > MyHash;
 //		MyHash table;
 
-template<class Key>
+template<class KeyStorage, class Key = KeyStorage>
 class	HashKeyEntry {
  public:
 	HashKeyEntry(const Key& inKey) : key(inKey) {
@@ -335,7 +373,7 @@ class	HashKeyEntry {
 	}
 
  protected:
-	Key key;
+	KeyStorage key;
 };
 
 template<class InKey, class InValue>
@@ -368,14 +406,15 @@ class	HashLinkEntry {
 	Entry* hashLink;
 };
 
-template<class _Key, class _Value>
-class	HashTableEntry : public HashKeyEntry<_Key> {
+template<class _KeyStorage, class _Value, class _Key = _KeyStorage>
+class	HashTableEntry : public HashKeyEntry<_KeyStorage, _Key> {
  public:
   typedef _Key Key;
   typedef _Value Value;
+  typedef HashKeyEntry<_KeyStorage, _Key> _Super;
 
-	HashTableEntry(Key inKey, Value inValue) : 
-		HashKeyEntry<Key>(inKey), value(inValue), link(0) {
+	HashTableEntry(const Key& inKey, const Value& inValue) : 
+		_Super (inKey), value(inValue), link(0) {
 	}
 
 	HashTableEntry* next() const {
@@ -401,14 +440,18 @@ inline HashValue defaultHashFunction(const void* inValue) {
 
 HashValue defaultHashFunction(const char* inStr, size_t inSize);
 
+inline HashValue defaultHashFunction(const Str& inStr) {
+   return defaultHashFunction(inStr.getChars (), inStr.length ());
+}
+
 #endif
 
 //
 // File        : $RCSfile: $ 
 //               $Workfile: HashTable.h $
-// Version     : $Revision: 12 $ 
+// Version     : $Revision: 13 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:45 $ 
+//               $Date: 10/01/05 1:37 $ 
 // Description :
 //	The Core library contains contains basic definitions and classes
 // which are useful to any highly-portable applications

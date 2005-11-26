@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: HyperGeoScore.h $
-// Version     : $Revision: 12 $ 
+// Version     : $Revision: 13 $ 
 //               $Author: Aviad $
-//               $Date: 16/12/04 6:18 $ 
+//               $Date: 10/01/05 1:46 $ 
 // Description :
 //    Concrete Score function classes - 
 //      based on Hyper-Geometric distribution
@@ -36,7 +36,7 @@ struct HyperGeoScore {
    // simple 'gene-count' hyper-geometric scoring
    class Simple : public ScoreFunction {
    public:
-      Simple ( bool countWeights                      ,     
+      Simple ( PositionWeightType positionWeightType,     
                const SeqWeightFunction& wf ,
                const SequenceDB& allSequences         );
 
@@ -56,8 +56,7 @@ struct HyperGeoScore {
                                const ScoreParameters*) const;
 
    private:
-      bool _countWeights;
-      SeqCluster _allSequences;// m
+      PositionWeightType _positionWeightType;
       SeqCluster _positivelyLabeled; // n
       HyperGeoCache* _cache;
       const SeqWeightFunction& _wf;
@@ -71,7 +70,7 @@ struct HyperGeoScore {
    class FixedTotalCount : public ScoreFunction {
    public:
       FixedTotalCount (int seedLength,
-                     bool countWeights,
+                     PositionWeightType positionWeightType,
                      const SeqWeightFunction& wf,   // m
                      const SequenceDB& allSequences                  // n
                      );
@@ -93,8 +92,7 @@ struct HyperGeoScore {
 
    private:
       int _seedLength;
-      bool _countWeights;
-      SeqCluster _allSequences;     // m
+      PositionWeightType _positionWeightType;
       const SeqWeightFunction& _wf; // n
       HyperGeoCache* _cache;
    };

@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Feature.cpp $
-// Version     : $Revision: 25 $ 
+// Version     : $Revision: 26 $ 
 //               $Author: Aviad $
-//               $Date: 16/12/04 6:12 $ 
+//               $Date: 10/01/05 1:45 $ 
 // Description :
 //    Concrete cache for Hyper-Geometric distribution values
 //
@@ -163,7 +163,7 @@ void FeatureInvestigator::printMotifPosition (
    //
    // output sequence weight 
    writer.setStream(data.getOutputStream(fieldIndex++));
-   writer << '[' << position.sequence ()->weight () << ']';
+   writer << '[' << _parameters.wf ().weight (position.sequence ()->id ()) << ']';
    
    //
    // output the position information:
@@ -182,16 +182,10 @@ void FeatureInvestigator::printMotifPosition (
    // CGT-positions:       2-->5
    // CGT-tssPositions (): 5-->8 = (10 - 2 - 3) --> (10 - 2)
    writer.setStream(data.getOutputStream(fieldIndex++));
-   if (position.strand () == _strand_pos_) {
-      writer << position.position ();
-      writer.setStream(data.getOutputStream(fieldIndex++));
-      writer << position.position () + motifLength;
-   }
-   else {
-      writer << position.maxLookahead () - motifLength;
-      writer.setStream(data.getOutputStream(fieldIndex++));
-      writer << position.maxLookahead ();
-   }
+   int tssPosition = position.tssPosition (motifLength);
+   writer << tssPosition;
+   writer.setStream(data.getOutputStream(fieldIndex++));
+   writer << tssPosition + motifLength;
    
    //
    // print +/- if it is on normal/reverse strand
@@ -259,13 +253,15 @@ void FeatureInvestigator::printSeed (Persistance::TextTableReport::Output& out,
    out << data;
 }
 
-void FeatureInvestigator::createPSSM (Feature& feature_i, 
+void FeatureInvestigator::createPSSM (PositionWeightType positionWeightType,
+                                      Feature& feature_i, 
                                       const PositionVector& positions, 
                                       PSSM& outPSSM)
 {
    const int seed_length = feature_i.assignment ().length ();
 
-   outPSSM = PSSM (  
+   outPSSM = PSSM (
+            positionWeightType,
             _parameters.langauge ().code (), 
 		      seed_length,
 		      _outputLength,

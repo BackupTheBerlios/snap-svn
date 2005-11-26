@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Cluster.h $
-// Version     : $Revision: 22 $ 
+// Version     : $Revision: 23 $ 
 //               $Author: Aviad $
-//               $Date: 16/12/04 6:12 $ 
+//               $Date: 10/01/05 1:57 $ 
 // Description :
 //    Concrete class for sets of sequences, sets of sequence positions
 //
@@ -25,6 +25,7 @@
 //
 
 #include "Sequence.h"
+#include "SeqWeight.h"
 #include "legacy/MathPlus.h"
 
 #include "core/AutoPtr.h"
@@ -95,6 +96,27 @@ public:
       return CIterator (_set.begin (), _set.end ());
    }
 
+   class NoOverlapsIterator {
+   public:
+      NoOverlapsIterator (PosCluster::PositionSet& set, int positionDistance); 
+
+      bool hasNext () const {
+         return _current != _end;
+      }
+      void next ();
+      const SeqPosition& get () const {
+         return **_current;
+      }
+   private:
+      PosCluster::PositionSet::reverse_iterator _current;
+      PosCluster::PositionSet::reverse_iterator _end;
+      const int _positionDistance;
+   };
+
+   NoOverlapsIterator iteratorNoOverlaps (int positionDistance) {
+      return NoOverlapsIterator (_set, positionDistance);
+   }
+
    int removeOverlaps (int positionDistance);
    int sizeNoOverlaps (int positionDistance) const;
 
@@ -134,7 +156,7 @@ public:
    SeqCluster (const SeqCluster& seq, const SeqWeightFunction& wf) {
       CIterator it (seq.iterator ());
       for (; it.hasNext () ; it.next ()) {
-         if (wf.isPositive (*(*it)))
+         if (wf.isPositive ((*it)->id ()))
             addSequence (*it);
       }
    }
@@ -249,11 +271,6 @@ public:
       return _set.empty ();
    }
    void clear ();
-   
-   //
-   // returns the sum of weights for all weighted sequences
-   // outCount returns the number of all weighted sequences
-   double sumAbsWeights () const;
 
    //
    // return the size of the cluster (number of sequences)
@@ -288,7 +305,7 @@ public:
       bool perform (const Sequence& seq, PosCluster*) {
          //
          // we continue until we find a positive
-         bool shouldContinue = !_wf.isPositive (seq);
+         bool shouldContinue = !_wf.isPositive (seq.id ());
          return shouldContinue;
       }
 
@@ -342,22 +359,6 @@ public:
 
    //
    //
-   struct MaxPosWeightsNoOverlaps : public SimpleCounter <double> {
-      MaxPosWeightsNoOverlaps (int seedLength) : _seedLength (seedLength) {
-      }
-      inline void perform (const Sequence& seq, PosCluster*) {
-         double Wi = ABS (seq.weight () - 0.5) * 2;
-         double L_by_K = double (seq.length ()) / _seedLength;
-         _result += Wi * L_by_K;
-      }
-
-      int _seedLength;
-   };
-
-
-
-   //
-   //
    struct MaxPosNoOverlaps : public SimpleCounter <double> {
       MaxPosNoOverlaps (int seedLength) : _seedLength (seedLength) {
       }
@@ -369,32 +370,111 @@ public:
       int _seedLength;
    };
 
-
-
    //
-   // 
-   struct SumPosWeightsNoOverlaps : public SimpleCounter <double> {
-      int _seedLength;
-      SumPosWeightsNoOverlaps (int seedLength) 
-      : _seedLength (seedLength) {
+   //
+   struct SumMaxPositionalWeight : public SimpleCounter <double> {
+      SumMaxPositionalWeight (const SeqWeightFunction& wf,
+                              int seedLength) 
+      : _wf (wf), _seedLength (seedLength) {
       }
       inline void perform (const Sequence& seq, PosCluster* pos) {
          debug_mustbe (pos);
-         double Wi = ABS (seq.weight () - 0.5) * 2;
-         _result += Wi * pos->sizeNoOverlaps(_seedLength);
+         PosCluster::Iterator posit (pos->iterator ());
+         double bestSeqWeight = 0;
+         for (; posit.hasNext() ; posit.next()) {
+            bestSeqWeight = tmax (_wf.weight (*posit.get (), _seedLength), 
+                                 bestSeqWeight);
+         }
+         _result += bestSeqWeight;
       }
+
+      const SeqWeightFunction& _wf;
+      int _seedLength;
    };
 
+   struct SumPositionalWeightNoOverlaps : public SimpleCounter <double> {
+      SumPositionalWeightNoOverlaps (const SeqWeightFunction& wf,
+                           int seedLength) 
+      : _wf (wf), _seedLength (seedLength) {
+      }
+      inline void perform (const Sequence& seq, PosCluster* pos) {
+         debug_mustbe (pos);
+         PosCluster::NoOverlapsIterator posit (
+            pos->iteratorNoOverlaps(_seedLength));
+
+         double bestSeqWeight = 0;
+         for (; posit.hasNext() ; posit.next()) {
+            bestSeqWeight += _wf.weight (posit.get (), _seedLength);
+         }
+         _result += bestSeqWeight;
+      }
+
+      const SeqWeightFunction& _wf;
+      int _seedLength;
+   };
+
+   //
+   //
+   struct WeightedMaxPosNoOverlaps : public SimpleCounter <double> {
+      WeightedMaxPosNoOverlaps (const SeqWeightFunction& wf, int seedLength) 
+      : _wf (wf), _seedLength (seedLength) {
+      }
+      inline void perform (const Sequence& seq, PosCluster*) {
+         double L_by_K = double (seq.length ()) / _seedLength;
+         _result += _wf.weight (seq.id ()) * L_by_K;
+      }
+
+      const SeqWeightFunction& _wf;
+      int _seedLength;
+   };
+
+
+   //
+   //
+   struct SumPosWeights : public SimpleCounter <double> {
+      SumPosWeights (const SeqWeightFunction& wf, int seedLength) 
+      : _wf (wf), _seedLength (seedLength) {
+      }
+      inline void perform (const Sequence& seq, PosCluster* p) {
+         _result += _wf.weight (seq.id ()) * p->sizeNoOverlaps (_seedLength);
+      }
+      const SeqWeightFunction& _wf;
+      int _seedLength;
+   };
 
    //
    //
    struct SumSeqWeights : public SimpleCounter <double> {
+      SumSeqWeights (const SeqWeightFunction& wf) 
+      : _wf (wf) {
+      }
       inline void perform (const Sequence& seq, PosCluster*) {
-         double Wi = ABS (seq.weight () - 0.5) * 2;
-         _result += Wi;
+         _result += _wf.weight (seq.id ());
+      }
+      const SeqWeightFunction& _wf;
+   };
+
+
+
+   //
+   //
+   template <class SeqOp1, class SeqOp2>
+   struct Compose {
+      SeqOp1& _op1;
+      SeqOp2& _op2;
+
+      Compose (SeqOp1& op1, SeqOp2& op2) : _op1(op1), _op2(op2) {
+      }
+      inline void perform (const Sequence& seq, PosCluster* p) {
+         _op1.perform(seq, p);
+         _op2.perform(seq, p);
       }
    };
 
+   template <class SeqOp1, class SeqOp2>
+   static Compose<SeqOp1, SeqOp2> compose (SeqOp1& op1, SeqOp2& op2) {
+      return Compose <SeqOp1, SeqOp2> (op1, op2);
+   };
 
    //
    // useful for counting sequences in a cluster
@@ -427,7 +507,7 @@ public:
       : _op (op), _wf (wf) {
       }
       inline void perform (const Sequence& seq, PosCluster* pos) {
-         if (_wf.isPositive (seq))
+         if (_wf.isPositive (seq.id ()))
             _op.perform (seq, pos);
       }
       Result result () {
@@ -450,7 +530,7 @@ public:
       }
       inline void perform (const Sequence& seq, PosCluster* pos) {
          bool isPositive;
-         if (_wf.isRelevant (seq, isPositive)) {
+         if (_wf.isRelevant (seq.id(), isPositive)) {
             isPositive? 
                _op1.perform (seq, pos) : _op2.perform (seq, pos);
          }

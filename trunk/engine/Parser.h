@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Parser.h $
-// Version     : $Revision: 29 $ 
+// Version     : $Revision: 30 $ 
 //               $Author: Aviad $
-//               $Date: 2/12/04 7:51 $ 
+//               $Date: 10/01/05 1:56 $ 
 // Description :
 //    Concrete Parser for seed-searcher options
 //
@@ -143,7 +143,7 @@ public:
    int __score_min_seq_per;
    //
    // score using partial counts (weights) or assg_discrete counts
-   bool __score_partial;
+   PositionWeightType __score_partial;
    //
    // threshold for counting a sequence as positive
    float __weight_t;

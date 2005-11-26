@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: SeedSearcherMain.h $
-// Version     : $Revision: 17 $ 
+// Version     : $Revision: 18 $ 
 //               $Author: Aviad $
-//               $Date: 10/12/04 21:09 $ 
+//               $Date: 10/01/05 1:54 $ 
 // Description :
 //    Concrete and interface classes for seting-up 
 //    a seed-searching environment or program
@@ -120,6 +120,7 @@ public:
       _searchType = in._searchType;
       _prepType = in._prepType;
       _useReverse = in._useReverse;
+      _seqWeights = in._seqWeights;
    }
 
    //
@@ -154,6 +155,9 @@ protected:
    //
    // the data to be searched
    boost::shared_ptr <SequenceDB> _db;
+   //
+   // the projections 
+   boost::shared_ptr <SeqWeightDB::ID2Weight> _seqWeights;
    //
    // the projections 
    boost::shared_ptr <ProjectionGenerator> _projections;
@@ -277,6 +281,9 @@ public:
    virtual void setupScoreFunc ();
    virtual void setupPreprocessor ();
    virtual void setupWeightFunction ();
+
+   static SeedSearcher::FeatureFilter*
+      setupFeatureContainer(const Parser&, const Langauge&);
 
    const Parser& parser () const {
       return _parser;

@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Preprocessor.cpp $
-// Version     : $Revision: 6 $ 
+// Version     : $Revision: 7 $ 
 //               $Author: Aviad $
-//               $Date: 4/11/04 17:56 $ 
+//               $Date: 10/01/05 1:55 $ 
 // Description :
 //    interface classes for preprocessors
 //
@@ -67,8 +67,8 @@ AutoPtr <PositionVector> NodeCluster::positions (SequenceDB::ID id)
 
 //
 // updates two vectors with (unique) positions, the first contains
-// all positions in nodes that are in sequences with weight >= theshold
-// the other contains all the other positions (weight < theshold)
+// all positions in nodes that are in sequences with weight >= threshold
+// the other contains all the other positions (weight < threshold)
 void NodeCluster::positions (  const SeqWeightFunction& wf,
                   PositionVector& positivePositions , 
                   PositionVector& negativePositions )
@@ -79,7 +79,7 @@ void NodeCluster::positions (  const SeqWeightFunction& wf,
    for (; it.hasNext () ; it.next ()) {
       const Sequence* seq = *it;
       bool isPositive;
-      if (wf.isRelevant (*seq, isPositive)) {
+      if (wf.isRelevant (seq->id (), isPositive)) {
          PosCluster* positions = cluster.getPositions (it);
          debug_mustbe (positions);
          if (isPositive)

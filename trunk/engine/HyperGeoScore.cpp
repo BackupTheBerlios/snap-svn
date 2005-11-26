@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: HyperGeoScore.cpp $
-// Version     : $Revision: 17 $ 
+// Version     : $Revision: 18 $ 
 //               $Author: Aviad $
-//               $Date: 16/12/04 6:18 $ 
+//               $Date: 10/01/05 1:46 $ 
 // Description :
 //    Concrete Score function classes - 
 //      based on Hyper-Geometric distribution
@@ -26,33 +26,72 @@
 #include "HyperGeoScore.h"
 #include "legacy/MathPlus.h"
 
+//
+// M = count for all sequences
+// N = count for all positive sequences
+// k = count for all sequences that contain the seed
+// x = count for all posive sequences that contain the seed
 
 
 //
-// Simple
+// Simple: 
+//    Gene-counts
+//       M = total number of sequences
+//       N = total number of positive sequences
+//       x = total number of sequences that contain the seed
+//       k = total number of positive sequences that contain the seed
 //
+//    Gene-partial-counts
+//       M = total number of sequences
+//       N = total sum of weights of all sequences
+//       k = total number of sequences that contain the seed
+//       x = total sum of weights of sequences that contain the seed
+//
+//
+//    Gene-hot-spot-count
+//       M = total number of sequences
+//       N = total sum of (expected) weights of all sequences
+//       k = total number of sequences that contain the seed
+//       x = total sum on sequences 's' of max(weight(p)) 
+//             for all positions 'p' in 's'
 
 HyperGeoScore::Simple::Simple (
-                       bool countWeights,
-                       const SeqWeightFunction& wf ,
+                       PositionWeightType positionWeightType,
+                       const SeqWeightFunction& wf,
                        const SequenceDB& allSequences // m
                       )
-:  _countWeights (countWeights),
-   _allSequences (allSequences),
-   _positivelyLabeled (_allSequences, wf),
+:  _positionWeightType (positionWeightType),
    _wf (wf)
 {
-   if (!_countWeights) {
-      _cache = 
-         new HyperGeoCache (_positivelyLabeled.size (), 
-                            _allSequences.size ());
-   }
-   else {
-      _cache = 
-         new HyperGeoCache (ROUND (_positivelyLabeled.sumAbsWeights ()), 
-                            ROUND (_allSequences.sumAbsWeights ()));
-   }
+   int N = 0;
+   const int M = wf.getWeightDB().size();
+   switch (_positionWeightType) {
+      case _position_weight_discrete_: {
+         SeqWeightFunction::CIterator it (wf.iterator ());
+         for (; it.hasNext() ; it.next ()) {
+            if (wf.isPositive (it->first))
+               ++N;
+         }
+      }
+      break;
+
+      case _position_weight_hotspots_: 
+      case _position_weight_real_:{
+         double DN = 0;
+         SeqWeightFunction::CIterator it (wf.iterator ());
+         for (; it.hasNext() ; it.next ()) {
+            DN += wf.weight (it->first);
+         }
+         N = ROUND (DN);
+      }
+      break;
+      default: mustfail (); 
+         break;
+   };
+
+   _cache = new HyperGeoCache (ROUND (N), M);
 }
+
 
 double HyperGeoScore::Simple::log2score (const Assignment& feature,
                      const Assignment& projection,
@@ -63,25 +102,31 @@ double HyperGeoScore::Simple::log2score (const Assignment& feature,
    //
    // check if we are counting the weights of all sequences
    // or just the amount of sequences
-   int posCount;
-   int containingCount;
-   if (_countWeights) {
-      SeqCluster::SumSeqWeights posWeightCount;
-      SeqCluster::SumSeqWeights negWeightCount;
-      containingFeature.performDivided (_wf, posWeightCount, negWeightCount);
+   int posCount = 0;
+   const int containingCount = containingFeature.size ();
+   switch (_positionWeightType) {
+      case _position_weight_discrete_: {
+         SeqCluster::CountSequences posCountPred;
+         containingFeature.performOnPositives(_wf, posCountPred);
+         posCount = posCountPred.result ();
+      }
+      break;
 
-      posCount = ROUND (posWeightCount.result ());
-      containingCount = ROUND (negWeightCount.result () + posCount);
-   }
-   else {
-      //
-      // 
-      SeqCluster::CountSequences posCountPred;
-      SeqCluster::CountSequences negCountPred;
-      containingFeature.performDivided (_wf, posCountPred, negCountPred);
+      case _position_weight_real_: {
+         SeqCluster::SumSeqWeights posWeightCount (_wf);
+         containingFeature.perform (posWeightCount);
+         posCount = ROUND (posWeightCount.result ());
+      }
+      break;
 
-      posCount = posCountPred.result ();
-      containingCount = negCountPred.result () + posCount;
+      case _position_weight_hotspots_: {
+         SeqCluster::SumMaxPositionalWeight posCountPred (_wf, feature.length());
+         containingFeature.perform (posCountPred);
+         posCount = ROUND (posCountPred.result ());
+      }
+      break;
+      default: mustfail (); 
+         break;
    }
 
    return _cache->log2Tail (posCount, containingCount, parameters);
@@ -99,39 +144,66 @@ void HyperGeoScore::Simple::writeAsText (Persistance::TextWriter& writer,
 
 
 //
-// FixedTotalCount
+// FixedTotalCount:
+//    Total-counts
+//       M = for all sequences s: sum-of (s->length / seed-length)
+//       N = for all positive sequences s: sum-of (s->length / seed-length)
+//       x = total number of positions of the seed (without overlaps)
+//       k = total number of positive positions of the seed (without overlaps)
 //
-
+//    Total-partial-counts
+//       M = for all sequences s: sum-of (s->length / seed-length)
+//       N = for all sequences s: sum-of (s->weight * s->length / seed-length)
+//       k = total number of positions of the seed (without overlaps)
+//       x = for all seed position p (without overlaps): sum-of (p->weight)
+//
+//    Total-hot-spots-count
+//       M = for all sequences s: sum-of (s->length / seed-length)
+//       N = for all sequences s: sum-of (s->expected_weight * s->length / seed-length)
+//       k = total number of positions of the seed (without overlaps)
+//       x = for all seed position p (without overlaps): sum-of (p->weight)
 
 HyperGeoScore::FixedTotalCount::FixedTotalCount (int seedLength,
-                             bool countWeights,
+                             PositionWeightType positionWeightType ,
                               const SeqWeightFunction& wf,// n
                               const SequenceDB& allSequences // m
                )
 :  _seedLength (seedLength),
-   _countWeights (countWeights),
-   _allSequences (allSequences),
+   _positionWeightType (positionWeightType),
    _wf (wf)
 {
-   int n;
-   int m;
-   if (_countWeights) {
-      SeqCluster::MaxPosWeightsNoOverlaps pos (_seedLength);
-      SeqCluster::MaxPosWeightsNoOverlaps neg (_seedLength);
-      _allSequences.performDivided (wf, pos, neg);
+   int n = 0;
+   int m = 0;
+   SeqCluster dbcluster (allSequences);
 
-      n = ROUND (pos.result ());
-      m = ROUND (neg.result () + pos.result ());
+   switch (_positionWeightType) {
+      case _position_weight_discrete_:  {
+         SeqCluster::MaxPosNoOverlaps pos (_seedLength);
+         SeqCluster::MaxPosNoOverlaps neg (_seedLength);
+         dbcluster.performDivided (wf, pos, neg);
+
+         n = ROUND (pos.result ());
+         m = ROUND (pos.result () + neg.result ());
+      }
+      break;
+
+      case _position_weight_real_: 
+      case _position_weight_hotspots_: {
+         SeqCluster::MaxPosNoOverlaps DM (seedLength);
+         SeqCluster::WeightedMaxPosNoOverlaps DN (_wf, seedLength);
+         SeqCluster::Compose< 
+            SeqCluster::MaxPosNoOverlaps,
+            SeqCluster::WeightedMaxPosNoOverlaps> op (DM, DN);
+
+         dbcluster.perform (op);
+
+         m = ROUND (DM.result());
+         n = ROUND ((DN.result()));
+      }
+      break;
+      default: mustfail (); 
+         break;
    }
-   else {
-      SeqCluster::MaxPosNoOverlaps pos (_seedLength);
-      SeqCluster::MaxPosNoOverlaps neg (_seedLength);
-      _allSequences.performDivided (wf, pos, neg);
-
-      n = ROUND (pos.result ());
-      m = ROUND (pos.result () + neg.result ());
-   }
-
    _cache = new HyperGeoCache (n, m);
 }
 
@@ -146,27 +218,47 @@ double HyperGeoScore::FixedTotalCount::log2score (const Assignment& feature,
    //
    // check if we are counting the weights of all sequences
    // or just the amount of sequences
-   int posCount;
-   int containingCount;
-   if (_countWeights) {
-      //
-      // this also removes overlaps
-      SeqCluster::SumPosWeightsNoOverlaps pos (_seedLength);
-      SeqCluster::SumPosWeightsNoOverlaps neg (_seedLength);
-      containingFeature.performDivided (_wf, pos, neg);
+   int posCount = 0;
+   int containingCount = 0;
+   switch (_positionWeightType) {
+      case _position_weight_discrete_:      {
+         //
+         // this also removes overlaps
+         SeqCluster::CountPositionsNoOverlaps pos (_seedLength);
+         SeqCluster::CountPositionsNoOverlaps neg (_seedLength);
+         containingFeature.performDivided (_wf, pos, neg);
 
-      posCount = ROUND (pos.result ());
-      containingCount = ROUND (pos.result () + neg.result ());
-   }
-   else {
-      //
-      // this also removes overlaps
-      SeqCluster::CountPositionsNoOverlaps pos (_seedLength);
-      SeqCluster::CountPositionsNoOverlaps neg (_seedLength);
-      containingFeature.performDivided (_wf, pos, neg);
-      
-      posCount = ROUND (pos.result ());
-      containingCount = ROUND (pos.result () + neg.result ());
+         posCount = ROUND (pos.result ());
+         containingCount = ROUND (pos.result () + neg.result ());
+      }
+      break;
+
+      case _position_weight_real_:      {
+         SeqCluster::CountPositionsNoOverlaps dContaining (_seedLength);
+         SeqCluster::SumPosWeights dPos (_wf, _seedLength);
+         SeqCluster::Compose< 
+            SeqCluster::CountPositionsNoOverlaps,
+            SeqCluster::SumPosWeights> op (dContaining, dPos);
+         containingFeature.perform (op);
+
+         posCount = ROUND (dPos.result ());
+         containingCount = ROUND (dContaining.result());
+      }
+      break;
+      case _position_weight_hotspots_:      {
+         SeqCluster::CountPositionsNoOverlaps dContaining (_seedLength);
+         SeqCluster::SumPositionalWeightNoOverlaps dPos (_wf, _seedLength);
+         SeqCluster::Compose< 
+            SeqCluster::CountPositionsNoOverlaps,
+            SeqCluster::SumPositionalWeightNoOverlaps> op (dContaining, dPos);
+         containingFeature.perform (op);
+
+         posCount = ROUND (dPos.result ());
+         containingCount = ROUND (dContaining.result());
+      }
+      break;
+      default: mustfail (); 
+         break;
    }
 
    return _cache->log2Tail (posCount, containingCount, parameters);

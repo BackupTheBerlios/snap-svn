@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Assignment.cpp $
-// Version     : $Revision: 23 $ 
+// Version     : $Revision: 24 $ 
 //               $Author: Aviad $
-//               $Date: 4/11/04 17:50 $ 
+//               $Date: 10/01/05 1:43 $ 
 // Description :
 //    Concrete class describing an assignment - 
 //       which is a sequence of assignment positions.
@@ -138,7 +138,7 @@ AssgPositionIterator::AssgPositionIterator (const AssgPosition& p)
 bool AssignmentBase::contains (const AssignmentBase& o, int startIndex, int cmp_length) const
 {
    if (cmp_length != assg_end) 
-      mustbe ((cmp_length <= length ()) && (cmp_length <= o.length ()));
+      mustbe ((cmp_length <= length () - startIndex) && (cmp_length <= o.length () - startIndex));
    else
       mustbe (length () == o.length ());
 
@@ -147,8 +147,10 @@ bool AssignmentBase::contains (const AssignmentBase& o, int startIndex, int cmp_
    CIterator it = iterator (startIndex, cmp_length);
    CIterator oit = o.iterator (startIndex, cmp_length);
    for (; it.hasNext () ; oit.next (), it.next ()) {
-      if (!it->contains(*oit))
+      if (!it->contains(*oit)) {
          result = false;
+         break;
+      }
    }
 
 #  if DEBUG_ASSIGNMENT
@@ -171,7 +173,7 @@ bool AssignmentBase::contains (const AssignmentBase& o, int startIndex, int cmp_
 
 int AssignmentBase::compare (const AssignmentBase& o, int startIndex, int cmp_length) const
 {
-   int length_diff = length () < o.length ();
+   int length_diff = length () - o.length ();
    if (length_diff != 0)
       return length_diff;
 

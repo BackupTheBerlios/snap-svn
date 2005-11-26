@@ -2,6 +2,7 @@
 #define _Persistance_TFactory_h
 
 #include "Defs.h"
+#include <typeinfo>
 
 BEGIN_NAMESPACE (Persistance);
 
@@ -97,9 +98,9 @@ END_NAMESPACE (Persistance);
 //
 // File        : $RCSfile: $ 
 //               $Workfile: TFactory.h $
-// Version     : $Revision: 8 $ 
+// Version     : $Revision: 9 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:45 $ 
+//               $Date: 10/01/05 1:38 $ 
 // Description :
 //	The Persistence library contains both high & low level IO classes
 //	and is high-performance, highly reusable framework 

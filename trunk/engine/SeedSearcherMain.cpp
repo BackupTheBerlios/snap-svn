@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $
 //               $Workfile: SeedSearcherMain.cpp $
-// Version     : $Revision: 28 $
+// Version     : $Revision: 29 $
 //               $Author: Aviad $
-//               $Date: 10/12/04 21:08 $
+//               $Date: 10/01/05 1:54 $
 // Description :
 //    Concrete and interface classes for seting-up
 //    a seed-searching environment or program
@@ -274,7 +274,9 @@ void SeedSearcherMain::CmdLineParameters::setup (const Str& seq, const Str& wgt)
 void SeedSearcherMain::CmdLineParameters::setupParameters ()
 {
    _searchType = _parser.__searchType;
-   _count = _parser.__count;
+   _useTotalCount = 
+            _parser.__count == _count_total_ || 
+            _parser.__score_partial == _position_weight_hotspots_;
 }
 
 
@@ -349,6 +351,9 @@ void SeedSearcherMain::CmdLineParameters::setupDB ()
 
    DLOG.flush ();
 
+   AutoPtr <SeqWeightDB::Name2Weight> weights =
+      SeqWeightDB::readWgtFile (_wgtFilename);
+
    //
    // load the sequence files
    time_t start, finish;
@@ -356,7 +361,9 @@ void SeedSearcherMain::CmdLineParameters::setupDB ()
    _db.reset (SequenceDB::TextFileStorage::loadFastaAndWeights (
       *_langauge,
       _seqFilename,
-      _wgtFilename));
+      *weights));
+
+   _seqWeights.reset (SeqWeightDB::computeWeightIndex (*weights, *_db).release ());
 
    time (&finish);
 
@@ -369,15 +376,16 @@ void SeedSearcherMain::CmdLineParameters::setupWeightFunction ()
 {
    switch (_parser.__weightType) {
    case _weight_simple_:
-      _wf.reset (new SimpleWeightFunction (_parser.__weight_t));
+      _wf.reset (new SimpleWeightFunction (_seqWeights, _parser.__weight_t));
       break;
-
+/*
    case _weight_border_:
       _wf.reset (new BorderWeightFunction (_parser.__weight_lowt, _parser.__weight_t));
       break;
    case _weight_interval_:
       _wf.reset (new IntervalWeightFunction (_parser.__weight_lowt, _parser.__weight_t));
       break;
+*/
 
    default:
       mustfail ();
@@ -386,8 +394,6 @@ void SeedSearcherMain::CmdLineParameters::setupWeightFunction ()
 
    if (_parser.__weight_invert)
       _wf->invert ();
-
-   _wf->partialCount (_parser.__score_partial);
 }
 
 void SeedSearcherMain::CmdLineParameters::setupPreprocessor ()
@@ -434,31 +440,39 @@ void SeedSearcherMain::CmdLineParameters::setupScoreFunc ()
 
 void SeedSearcherMain::CmdLineParameters::setupFeatureContainer ()
 {
-   KBestFilter* container = NULL;
-   if (_parser.__seed_rr) {
-      container  =
-         new KBestComplementFilter ( _parser.__seed_n,
-                                       _parser.__seed_r,
-                                       *_langauge);
-   }
-   else {
-      container =
-         new KBestFilter (_parser.__seed_n, _parser.__seed_r);
-   }
-
+   //
+   // HACK: 
+   // we create a container that's twice as large as necessary
+   // because some of the features will be redundant
+   _parser.__seed_n *= 2;
    //
    // use GoodFeaturesFilter to allow only features above a threshold
-   _bestFeatures.reset (
-         new GoodFeaturesFilter (
-            container,
-            true,
-            SeqCluster (*_db),
-            *_wf,
-            _parser.__score_min,
-            _parser.__score_min_seq,
-            _parser.__score_min_seq_per
-         )
-      );
+   _bestFeatures.reset (new GoodFeaturesFilter (
+         setupFeatureContainer (_parser, *_langauge),
+         true,
+         SeqCluster (*_db),
+         *_wf,
+         _parser.__score_min,
+         _parser.__score_min_seq,
+         _parser.__score_min_seq_per
+      )
+   );
+      
+   _parser.__seed_n /= 2;
+}
+
+SeedSearcher::FeatureFilter*
+   SeedSearcherMain::CmdLineParameters::
+      setupFeatureContainer(const Parser& parser, const Langauge& langauge)
+{
+   if (parser.__seed_rr) {
+      return new KBestComplementFilter ( parser.__seed_n,
+                                     parser.__seed_r,
+                                     langauge);
+   }
+   else {
+      return new KBestFilter (parser.__seed_n, parser.__seed_r);
+   }
 }
 
 void SeedSearcherMain::CmdLineParameters::setupLangauge ()

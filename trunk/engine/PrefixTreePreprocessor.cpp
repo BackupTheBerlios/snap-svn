@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: PrefixTreePreprocessor.cpp $
-// Version     : $Revision: 40 $ 
+// Version     : $Revision: 41 $ 
 //               $Author: Aviad $
-//               $Date: 16/12/04 6:18 $ 
+//               $Date: 10/01/05 1:52 $ 
 // Description :
 //    Concrete preprocessor class - based on a prefix tree
 //
@@ -919,7 +919,7 @@ bool TreeNodeRep::hasPositions (const SeqWeightFunction& wf) const
 {
    CSeqPositionIterator it (positionsBySequence ());
    for (; it.hasNext () ; it.next ()) {
-      if (wf.isPositive (*it->sequence ()))
+      if (wf.isPositive (it->sequence ()->id ()))
          return true;
    }
 

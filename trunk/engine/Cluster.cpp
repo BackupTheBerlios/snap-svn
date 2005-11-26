@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Cluster.cpp $
-// Version     : $Revision: 22 $ 
+// Version     : $Revision: 23 $ 
 //               $Author: Aviad $
-//               $Date: 16/12/04 6:12 $ 
+//               $Date: 10/01/05 1:56 $ 
 // Description :
 //    Concrete class for sets of sequences, sets of sequence positions
 //
@@ -280,22 +280,6 @@ void SeqCluster::importPositions (const SeqCluster& o)
    }
 }
 
-double SeqCluster::sumAbsWeights () const
-{
-   double result = 0;
-   CIterator it (iterator());
-
-   //
-   // Wi = (Weight - 0.5) * 2
-   for (; it.hasNext (); it.next ()) {
-      const Sequence& seq = *(*it);
-      double Wi = ABS (seq.weight () - 0.5) * 2;
-      result += Wi;
-   }
-
-   return result;
-}
-
 
 void SeqCluster::addPos2Vector (PositionVector& out) const
 {
@@ -354,47 +338,40 @@ void PosCluster::removePosition (const SeqPosition* in)
    USELESS (debug_mustbe (result == 1));
 }
 
-struct NoOverlapsIterator {
+
+PosCluster::NoOverlapsIterator::
    NoOverlapsIterator (PosCluster::PositionSet& set, int positionDistance) 
-   :  _current (set.rbegin()), _end (set.rend ()), 
-      _positionDistance (positionDistance)
-   {
-      debug_mustbe (positionDistance > 0);
-   }
+:  _current (set.rbegin()), _end (set.rend ()), 
+   _positionDistance (positionDistance)
+{
+   debug_mustbe (positionDistance > 0);
+}
 
-   bool hasNext () {
-      return _current != _end;
-   }
-   void next () {
-      debug_mustbe (_current != _end);
-      debug_mustbe (_end != _current);
+void PosCluster::NoOverlapsIterator::next () {
+   debug_mustbe (_current != _end);
+   debug_mustbe (_end != _current);
+   //
+   // this greedy algorithm for non-overlapping intervals
+   // is OPTIMAL. a requirement for this is that intervals are
+   // sorted by starting positions, and we go from the end
+   // to the beginning
+   const SeqPosition* lastPosition = *_current;
+   int currentFinishPosition;
+   int lastStartPosition = 
+      PosCluster::PositionComparator::strandPos (lastPosition);
+   for (++_current; _current != _end ; ++_current) {
+      const SeqPosition* currentPosition = *_current;
+      currentFinishPosition = 
+         PosCluster::PositionComparator::strandPos (  currentPosition, 
+                                                      _positionDistance);
       //
-      // this greedy algorithm for non-overlapping intervals
-      // is OPTIMAL. a requirement for this is that intervals are
-      // sorted by starting positions, and we go from the end
-      // to the beginning
-      const SeqPosition* lastPosition = *_current;
-      int currentFinishPosition;
-      int lastStartPosition = 
-         PosCluster::PositionComparator::strandPos (lastPosition);
-      for (++_current; _current != _end ; ++_current) {
-         const SeqPosition* currentPosition = *_current;
-         currentFinishPosition = 
-            PosCluster::PositionComparator::strandPos (  currentPosition, 
-                                                         _positionDistance);
-         //
-         // continue iterating if
-         // 1) its not the end of the road, AND
-         // 2) the current position overlaps with last position
-         if (currentFinishPosition > lastStartPosition)
-            break;
-      }
+      // continue iterating if
+      // 1) its not the end of the road, AND
+      // 2) the current position overlaps with last position
+      if (currentFinishPosition > lastStartPosition)
+         break;
    }
-
-   PosCluster::PositionSet::reverse_iterator _current;
-   PosCluster::PositionSet::reverse_iterator _end;
-   const int _positionDistance;
-};
+}
 
 int PosCluster::sizeNoOverlaps (int positionDistance) const
 {

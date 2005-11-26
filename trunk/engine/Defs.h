@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Defs.h $
-// Version     : $Revision: 14 $ 
+// Version     : $Revision: 15 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:44 $ 
+//               $Date: 10/01/05 1:44 $ 
 // Description :
 //    Forward definitions and global definitions for the 
 //    seed-searcher application
@@ -84,6 +84,16 @@ enum ScoreType {
 enum Strand {
    _strand_pos_= true,
    _strand_neg_ = false,
+};
+
+enum PositionWeightType {
+   // {0, 1} counts per sequence
+   _position_weight_discrete_,   
+   // [0, 1] counts per sequence
+   _position_weight_real_,       
+   // [0, 1] counts, with possible different weights 
+   // for different positions in the same sequence
+   _position_weight_hotspots_,   
 };
 
 

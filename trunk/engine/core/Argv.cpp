@@ -2,14 +2,6 @@
 
 #include<boost/tokenizer.hpp>
 
-//
-// only whitespace is delimiter, everything else is kept
-class Separator : public boost::char_separator <char> {
-public:
-   Separator () : boost::char_separator <char> (" \t") {
-   }
-};
-
 Argv::Argv (const Str& in) : _argc (0), _argv (NULL)
 {
    set (in);
@@ -25,8 +17,8 @@ void Argv::set (const Str& prefix, const Str& in)
 {
    clear ();
 
-   typedef boost::tokenizer <Separator> Tok;
-   Tok tok (in);
+   typedef boost::tokenizer < boost::char_separator <char> > Tok;
+   Tok tok (in, boost::char_separator <char> (" \t\r\n"));
 
    //
    // first we count the number of tokens
@@ -49,8 +41,8 @@ void Argv::set (const Str& in)
 {
    clear ();
 
-   typedef boost::tokenizer <Separator> Tok;
-   Tok tok (in);
+   typedef boost::tokenizer < boost::char_separator <char> > Tok;
+   Tok tok (in, boost::char_separator <char> (" \t\r\n"));
 
    //
    // first we count the number of tokens
@@ -73,9 +65,9 @@ void Argv::set (const Str& in)
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Argv.cpp $
-// Version     : $Revision: 3 $ 
+// Version     : $Revision: 4 $ 
 //               $Author: Aviad $
-//               $Date: 27/08/04 2:09 $ 
+//               $Date: 10/01/05 1:38 $ 
 // Description :
 //	The Core library contains contains basic definitions and classes
 // which are useful to any highly-portable applications

@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: main.cpp $
-// Version     : $Revision: 64 $ 
+// Version     : $Revision: 65 $ 
 //               $Author: Aviad $
-//               $Date: 16/12/04 6:18 $ 
+//               $Date: 10/01/05 1:49 $ 
 // Description :
 //    main routine for the seed-searcher program
 //
@@ -167,12 +167,12 @@ int exit_value = 0;
       exit_value = 1;
 
       try {
-	//
-	// aborted by user, 
-	StatusReportManager::setJobCancelled ();
+	      //
+	      // aborted by user, 
+	      StatusReportManager::setJobCancelled ();
       }
       catch (...) {
-	cerr << endl << "StatusReportManager Error" << endl;
+      	cerr << endl << "StatusReportManager Error" << endl;
       }
    }
    catch (BaseException& x) {
@@ -192,20 +192,19 @@ int exit_value = 0;
       exit_value = 1;
 
       try {
-	StatusReportManager::setJobError(Str (buffer));
+	      StatusReportManager::setJobError(Str (buffer));
       }
       catch (...) {
-	cerr << endl << "StatusReportManager Error" << endl;
-
+	      cerr << endl << "StatusReportManager Error" << endl;
       }
    }
    catch (...) {
-     try {
-      StatusReportManager::setJobError("Unknown Error");
-     }
-     catch (...) {
-	cerr << endl << "StatusReportManager Error" << endl;
-     }
+      try {
+         StatusReportManager::setJobError("Unknown Error");
+      }
+      catch (...) {
+         cerr << endl << "StatusReportManager Error" << endl;
+      }
       throw;
    }
 
@@ -249,6 +248,7 @@ static void printSeedFile (TextTableReport::TextOutput& seedsFile,
    }
 
    seedsFile.writeln();
+   seedsFile.flush();
 }
 
 static void printSeqMatrix (SeedSearcherMain::Results& results)
@@ -284,7 +284,7 @@ static void printSeqMatrix (SeedSearcherMain::Results& results)
       //
       // skip non positive sequences
       const Sequence* seq = it.get ();
-      if (!wf.isPositive (*seq))
+      if (!wf.isPositive (seq->id ()))
          continue;
 
       Persistance::TextTableReport::Data data (format);
@@ -334,6 +334,30 @@ protected:
       SeedSearcherMain::CmdLineParameters& params = 
          *safe_cast (CmdLineParameters*, &results.getParameters ());
 
+      Parser::OutputType gPSSM = params.parser ().__generatePSSM;
+      Parser::OutputType gMotif = params.parser ().__generateMotif;
+      Parser::OutputType gBayesian = params.parser ().__generateBayesian;
+
+      //
+      // should we generate a file that contains only the seeds?
+      bool gSeeds =  (gMotif  != Parser::_out_none_)  ||
+         (gPSSM   != Parser::_out_none_)  ||
+         (gBayesian != Parser::_out_none_);
+
+      if (!gSeeds)
+         return;
+
+      boost::shared_ptr <SeedSearcher::FeatureFilter> bestFeatures (
+         SeedSearcherMain::CmdLineParameters::setupFeatureContainer (
+            params.parser (), params.langauge ()
+         )
+      );
+
+      int maxElements = params.parser ().__seed_n;
+      FeatureSet::Iterator feature_it = results.getFeatures ().getIterator();
+      for (; ((*bestFeatures)->size () < maxElements) && (feature_it.hasNext()) ; feature_it.next())
+         bestFeatures->add(*feature_it );
+
       int bonfN = 
          params.parser ().__score_bonf? results.numSeedsSearched () : 0;
       FeatureInvestigator printer ( params                     , 
@@ -341,23 +365,10 @@ protected:
                                     bonfN                      ,
                                     results.numProjectionsSearched ()
                                     );
-
-      Parser::OutputType gPSSM = params.parser ().__generatePSSM;
-      Parser::OutputType gMotif = params.parser ().__generateMotif;
-      Parser::OutputType gBayesian = params.parser ().__generateBayesian;
-      
-
-      //
-      // should we generate a file that contains only the seeds?
-      bool gSeeds =  (gMotif  != Parser::_out_none_)  ||
-                     (gPSSM   != Parser::_out_none_)  ||
-                     (gBayesian != Parser::_out_none_);
-
+  
       StrBuffer fileStub (params.name ());
-
       TextTableReport::TextOutput seedsFile (
-         gSeeds? 
-         main_definitions::openFile (true, -1, fileStub, main_definitions::SEEDS_FILE_STUB) : new NullOutputStream ()
+         main_definitions::openFile (true, -1, fileStub, main_definitions::SEEDS_FILE_STUB)
       );
       seedsFile.skipHeader ();
       seedsFile.noNewlineAfterRecord ();
@@ -367,7 +378,7 @@ protected:
       PositionVector pos;
       PositionVector neg;
       Persistance::TextTableReport::TextOutput dlog (DLOG);
-      FeatureSet::Iterator feature_it = results.getFeatures ().getIterator();
+      feature_it = (*bestFeatures)->getIterator();
       for (int i=0; feature_it.hasNext() ; feature_it.next(), ++i) {
 
          Feature& feature = *(feature_it.get ());
@@ -379,29 +390,24 @@ protected:
          neg.clear();
          printer.addPositions (feature, pos, neg);
 
-         main_definitions::printMotif (dlog, printer, 
-                     gPSSM, gMotif, gBayesian, 
-                     pos, neg, 
-                     fileStub, feature, i
-                     );
+         main_definitions::printMotif (
+                  params.parser ().__score_partial,
+                  dlog, printer, 
+                  gPSSM, gMotif, gBayesian, 
+                  pos, neg, 
+                  fileStub, feature, i
+         );
          dlog.writeln ();
+         printSeedFile (seedsFile, printer,
+			   gPSSM, gMotif, gBayesian,
+			   pos, neg, 
+			   fileStub, feature, i
+			);
 
-	      if (gSeeds) {
-	         printSeedFile (seedsFile, printer,
-			      gPSSM, gMotif, gBayesian,
-			      pos, neg, 
-			      fileStub, feature, i
-			      );
-	      }
-      }
-      seedsFile.flush ();
-      if (gSeeds) {
          printSeqMatrix (results);
       }
    }
 }; 
-
-
 
 static void mainRoutine (int argc, 
                         char* argv [])
@@ -487,5 +493,3 @@ void operator delete[] (void* inPtr)
 }
 
 #endif
-
-

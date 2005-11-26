@@ -18,6 +18,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SeedSearcherCore", "SeedSea
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnitTests", "UnitTests.vcproj", "{E9BDC8BD-E4FD-4CD2-B855-9C997E13DEB5}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A9E58B03-3A1B-4F52-9BC8-2376A2D6CAF5} = {A9E58B03-3A1B-4F52-9BC8-2376A2D6CAF5}
+		{80D22A42-7429-4BA2-8136-0AF6FADBEB11} = {80D22A42-7429-4BA2-8136-0AF6FADBEB11}
+		{16C4D29E-6206-48AF-AE0E-E413B563CE75} = {16C4D29E-6206-48AF-AE0E-E413B563CE75}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SourceCodeControl) = preSolution
 		SccNumberOfProjects = 5
@@ -30,19 +37,19 @@ Global
 		SccProjectUniqueName1 = Core.vcproj
 		SccLocalPath1 = ..
 		CanCheckoutShared = false
-		SccProjectFilePathRelativizedFromConnection1 = vc.net\\
+		SccProjectFilePathRelativizedFromConnection1 = Vc.net\\
 		SccProjectUniqueName2 = Persistance.vcproj
 		SccLocalPath2 = ..
 		CanCheckoutShared = false
-		SccProjectFilePathRelativizedFromConnection2 = vc.net\\
+		SccProjectFilePathRelativizedFromConnection2 = Vc.net\\
 		SccProjectUniqueName3 = SeedSearcher.vcproj
 		SccLocalPath3 = ..
 		CanCheckoutShared = false
-		SccProjectFilePathRelativizedFromConnection3 = vc.net\\
+		SccProjectFilePathRelativizedFromConnection3 = Vc.net\\
 		SccProjectUniqueName4 = SeedSearcherCore.vcproj
 		SccLocalPath4 = ..
 		CanCheckoutShared = false
-		SccProjectFilePathRelativizedFromConnection4 = vc.net\\
+		SccProjectFilePathRelativizedFromConnection4 = Vc.net\\
 	EndGlobalSection
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
@@ -65,6 +72,10 @@ Global
 		{80D22A42-7429-4BA2-8136-0AF6FADBEB11}.Debug.Build.0 = Debug|Win32
 		{80D22A42-7429-4BA2-8136-0AF6FADBEB11}.Release.ActiveCfg = Release|Win32
 		{80D22A42-7429-4BA2-8136-0AF6FADBEB11}.Release.Build.0 = Release|Win32
+		{E9BDC8BD-E4FD-4CD2-B855-9C997E13DEB5}.Debug.ActiveCfg = Debug|Win32
+		{E9BDC8BD-E4FD-4CD2-B855-9C997E13DEB5}.Debug.Build.0 = Debug|Win32
+		{E9BDC8BD-E4FD-4CD2-B855-9C997E13DEB5}.Release.ActiveCfg = Release|Win32
+		{E9BDC8BD-E4FD-4CD2-B855-9C997E13DEB5}.Release.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection
