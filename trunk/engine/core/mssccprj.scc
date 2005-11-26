@@ -1,0 +1,9 @@
+SCC = This is a Source Code Control file
+
+[Core.dsp]
+SCC_Aux_Path = "C:\Aviad\Dev\SNAP\VSS"
+SCC_Project_Name = "$/SeedSearcher/Core", ZCAAAAAA
+
+[Core.mak]
+SCC_Aux_Path = "C:\Aviad\Dev\SNAP\VSS"
+SCC_Project_Name = "$/SeedSearcher/Core", ZCAAAAAA
