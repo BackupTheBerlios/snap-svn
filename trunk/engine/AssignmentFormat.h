@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: AssignmentFormat.h $
-// Version     : $Revision: 11 $ 
+// Version     : $Revision: 12 $ 
 //               $Author: Aviad $
-//               $Date: 2/09/04 7:36 $ 
+//               $Date: 13/10/04 3:33 $ 
 // Description :
 //    interface classes for the formatting and structure of assignments.
 //    of special importance is the Langauge idiom.
@@ -84,6 +84,8 @@ public:
    virtual Assignment& stringToAssignment (Assignment& motif, const Str& motif_str) const{
       return motif;
    }
+
+   virtual int cardinality () const = 0;
 };
 
 

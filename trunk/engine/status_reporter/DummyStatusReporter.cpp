@@ -53,6 +53,14 @@ DummyStatusReporter::setJobDone()
    );
 }
 
+void 
+DummyStatusReporter::setJobError(const Str& s)
+{
+   debug_only (
+      cout << "STATUS: job ERROR! " << s.getChars () << endl;
+   );
+}
+
 
 
 StatusReportManager::Sentry::Sentry( int argc, char **argv, Argv &outArgv )

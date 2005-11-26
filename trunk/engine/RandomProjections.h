@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: RandomProjections.h $
-// Version     : $Revision: 15 $ 
+// Version     : $Revision: 16 $ 
 //               $Author: Aviad $
-//               $Date: 7/09/04 9:44 $ 
+//               $Date: 13/10/04 3:33 $ 
 // Description :
 //    Concrete classes for creating and retrieving random projections
 //    from given <l,d> parameters
@@ -57,6 +57,12 @@ public:
                         boost::shared_ptr <Langauge>
                         );
 
+   RandomProjections (  int numOfProjections,   // num of assignments to generate
+                        const Assignment& base, // background assignment on which to project
+                        int numOfPositions,     // number of positions to select in each assignment
+                        boost::shared_ptr <Langauge>
+                     );
+
    virtual ~RandomProjections () {
    }
 
@@ -90,6 +96,13 @@ public:
    static void srand (unsigned int seed);
 
 protected:
+   virtual const Assignment& getBaseAssignment (Assignment& outBase) const {
+      outBase = Assignment (_langauge->wildcard (assg_discrete), _length);
+      return outBase;
+   }
+
+protected:
+   Assignment _base;
    int _length;
    int _numOfPositions;
    int _maxPossibleProjections;
@@ -148,25 +161,46 @@ private:
    int _midsection;
 };
 
-class SpecificProjectionGenerator : public ProjectionGenerator{
+class SpecificProjectionGenerator : public RandomProjections {
 public:
-   SpecificProjectionGenerator (
-      const Str& in, boost::shared_ptr <Langauge> lang)  : _langauge (lang){
-      _langauge->stringToAssignment (_assg, in);
+   SpecificProjectionGenerator (  
+      All,              // create all possible projections
+      const Str& base,     // base assignment on which to project
+      int numOfPositions,  // number of positions to select in each assignment
+      boost::shared_ptr <Langauge> lang
+      )
+      : RandomProjections (   all, 
+                              base.length (), 
+                              numOfPositions, 
+                              lang) 
+   {
+      _langauge->stringToAssignment (_base, base);
+   }
+
+   SpecificProjectionGenerator (  
+      int numOfProjections,// num of assignments to generate
+      const Str& base,     // base assignment on which to project
+      int numOfPositions,  // number of positions to select in each assignment
+      boost::shared_ptr <Langauge> lang
+      )
+      : RandomProjections (   numOfProjections, 
+                              base.length (), 
+                              numOfPositions, 
+                              lang)
+   {
+      _langauge->stringToAssignment (_base, base);
    }
    virtual ~SpecificProjectionGenerator () {
    }
-   virtual const Assignment& getAssignment (int index) const{
-      mustbe (index == 0);
-      return _assg;
-   }
-   virtual int numOfProjections () const {
-      return 1;
+
+protected:
+   virtual const Assignment& getBaseAssignment (Assignment& outBase) const {
+      outBase = _base;
+      return outBase;
    }
 
-private:
-   Assignment _assg;
-   boost::shared_ptr <Langauge> _langauge;
+protected:
+   Assignment _base;
 };
 
 

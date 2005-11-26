@@ -43,10 +43,11 @@ public:
 
    //call when job is completed
    virtual void setJobDone() = 0;
-   
-protected:
+
+   //call when job is stopped because of error
+   virtual void setJobError(const Str&) = 0;
+
 	class StatusException : public BaseException {
-	
 	private:
 		StrBuffer mErrString;
 	
@@ -106,10 +107,14 @@ struct StatusReportManager {
       if (_reporter) _reporter->setJobDone ();
    }
 
+   //call when job is completed
+   static inline void setJobError(const Str& s) {
+      if (_reporter) _reporter->setJobError (s);
+   }
+
    struct Sentry {
       Sentry ( int argc, char **argv, Argv &outArgv );
       ~Sentry () {
-         StatusReportManager::setJobDone ();
       }
    };
 

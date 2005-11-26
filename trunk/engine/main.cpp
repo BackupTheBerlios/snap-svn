@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: main.cpp $
-// Version     : $Revision: 57 $ 
+// Version     : $Revision: 58 $ 
 //               $Author: Aviad $
-//               $Date: 7/09/04 10:12 $ 
+//               $Date: 13/10/04 3:33 $ 
 // Description :
 //    main routine for the seed-searcher program
 //
@@ -45,6 +45,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <time.h>
 #include <stdio.h>
 
@@ -142,7 +143,7 @@ int cpp_main(int argc, char* argv [])
 int exit_value = 0;
    try {
 	   Argv anArgv;
-	   StatusReportManager::Sentry report( argc, argv, anArgv );
+      StatusReportManager::Sentry report( argc, argv, anArgv );
    
       //
       // setup basic logging
@@ -155,11 +156,39 @@ int exit_value = 0;
          DLOG.flush ();
       }
    }
-   catch (BaseException& x) {
+   catch (BaseStatusReporter::StatusException& x) {
+      //
+      // aborted by user, 
+      StatusReportManager::setJobCancelled ();
+
+      //
+      // write exception info
       cerr << endl;
       x.explain (cerr);
       cerr << endl;
       exit_value = 1;
+
+   }
+   catch (BaseException& x) {
+      //
+      // processing error
+      std::string buffer;
+      {  std::ostringstream stream;
+         x.explain(stream);
+         buffer = stream.str ();
+      }
+      StatusReportManager::setJobError(Str (buffer));
+
+      //
+      // write exception info
+      cerr << endl;
+      cerr << buffer;
+      cerr << endl;
+      exit_value = 1;
+   }
+   catch (...) {
+      StatusReportManager::setJobError("Unknown Error");
+      throw;
    }
 
    return exit_value;

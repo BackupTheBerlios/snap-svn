@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Parser.cpp $
-// Version     : $Revision: 33 $ 
+// Version     : $Revision: 34 $ 
 //               $Author: Aviad $
-//               $Date: 7/09/04 9:39 $ 
+//               $Date: 13/10/04 3:33 $ 
 // Description :
 //    Concrete Parser for seed-searcher options
 //
@@ -207,17 +207,24 @@ DEFINE_SEED_PARSER_OPTION(proj_i,
    }
 );
 
-DEFINE_SEED_PARSER_OPTION(proj_one,
-      "Sproj-one", 
-      "<projection> selects a specific projection to search for.\n"
-         "if specified, only this projection shall be used for searching."
-         "example: --Sproj-one *?**?A?*\n"
-         "this will search for seeds of length 8 with 2 random positions and one A",
+DEFINE_SEED_PARSER_OPTION(proj_base,
+      "Sproj-base", 
+      "<assignment> the basic assignment on which to project.\n"
+         "not specifying this option is exactly the same as "
+         "specifying this option with an assignment of '*' of the "
+         "same length as specified in the --Sseed-l option."
+         "examples:\n"
+         "(1) --Sproj-base ACG*?GG --Sproj-e"
+         "this will generate all possible projections on ACG*?GG"
+         "which means that the '?' will always remain while the '*'"
+         "is substituted for A, C, G, T in turn.\n"
+         "examples:\n"
+         "(2) \"--Sproj-base *****\" is equivalent to \"--Sseed-l 5\"",
       "",
       GetOptWrapper::_required_argument_,
    {
       Parser* parser = reinterpret_cast <Parser*> (ctx);
-      parser->__proj_one = optarg;
+      parser->__proj_base = optarg;
    }
 );
 
@@ -453,10 +460,12 @@ DEFINE_SEED_PARSER_OPTION(
 DEFINE_SEED_PARSER_OPTION(
    weight_t,
    "Sweight-t",
-   "< <threshold> | interval:<low>:<high> | border:<low>:<high> > type of weight function"
-   " => 'threshold': neg = [0, threshhold], pos = [theshold, 1]\n"
-   " => 'interval':  neg = [0,low] U [high, 1], pos = [low, high]\n"
-   " => 'border':    neg = [0,low], irrelevant = [low, high], pos = [high, 1]",
+   "< <threshold-value>       | \n"
+   "  interval:<low>:<high>   | \n"
+   "  border:<low>:<high>     > type of weight function.\n"
+      " => 'threshold': neg=[0, thrshd], pos=[thrshd, 1]\n"
+      " => 'interval':  neg=[0,low] U [hi, 1], pos=[low, hi]\n"
+      " => 'border':    neg=[0,low], irrelevant=[low, hi], pos=[hi, 1]",
    "0.5",
    GetOptWrapper::_required_argument_,
    {
@@ -660,7 +669,7 @@ struct MyOptions {
       REGISTER_SEED_PARSER_OPTION_CLASS (proj_mid, _list);
       REGISTER_SEED_PARSER_OPTION_CLASS (proj_spec, _list);
       REGISTER_SEED_PARSER_OPTION_CLASS (proj_i, _list);
-      REGISTER_SEED_PARSER_OPTION_CLASS (proj_one, _list);
+      REGISTER_SEED_PARSER_OPTION_CLASS (proj_base, _list);
       REGISTER_SEED_PARSER_OPTION_CLASS (seed_n, _list);
       REGISTER_SEED_PARSER_OPTION_CLASS (seed_l, _list);
       REGISTER_SEED_PARSER_OPTION_CLASS (seed_r, _list);
@@ -758,6 +767,15 @@ void Parser::parse (int argc, char* argv[])
          default:
             mustfail ();
             break;
+      }
+   }
+   if (!__proj_base.empty()) {
+      if (__proj_mid > 0) {
+         usage ("Cannot use --Sproj-mid option --Sproj-base option");
+      }
+      
+      if (__seed_l != __proj_base.length()) {
+         usage ("The seed length --Sseed-l parameter must match the length of the assignmnent specified by --Sproj-base");
       }
    }
 }

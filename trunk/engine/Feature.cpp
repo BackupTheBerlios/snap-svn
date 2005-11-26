@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Feature.cpp $
-// Version     : $Revision: 16 $ 
+// Version     : $Revision: 17 $ 
 //               $Author: Aviad $
-//               $Date: 7/09/04 9:40 $ 
+//               $Date: 13/10/04 3:33 $ 
 // Description :
 //    Concrete cache for Hyper-Geometric distribution values
 //
@@ -212,7 +212,7 @@ void FeatureInvestigator::printPSSM (  Persistance::TextWriter& writer,
                                        const PSSM& pssm)
 {
    int size = pssm.length ();          
-   int cardinality = _parameters.langauge ().code ().cardinality ();    
+   int cardinality = _parameters.langauge ().cardinality ();    
    debug_mustbe (cardinality > 0);
    for (int j=0 ; j<cardinality ; j++) {
       //

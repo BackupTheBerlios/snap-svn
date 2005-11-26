@@ -205,7 +205,7 @@ public:
       Persistance::TextTableReport::TextOutput output (out);
       Persistance::TextTableReport::Format format;
       format.addField ("Name", 80, 18);
-      format.addField ("Description", 300, 58);
+      format.addField ("Description", 1000, 58);
 
       Persistance::TextTableReport::Data data (format);      
       int length = options.length ();
@@ -299,9 +299,9 @@ public:
 //
 // File        : $RCSfile: $ 
 //               $Workfile: GetOptParser.h $
-// Version     : $Revision: 2 $ 
+// Version     : $Revision: 3 $ 
 //               $Author: Aviad $
-//               $Date: 28/08/04 5:41 $ 
+//               $Date: 13/10/04 3:33 $ 
 // Description :
 //	The Core library contains contains basic definitions and classes
 // which are useful to any highly-portable applications

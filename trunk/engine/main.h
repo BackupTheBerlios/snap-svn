@@ -13,7 +13,7 @@ struct main_definitions {
 
    enum {
       __versionMajor = 2,
-      __versionMinor = 31
+      __versionMinor = 311
    };
 
    //

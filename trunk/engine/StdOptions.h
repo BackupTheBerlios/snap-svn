@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: StdOptions.h $
-// Version     : $Revision: 27 $ 
+// Version     : $Revision: 28 $ 
 //               $Author: Aviad $
-//               $Date: 7/09/04 9:44 $ 
+//               $Date: 13/10/04 3:33 $ 
 // Description :
 //    Concrete implmentations for Langauge, ScoreFunction, WeightFunction etc
 //
@@ -146,7 +146,7 @@ public:
    //
    // get the cardinality of the alphabet 
    // (depends on inclusion of 'N' in alphabet)
-   int cardinality () const{
+   virtual int cardinality () const{
       return _includeN? 5 : 4;
    }
    bool includeN () const {

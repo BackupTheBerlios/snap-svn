@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: RandomProjections.cpp $
-// Version     : $Revision: 19 $ 
+// Version     : $Revision: 20 $ 
 //               $Author: Aviad $
-//               $Date: 7/09/04 9:39 $ 
+//               $Date: 13/10/04 3:33 $ 
 // Description :
 //    Concrete classes for creating and retrieving random projections
 //    from given <l,d> parameters
@@ -145,9 +145,9 @@ RandomProjections::RandomProjections (
    int nPositions,   // number of positions to select in each assignment
    boost::shared_ptr <Langauge> lang
    )
-:_length (length),
- _numOfPositions (nPositions),
- _langauge (lang)
+:  _length (length),
+   _numOfPositions (nPositions),
+   _langauge (lang)
 {
    //
    // first compute how many projections are possible:
@@ -248,10 +248,12 @@ RandomProjections::RandomProjections (
    int nPositions,   // number of positions to select in each assignment
    boost::shared_ptr <Langauge> lang
    )
-:_length (length),
- _numOfPositions (nPositions),
- _langauge (lang)
+:  _length (length),
+   _numOfPositions (nPositions),
+   _langauge (lang)
+
 {
+
    //
    // first compute how many projections are possible:   ( length          )
    _maxPossibleProjections = 
@@ -285,6 +287,7 @@ RandomProjections::RandomProjections (
    _assignments.resize(_vector.size ());
 }
 
+
 const Assignment& RandomProjections::getAssignment (int index) const
 {
    const RandomPositions& rand = _vector[index];
@@ -292,7 +295,7 @@ const Assignment& RandomProjections::getAssignment (int index) const
    Assignment* assg = 
       &(const_cast <AssignmentVector&> (_assignments)) [index];
 
-   *assg = Assignment (_langauge->wildcard (assg_discrete), _length);
+   getBaseAssignment(*assg);
    for (int i=0 ; i<_numOfPositions; i++){
       int pos = rand [i];
       assg->setPosition (pos, _langauge->wildcard (assg_together));

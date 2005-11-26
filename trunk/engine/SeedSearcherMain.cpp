@@ -1,21 +1,21 @@
 //
-// File        : $RCSfile: $ 
+// File        : $RCSfile: $
 //               $Workfile: SeedSearcherMain.cpp $
-// Version     : $Revision: 23 $ 
+// Version     : $Revision: 24 $
 //               $Author: Aviad $
-//               $Date: 7/09/04 9:38 $ 
+//               $Date: 13/10/04 3:33 $
 // Description :
-//    Concrete and interface classes for seting-up 
+//    Concrete and interface classes for seting-up
 //    a seed-searching environment or program
 //
-// Author: 
+// Author:
 //    Aviad Rozenhek (mailto:aviadr@cs.huji.ac.il) 2003-2004
 //
-// written for the SeedSearcher program. 
-// for details see www.huji.ac.il/~hoan 
+// written for the SeedSearcher program.
+// for details see www.huji.ac.il/~hoan
 // and also http://www.cs.huji.ac.il/~nirf/Abstracts/BGF1.html
 //
-// this file and as well as its library are released for academic research 
+// this file and as well as its library are released for academic research
 // only. the LESSER GENERAL PUBLIC LICENSE (LPGL) license
 // as well as any other restrictions as posed by the computational biology lab
 // and the library authors appliy.
@@ -52,8 +52,7 @@ void SeedSearcherMain::beforeProjection (int /* search handle */,
    //
    // check if we should stop
    if (StatusReportManager::hasUserCancelled ()) {
-      StatusReportManager::setJobCancelled ();
-      throw CancelledByUserException ();
+      throw BaseStatusReporter::StatusException ("Job was cancelled by user");
    }
 
    //
@@ -79,7 +78,7 @@ void SeedSearcherMain::afterProjection (int /* search handle */,
    //
    // produce output message
    DLOG << (searchFinish - searchStart) << " seconds, Found "
-         << totalNumOfSeedsFound - _lastTotalNumOfSeedsFound 
+         << totalNumOfSeedsFound - _lastTotalNumOfSeedsFound
          << " seeds." << DLOG.EOL ();
 
    //
@@ -90,8 +89,8 @@ void SeedSearcherMain::afterProjection (int /* search handle */,
 
 
 
-AutoPtr <SeedSearcherMain::Results> 
-SeedSearcherMain::search (boost::shared_ptr <Parameters> inParams) 
+AutoPtr <SeedSearcherMain::Results>
+SeedSearcherMain::search (boost::shared_ptr <Parameters> inParams)
 {
    mustbe (inParams.get ());
    _params = inParams;
@@ -100,7 +99,7 @@ SeedSearcherMain::search (boost::shared_ptr <Parameters> inParams)
    int numOfProjections = _params->projections ().numOfProjections ();
    for (int i=0 ; i<numOfProjections ; i++) {
       //
-      // create 
+      // create
       const Assignment& assg =
          _params->projections ().getAssignment (i);
 
@@ -234,9 +233,13 @@ void SeedSearcherMain::CmdLineParameters::setup (const Str& seq, const Str& wgt)
 
    //
    // keep only the best features
-   // TODO: what should we do when _parser.__seed_r 
+   // TODO: what should we do when _parser.__seed_r
    // is too large for the length of seed?
    setupFeatureContainer ();
+
+   //
+   // TODO: HACK HERE!!!
+   (dynamic_cast<ACGTLangauge&> (*_langauge)).includeN (false);
 }
 
 void SeedSearcherMain::CmdLineParameters::setupParameters ()
@@ -250,10 +253,25 @@ void SeedSearcherMain::CmdLineParameters::setupProjections ()
 {
    //
    // check if a specific projection was asked for
-   if (!_parser.__proj_one.empty()) {
-      _projections.reset(
-         new SpecificProjectionGenerator (_parser.__proj_one, _langauge)
-      );
+   if (!_parser.__proj_base.empty()) {
+      if (_parser.__proj_e) {
+         _projections.reset(
+            new SpecificProjectionGenerator (
+               RandomProjections::all,
+               _parser.__proj_base,
+               _parser.__proj_d,
+               _langauge
+               ));
+      }
+      else {
+         _projections.reset (
+            new SpecificProjectionGenerator (
+            _parser.__proj_n,
+            _parser.__proj_base,
+            _parser.__proj_d,
+            _langauge)
+            );
+      }
    }
    else {
       //
@@ -289,11 +307,11 @@ void SeedSearcherMain::CmdLineParameters::setupDB ()
    DLOG << '#' << DLOG.EOL ()
         << "# SequenceDB: " << DLOG.EOL ();
 
-   DLOG  << "Reading Sequence File: " 
+   DLOG  << "Reading Sequence File: "
          << _seqFilename
          << DLOG.EOL ();
 
-   DLOG  << "Reading Weights File: " 
+   DLOG  << "Reading Weights File: "
          << _wgtFilename
          << DLOG.EOL ();
 
@@ -305,7 +323,7 @@ void SeedSearcherMain::CmdLineParameters::setupDB ()
    time (&start);
    _db.reset (SequenceDB::TextFileStorage::loadFastaAndWeights (
       *_langauge,
-      _seqFilename, 
+      _seqFilename,
       _wgtFilename));
 
    time (&finish);
@@ -321,7 +339,7 @@ void SeedSearcherMain::CmdLineParameters::setupWeightFunction ()
    case _weight_simple_:
       _wf.reset (new SimpleWeightFunction (_parser.__weight_t));
       break;
-   
+
    case _weight_border_:
       _wf.reset (new BorderWeightFunction (_parser.__weight_lowt, _parser.__weight_t));
       break;
@@ -358,17 +376,17 @@ void SeedSearcherMain::CmdLineParameters::setupScoreFunc ()
 {
    if (_parser.__scoreType == _score_hypegeo_) {
       if (_parser.__count == _count_total_) {
-         _score.reset ( 
-            new HyperGeoScore::FixedTotalCount (_parser.__seed_l, 
-                                                _parser.__score_partial, 
-                                                *_wf, 
+         _score.reset (
+            new HyperGeoScore::FixedTotalCount (_parser.__seed_l,
+                                                _parser.__score_partial,
+                                                *_wf,
                                                 *_db)
          );
       }
       else {
          _score.reset (
-            new HyperGeoScore::Simple (_parser.__score_partial, 
-                                       *_wf, 
+            new HyperGeoScore::Simple (_parser.__score_partial,
+                                       *_wf,
                                        *_db)
           );
       }
@@ -385,13 +403,13 @@ void SeedSearcherMain::CmdLineParameters::setupFeatureContainer ()
 {
    KBestFilter* container = NULL;
    if (_parser.__seed_rr) {
-      container  = 
-         new KBestComplementFilter ( _parser.__seed_n, 
-                                       _parser.__seed_r, 
+      container  =
+         new KBestComplementFilter ( _parser.__seed_n,
+                                       _parser.__seed_r,
                                        *_langauge);
    }
    else {
-      container = 
+      container =
          new KBestFilter (_parser.__seed_n, _parser.__seed_r);
    }
 
@@ -406,7 +424,7 @@ void SeedSearcherMain::CmdLineParameters::setupFeatureContainer ()
             _parser.__score_min,
             _parser.__score_min_seq,
             _parser.__score_min_seq_per
-         ), 
+         ),
          true
       ));
 }
@@ -416,7 +434,7 @@ void SeedSearcherMain::CmdLineParameters::setupLangauge ()
    //
    // at first N is considered to be a part of the langauge
    // this is in order to allow reading of seq files with N's
-   _langauge.reset ( 
+   _langauge.reset (
       new ACGTLangauge (_parser.__count_reverse, // support reverse
                         true // N is considered to be part of the langauge
                         ));
@@ -463,16 +481,16 @@ Preprocessor*
       LeafPreprocessor::Rep* rep;
       if (removeNegatives) {
          rep = LeafPreprocessor::buildNoNegatives (
-            featureLength, 
-            db, 
+            featureLength,
+            db,
             langauge,
             wf
          );
       }
       else {
-         rep = LeafPreprocessor::build (  
-            featureLength, 
-            db, 
+         rep = LeafPreprocessor::build (
+            featureLength,
+            db,
             langauge
          );
       }
@@ -481,7 +499,7 @@ Preprocessor*
    }
    else {
       mustbe (prepType == _prep_tree_);
-      PrefixTreePreprocessor::TreeRep* rep = 
+      PrefixTreePreprocessor::TreeRep* rep =
          PrefixTreePreprocessor::build (  removeNegatives,
                                           wf,
                                           db,
@@ -520,7 +538,7 @@ ConfParameterIterator::~ConfParameterIterator ()
       delete _list.removeFirst ();
 }
 
-void ConfParameterIterator::setup (const Str& seqFilename, 
+void ConfParameterIterator::setup (const Str& seqFilename,
                                    const Str& wgtFilename,
                                    const Str& stubName)
 {
@@ -528,7 +546,7 @@ void ConfParameterIterator::setup (const Str& seqFilename,
 
    //
    // setup the first parameters
-   AutoPtr <CmdLineParameters> params = 
+   AutoPtr <CmdLineParameters> params =
       new CmdLineParameters (_optList.getInitParser ());
 
    params->setup (seqFilename, wgtFilename);
@@ -557,7 +575,7 @@ void ConfParameterIterator::setup (const Str& seqFilename,
       int progPoints = 0;
       SeedConfList::OptionIterator it;
       for (it = _optList.iterator (); it.hasNext () ; it.next ()) {
-         progPoints += 
+         progPoints +=
             RandomProjections::numOfProjections (
                it.get ()->_parser.__proj_e, it.get ()->_parser.__proj_n,
                it.get ()->_parser.__seed_l, it.get ()->_parser.__proj_d);
@@ -570,7 +588,7 @@ bool ConfParameterIterator::hasNext () {
    return _useInitParameters || _it.hasNext ();
 }
 
-boost::shared_ptr <SeedSearcherMain::Parameters> ConfParameterIterator::get () 
+boost::shared_ptr <SeedSearcherMain::Parameters> ConfParameterIterator::get ()
 {
    if (!_useInitParameters) {
       if (!_updated) {
@@ -580,7 +598,7 @@ boost::shared_ptr <SeedSearcherMain::Parameters> ConfParameterIterator::get ()
 
          //
          // get parameters of last run
-         AutoPtr <CmdLineParameters> params = 
+         AutoPtr <CmdLineParameters> params =
             new CmdLineParameters (*_list.getLast ()->data);
 
          Str name;
@@ -625,7 +643,7 @@ void ConfParameterIterator::next ()
 {
    mustbe (hasNext ());
    //
-   // 
+   //
    if (_useInitParameters) {
       _useInitParameters = false;
    }
