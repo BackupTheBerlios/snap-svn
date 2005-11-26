@@ -247,11 +247,13 @@ public:
       int opt_ind;
       int numOfOptions = opt.length ();
       while ((c = _getopt.getopt_long (argc, argv, "", internal, &opt_ind))!=EOF) {
-         if ((opt_ind >= 0) && (opt_ind < numOfOptions)) {
+         if ((c != '?') && (opt_ind >= 0) && (opt_ind < numOfOptions)) {
             opt.execute (opt_ind, _getopt.optarg, ctx);
          }
          else {
-            unknown.execute (argv [_getopt.optind], ctx);
+            unknown.execute (StrBuffer (  argv [_getopt.optind -1], 
+                                          " ", 
+                                          argv [_getopt.optind]), ctx);
          }
       }
    }
@@ -299,9 +301,9 @@ public:
 //
 // File        : $RCSfile: $ 
 //               $Workfile: GetOptParser.h $
-// Version     : $Revision: 3 $ 
+// Version     : $Revision: 4 $ 
 //               $Author: Aviad $
-//               $Date: 13/10/04 3:33 $ 
+//               $Date: 4/11/04 18:00 $ 
 // Description :
 //	The Core library contains contains basic definitions and classes
 // which are useful to any highly-portable applications

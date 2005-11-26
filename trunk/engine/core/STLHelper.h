@@ -180,9 +180,99 @@ public:
    }
 };
 
+template <typename T>
+class AbstractIterator {
+public:
+   class Rep {
+   public:
+      virtual ~Rep () {
+      }
+      virtual bool next () = 0;
+      virtual bool hasNext () const = 0;
+      virtual T* get () const = 0;
+      inline T& operator * () const { return *get (); }
+      inline T* operator -> () const {return get (); }
+   };
 
+public:
+   inline AbstractIterator () : _rep (NULL) {
+   }
+   inline AbstractIterator (Rep* in) : _hasNext (in->hasNext ()), _rep (in) {
+   }
+   ~AbstractIterator () {
+      delete _rep;
+   }
+   inline void next () {
+      mustbe (_rep);
+      //
+      // optimization: it is assumed that 
+      _hasNext = _rep->next ();
+   }
+   inline bool hasNext () const {
+      mustbe (_rep);
+      return _hasNext;
+   }
+   inline T* get () const {
+      mustbe (_rep);
+      return _rep->get ();
+   }
+   inline T& operator * () const { return *get (); }
+   inline T* operator -> () const {return get (); }
 
+private:
+   AbstractIterator& operator = (const AbstractIterator&);
+   AbstractIterator (const AbstractIterator&);
 
+   bool _hasNext;
+   Rep* _rep;
+};
+
+template <typename T>
+class CAbstractIterator {
+public:
+   class Rep {
+   public:
+      virtual ~Rep () {
+      }
+      virtual bool next () = 0;
+      virtual bool hasNext () const = 0;
+      virtual const T* get () const = 0;
+      inline const T& operator * () const { return *get (); }
+      inline const T* operator -> () const {return get (); }
+   };
+
+public:
+   inline CAbstractIterator () : _rep (NULL) {
+   }
+   inline CAbstractIterator (Rep* in) : _hasNext (in->hasNext ()), _rep (in) {
+   }
+   ~CAbstractIterator () {
+      delete _rep;
+   }
+   inline void next () {
+      mustbe (_rep);
+      //
+      // optimization: it is assumed that 
+      _hasNext = _rep->next ();
+   }
+   inline bool hasNext () const {
+      mustbe (_rep);
+      return _hasNext;
+   }
+   inline const T* get () const {
+      mustbe (_rep);
+      return _rep->get ();
+   }
+   inline const T& operator * () const { return *get (); }
+   inline const T* operator -> () const {return get (); }
+
+private:
+   CAbstractIterator& operator = (const CAbstractIterator&);
+   CAbstractIterator (const CAbstractIterator&);
+
+   bool _hasNext;
+   Rep* _rep;
+};
 
 template <class Container>
 class Map1stBinder {
@@ -292,9 +382,9 @@ protected:
 //
 // File        : $RCSfile: $ 
 //               $Workfile: STLHelper.h $
-// Version     : $Revision: 22 $ 
+// Version     : $Revision: 23 $ 
 //               $Author: Aviad $
-//               $Date: 27/08/04 2:09 $ 
+//               $Date: 4/11/04 18:00 $ 
 // Description :
 //	The Core library contains contains basic definitions and classes
 // which are useful to any highly-portable applications

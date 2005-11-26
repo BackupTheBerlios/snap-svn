@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Assignment.cpp $
-// Version     : $Revision: 22 $ 
+// Version     : $Revision: 23 $ 
 //               $Author: Aviad $
-//               $Date: 1/09/04 1:23 $ 
+//               $Date: 4/11/04 17:50 $ 
 // Description :
 //    Concrete class describing an assignment - 
 //       which is a sequence of assignment positions.
@@ -66,40 +66,6 @@ void Assignment::setPosition (int index, const AssgPosition& p)
 
    _positions [index] = p;
 }
-
-#include "DebugLog.h"
-
-void Assignment::unify (const Assignment& o, int startIndex)  
-{
-#if DEBUG_ASSIGNMENT
-   DLOG  << "unifying " << Format (*this) 
-         << " with " << Format (o) << DLOG.EOL ();
-#endif
-
-   size_t length = o.length ();
-   if (_positions.size () < length) {
-      _positions.resize (length);
-   }
-
-   for (size_t i=startIndex ; i<length ; i++) {
-      AssgPosition& my_pos = getPosition (i);
-      const AssgPosition& o_pos = o.getPosition (i);
-
-#if DEBUG_ASSIGNMENT
-         if ((!my_pos.empty ()) && my_pos.strategy () == assg_discrete) {
-            if (!my_pos.contains (o_pos)) {
-               DLOG  << "unifying " << Format (*this) 
-                     << " with " << Format (o) << DLOG.EOL ();
-               DLOG.flush ();
-               debug_mustfail ();
-            }
-         }
-#endif
-
-      my_pos.unify (o_pos);
-   }
-}
-
 
 
 int AssgPosition::count () const
@@ -169,13 +135,17 @@ AssgPositionIterator::AssgPositionIterator (const AssgPosition& p)
 }
 
 
-bool AssignmentBase::contains (const AssignmentBase& o, int startIndex) const
+bool AssignmentBase::contains (const AssignmentBase& o, int startIndex, int cmp_length) const
 {
-   mustbe (length () == o.length ());
+   if (cmp_length != assg_end) 
+      mustbe ((cmp_length <= length ()) && (cmp_length <= o.length ()));
+   else
+      mustbe (length () == o.length ());
+
 
    bool result = true;
-   CIterator it = iterator (startIndex);
-   CIterator oit = o.iterator (startIndex);
+   CIterator it = iterator (startIndex, cmp_length);
+   CIterator oit = o.iterator (startIndex, cmp_length);
    for (; it.hasNext () ; oit.next (), it.next ()) {
       if (!it->contains(*oit))
          result = false;
@@ -199,14 +169,14 @@ bool AssignmentBase::contains (const AssignmentBase& o, int startIndex) const
    return result;
 }
 
-int AssignmentBase::compare (const AssignmentBase& o, int startIndex) const
+int AssignmentBase::compare (const AssignmentBase& o, int startIndex, int cmp_length) const
 {
    int length_diff = length () < o.length ();
    if (length_diff != 0)
       return length_diff;
 
-   CIterator it = iterator (startIndex);
-   CIterator oit = o.iterator (startIndex);
+   CIterator it = iterator (startIndex, cmp_length);
+   CIterator oit = o.iterator (startIndex, cmp_length);
    for (; it.hasNext () ; oit.next (), it.next ()) {
       int result = it->compare (*oit);
       if (result != 0)
@@ -215,13 +185,13 @@ int AssignmentBase::compare (const AssignmentBase& o, int startIndex) const
    return 0;
 }
 
-bool AssignmentBase::equals (const AssignmentBase& o, int startIndex) const
+bool AssignmentBase::equals (const AssignmentBase& o, int startIndex, int cmp_length) const
 {
    if (length () != o.length ())
       return false;
    
-   CIterator it = iterator (startIndex);
-   CIterator oit = o.iterator (startIndex);
+   CIterator it = iterator (startIndex, cmp_length);
+   CIterator oit = o.iterator (startIndex, cmp_length);
    for (; it.hasNext () ; oit.next (), it.next ()) {
       if (!it->equals (*oit))
          return false;

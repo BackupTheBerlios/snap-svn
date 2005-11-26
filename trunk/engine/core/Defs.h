@@ -174,14 +174,14 @@ protected:
 //
 // mustbe / debug_mustbe
 #ifndef mustbe
-	inline void pexifnot_(bool cond, int lineNo, const char* err=NULL) {
-		if (!cond) ProgramException::raise(lineNo, err);
+	inline void pexifnot_(bool cond, int lineNo, const char* file = NULL, const char* err=NULL) {
+		if (!cond) ProgramException::raise(lineNo, file, err);
 	}
-	inline void pexifnot_(const void* ptr, int lineNo, const char* err=NULL) {
-		if (ptr==0) ProgramException::raise(lineNo, err);		
+	inline void pexifnot_(const void* ptr, int lineNo, const char* file = NULL, const char* err=NULL) {
+		if (ptr==0) ProgramException::raise(lineNo, file, err);		
 	}
-	inline void pexifnot_(int cond, int lineNo, const char* err=NULL) {
-		if (!cond) ProgramException::raise(lineNo, err);
+	inline void pexifnot_(int cond, int lineNo, const char* file = NULL, const char* err=NULL) {
+		if (!cond) ProgramException::raise(lineNo, file, err);
 	}
 	
 	#define mustbe(cond)		pexifnot_((cond), __LINE__)
@@ -190,9 +190,9 @@ protected:
 
    //
    // with message 
-	#define mmustbe(cond, err)		pexifnot_((cond), __LINE__, err)
-	#define mmustnot(cond, err)		pexifnot_(!(cond), __LINE__, err)
-	#define mmustfail(err)		pexifnot_(bool(false), __LINE__, err)
+	#define mmustbe(cond, err)		pexifnot_((cond), __LINE__, __FILE__, err)
+	#define mmustnot(cond, err)		pexifnot_(!(cond), __LINE__, __FILE__, err)
+	#define mmustfail(err)		pexifnot_(bool(false), __LINE__, __FILE__, err)
 
 	#define	debug_assert(cond)	\
 debug_only(signal_assert((cond), #cond, __FILE__, __LINE__))
@@ -259,9 +259,9 @@ inline const T& tmax(const T& a, const T& b) {
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Defs.h $
-// Version     : $Revision: 15 $ 
+// Version     : $Revision: 16 $ 
 //               $Author: Aviad $
-//               $Date: 7/09/04 9:43 $ 
+//               $Date: 4/11/04 17:59 $ 
 // Description :
 //	The Core library contains contains basic definitions and classes
 // which are useful to any highly-portable applications

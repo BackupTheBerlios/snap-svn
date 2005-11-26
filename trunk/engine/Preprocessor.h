@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Preprocessor.h $
-// Version     : $Revision: 21 $ 
+// Version     : $Revision: 22 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:44 $ 
+//               $Date: 4/11/04 17:56 $ 
 // Description :
 //    interface classes for preprocessors
 //
@@ -38,6 +38,8 @@ public:
    //
    //
 public:
+   typedef CAbstractIterator <SeqPosition> NodePositionIt;
+
    //
    //
    class NodeRep {
@@ -60,6 +62,17 @@ public:
       //
       //
       virtual void add2Assignment (Assignment&) const = 0;
+
+      //
+      //
+      virtual NodePositionIt::Rep* positionIterator () const = 0;
+
+      //
+      //
+      virtual void acquire () {
+      }
+      virtual void unacquire () {
+      }
    };
 
    //
@@ -67,8 +80,10 @@ public:
    class Node {
    public:
       Node (NodeRep* in) : _node (in) {
+         if (_node) _node->acquire();
       }
       ~Node () {
+         if (_node) _node->unacquire();
       }
 
       //
@@ -98,6 +113,12 @@ public:
          _node->add2Assignment (outAssg);
       }
 
+      //
+      //
+      NodePositionIt::Rep* positionIterator () {
+         return _node->positionIterator();
+      }
+
    protected:
       NodeRep* _node;
    };
@@ -108,7 +129,7 @@ public:
    public:
       //
       //
-      AssgNodePair (NodeRep* node, const Assignment& assg) 
+      AssgNodePair (NodeRep* node, const AssignmentBase& assg) 
          : _node (node), _path (assg) {
       }
       ~AssgNodePair () {
@@ -140,6 +161,8 @@ public:
       NodeCluster () {
       }
       ~NodeCluster () {
+         for (NodeIterator it =iterator() ; it.hasNext() ;it.next()) 
+            it->node ()->unacquire ();
       }
 
       //
@@ -197,17 +220,36 @@ public:
 
 	//
 	// smallest/largest searchable assignments
-   virtual int minAssignmentSize ()const=0;
+   virtual int minAssignmentSize ()const {
+      return 0;
+   }
    virtual int maxAssignmentSize ()const=0;
 
    //
 	// iterate over all positions that correspond to an assignment on a given sequence
-	virtual AutoPtr <PositionVector> getPositions (SequenceDB::ID, const Assignment&)const=0;
+	virtual AutoPtr <PositionVector> 
+      getPositions (SequenceDB::ID id, const AssignmentBase& assg) const {
+         NodeCluster cluster;
+         add2Cluster (cluster, assg);
+         return cluster.positions (id);
+      }
 
 	//
 	// returns true iff the sequence has at least one position which corresponds
 	// to the given assignment
-	virtual bool hasAssignment (SequenceDB::ID, const Assignment&)const=0;
+	virtual bool hasAssignment (SequenceDB::ID id, const AssignmentBase& assg) const {
+      NodeCluster cluster;
+      add2Cluster (cluster, assg);
+
+      NodeIterator it (cluster.iterator ());
+      for (; it.hasNext (); it.next ()) {
+         Node node (it.get ());
+         if (node.hasPositions (id))
+            return true;
+      }
+
+      return false;
+   }
 
 	//
 	// iterate over all sequences
@@ -216,24 +258,19 @@ public:
 	//
 	// iterate over all sequences that have at least one position which corresponds 
 	// to the given assignment
-   virtual AutoPtr <SequenceVector> getSequences (const Assignment&) const=0;
+   virtual AutoPtr <SequenceVector> getSequences (const AssignmentBase& assg) const {
+      NodeCluster cluster;
+      add2Cluster (cluster, assg);
+      return cluster.sequences ();
+   }
 
-   virtual void add2Cluster (NodeCluster&, const Assignment&) const= 0;
+   //
+   // add nodes that match the given assignment to a given NodeCluster
+   virtual void add2Cluster (NodeCluster&, const AssignmentBase&) const= 0;
 };
 
 
 #endif // _SeedSearcher_Preprocessor_h
-
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: PrefixTreePreprocessor.h $
-// Version     : $Revision: 26 $ 
+// Version     : $Revision: 27 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:44 $ 
+//               $Date: 4/11/04 17:53 $ 
 // Description :
 //    Concrete preprocessor class - based on a prefix tree
 //
@@ -35,30 +35,15 @@ public:
 
    //
 	// smallest/largest searchable assignments
-   virtual int minAssignmentSize () const;
    virtual int maxAssignmentSize () const;
-
-   //
-   // iterate over all positions that correspond 
-   // to an assignment on a given sequence
-   virtual AutoPtr <PositionVector> getPositions ( SequenceDB::ID, 
-                                                   const Assignment&)  const;
-   
-   //
-   // returns true iff the sequence has at least one position which corresponds
-   // to the given assignment
-   virtual bool hasAssignment (SequenceDB::ID, const Assignment&)  const;
-
+  
    //
    // iterate over all sequences
    virtual AutoPtr <SequenceVector> getSequences ()  const;
 
    //
-   // iterate over all sequences that have at 
-   // least one position which corresponds to the given assignment
-   virtual AutoPtr <SequenceVector> getSequences (const Assignment&) const;
-
-   virtual void add2Cluster (NodeCluster&, const Assignment&) const;
+   //
+   virtual void add2Cluster (NodeCluster&, const AssignmentBase&) const;
 
 
     //
@@ -159,6 +144,51 @@ public:
     private:
       TreeNodeRep* _rep;
     };
+
+   class TreeNodePositionIt : public Preprocessor::NodePositionIt::Rep {
+   public:
+      TreeNodePositionIt (TreeNodeRep* t) : _node(t), _current (NULL) {
+         _seqit = _node.positionsBySequence ();
+         if (_seqit.hasNext ()) {
+            _posit = _seqit->iterator ();
+            if (_posit.hasNext ()) {
+               _current = &(*_posit.get ());
+               _posit.next ();
+            }
+
+            _seqit.next ();
+         }
+
+      }
+      virtual ~TreeNodePositionIt () {
+      }
+      virtual bool hasNext () const {
+         return _current != NULL;
+      }
+      virtual bool next () {
+         while (!_posit.hasNext () && _seqit.hasNext ()) {
+            _posit = _seqit->iterator ();
+            _seqit.next ();
+         }
+
+         if (_posit.hasNext ()) {
+            _current = &(*_current);
+            _posit.next ();
+         }
+         else {
+            _current = NULL;
+         }
+         return hasNext ();
+      }
+      virtual const SeqPosition* get () const {
+         return _current;
+      }
+
+      TreeNode _node;
+      const SeqPosition* _current;
+      SeqPositionIterator _seqit;
+      PositionIterator _posit;
+   };
 
    //
    // tree functions

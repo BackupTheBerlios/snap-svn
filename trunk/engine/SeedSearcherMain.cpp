@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $
 //               $Workfile: SeedSearcherMain.cpp $
-// Version     : $Revision: 24 $
+// Version     : $Revision: 25 $
 //               $Author: Aviad $
-//               $Date: 13/10/04 3:33 $
+//               $Date: 4/11/04 17:54 $
 // Description :
 //    Concrete and interface classes for seting-up
 //    a seed-searching environment or program
@@ -110,7 +110,7 @@ SeedSearcherMain::search (boost::shared_ptr <Parameters> inParams)
 
       //
       // perform the actual search
-      if (_params->prepType () == _prep_tree_) {
+      if (_params->searchType () == _search_tree_) {
          totalNumOfSeedsFound +=
             SeedSearcher::prefixTreeSearch (
                *_params,
@@ -366,10 +366,11 @@ void SeedSearcherMain::CmdLineParameters::setupPreprocessor ()
          *_db,
          *_wf,
          *_langauge,
-         _parser.__seed_l,
+         _parser.__prep_l,
          useReverse (),
          _parser.__prep_noneg
-      ));
+      )
+   );
 }
 
 void SeedSearcherMain::CmdLineParameters::setupScoreFunc ()

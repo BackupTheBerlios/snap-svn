@@ -13,7 +13,7 @@ struct main_definitions {
 
    enum {
       __versionMajor = 2,
-      __versionMinor = 312
+      __versionMinor = 32
    };
 
    //
@@ -49,25 +49,25 @@ struct main_definitions {
 
 
    static const char* getOutputFileName (char* motifFileName,
-      bool isPositives, 
+      bool isPositives,
       int index,
-      const char* fileStub, 
+      const char* fileStub,
       const char* typeStub)
    {
       if (index >= 0) {
          if (isPositives)
-            sprintf (motifFileName, "%s.%d.%s", 
+            sprintf (motifFileName, "%s.%d.%s",
             fileStub, (index+1), typeStub);
          else
-            sprintf (motifFileName, "%s.%d.neg.%s", 
+            sprintf (motifFileName, "%s.%d.neg.%s",
             fileStub, (index+1), typeStub);
       }
       else {
          if (isPositives)
-            sprintf (motifFileName, "%s.%s", 
+            sprintf (motifFileName, "%s.%s",
             fileStub, typeStub);
          else
-            sprintf (motifFileName, "%s.neg.%s", 
+            sprintf (motifFileName, "%s.neg.%s",
             fileStub, typeStub);
       }
 
@@ -76,9 +76,9 @@ struct main_definitions {
 
    //
    //
-   static Persistance::OutputStream* openFile (  
-      bool isPositives, 
-      int index, 
+   static Persistance::OutputStream* openFile (
+      bool isPositives,
+      int index,
       const char* fileStub,
       const char* typeStub)
    {
@@ -127,8 +127,8 @@ struct main_definitions {
                   openFile (isPos, featureIndex, fileStub, MOTIF_FILE_STUB)
                   );
 
-               printer.printMotif ( motifFile, 
-                  feature, 
+               printer.printMotif ( motifFile,
+                  feature,
                   isPos? pos : neg);
             }
 

@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Assignment.h $
-// Version     : $Revision: 18 $ 
+// Version     : $Revision: 19 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:44 $ 
+//               $Date: 4/11/04 17:50 $ 
 // Description :
 //    Concrete class describing an assignment - 
 //       which is a sequence of assignment positions.
@@ -131,6 +131,13 @@ public:
    bool operator == (const AssgPosition& o) {
       return this->equals (o);
    }
+   AssgPosition& operator = (const AssgPosition& o) {
+      _bits = o._bits;
+      return *this;
+   }
+   void set(const AssgPosition& o) {
+      _bits = o._bits;
+   }
    
    friend class AssgPositionIterator;
    
@@ -195,9 +202,9 @@ public:
 
    virtual int length () const = 0;
    
-   virtual bool contains (const AssignmentBase&, int startIndex = 0) const;
-   virtual int compare (const AssignmentBase&, int startIndex = 0) const;
-   virtual bool equals (const AssignmentBase&, int startIndex = 0) const;
+   virtual bool contains (const AssignmentBase&, int startIndex = 0, int length = assg_end) const;
+   virtual int compare (const AssignmentBase&, int startIndex = 0, int length = assg_end) const;
+   virtual bool equals (const AssignmentBase&, int startIndex = 0, int length = assg_end) const;
    bool operator == (const AssignmentBase& o) const {
       return this->equals (o);
    }
@@ -206,6 +213,46 @@ public:
    // beginning to the end, respectively
    virtual Iterator iterator (  int begin = 0, int length = assg_end) = 0;
    virtual CIterator iterator ( int begin = 0, int length = assg_end) const = 0;
+
+   //
+   //
+   void unify (const AssignmentBase& o, int startIndex = 0, int inLength = assg_end) {
+      int oLength = (inLength == assg_end)? o.length () : inLength;
+      if (length () < oLength) {
+         resize (oLength);
+      }
+      
+      Iterator it = iterator(startIndex, oLength);
+      CIterator oit = o.iterator(startIndex, oLength);
+      for (; it.hasNext () ; it.next (), oit.next ()) {
+         debug_mustbe (oit.hasNext ());
+         it->unify (*oit);
+      }
+   }
+   //
+   // inserts or erases AssgPositions at the end of the assignment
+   virtual void resize (int length)=0;
+
+   //
+   // erases AssgPositions
+   virtual void erase (int length, int position = assg_end) =0;
+   //
+   //
+   virtual void insert (int length, int position = assg_end, 
+                        const AssgPosition& p = AssgPosition ()) = 0;
+
+   virtual void set (const AssignmentBase& o) {
+      int l = o.length ();
+      if (l != length ())
+         resize (l);
+
+      Iterator it (iterator ());
+      CIterator oit (o.iterator ());
+      for (; it.hasNext () ; it.next (), oit.next ()) {
+         debug_mustbe (oit.hasNext ());
+         it->set (*oit);
+      }
+   }
 };
 
 
@@ -213,7 +260,7 @@ public:
 // gG - G
 // cC - C
 // tT - T
-// ? - random projection - try all posibble combinations, differently
+// ? - random projection - try all possible combinations, differently
 // N  - don't care, anything will do   
 //
 // an assignment is a string of 
@@ -230,6 +277,11 @@ public:
    }
    Assignment (const Assignment& assg) : _positions (assg._positions) {
    }
+   Assignment (const AssignmentBase& assg) {
+      for (CIterator it = assg.iterator (); it.hasNext () ; it.next ()) {
+         _positions.push_back (*it);
+      }
+   }
    Assignment (const Position& pos, int length) {
       _positions.reserve (length);
       for (int i=0 ; i<length ; i++) {
@@ -244,7 +296,19 @@ public:
       _positions = o._positions;
       return *this;
    }
-   
+   void set (const AssignmentBase& assg, const AssignmentBase& projection) {
+      _positions.clear ();
+      debug_mustbe (assg.length() == projection.length());
+      CIterator assgIt (assg.iterator());
+      CIterator projIt (projection.iterator());
+      for (; projIt.hasNext () ; projIt.next (), assgIt.next()) {
+         debug_mustbe (assgIt.hasNext());
+         if (projIt->strategy () == assg_together)
+            addPosition(*projIt);
+         else
+            addPosition(*assgIt);
+      }
+   }
    inline Position& operator [] (int index) {
       return _positions [index];
    }
@@ -274,23 +338,52 @@ public:
 
    void setPosition (int, const Position& p);
 
-   void unify (const Assignment& o, int startIndex = 0) ;
-
    //
    // beginning to the end, respectively
    virtual Iterator iterator (int begin = 0, int length = assg_end) {
-      Iterator it (_positions.begin (), _positions.end ());
-      if (begin > 0) it.next (begin);
-      if (length != assg_end) it.allowNext (length);
-      return it;
+      if (begin >= 0) {
+         Iterator it (_positions.begin () + begin, _positions.end ());
+         if (length != assg_end) it.allowNext (length);
+         return it;
+      }
+      else {
+         return Iterator (_positions.end (), _positions.end ()); 
+      }
    }
    virtual CIterator iterator (int begin = 0, int length = assg_end) const {
-      CIterator it (_positions.begin (), _positions.end ());
-      if (begin > 0) it.next (begin);
-      if (length != assg_end) it.allowNext (length);
-      return it;
+      if (begin >= 0) {
+         CIterator it (_positions.begin () + begin, _positions.end ());
+         if (length != assg_end) it.allowNext (length);
+         return it;
+      }
+      else {
+         return CIterator (_positions.end (), _positions.end ()); 
+      }
    }
+   //
+   //
+   virtual void resize (int length) {
+      _positions.resize (length);
+   }
+   //
+   //
+   virtual void erase (int length, int position = assg_end) {
+      if (position == assg_end) {
+         _positions.resize (_positions.size () - length);
+      }
+      else {
+         _positions.erase(_positions.begin () + position, _positions.begin() + length);
+      }
+   }
+   //
+   //
+   virtual void insert (int length, int position = assg_end, 
+      const AssgPosition& p = AssgPosition ()){
+         PositionVector::iterator loc = (position = assg_end)?
+            _positions.end () : _positions.begin () + position;
 
+      _positions.insert (loc, length, p);
+   }
       
 private:
    PositionVector _positions;
@@ -337,24 +430,64 @@ public:
    virtual int length () const {
       return _length;
    }
-   virtual bool contains (const AssignmentBase& in, int startIndex = 0) const {
-      return _assg.contains (in, _begin + startIndex);
+   virtual bool contains (const AssignmentBase& in, int startIndex = 0, int cmp_length = assg_end) const {
+      debug_mustbe (length () == in.length ());
+      return _assg.contains (in, _begin + startIndex, (cmp_length == assg_end)? _length : cmp_length);
    }
-   virtual int compare (const AssignmentBase& in, int startIndex = 0) const {
-      return _assg.compare(in, _begin + startIndex);
+   virtual int compare (const AssignmentBase& in, int startIndex = 0, int cmp_length = assg_end) const {
+      debug_mustbe (length () == in.length ());
+      return _assg.compare(in, _begin + startIndex, (cmp_length == assg_end)? _length : cmp_length);
    }
-   virtual bool equals (const AssignmentBase& in, int startIndex = 0) const {
-      return _assg.equals (in, _begin + startIndex);
+   virtual bool equals (const AssignmentBase& in, int startIndex = 0, int cmp_length = assg_end) const {
+      debug_mustbe (length () == in.length ());
+      return _assg.equals (in, _begin + startIndex, (cmp_length == assg_end)? _length : cmp_length);
    }
 
    //
    // beginning to the end, respectively
    virtual Iterator iterator (  int begin = 0, int length = assg_end) {
       mustbe (!_const);
-      return _assg.iterator (begin + _begin, length);
+      return _assg.iterator (_begin + begin, (length == assg_end)? _length : length);
    }
    virtual CIterator iterator ( int begin = 0, int length = assg_end) const {
-      return static_cast <const Assignment&> (_assg).iterator (begin + _begin, length);
+      return static_cast <const Assignment&> (_assg).iterator (
+         _begin + begin, 
+         (length == assg_end)? _length : length)
+      ;
+   }
+   //
+   //
+   virtual void resize (int inLength) {
+      if (_length < inLength) {
+         _assg.insert (inLength - _length, _begin);
+         _length = inLength;
+      }
+      else if (_length > inLength){
+         _assg.erase (inLength - _length);
+      }
+   }
+   //
+   // erases AssgPositions
+   virtual void erase (int inLength, int inPosition = assg_end) {
+      debug_mustbe (inPosition < _length);
+
+      int pos = (inPosition == assg_end)? 
+         _begin + _length - inLength : _begin + inPosition;
+
+      _assg.erase (inLength, pos);
+      _length -= inLength;
+   }
+   //
+   //
+   virtual void insert (int inLength, int inPosition = assg_end, 
+                        const AssgPosition& p = AssgPosition ()) {
+      debug_mustbe (inPosition < _length);
+
+      int pos = (inPosition == assg_end)? 
+         _begin + _length: _begin + inPosition;
+
+      _assg.insert (inLength, pos, p);
+      _length += inLength;
    }
 
 private:
@@ -365,18 +498,5 @@ private:
 };
 
 #endif // _SeedSearcher_Assignment_h
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 

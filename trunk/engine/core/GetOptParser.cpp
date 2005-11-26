@@ -1,4 +1,6 @@
 #include "GetOptParser.h"
+#define ALWAYS_REQUIRE_ORDER 1
+
 
 /* Getopt for GNU.
 NOTE: GetOptWrapper::getopt is now part of the C library, so if you don't know what
@@ -329,10 +331,14 @@ GetOptWrapper::_getopt_internal (int argc, char *const *argv, const char *optstr
          ordering = REQUIRE_ORDER;
          ++optstring;
       }
+#if   ALWAYS_REQUIRE_ORDER
+      ordering = REQUIRE_ORDER;
+#else
       else if (getenv ("POSIXLY_CORRECT") != NULL)
          ordering = REQUIRE_ORDER;
       else
          ordering = PERMUTE;
+#endif
    }
 
    if (nextchar == NULL || *nextchar == '\0')

@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Feature.cpp $
-// Version     : $Revision: 18 $ 
+// Version     : $Revision: 19 $ 
 //               $Author: Aviad $
-//               $Date: 18/10/04 8:08 $ 
+//               $Date: 4/11/04 17:51 $ 
 // Description :
 //    Concrete cache for Hyper-Geometric distribution values
 //
@@ -79,18 +79,25 @@ void FeatureInvestigator::addPositions (
                            PositionVector& outNegatives)
 {
    //
-   // TODO: use the positions in the cluster if they are available
-   Preprocessor::NodeCluster motifNodes;
-   _parameters.preprocessor ().add2Cluster ( motifNodes, 
-                                             feature.assignment ());
-
-   PositionVector posPositions;
-   PositionVector negPositions;
-   motifNodes.positions (  _parameters.wf (), 
-                           outPositives, 
-                           outNegatives);
+   // use the positions in the cluster if they are available
+   if (feature.cluster ().hasPositions ()) {
+      //
+      // it is assumed that if it has any positions, then
+      // it contains all relevant positions
+      SeqCluster::AddPositions pos(outPositives);
+      SeqCluster::AddPositions neg(outNegatives);
+      feature.cluster ().performDivided(_parameters.wf (), pos, neg);
+   }
+   else {
+      Preprocessor::NodeCluster motifNodes;
+      _parameters.preprocessor ().add2Cluster ( motifNodes, 
+                                                feature.assignment ());
+      
+      motifNodes.positions (  _parameters.wf (), 
+                              outPositives, 
+                              outNegatives);
+   }
 }
-
 
 void FeatureInvestigator::printMotif (  
                            TextWriter& writer,

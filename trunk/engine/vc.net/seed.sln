@@ -9,20 +9,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Persistance", "Persistance.
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SeedSearcher", "SeedSearcher.vcproj", "{3071C567-8503-473B-A530-6D93E43B1809}"
 	ProjectSection(ProjectDependencies) = postProject
-		{16C4D29E-6206-48AF-AE0E-E413B563CE75} = {16C4D29E-6206-48AF-AE0E-E413B563CE75}
-		{80D22A42-7429-4BA2-8136-0AF6FADBEB11} = {80D22A42-7429-4BA2-8136-0AF6FADBEB11}
 		{A9E58B03-3A1B-4F52-9BC8-2376A2D6CAF5} = {A9E58B03-3A1B-4F52-9BC8-2376A2D6CAF5}
+		{80D22A42-7429-4BA2-8136-0AF6FADBEB11} = {80D22A42-7429-4BA2-8136-0AF6FADBEB11}
+		{16C4D29E-6206-48AF-AE0E-E413B563CE75} = {16C4D29E-6206-48AF-AE0E-E413B563CE75}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SeedSearcherCore", "SeedSearcherCore.vcproj", "{80D22A42-7429-4BA2-8136-0AF6FADBEB11}"
 	ProjectSection(ProjectDependencies) = postProject
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MotifCalc", "..\MotifCalc\MotifCalc.vcproj", "{4B2499B1-89B3-4737-A8E8-BA6EA4A10684}"
-	ProjectSection(ProjectDependencies) = postProject
-		{80D22A42-7429-4BA2-8136-0AF6FADBEB11} = {80D22A42-7429-4BA2-8136-0AF6FADBEB11}
-		{16C4D29E-6206-48AF-AE0E-E413B563CE75} = {16C4D29E-6206-48AF-AE0E-E413B563CE75}
-		{A9E58B03-3A1B-4F52-9BC8-2376A2D6CAF5} = {A9E58B03-3A1B-4F52-9BC8-2376A2D6CAF5}
 	EndProjectSection
 EndProject
 Global
@@ -32,7 +25,7 @@ Global
 		SccLocalPath0 = ..
 		SccProvider0 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
 		CanCheckoutShared = false
-		SccProjectFilePathRelativizedFromConnection0 = vc.net\\
+		SccProjectFilePathRelativizedFromConnection0 = VC.NET\\
 		SolutionUniqueID = {565832E6-16DF-4638-AFBD-4B5909BF0212}
 		SccProjectUniqueName1 = Core.vcproj
 		SccLocalPath1 = ..
@@ -72,10 +65,6 @@ Global
 		{80D22A42-7429-4BA2-8136-0AF6FADBEB11}.Debug.Build.0 = Debug|Win32
 		{80D22A42-7429-4BA2-8136-0AF6FADBEB11}.Release.ActiveCfg = Release|Win32
 		{80D22A42-7429-4BA2-8136-0AF6FADBEB11}.Release.Build.0 = Release|Win32
-		{4B2499B1-89B3-4737-A8E8-BA6EA4A10684}.Debug.ActiveCfg = Debug|Win32
-		{4B2499B1-89B3-4737-A8E8-BA6EA4A10684}.Debug.Build.0 = Debug|Win32
-		{4B2499B1-89B3-4737-A8E8-BA6EA4A10684}.Release.ActiveCfg = Release|Win32
-		{4B2499B1-89B3-4737-A8E8-BA6EA4A10684}.Release.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection

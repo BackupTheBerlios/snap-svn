@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: LeafPreprocessor.h $
-// Version     : $Revision: 12 $ 
+// Version     : $Revision: 13 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:44 $ 
+//               $Date: 4/11/04 17:52 $ 
 // Description :
 //    Concrete preprocessor class - based on a hash table
 //
@@ -40,37 +40,58 @@ public:
       public AllocPolicy::Traits <LeafNode>::TBase
    {
    public:
-   LeafNode (const SeedHash::AssgKey& key) 
-      : SeedHash::Cluster <LeafNode> (key) 
-   {
-   }
-   virtual ~LeafNode () {
-   }
-     
-   //
-   // check if node has any positions for a particular sequence
-   virtual bool hasPositions (SequenceDB::ID) const; 
-   virtual bool hasPositions (const SeqWeightFunction&) const;
-     
-   //
-   // returns all the sequences in this node
-   virtual void add2SeqCluster (SequenceDB::Cluster& outSeqInNode) const;
-   virtual void add2SeqClusterPositions (SequenceDB::Cluster&) const;
-   virtual void add2PosCluster (PosCluster&, Sequence::ID) const;
-     
-   virtual void add2Assignment (Assignment&) const;
-     
-   //
-   //
-   void addPosition (AutoPtr <SeqPosition> pos) {
-      PosCluster& posCluster = 
-         _cluster->getCreatePositions (pos->sequence ());
-       
-      USELESS (bool result = )
-         posCluster.addPosition (pos.release ());
-       
-      USELESS (debug_mustbe (result));
-   }
+      LeafNode (const SeedHash::AssgKey& key) 
+         : SeedHash::Cluster <LeafNode> (key) 
+      {
+      }
+      virtual ~LeafNode () {
+      }
+        
+      //
+      // check if node has any positions for a particular sequence
+      virtual bool hasPositions (SequenceDB::ID) const; 
+      virtual bool hasPositions (const SeqWeightFunction&) const;
+        
+      //
+      // returns all the sequences in this node
+      virtual void add2SeqCluster (SequenceDB::Cluster& outSeqInNode) const;
+      virtual void add2SeqClusterPositions (SequenceDB::Cluster&) const;
+      virtual void add2PosCluster (PosCluster&, Sequence::ID) const;
+        
+      virtual void add2Assignment (Assignment&) const;
+        
+      //
+      //
+      void addPosition (AutoPtr <SeqPosition> pos) {
+         PosCluster& posCluster = 
+            _cluster->getCreatePositions (pos->sequence ());
+          
+         USELESS (bool result = )
+            posCluster.addPosition (pos.release ());
+          
+         USELESS (debug_mustbe (result));
+      }
+
+      //
+      //
+      struct LeafNodePositionIt : public NodePositionIt::Rep {
+         LeafNodePositionIt (const SeqCluster& c) : _it (c) {
+         }
+         virtual bool next () {
+            return _it.next ();
+         }
+         virtual bool hasNext () const {
+            return _it.hasNext();
+         }
+         virtual const SeqPosition* get () const {
+            return _it.get ();
+         }
+
+         SeqCluster::SeqPosIterator _it;   
+      };
+      virtual NodePositionIt::Rep* positionIterator () const {
+         return new LeafNodePositionIt (this->getCluster ());
+      }
    };
 
 
@@ -97,28 +118,12 @@ public:
    virtual int maxAssignmentSize () const;
 
    //
-   // iterate over all positions that correspond to an 
-   // assignment on a given sequence
-   virtual AutoPtr <PositionVector> getPositions ( SequenceDB::ID, 
-                                                   const Assignment&)  const;
-
-   //
-   // returns true iff the sequence has at least one position which corresponds
-   // to the given assignment
-   virtual bool hasAssignment (SequenceDB::ID, const Assignment&) const;
-
-   //
    // iterate over all sequences
    virtual AutoPtr <SequenceVector> getSequences () const;
-   
-   //
-   // iterate over all sequences that have at least 
-   // one position which corresponds to the given assignment
-   virtual AutoPtr <SequenceVector> getSequences (const Assignment&) const;
 
    //
    //
-   virtual void add2Cluster (NodeCluster&, const Assignment&)  const;
+   virtual void add2Cluster (NodeCluster&, const AssignmentBase&)  const;
 
 protected:
    Rep* _rep;

@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: LeafPreprocessor.cpp $
-// Version     : $Revision: 19 $ 
+// Version     : $Revision: 20 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:44 $ 
+//               $Date: 4/11/04 17:52 $ 
 // Description :
 //    Concrete preprocessor class - based on a hash table
 //
@@ -103,7 +103,7 @@ int LeafPreprocessor::maxAssignmentSize () const
 }
 
 void LeafPreprocessor::add2Cluster (NodeCluster& nodes, 
-                                     const Assignment& assg)  const
+                                     const AssignmentBase& assg)  const
 {
    int assgLength = assg.length ();
    Assignment assgTemplate (assg);
@@ -135,53 +135,12 @@ void LeafPreprocessor::add2Cluster (NodeCluster& nodes,
 }
 
 //
-// iterate over all positions that correspond to an assignment on a given sequence
-AutoPtr <PositionVector> 
-LeafPreprocessor::getPositions (SequenceDB::ID id, 
-                                const Assignment& assg) const
-{
-   NodeCluster cluster;
-   add2Cluster (cluster, assg);
-   return cluster.positions (id);
-}
-
-//
-// returns true iff the sequence has at least one position which corresponds
-// to the given assignment
-bool LeafPreprocessor::hasAssignment (SequenceDB::ID id,
-                                      const Assignment& assg) const
-{
-   NodeCluster cluster;
-   add2Cluster (cluster, assg);
-
-   NodeIterator it (cluster.iterator ());
-   for (; it.hasNext (); it.next ()) {
-      Node node (it.get ());
-      if (node.hasPositions (id))
-         return true;
-   }
-
-   return false;
-}
-
-//
 // iterate over all sequences
 AutoPtr <SequenceVector> LeafPreprocessor::getSequences () const
 {
    //
    // TODO
    return NULL;
-}
-
-//
-// iterate over all sequences that have at least one position which corresponds 
-// to the given assignment
-AutoPtr <SequenceVector> 
-LeafPreprocessor::getSequences (const Assignment& assg) const
-{
-   NodeCluster cluster;
-   add2Cluster (cluster, assg);
-   return cluster.sequences ();
 }
 
 

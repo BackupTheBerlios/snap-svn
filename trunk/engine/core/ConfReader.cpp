@@ -723,39 +723,42 @@ void ConfReaderWrapper::readFromFile(const Str& inConfigFile, ConfReaderTree& ou
 
 
 	StrBuffer key, value;
-	if (input.good()) {
-		while(!input.eof()) {
-			char lineBuf[256];
-			input.getline(lineBuf, sizeof(lineBuf), '\n');
-			if(lineBuf[0] == '#')
-				continue;
-			if(lineBuf[0] == '$') {
-				Str line(lineBuf);
-				Str::Index keyBegin= line.indexOf('"');
-				Str::Index keyEnd= line.lastIndexOf('"');
-				if ((keyBegin!=Str::badIndex) && (keyEnd!=Str::badIndex)) {
-					StrBuffer fileName= line.substring(keyBegin+1, keyEnd);
-					bool bPresent = false;
-					for( StrBufferList::ReadIterator_const i(fileNameList); !i.atEnd(); i.next ()) {
-						if ( fileName.equalsIgnoreCase( i->data ) ) {
-							bPresent = true;
-							break;
-						}
-					}
-					if ( !bPresent )
-						fileNameList.addLast( new StrBufferNode( fileName ) );
-					continue;
-				}	
-			}
+
+   char lineBuf[8 * 1024] = "";
+	while(!input.eof() && input.good ()) {
+		input.getline(lineBuf, sizeof(lineBuf), '\n');
+		if(lineBuf[0] == '#')
+			continue;
+		if(lineBuf[0] == '$') {
 			Str line(lineBuf);
-			Str::Index keyEnd= line.indexOf('=');
-			if (keyEnd!=Str::badIndex) {
-				key= line.substring(0, keyEnd);
-				key.trim();
-				value= line.substring(keyEnd+1);
-				value.trim();
-				outTree.set(key, value);
-			}
+			Str::Index keyBegin= line.indexOf('"');
+			Str::Index keyEnd= line.lastIndexOf('"');
+			if ((keyBegin!=Str::badIndex) && (keyEnd!=Str::badIndex)) {
+				StrBuffer fileName= line.substring(keyBegin+1, keyEnd);
+				bool bPresent = false;
+				for( StrBufferList::ReadIterator_const i(fileNameList); !i.atEnd(); i.next ()) {
+					if ( fileName.equalsIgnoreCase( i->data ) ) {
+						bPresent = true;
+						break;
+					}
+				}
+				if ( !bPresent )
+					fileNameList.addLast( new StrBufferNode( fileName ) );
+				continue;
+			}	
+		}
+      if (!input.eof () && !input.good()){
+         mmustfail (StrBuffer ("Bad conf format, last read line was ", lineBuf));
+      }
+
+		Str line(lineBuf);
+		Str::Index keyEnd= line.indexOf('=');
+		if (keyEnd!=Str::badIndex) {
+			key= line.substring(0, keyEnd);
+			key.trim();
+			value= line.substring(keyEnd+1);
+			value.trim();
+			outTree.set(key, value);
 		}
 	}
 
@@ -1822,9 +1825,9 @@ void ConfReader::ValueNotFound::explain (std::ostream& out)
 //
 // File        : $RCSfile: $ 
 //               $Workfile: ConfReader.cpp $
-// Version     : $Revision: 7 $ 
+// Version     : $Revision: 8 $ 
 //               $Author: Aviad $
-//               $Date: 28/08/04 5:40 $ 
+//               $Date: 4/11/04 17:59 $ 
 // Description :
 //	The Persistence library contains both high & low level IO classes
 //	and is high-performance, highly reusable framework 

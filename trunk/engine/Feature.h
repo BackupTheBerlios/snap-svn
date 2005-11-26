@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Feature.h $
-// Version     : $Revision: 13 $ 
+// Version     : $Revision: 14 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:44 $ 
+//               $Date: 4/11/04 17:51 $ 
 // Description :
 //    Concrete cache for Hyper-Geometric distribution values
 //
@@ -106,6 +106,7 @@ public:
 	   return *_assg;
    }
    inline const SeqCluster& cluster () const {
+      debug_mustbe (_cluster);
 	   return *_cluster;
    }
    inline const ScoreParameters* scoreParameters () const {

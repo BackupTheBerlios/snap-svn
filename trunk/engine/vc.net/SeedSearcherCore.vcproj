@@ -1,7 +1,7 @@
-<?xml version="1.0" encoding = "windows-1255"?>
+<?xml version="1.0" encoding="windows-1255"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="7.00"
+	Version="7.10"
 	Name="SeedSearcherCore"
 	ProjectGUID="{80D22A42-7429-4BA2-8136-0AF6FADBEB11}"
 	SccProjectName="&quot;$/SeedSearcher&quot;, ECAAAAAA"
@@ -55,6 +55,12 @@
 				Name="VCResourceCompilerTool"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
@@ -106,8 +112,16 @@
 				Name="VCResourceCompilerTool"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 	</Configurations>
+	<References>
+	</References>
 	<Files>
 		<Filter
 			Name="Source Files">
@@ -139,9 +153,6 @@
 				RelativePath="..\Legacy\Multinomial.cpp">
 			</File>
 			<File
-				RelativePath="..\PSSM.cpp">
-			</File>
-			<File
 				RelativePath="..\Parser.cpp">
 			</File>
 			<File
@@ -152,6 +163,9 @@
 			</File>
 			<File
 				RelativePath="..\Preprocessor.cpp">
+			</File>
+			<File
+				RelativePath="..\PSSM.cpp">
 			</File>
 			<File
 				RelativePath="..\RandomProjections.cpp">
@@ -214,9 +228,6 @@
 				RelativePath="..\LeafPreprocessor.h">
 			</File>
 			<File
-				RelativePath="..\PSSM.h">
-			</File>
-			<File
 				RelativePath="..\Parser.h">
 			</File>
 			<File
@@ -224,6 +235,9 @@
 			</File>
 			<File
 				RelativePath="..\Preprocessor.h">
+			</File>
+			<File
+				RelativePath="..\PSSM.h">
 			</File>
 			<File
 				RelativePath="..\RandomProjections.h">
@@ -284,6 +298,9 @@
 				RelativePath="..\status_reporter\DummyStatusReporter.hpp">
 			</File>
 		</Filter>
+		<File
+			RelativePath="..\UnboundedPreprocessor.h">
+		</File>
 	</Files>
 	<Globals>
 	</Globals>

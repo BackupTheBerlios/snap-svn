@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Parser.h $
-// Version     : $Revision: 25 $ 
+// Version     : $Revision: 26 $ 
 //               $Author: Aviad $
-//               $Date: 13/10/04 3:33 $ 
+//               $Date: 4/11/04 17:56 $ 
 // Description :
 //    Concrete Parser for seed-searcher options
 //
@@ -106,9 +106,12 @@ public:
    // type of preprocessor
    PrepType __prep;
    //
-   // remove totaly negative features
+   // remove totally negative features
    // (expert feature, may lead to incorrect results)
    bool __prep_noneg;
+   //
+   // how deep/long should preprocessed k-mers be
+   int __prep_l;
    //
    // type of counting mechanism: gene-count / total count
    CountType __count;

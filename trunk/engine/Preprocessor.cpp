@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Preprocessor.cpp $
-// Version     : $Revision: 5 $ 
+// Version     : $Revision: 6 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:44 $ 
+//               $Date: 4/11/04 17:56 $ 
 // Description :
 //    interface classes for preprocessors
 //
@@ -94,6 +94,7 @@ void NodeCluster::positions (  const SeqWeightFunction& wf,
 //
 void NodeCluster::addNode (Preprocessor::AssgNodePair& node)
 {
+   node.node ()->acquire ();
    _nodes.push_back (node);
 }
 
@@ -120,6 +121,3 @@ void NodeCluster::add2PosCluster (PosCluster& cluster, Sequence::ID id) const
       it->node ()->add2PosCluster(cluster, id);
    }
 }
-
-
-

@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: PrefixTreePreprocessor.cpp $
-// Version     : $Revision: 37 $ 
+// Version     : $Revision: 38 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:44 $ 
+//               $Date: 4/11/04 17:53 $ 
 // Description :
 //    Concrete preprocessor class - based on a prefix tree
 //
@@ -111,6 +111,10 @@ public:
    inline PositionIterator positionIterator (SequenceDB::ID);
 
    //
+   //
+   const AlphabetCode& getCode () const;
+
+   //
    // general node interface
 public:
    //
@@ -126,7 +130,13 @@ public:
 
    virtual void add2Assignment (Assignment&) const;
 
-  const AlphabetCode& getCode () const;
+   //
+   //
+   virtual NodePositionIt::Rep* positionIterator () const {
+      //
+      // 
+      return new TreeNodePositionIt (const_cast <TreeNodeRep*> (this));
+   }
 
 protected:
   int _depth;
@@ -635,38 +645,6 @@ TreeNodeRep* PrefixTreePreprocessor::getRoot () const
 
 
 //
-// returns true iff the sequence has at least one position which corresponds
-// to the given assignment
-bool PrefixTreePreprocessor::hasAssignment (SequenceDB::ID id, 
-                                            const Assignment& assg)  const
-{
-   NodeCluster cluster;
-   add2Cluster (cluster, assg);
-
-   NodeIterator it (cluster.iterator ());
-   for (; it.hasNext (); it.next ()) {
-      Node node (it.get ());
-      if (node.hasPositions (id))
-         return true;
-   }
-
-   return false;
-}
-
-//
-// iterate over all sequences that have at least one position which corresponds 
-// to the given assignment
-AutoPtr <SequenceVector>
-PrefixTreePreprocessor::getSequences (const Assignment& assg)  const
-{
-   NodeCluster cluster;
-   add2Cluster (cluster, assg);
-   return cluster.sequences ();
-}
-
-
-
-//
 // iterate over all sequences
 AutoPtr <SequenceVector>
 PrefixTreePreprocessor::getSequences ()  const
@@ -680,22 +658,6 @@ PrefixTreePreprocessor::getSequences ()  const
 	  _rep->_db->sequences ().end ()
 	  );
 }     
-
-//
-// iterate over all positions that correspond to an assignment on a given sequence
-AutoPtr <PositionVector> 
-PrefixTreePreprocessor::getPositions (SequenceDB::ID id, 
-                                      const Assignment& assg)  const
-{
-   NodeCluster cluster;
-   add2Cluster (cluster, assg);
-   return cluster.positions (id);
-}
-
-int PrefixTreePreprocessor::minAssignmentSize ()  const
-{
-   return 0;
-}
 
 int PrefixTreePreprocessor::maxAssignmentSize () const
 {
@@ -1115,7 +1077,7 @@ static void rec_addAssignmentNodes (int depth,
 }
 
 void PrefixTreePreprocessor::add2Cluster (NodeCluster& cluster, 
-                                          const Assignment& assg)  const
+                                          const AssignmentBase& assg)  const
 {
    if (assg.length () <= 0)
       return;

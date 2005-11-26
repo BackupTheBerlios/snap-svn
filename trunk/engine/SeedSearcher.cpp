@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: SeedSearcher.cpp $
-// Version     : $Revision: 26 $ 
+// Version     : $Revision: 27 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:44 $ 
+//               $Date: 4/11/04 17:55 $ 
 // Description :
 //    Concrete class for seed-searching in a preprocessor
 //
@@ -372,7 +372,6 @@ int SeedSearcher::prefixTreeSearch (
    Assignment::PositionIterator posIt (firstPosition);
    for (; posIt.hasNext () ; posIt.next ()) {
       int childIndex = posIt.get ();
-      FeatureVector childFeatures;
       rec_prefixTreeSearch (
          params,
          node.getChild (childIndex), //where to search
@@ -577,35 +576,27 @@ struct TableSearcher {
             cachedSeed->addSequences (node);
          }
       }
-
       virtual AbstractSeed* createCluster (const SeedHash::AssgKey& key){
          if (_specialize)
             return new SpecializedSeed (key);
          else
             return new Seed (key);
       }
-
    protected:
       bool _totalCount;
       bool _specialize;
    };
 };
 
-//
-// Total counts
-//
-int SeedSearcher::tableSearch (  SearchParameters& params,
-                                 const Assignment& projection)
-{
-   debug_mustbe (projection.length () > 0);
+static const int DEFAULT_SEED_HASH_TABLE_SIZE = 7 * 1023 * 1024 - 1;
 
-   Preprocessor::NodeCluster nodes;
-   TableSearcher::Table hashTable ( params.countType () == _count_total_,
-                                    params.useSpecialization (),
-                                    7 * 1023 * 1024 - 1,
-                                    params.langauge ());
+static void createFeatureTable (TableSearcher::Table& hashTable,
+                                SeedSearcher::SearchParameters& params,
+                                const Assignment& projection)
+{
    //
    // collect features assg_together, (with optional total counts)
+   Preprocessor::NodeCluster nodes;
    params.preprocessor ().add2Cluster (nodes, projection);
    Preprocessor::NodeIterator it = nodes.iterator ();
    for (; it.hasNext () ; it.next ()) {
@@ -615,63 +606,244 @@ int SeedSearcher::tableSearch (  SearchParameters& params,
       // 
       debug_mustbe (nodeWithPath.path ().length () == projection.length ());
 
-      hashTable.addSeed (  nodeWithPath.path (), 
-                           node);
+      hashTable.addSeed (nodeWithPath.path (), node);
    }
+}
 
-   time_t start = time (NULL), finish;
-   DLOG << "[Evaluating seeds: ";
-   DLOG.flush ();
+static int extendedTableSearch (
+                  SeedSearcher::SearchParameters& params,
+                  const Assignment& projection)
+{
+   //
+   // TODO: support specialization
 
    //
-   // now spit out all the features...
-   TableSearcher::SeedHashTableBase::Iterator featureIt (hashTable);
+   // constants for later use
+   const int prefixLength = params.preprocessor().maxAssignmentSize();
+   const int postfixLength = projection.length () - prefixLength;
+   const int totalLength = prefixLength + postfixLength;
+
+   const SubAssignment projectionPrefix (projection, 0, prefixLength);
+   const SubAssignment projectionPostfix (projection, prefixLength);
+   //
+   // make sure SubAssignments work well
+   debug_mustbe (
+      projectionPrefix.length () + projectionPostfix.length () == projection.length ());
+
+   //
+   // now we want to create a unified view of preprocessor-nodes 
+   // according to the projection's prefix
+   TableSearcher::Table shortHashTable ( 
+      /* use total count because we neeed the positions */ true,
+      /* don't use specialization */ false,
+      DEFAULT_SEED_HASH_TABLE_SIZE,
+      params.langauge ());
+
+   {
+      //
+      // get all the nodes of the preprocessor up to maximum length
+      Preprocessor::NodeCluster nodes;
+      params.preprocessor ().add2Cluster (nodes, projectionPrefix);
+      createFeatureTable (shortHashTable, params, projectionPrefix);
+   }
+
+   //
+   // all the variables below are defined outside the loops
+   // for efficiency - less new/delete
+   //
+   // seqCluster - used by outer loop
+   SeqCluster seqCluster;
+
+   //
+   // used by inner loop
+   Assignment currentAssgPostfix;
+   PositionVector currentPositions;
+   PositionVector nextPositions;
+   AutoPtr <SeqCluster> currentSeqCluster = new SeqCluster;
+   int seedsFound = 0;
+
+   //
+   // go over all unified nodes
+   TableSearcher::SeedHashTableBase::Iterator featureIt (shortHashTable);
    for (; featureIt.hasNext () ; featureIt.next ()) {
       TableSearcher::Seed* feature = 
          dynamic_cast <TableSearcher::Seed*> (featureIt.get ());
 
-      if (params.countType () == _count_total_) {
+      //
+      // get the node's assignment and positions
+      const Assignment& currentAssgPrefix = feature->assignment ();
+      SeqCluster::SeqPosIterator seqPosIt (feature->getCluster().posIterator ());
+      for (; seqPosIt.hasNext() ; seqPosIt.next ()) {
          //
-         // now we have to remove position overlaps, e.g. we do not count
-         // 'AAAAAA' (6 A's)  as having the feature 'AA' 5 times, but only 3 times 
+         // discard positions too close to the end
+         if (seqPosIt.get ()->maxLookahead () >= totalLength) {
+            currentPositions.push_back(seqPosIt.get ());
+         }
+      }
+
+      //
+      // now we look at all the available ways to 'extend' the node
+      // we work with just one assignment at a time to be memory-conservative
+      while (!currentPositions.empty ()) {
+         debug_mustbe (nextPositions.empty ());
+         debug_mustbe (seqCluster.empty ());
+         PositionIterator posIt (currentPositions.begin (), currentPositions.end ());
+         if (posIt.hasNext ()) {
+            //
+            // determine current working assignment:
+            // it is the first position's assignment, generalized to fit
+            // the wildcards in the projection
+            currentAssgPostfix.set (
+               Assignment ((*posIt)->getSeedString (postfixLength, prefixLength), params.langauge ().code ()),
+               projectionPostfix
+               );
+
+            //
+            // go over all positions left in this node
+            for (; posIt.hasNext() ; posIt.next ()) {
+               //
+               // the position's assignment
+               Assignment posAssignment (
+                  (*posIt)->getSeedString (postfixLength, prefixLength),
+                  params.langauge ().code ()
+                  );
+               debug_mustbe (currentAssgPostfix.length () == posAssignment.length ());
+               if (currentAssgPostfix.contains (posAssignment)) {
+                  /*
+                  DLOG << Format (currentAssgPostfix)
+                        << " contains "
+                        << Format (posAssignment)
+                        << DLOG.EOL ();
+                  DLOG.flush ();
+                  */
+                  //
+                  // this position fits with the current working assignment
+                  // add it later (at the end of the loop) for efficiency
+                  PosCluster& posCluster = 
+                     currentSeqCluster->getCreatePositions ((*posIt)->sequence ());
+                  posCluster.addPosition (*posIt);
+               }
+               else {
+                  //
+                  // this position does not fit with current working assignment
+                  // we will examine it again later
+                  nextPositions.push_back(*posIt);
+               }
+            }
+         }
+
+         if (!currentSeqCluster->empty ()) {
+            //
+            // extend the node's assg-prefix with the current-working-assg
+            Assignment* completeAssignment = 
+               new Assignment (currentAssgPrefix);
+            completeAssignment->addAssignmentAt (prefixLength, currentAssgPostfix);
+            debug_mustbe (completeAssignment->length () == projection.length ());
+
+            //
+            // 1. the prefixes are unique because they are unified-nodes
+            // 2. the postfixes are unique because we are working 
+            //       one (generalized) assignment at a time
+            //
+            // so we actually know all the positions for the complete
+            // (generalized) assignment right now! so we score the seed
+            // right here. this design is due to memory limitations.
+            // remember, if we had more memory, we could just have created
+            // a deeper preprocessor, right?
+            Feature seed_feature;
+            params.createFeature(
+               seed_feature,
+               completeAssignment,
+               currentSeqCluster.release(),
+               &projection);
+
+            params.bestFeatures ().add (&seed_feature);
+            currentSeqCluster = new SeqCluster;
+
+            seedsFound++;
+         }
+
          //
-         // gcc doesnt like unused variable
-         // (Even if they are very useful for debugging!)
-         USELESS (const int overlappingPositions = )
-	          feature->removeOverlaps ();
-      }
-     
-      Assignment* featureAssg;
-      if (params.useSpecialization ()) {
-         featureAssg = 
-            safe_cast (TableSearcher::SpecializedSeed*, 
-               feature)->releaseSpecializtion ();
-      }
-      else {
-         featureAssg = new Assignment (feature->assignment ());
-      }
+         // now concentrate on those position that did not match
+         // any of the former working-assignments
+         currentPositions = nextPositions;
+         nextPositions.clear ();
+      } // finished with one unified-node, next one please
+   } // finished all nodes, bye!
 
-      Feature seed_feature;
-      params.createFeature(
-         seed_feature,
-         featureAssg,
-         feature->releaseCluster (),
-         &projection);
-      
-      params.bestFeatures ().add (&seed_feature);
-   }
-
-   finish = time (NULL);
-   DLOG << (finish - start) << " seconds.] ";
-
-   return hashTable.getSize ();
+   return seedsFound;
 }
 
+//
+// Total counts
+//
+int SeedSearcher::tableSearch (  SearchParameters& params,
+                                 const Assignment& projection)
+{
+   debug_mustbe (projection.length () > 0);
+   if (projection.length () <= params.preprocessor ().maxAssignmentSize ()) {
+      
+      TableSearcher::Table hashTable ( 
+         params.countType() == _count_total_,
+         params.useSpecialization (),
+         DEFAULT_SEED_HASH_TABLE_SIZE,
+         params.langauge ());
+
+      createFeatureTable(hashTable, params, projection);
 
 
 
+      time_t start = time (NULL), finish;
+      DLOG << "[Evaluating seeds: ";
+      DLOG.flush ();
 
+      //
+      // now spit out all the features...
+      TableSearcher::SeedHashTableBase::Iterator featureIt (hashTable);
+      for (; featureIt.hasNext () ; featureIt.next ()) {
+         TableSearcher::Seed* feature = 
+            dynamic_cast <TableSearcher::Seed*> (featureIt.get ());
 
+         if (params.countType () == _count_total_) {
+            //
+            // now we have to remove position overlaps, e.g. we do not count
+            // 'AAAAAA' (6 A's)  as having the feature 'AA' 5 times, but only 3 times 
+            //
+            // gcc doesnt like unused variable
+            // (Even if they are very useful for debugging!)
+            USELESS (const int overlappingPositions = )
+               feature->removeOverlaps ();
+         }
+
+         Assignment* featureAssg;
+         if (params.useSpecialization ()) {
+            featureAssg = 
+               safe_cast (TableSearcher::SpecializedSeed*, 
+               feature)->releaseSpecializtion ();
+         }
+         else {
+            featureAssg = new Assignment (feature->assignment ());
+         }
+
+         Feature seed_feature;
+         params.createFeature(
+            seed_feature,
+            featureAssg,
+            feature->releaseCluster (),
+            &projection);
+
+         params.bestFeatures ().add (&seed_feature);
+      }
+
+      finish = time (NULL);
+      DLOG << (finish - start) << " seconds.] ";
+
+      return hashTable.getSize ();
+   }
+   else {
+      return extendedTableSearch (params, projection);
+   }
+}
 
 
 

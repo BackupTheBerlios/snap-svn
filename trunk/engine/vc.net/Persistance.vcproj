@@ -1,7 +1,7 @@
-<?xml version="1.0" encoding = "windows-1255"?>
+<?xml version="1.0" encoding="windows-1255"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="7.00"
+	Version="7.10"
 	Name="Persistance"
 	ProjectGUID="{16C4D29E-6206-48AF-AE0E-E413B563CE75}"
 	SccProjectName="&quot;$/SeedSearcher&quot;, ECAAAAAA"
@@ -57,6 +57,12 @@
 				Name="VCResourceCompilerTool"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
@@ -108,8 +114,16 @@
 				Name="VCResourceCompilerTool"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 	</Configurations>
+	<References>
+	</References>
 	<Files>
 		<Filter
 			Name="Source Files"
@@ -121,28 +135,25 @@
 				RelativePath="..\..\seedsearcher\Persistance\IArchive.cpp">
 			</File>
 			<File
-				RelativePath="..\..\seedsearcher\Persistance\IRegistry.cpp">
+				RelativePath="..\..\seedsearcher\Persistance\InputStream.cpp">
 			</File>
 			<File
-				RelativePath="..\..\seedsearcher\Persistance\InputStream.cpp">
+				RelativePath="..\..\seedsearcher\Persistance\IRegistry.cpp">
 			</File>
 			<File
 				RelativePath="..\..\seedsearcher\Persistance\OArchive.cpp">
 			</File>
 			<File
-				RelativePath="..\..\seedsearcher\Persistance\ORegistry.cpp">
+				RelativePath="..\..\seedsearcher\Persistance\Object.cpp">
 			</File>
 			<File
-				RelativePath="..\..\seedsearcher\Persistance\Object.cpp">
+				RelativePath="..\..\seedsearcher\Persistance\ORegistry.cpp">
 			</File>
 			<File
 				RelativePath="..\..\seedsearcher\Persistance\OutputStream.cpp">
 			</File>
 			<File
 				RelativePath="..\..\seedsearcher\Persistance\StreamBuffer.cpp">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\Persistance\TFactory.cpp">
 			</File>
 			<File
 				RelativePath="..\..\seedsearcher\Persistance\TextReader.cpp">
@@ -152,6 +163,9 @@
 			</File>
 			<File
 				RelativePath="..\..\seedsearcher\Persistance\TextWriter.cpp">
+			</File>
+			<File
+				RelativePath="..\..\seedsearcher\Persistance\TFactory.cpp">
 			</File>
 		</Filter>
 		<Filter
@@ -170,28 +184,25 @@
 				RelativePath="..\..\seedsearcher\Persistance\IArchive.h">
 			</File>
 			<File
+				RelativePath="..\..\seedsearcher\Persistance\InputStream.h">
+			</File>
+			<File
 				RelativePath="..\..\seedsearcher\Persistance\IODefs.h">
 			</File>
 			<File
 				RelativePath="..\..\seedsearcher\Persistance\IRegistry.h">
 			</File>
 			<File
-				RelativePath="..\..\seedsearcher\Persistance\InputStream.h">
-			</File>
-			<File
 				RelativePath="..\..\seedsearcher\Persistance\OArchive.h">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\Persistance\ORegistry.h">
 			</File>
 			<File
 				RelativePath="..\..\seedsearcher\Persistance\Object.h">
 			</File>
 			<File
-				RelativePath="..\..\seedsearcher\Persistance\OutputStream.h">
+				RelativePath="..\..\seedsearcher\Persistance\ORegistry.h">
 			</File>
 			<File
-				RelativePath="..\..\seedsearcher\Persistance\STLPersist.h">
+				RelativePath="..\..\seedsearcher\Persistance\OutputStream.h">
 			</File>
 			<File
 				RelativePath="..\..\seedsearcher\Persistance\StdInputStream.h">
@@ -200,13 +211,13 @@
 				RelativePath="..\..\seedsearcher\Persistance\StdOutputStream.h">
 			</File>
 			<File
-				RelativePath="..\..\seedsearcher\Persistance\StrOutputStream.h">
+				RelativePath="..\..\seedsearcher\Persistance\STLPersist.h">
 			</File>
 			<File
 				RelativePath="..\..\seedsearcher\Persistance\StreamBuffer.h">
 			</File>
 			<File
-				RelativePath="..\..\seedsearcher\Persistance\TFactory.h">
+				RelativePath="..\..\seedsearcher\Persistance\StrOutputStream.h">
 			</File>
 			<File
 				RelativePath="..\..\seedsearcher\Persistance\TextReader.h">
@@ -216,6 +227,9 @@
 			</File>
 			<File
 				RelativePath="..\..\seedsearcher\Persistance\TextWriter.h">
+			</File>
+			<File
+				RelativePath="..\..\seedsearcher\Persistance\TFactory.h">
 			</File>
 			<File
 				RelativePath="..\..\seedsearcher\Persistance\UnbufferedChannel.h">

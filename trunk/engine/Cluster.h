@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Cluster.h $
-// Version     : $Revision: 20 $ 
+// Version     : $Revision: 21 $ 
 //               $Author: Aviad $
-//               $Date: 27/08/04 2:08 $ 
+//               $Date: 4/11/04 17:39 $ 
 // Description :
 //    Concrete class for sets of sequences, sets of sequence positions
 //
@@ -159,6 +159,62 @@ public:
       Map1stBinder <SequenceSet>::CIterator b (_set.end ());
       return CIterator (a, b);
    }
+
+   struct SeqPosIterator {
+      //
+      // invariants:
+      // (1) the current element is stored at _current
+      // (2) _posit will point at the next element
+      SeqPosIterator (const SeqCluster& c) : _cluster (c), _seqit (c.iterator ()), _current (NULL) {
+         while (_seqit.hasNext () && (_cluster.getPositions (_seqit.get ()) == NULL))
+            _seqit.next ();
+
+         if (_seqit.hasNext()){
+            _posit = _cluster.getPositions (_seqit.get ())->iterator ();
+            if (_posit.hasNext ()) {
+               _current = &(*_posit.get ());
+               _posit.next ();
+            }
+
+            _seqit.next ();
+         }
+
+      }
+      virtual ~SeqPosIterator () {
+      }
+      bool hasNext () const {
+         return _current != NULL;
+      }
+      bool next () {
+         while (!_posit.hasNext () && _seqit.hasNext ()) {
+            if (_cluster.getPositions (_seqit.get ()) != NULL) {
+               _posit = _cluster.getPositions (_seqit.get ())->iterator ();
+            }
+            _seqit.next ();
+         }
+
+         if (_posit.hasNext ()) {
+            _current = *_posit;
+            _posit.next ();
+         }
+         else {
+            _current = NULL;
+         }
+         return hasNext ();
+      }
+      const SeqPosition* get () const {
+         return _current;
+      }
+
+      const SeqCluster& _cluster;
+      PosCluster::CIterator _posit;
+      SeqCluster::CIterator _seqit;
+      const SeqPosition* _current;
+   };
+
+   SeqPosIterator posIterator () const {
+      return SeqPosIterator (*this);
+   }
    
    //
    // 
@@ -179,6 +235,10 @@ public:
    bool hasPositions (Iterator&) const;
    bool hasPositions (CIterator&) const;
    bool hasPositions (const Sequence*) const;
+   bool hasPositions () const {
+      SeqPosIterator it (*this);
+      return it.hasNext (); // returns true if it has any positions at all
+   }
 
    bool empty () const {
       return _set.empty ();

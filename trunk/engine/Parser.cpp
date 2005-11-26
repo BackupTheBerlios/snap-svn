@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Parser.cpp $
-// Version     : $Revision: 34 $ 
+// Version     : $Revision: 35 $ 
 //               $Author: Aviad $
-//               $Date: 13/10/04 3:33 $ 
+//               $Date: 4/11/04 17:56 $ 
 // Description :
 //    Concrete Parser for seed-searcher options
 //
@@ -299,6 +299,24 @@ DEFINE_SEED_PARSER_OPTION(prep,
          parser->__prep = _prep_tree_;
       else
          parser->usage (StrBuffer ("unknown preprocessor type ", optarg));
+   }
+);
+
+DEFINE_SEED_PARSER_OPTION(prep_l,
+                          "Sprep-l",
+                          "<maximum-length> of preprocessed seeds.\n"
+                           "if this option is not set, it defaults to "
+                           "the length set in --Sseed-l. "
+                           "this feature is useful to limiting memory consumption.",
+                          "",
+                          GetOptWrapper::_required_argument_,
+   {
+      Parser* parser = reinterpret_cast <Parser*> (ctx);
+      Str sarg (optarg);
+      if (!sarg.empty ())
+         parser->__prep_l = parser->getInt (optarg, this->_name);   
+      else
+         parser->__prep_l = -1;
    }
 );
 
@@ -676,6 +694,7 @@ struct MyOptions {
       REGISTER_SEED_PARSER_OPTION_CLASS (seed_rr, _list);
       REGISTER_SEED_PARSER_OPTION_CLASS (seed_o, _list);
       REGISTER_SEED_PARSER_OPTION_CLASS (prep, _list);
+      REGISTER_SEED_PARSER_OPTION_CLASS (prep_l, _list);
       REGISTER_SEED_PARSER_OPTION_CLASS (prep_noneg, _list);
       REGISTER_SEED_PARSER_OPTION_CLASS (count, _list);
       REGISTER_SEED_PARSER_OPTION_CLASS (count_reverse, _list);
@@ -773,11 +792,24 @@ void Parser::parse (int argc, char* argv[])
       if (__proj_mid > 0) {
          usage ("Cannot use --Sproj-mid option --Sproj-base option");
       }
-      
+
       if (__seed_l != __proj_base.length()) {
-         usage ("The seed length --Sseed-l parameter must match the length of the assignmnent specified by --Sproj-base");
+         usage ("The seed length --Sseed-l parameter must match the length of the assignment specified by --Sproj-base");
       }
    }
+
+   if (__prep_l < 0)
+      __prep_l = __seed_l;
+
+   if (__seed_l > __prep_l) {
+      if (__searchType != _search_table_)
+         usage ("Only table-search is supported for projections longer then the preprocessor.");
+
+      if (__proj_spec)
+         usage ("Seed specialization is not supported for projections longer then the preprocessor.");
+   }
+
+
 }
 
 void Parser::restoreDefaults ()
@@ -833,13 +865,13 @@ void Parser::checkCompatibility (const Parser& in)
    if (__prep == _prep_leaf_) {
       //
       // leaf preprocessor only supports seeds of constant length
-      mustbe (in.__seed_l == __seed_l);
+      mmustbe (in.__seed_l >= __prep_l, "leaf preprocessor only supports seeds that are equal or longer in length to its depth.");
    }
    else {
       mustbe (__prep == _prep_tree_);
       //
       // in tree prep we can only search seeds that are 
       // not longer than the depth of the tree
-      mustbe (__seed_l >= in.__seed_l);
+      //mustbe (__seed_l >= in.__seed_l);
    }
 }
