@@ -89,7 +89,7 @@ void FeatureInvestigator::printMotifPosition (
                            );
 
    writer << buf.substring (0, middleSection) << ' '
-          << buf.substring (middleSection, motifLength) << ' '
+          << buf.substring (middleSection, middleSection + motifLength) << ' '
           << buf.substring (middleSection + motifLength);
  
    //
@@ -102,7 +102,6 @@ void FeatureInvestigator::printMotifPosition (
    
    //
    // output sequence weight 
-   debug_mustbe (position.sequence ()->hasWeight ());
    writer << " [" << position.sequence ()->weight () << ']';
    
    //
@@ -110,7 +109,8 @@ void FeatureInvestigator::printMotifPosition (
    writer << '\t' << position.position ();
    
    //
-   // TODO: print +/- if it is on normal/reverse strand
+   // print +/- if it is on normal/reverse strand
+   writer << '\t' << (position.strand ()? '+' : '-');
    writer.writeln ();
 }
 

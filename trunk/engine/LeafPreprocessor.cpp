@@ -123,13 +123,12 @@ LeafPreprocessor::getSequences (const Assignment& assg) const
 
 
 LeafPreprocessor::Rep* LeafPreprocessor::buildNoNegatives (
-                   bool useReverse,
                    int seedLength                  ,
                    const SequenceDB& db            , 
                    const Langauge& langauge        ,
                    const SeqWeightFunction& wf     ) 
 {
-   Rep* rep = build (useReverse, seedLength, db, langauge);
+   Rep* rep = build (seedLength, db, langauge);
    int size = rep->getSize ();
 
    //
@@ -178,23 +177,76 @@ LeafPreprocessor::Rep* LeafPreprocessor::buildNoNegatives (
    return rep;
 }
 
-//
-//
-LeafPreprocessor::Rep* LeafPreprocessor::build (
-                     bool useReverse             ,
+
+static int buildReverse (
+                     LeafPreprocessor::Rep* rep  ,
                      int seedLength              ,
                      const SequenceDB& db        , 
-                     const Langauge& langauge    ) 
+                     const Langauge& langauge    )
 {
-   time_t start, finish;
-   time (&start);
-
    int numberOfPositions = 0;
-   const int TABLE_SIZE = 1024 * 1024 - 1;
 
    //
-   // TODO: guess an estimate to the number of seeds
-   Rep* rep = new Rep (seedLength, TABLE_SIZE, langauge);
+   //
+   SequenceDB::SequenceIterator it = db.sequenceIterator ();
+   for (;it.hasNext () ; it.next ()) {
+      //
+      // get the sequence we are current working on
+      Sequence* seq = it.get ();
+      debug_mustbe (seq);
+
+      //
+      // 
+      //
+      // stuff every position in this sequence to table
+      // except those that dont have enough lookahead
+      int length = seq->length () - seedLength + 1;
+      numberOfPositions += length ;
+
+      //
+      //
+      for (int i=0 ; i<=length - seedLength ; i++)   {
+         SeqPosition* posPosition = 
+            new SeqPosition (seq, i, _strand_pos_);
+
+         SeqPosition* negPosition = 
+            new SeqPosition (seq, length - i - 1, _strand_neg_);
+         
+         Str data = posPosition->getSeedString (seedLength);
+         Str rev_data = negPosition->getSeedString (seedLength);
+         debug_mustbe (data.length () == seedLength);
+         debug_mustbe (rev_data.length () == seedLength);
+
+         int result = langauge.compare (data, rev_data);
+         if (result == 0) {
+            //
+            // this is a palindrome, 
+            // this means that the pos positions are the same as the 
+            // neg positions, so in them only once
+            rep->addPosition (data, posPosition);
+         }
+         else {
+            Str first = (result < 0)? data : rev_data;
+
+            SeedHash::Cluster& posCluster = 
+               rep->addPosition (first, posPosition);
+            posCluster.addPosition (negPosition);
+         }
+      }
+
+      rep->adjustTableSize ();
+   }
+
+   return numberOfPositions;
+}
+
+static int buildNoReverse (
+                     LeafPreprocessor::Rep* rep  ,
+                     int seedLength              ,
+                     const SequenceDB& db        , 
+                     const Langauge& langauge    )
+{
+   int numberOfPositions = 0;
 
    //
    //
@@ -224,17 +276,35 @@ LeafPreprocessor::Rep* LeafPreprocessor::build (
 
       //
       // increase table size if necessary
-      // TODO: is this working properly?
-      int tableSize = rep->getTableSize ();
-      int numberOfEntries = rep->getSize ();
-      if (numberOfEntries > 8 * tableSize)   {
-         int newTableSize = (3 * tableSize) - 1;
-         DLOG << "Increasing table size from " 
-              << tableSize << " to "<< newTableSize << DLOG.EOL ();
-
-         rep->resize (newTableSize);
-      }
+      rep->adjustTableSize ();
    }
+
+   return numberOfPositions;
+}
+
+
+
+//
+//
+LeafPreprocessor::Rep* LeafPreprocessor::build (
+                     int seedLength              ,
+                     const SequenceDB& db        , 
+                     const Langauge& langauge    ) 
+{
+   time_t start, finish;
+   time (&start);
+
+   DLOG << '#' << DLOG.EOL () 
+        << "# LeafPreprocessor" << DLOG.EOL ();
+
+   const int TABLE_SIZE = 1024 * 1024 - 1;
+   //
+   // TODO: guess an estimate to the number of seeds
+   Rep* rep = new Rep (seedLength, TABLE_SIZE, langauge);
+
+   int numberOfPositions = langauge.supportComplement ()?
+      buildReverse (rep, seedLength, db, langauge) :
+      buildNoReverse (rep, seedLength, db, langauge);
 
    time (&finish);
    const int totalBytes =  numberOfPositions * sizeof (SeqPosition) + 

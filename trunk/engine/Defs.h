@@ -51,6 +51,11 @@ enum CountType {
    _count_gene_
 };
 
+enum Strand {
+   _strand_pos_= true,
+   _strand_neg_ = false,
+};
+
 
 
 //

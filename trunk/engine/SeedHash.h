@@ -3,6 +3,7 @@
 
 #include "Assignment.h"
 #include "Cluster.h"
+#include "DebugLog.h"
 
 #include "Core/HashTable.h"
 
@@ -99,12 +100,27 @@ public:
 
       //
       //
-      void addPosition (const Str& seedData, AutoPtr <SeqPosition> position);
+      Cluster& addPosition (const Str& seedData, AutoPtr <SeqPosition> position);
       
       //
       //
       virtual Cluster* createCluster (const AssgKey& key) {
          return new Cluster (key);
+      }
+
+      //
+      // increase table size if necessary
+      void adjustTableSize (int overloadFactor = 8, int expFactor = 3) {
+         // TODO: is this working properly?
+         int tableSize = getTableSize ();
+         int numberOfEntries = getSize ();
+         if (numberOfEntries > overloadFactor * tableSize)   {
+            int newTableSize = (expFactor * numberOfEntries) - 1;
+            DLOG << "Increasing table size from " 
+                 << tableSize << " to "<< newTableSize << DLOG.EOL ();
+
+            resize (newTableSize);
+         }
       }
 
    protected:

@@ -163,7 +163,7 @@ void ACGTLangauge::complement (const Assignment& in , Assignment& out) const
    }
 }
 
-void ACGTLangauge::complement (const Str& in, StrBuffer out) const
+void ACGTLangauge::complement (const Str& in, StrBuffer& out) const
 {
    out.ensureCapacity (in.length ());
    for (int i=in.length () - 1 ; i>=0 ; i--) {

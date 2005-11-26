@@ -29,6 +29,15 @@ public:
    virtual Assignment::Position wildcard (Assignment::Strategy) const = 0;
 
    //
+   // performs comparison on the strings.
+   // returns 0 if they are 'identical' in terms of the langauge
+   // returns a negative result if a is 'before' b
+   // returns a positive result if b is 'before' a
+   virtual int compare (const Str& a, const Str& b) const {
+      return a.compareIgnoreCase (b);
+   }
+
+   //
    // returns the complement of an assignemnt 
    // (for instance the reverse assignment for ACGT langugaue)
    virtual void complement (const Assignment& in, Assignment& out) const {
@@ -40,6 +49,12 @@ public:
    // (for instance the reverse kmer for ACGT langugaue)
    virtual void complement (const Str& in, StrBuffer& out) const {
       out= in;
+   }
+
+   //
+   // returns true if complements are supported for this langauge
+   virtual bool supportComplement () const {
+      return false;
    }
 };
 

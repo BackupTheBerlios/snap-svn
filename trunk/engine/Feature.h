@@ -95,7 +95,7 @@ public:
       _complement = new Assignment ();
       langauge.complement (*_assg, *_complement);
 
-#     if 1
+#     if 0
          DLOG << "Reverse of "   << Format (*_assg) 
               << " is "          << Format (*_complement)
               << DLOG.EOL ();
@@ -228,6 +228,13 @@ public:
    virtual void printSeed (   Persistance::TextWriter&, 
                               Feature&                , 
                               const PositionVector&   );
+   
+   virtual void printSeedHeader (Persistance::TextWriter& out) {
+      if (_seedsSearched) {
+         out << "Bonf(-log10)\t";
+      }
+      out << "Score(-log10)\tSeed\t\tParameters\t\t\tProjection" << out.EOL ();
+   }
 
    //
    // creates a PSSM from a feature

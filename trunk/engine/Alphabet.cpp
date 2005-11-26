@@ -17,12 +17,20 @@ AlphabetCode::AlphabetCode (Code_ptr inCode, int inCardinality)
 : _cardinality (inCardinality)
 {
    copy (_code, inCode);
+   for (int i=0 ; i<SIZE ; i++) {
+      if (_code [i] != notInCode)
+         _characters.append (i);
+   }
 }
 
 AlphabetCode::AlphabetCode (const AlphabetCode& inCode)
 : _cardinality (inCode._cardinality)
 {
    copy (_code, inCode._code);
+   for (int i=0 ; i<SIZE ; i++) {
+      if (_code [i] != notInCode)
+         _characters.append (i);
+   }
 }
 
 AlphabetCode& AlphabetCode::operator = (const AlphabetCode& inCode)

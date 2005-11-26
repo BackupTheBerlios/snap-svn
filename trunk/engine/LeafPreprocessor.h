@@ -52,7 +52,6 @@ public:
    ~LeafPreprocessor ();
 
    static LeafPreprocessor::Rep* LeafPreprocessor::build (
-                     bool useReverse      ,
                      int seedLength       ,
                      const SequenceDB&    , 
                      const Langauge&      );
@@ -60,7 +59,6 @@ public:
    //
    // includes negative-node-removal optimization
    static LeafPreprocessor::Rep* LeafPreprocessor::buildNoNegatives (
-                     bool useReverse      ,
                      int seedLength       ,
                      const SequenceDB&    , 
                      const Langauge&      ,

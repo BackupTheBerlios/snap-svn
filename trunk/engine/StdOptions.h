@@ -28,7 +28,9 @@ public:
       GCode = 0x4,
       TCode = 0x8,
    };
-   ACGTLangauge () : _includeN (false) {
+   ACGTLangauge (bool useReverse = true, bool includeN = false) 
+   : _includeN (includeN), _useReverse (useReverse) 
+   {
    }
    virtual ~ACGTLangauge () {
    }
@@ -42,7 +44,7 @@ public:
    // returns the complement of an assignemnt 
    // (for instance the reverse assignment for ACGT langugaue)
    virtual void complement (const Assignment&, Assignment&) const;
-   virtual void complement (const Str&, StrBuffer) const;
+   virtual void complement (const Str&, StrBuffer&) const;
 
    //
    // return a wildcard with the appropriate strategy (for searching)
@@ -55,6 +57,13 @@ public:
    virtual const AlphabetCode& code () const {
       return getCode (_includeN);
    }
+   virtual bool supportComplement () const {
+      return _useReverse;
+   }
+   void supportComplement (bool in) {
+      _useReverse = in;
+   }
+
    //
    // get the cardinality of the alphabet 
    // (depends on inclusion of 'N' in alphabet)
@@ -76,6 +85,7 @@ protected:
    //
    // if true includes the char 'N' in the langauge
    bool _includeN;
+   bool _useReverse;
 };
 
 

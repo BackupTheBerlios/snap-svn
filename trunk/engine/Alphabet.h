@@ -2,6 +2,7 @@
 #define _SeedSearcher_Alphabet_h
 
 #include "Core/Defs.h"
+#include "Core/Str.h"
 
 //
 // Codes each letter in an alphabet with a non-negative integer
@@ -44,6 +45,12 @@ public:
       return _code;
    }
 
+   //
+   // returns a buffer of the characters used in this alphabet
+   const StrBuffer& characters () const {
+      return _characters;
+   }
+
    class UnknownCodeError : public BaseException {
    public:
       UnknownCodeError (Char c) : _c (c) {
@@ -60,6 +67,7 @@ public:
 private:
    Code _code;
    int _cardinality;
+   StrBuffer _characters;
 };
 
 #endif

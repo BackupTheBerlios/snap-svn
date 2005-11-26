@@ -382,8 +382,8 @@ static void welcomeMessage (const Parser& parser)
 #endif
 
    DLOG << DLOG.EOL ();
-   DLOG << "By Yoseph Barash (hoan@cs.huji.ac.il)" << DLOG.EOL ();
-   DLOG << "And Aviad Rozenhek (aviadr@cs.huji.ac.il) " << DLOG.EOL ();
+   DLOG << "by Yoseph Barash (hoan@cs.huji.ac.il)" << DLOG.EOL ();
+   DLOG << "and Aviad Rozenhek (aviadr@cs.huji.ac.il) " << DLOG.EOL ();
    time_t ltime;
    time( &ltime );
    DLOG << DLOG.EOL ()
@@ -411,6 +411,7 @@ int main(int argc, char* argv [])
 {
    time_t cleanupStart =0, cleanupFinish;
    time_t start, finish;
+   int exit_value = 0;
 
    time(&start);
    try {
@@ -461,6 +462,8 @@ int main(int argc, char* argv [])
       FeatureInvestigator printer ( params                     , 
                                     params.parser ().__seed_o  ,
                                     bonfN                      );
+      printer.printSeedHeader (DLOG);
+
       //
       // we print the results to the log
       for (; results->hasMoreFeatures () ; results->nextFeature ()) {
@@ -514,19 +517,22 @@ int main(int argc, char* argv [])
       cerr << endl;
       x.explain (cerr);
       cerr << endl;
+      exit_value = 1;
    }
    catch (std::exception& x) {
       cerr << endl << x.what () << endl ;
+      exit_value = 2;
    }
    catch (...) {
       cerr << endl << "Unknown Error! aborting..." << endl;
+      exit_value = 3;
    }
    if (cleanupStart) {
       time(&cleanupFinish);
       cerr << (cleanupFinish - cleanupStart) << " seconds." << endl;
    }
 
-   return 0;
+   return exit_value;
 }
 
 

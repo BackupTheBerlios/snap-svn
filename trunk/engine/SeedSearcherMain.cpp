@@ -164,7 +164,7 @@ void SeedSearcherMain::CmdLineParameters::setupDB ()
    // load the sequence files
    time_t start, finish;
    time (&start);
-   _db = SequenceDB::TextFileStorage::loadFastaAndWeights (_langauge->code (),
+   _db = SequenceDB::TextFileStorage::loadFastaAndWeights (*_langauge,
       _parser.__argv[_parser.__firstFileArg],
       _parser.__argv[_parser.__firstFileArg+1]);
 
@@ -258,7 +258,8 @@ void SeedSearcherMain::CmdLineParameters::setupFeatureContainer ()
 
 void SeedSearcherMain::CmdLineParameters::setupLangauge ()
 {
-   _langauge = new ACGTLangauge;
+   _langauge = new ACGTLangauge (_parser.__count_reverse);
+
    Langauge* old = SeedSearcherLog::setup (_langauge);
    delete old;
 }
@@ -291,7 +292,6 @@ Preprocessor*
       LeafPreprocessor::Rep* rep;
       if (removeNegatives) {
          rep = LeafPreprocessor::buildNoNegatives (
-            useReverse,
             featureLength, 
             db, 
             langauge,
@@ -300,7 +300,6 @@ Preprocessor*
       }
       else {
          rep = LeafPreprocessor::build (  
-            useReverse,
             featureLength, 
             db, 
             langauge
@@ -315,6 +314,7 @@ Preprocessor*
          PrefixTreePreprocessor::build (  removeNegatives,
                                           wf,
                                           db,
+                                          langauge,
                                           featureLength);
 
       prep = new PrefixTreePreprocessor (rep);

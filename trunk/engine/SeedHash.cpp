@@ -52,7 +52,7 @@ SeedHash::Table::~Table ()
    // TODO: we own the positions, so delete them
 }
 
-void SeedHash::Table::addPosition (const Str& seedData, 
+SeedHash::Cluster& SeedHash::Table::addPosition (const Str& seedData, 
                                    AutoPtr <SeqPosition> position) {
    //
    //
@@ -68,6 +68,7 @@ void SeedHash::Table::addPosition (const Str& seedData,
    //
    // add this new position to the seed
    seed->addPosition (position.release ());
+   return *seed;
 }
 
 

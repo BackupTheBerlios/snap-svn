@@ -25,7 +25,7 @@ Str SeqPosition::getSeedString (int length, int offset) const {
    debug_mustbe (_position + offset + length <= _sequence->length ());
 
 
-   return Str (_sequence->data (), 
+   return Str (_sequence->data (_strand), 
                _position + offset, 
                _position + offset + length);
 }

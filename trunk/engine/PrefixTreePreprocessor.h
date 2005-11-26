@@ -137,7 +137,8 @@ public:
    // depth is the maximum prefix size
    static TreeRep* build ( bool removeNodeOptimization,
                            const SeqWeightFunction& wf, 
-                           const SequenceDB&, 
+                           const SequenceDB&,
+                           const Langauge&,
                            int depth);
 
 private:

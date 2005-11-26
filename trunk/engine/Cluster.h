@@ -20,8 +20,15 @@ public:
    struct PositionComparator {
       bool operator () (const SeqPosition* x, const SeqPosition* y) const {
          debug_mustbe (x->sequence () == y->sequence ());
-         return (x->position () < y->position ());
+         return (strandPos (x) < strandPos (y));
       }
+      static inline int strandPos (const SeqPosition* x) {
+         int pos = 1 + x->position (); 
+         // + 1 is needed so that the even first position
+         // is unambigious
+         return (x->strand ()== _strand_pos_)? pos : - pos;
+      }
+
    };
 
    typedef std::set <const SeqPosition*, PositionComparator> PositionSet;

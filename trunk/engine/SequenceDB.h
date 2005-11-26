@@ -26,7 +26,7 @@ public:
    typedef ConstIteratorWrapper <SequenceVector> SequenceIterator;
 
 public:
-   SequenceDB (const AlphabetCode& code) : _code (code) {
+   SequenceDB () {
    }
    ~SequenceDB ();
    SequenceIterator sequenceIterator ()  const{
@@ -35,9 +35,6 @@ public:
    const SequenceVector& sequences () const{
       return _sequences;
    }
-   const AlphabetCode& alphabetCode () const {
-      return _code;
-   }
    const Sequence& getSequence (ID id) const   {
       return *_sequences[id];
    }
@@ -45,32 +42,24 @@ public:
       return _sequences.size ();
    }
    void getSequencesAbove (double weight, Cluster&) const;
+
+   //
+   // interface for adding sequences
+   bool insertSequence (SequenceDB::ID id, const Str& name, Sequence*);
+
    
    struct TextFileStorage {
-      static SequenceDB* loadFastaNoWeights (const AlphabetCode&, 
-                                             const char* seqFileName);
-
-      static SequenceDB* loadFastaInFileWeights (const AlphabetCode&, 
-                                                 const char* seqFileName);
-      
-      static SequenceDB* loadFastaAndWeights (const AlphabetCode&,
+      //
+      // for loading a fasta file and a corresponding weight file
+      static SequenceDB* loadFastaAndWeights (const Langauge&,
                                               const char* seqFileName,
                                               const char* weightFileName);
-
-      static void assignWeights (SequenceDB& db, 
-                                 const char* weightFileName,
-                                 bool removeWeightsForMissingSequences);
-
-      class Rep;
    };
-
-   friend class TextFileStorage::Rep;
 
 private:
    typedef std::map <Name, ID> Name2ID;
    typedef std::vector <Name> ID2Name;
 
-   AlphabetCode _code;
    SequenceVector _sequences;
    Name2ID _name2ID;
 };

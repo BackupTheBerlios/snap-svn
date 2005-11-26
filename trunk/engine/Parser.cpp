@@ -334,7 +334,7 @@ void Parser::usage (const char* error)
    cerr << "  " << endl;
 
    for (int i=0 ; i<numberOfOptions ; i++) {
-     cout << my_options [i].name << "\t - "
+     cout << "--" << my_options [i].name << "\t - "
 	  << my_options [i].desc [0] 
 	  << " {" 
 	  << my_options [i].def 

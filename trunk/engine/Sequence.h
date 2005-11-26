@@ -12,12 +12,13 @@ public:
    typedef int ID;
    typedef StrBuffer Name;
 
-   Sequence (ID id, const Str& data, const Str& name, double wgt)
-   : _id (id), _data (data), _name (name), _weight (wgt), _hasWeight (true) 
-   {
-   }
-   Sequence (ID id, const Str& data, const Str& name) 
-   : _id (id), _data (data), _name (name), _weight (0xBAADF00D), _hasWeight (false) 
+   Sequence (ID id, 
+            const Str& data, 
+            const Str& name, 
+            double wgt, 
+            Str reverse = NULL)
+   : _id (id), _data (data), _reverse (reverse),
+     _name (name), _weight (wgt)
    {
    }
    ~Sequence () {
@@ -25,8 +26,10 @@ public:
    int length () const {
       return _data.length ();
    }
-   inline const Str& data () const {
-      return _data;
+   inline const Str& data (Strand strand = _strand_pos_) const {
+      if (strand == _strand_pos_)
+         return _data;
+      else return _reverse;
    }
    inline ID id () const {
       return _id;
@@ -34,22 +37,14 @@ public:
    const Name& name () const {
       return _name;
    }
-   bool hasWeight () const {
-      return _hasWeight;
-   }
    void weight (double inWeight) {
-      _hasWeight = true;
       _weight = inWeight;
    }
    inline double weight () const {
       return _weight;
    }
-   void noWeight () {
-      _weight = 0xBAADF00D;
-      _hasWeight = false;
-   }
-   Str data (int startPos, int length) const {
-      return Str (_data, startPos, length);
+   Str data (int startPos, int length, Strand strand = _strand_pos_) const {
+      return Str (data (strand), startPos, length);
    }
 
 #if SEED_CHUNK_ALLOCATION_OPTIMIZATION
@@ -65,9 +60,9 @@ public:
 private:
    ID _id;
    StrBuffer _data;
+   StrBuffer _reverse;
    Name _name;
    double _weight;
-   bool _hasWeight;
    static ChunkAllocator <Sequence> __allocator;
 };
 
@@ -99,7 +94,7 @@ public:
    //
    // returns the weight of the seq, as determined by this weight function
    virtual double weight (const Sequence& seq) const {
-      return _partialCount? seq.weight () : (seq.hasWeight ()? 1:0);
+      return _partialCount? seq.weight () : 1;
    }
 
    //
@@ -161,7 +156,7 @@ public:
 	inline SeqPosition (Sequence const * seq, int pos) 
    :  _sequence (seq), _position (pos) {
    }
-	inline SeqPosition (Sequence const * seq, int pos, bool strand) 
+	inline SeqPosition (Sequence const * seq, int pos, Strand strand) 
    :  _sequence (seq), _position (pos), _strand (strand) {
    }
    ~SeqPosition () {
@@ -172,7 +167,7 @@ public:
    }
    inline char getData (int index) const {
       debug_mustbe (index + _position < _sequence->length ());
-      return _sequence->data () [index + _position];
+      return _sequence->data (_strand) [index + _position];
    }
    //
    // how much data available ahead in the stream
@@ -182,8 +177,13 @@ public:
    const Sequence* sequence () const {
       return _sequence;
    }
+   //
+   // returns the offset in the sequence (unmodified by strand)
    int position () const {
       return _position;
+   }
+   Strand strand () const {
+      return _strand;
    }
    //
    // returns the sequence string starting at this position, 
@@ -232,7 +232,7 @@ public:
 private:
 	Sequence const * _sequence;
 	int _position;
-   bool _strand;
+   Strand _strand;
    static ChunkAllocator <SeqPosition> __allocator;
 };
 

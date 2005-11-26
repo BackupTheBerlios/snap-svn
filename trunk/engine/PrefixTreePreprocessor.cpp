@@ -379,17 +379,18 @@ static void buildTree (PositionsBuilder& builder,
 
 static TreeRep* build(bool optimize,
                       const SeqWeightFunction& wf,
-                      const SequenceDB& db, 
+                      const SequenceDB& db,
+                      const Langauge& langauge,
                       int maxDepth)
 {
    time_t start, finish;
    time (&start);
 
-   int cardinality = 
-      db.alphabetCode ().cardinality ();
+   const AlphabetCode& code = langauge.code ();
+   int cardinality = code.cardinality ();
 
    int numberOfPositions = 0;
-   TreeNodeRep* root = new TreeNodeRep (db.alphabetCode ());
+   TreeNodeRep* root = new TreeNodeRep (code);
    SequenceDB::SequenceIterator it = db.sequenceIterator ();
    for (;it.hasNext () ; it.next ()) {
       //
@@ -418,8 +419,8 @@ static TreeRep* build(bool optimize,
    //
    // now the root node has all the positions in all sequences.
    // build up the tree until the desired depth 
-   PositionsBuilder builder (db.alphabetCode ().cardinality ());
-   buildTree (builder, optimize, wf, db.alphabetCode (), root, 0, maxDepth);
+   PositionsBuilder builder (cardinality);
+   buildTree (builder, optimize, wf, code, root, 0, maxDepth);
 
    time (&finish);
    int totalBytes =  numberOfPositions * sizeof (SeqPosition) +
@@ -444,10 +445,11 @@ static TreeRep* build(bool optimize,
 
 TreeRep* PrefixTreePreprocessor::build (bool optimization,
                                         const SeqWeightFunction& wf, 
-                                        const SequenceDB& db, 
+                                        const SequenceDB& db,
+                                        const Langauge& langauge,
                                         int depth)
 {
-   return ::build (optimization, wf, db, depth);
+   return ::build (optimization, wf, db, langauge, depth);
 }
 
 

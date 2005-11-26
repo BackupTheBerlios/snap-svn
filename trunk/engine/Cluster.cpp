@@ -84,14 +84,14 @@ bool SeqCluster::hasSequence (const Sequence* in) const
 
 const Sequence* SeqCluster::getSequence (Sequence::ID id) const
 {
-   Sequence dummy (id, __emptyString, __emptyString);
+   Sequence dummy (id, __emptyString, __emptyString, 0);
    SequenceSet::const_iterator it = _set.find (&dummy);
    return (it != _set.end ())? it->first: NULL;
 }
 
 PosCluster* SeqCluster::getPositions (Sequence::ID id)
 {
-   Sequence dummy (id, __emptyString, __emptyString);
+   Sequence dummy (id, __emptyString, __emptyString, 0);
    SequenceSet::iterator it = _set.find (&dummy);
    return (it != _set.end ())? it->second: NULL;
 }
@@ -121,7 +121,7 @@ PosCluster& SeqCluster::getCreatePositions (const Sequence* seq)
 
 PosCluster& SeqCluster::getCreatePositions (Sequence::ID id)
 {
-   Sequence dummy (id, __emptyString, __emptyString);
+   Sequence dummy (id, __emptyString, __emptyString, 0);
    SequenceSet::iterator it = _set.find (&dummy);
    debug_mustbe (it != _set.end ());
 
@@ -155,7 +155,7 @@ const PosCluster* SeqCluster::getPositions (const Sequence* seq) const
 
 const PosCluster* SeqCluster::getPositions (Sequence::ID id) const
 {
-   Sequence dummy (id, __emptyString, __emptyString);
+   Sequence dummy (id, __emptyString, __emptyString, 0);
    SequenceSet::const_iterator it = _set.find (&dummy);
    return (it != _set.end ())? it->second: NULL;
 }
@@ -261,10 +261,8 @@ double SeqCluster::sumAbsWeights () const
    // Wi = (Weight - 0.5) * 2
    for (; it.hasNext (); it.next ()) {
       const Sequence& seq = *(*it);
-      if (seq.hasWeight ()) {
-         double Wi = ABS (seq.weight () - 0.5) * 2;
-         result += Wi;
-      }
+      double Wi = ABS (seq.weight () - 0.5) * 2;
+      result += Wi;
    }
 
    return result;
@@ -277,14 +275,11 @@ double SeqCluster::sumPositionAbsWeights () const
    CIterator it (iterator());
    for (; it.hasNext (); it.next ()) {
       const Sequence& seq = *(*it);
-      debug_mustbe (seq.hasWeight ());
-      if (seq.hasWeight ()) {
-         double Wi = ABS (seq.weight () - 0.5) * 2;
-         const PosCluster* pos = getPositions (it);
-         debug_mustbe (pos);
-         if (pos)
-            result += Wi * pos->size ();
-      }
+      double Wi = ABS (seq.weight () - 0.5) * 2;
+      const PosCluster* pos = getPositions (it);
+      debug_mustbe (pos);
+      if (pos)
+         result += Wi * pos->size ();
    }
 
    return result;
@@ -296,12 +291,9 @@ double SeqCluster::maxPositionsAbsWeightsNoOverlaps (int seedLength) const
    CIterator it (iterator());
    for (; it.hasNext (); it.next ()) {
       const Sequence& seq = *(*it);
-      debug_mustbe (seq.hasWeight ());
-      if (seq.hasWeight ()) {
-         double Wi = ABS (seq.weight () - 0.5) * 2;
-         double L_by_K = double (seq.length ()) / seedLength;
-         result += Wi * L_by_K;
-      }
+      double Wi = ABS (seq.weight () - 0.5) * 2;
+      double L_by_K = double (seq.length ()) / seedLength;
+      result += Wi * L_by_K;
    }
 
    return result;
