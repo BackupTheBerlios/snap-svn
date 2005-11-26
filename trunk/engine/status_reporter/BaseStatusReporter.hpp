@@ -17,12 +17,12 @@
 class BaseStatusReporter {
 protected:
    enum JobStatus {
-		NULL_STATUS             = 0,
-		PROCESSING_STATUS       = 2,
-		CANCEL_REQUEST_STATUS   = 5,
-		CANCELLED_STATUS        = 6,
-		DONE_STATUS             = 3,
-		PROCESSING_ERROR_STATUS = 7 //an error occured while processing
+	NULL_STATUS             = 0,
+	PROCESSING_STATUS       = 2,
+	CANCEL_REQUEST_STATUS   = 6,//the process accepted the cancel request
+	CANCELLED_STATUS        = 7,
+	DONE_STATUS             = 3,
+	PROCESSING_ERROR_STATUS = 8 //an error occured while processing
 		
    };
 
@@ -49,15 +49,21 @@ public:
    //call when job is stopped because of error
    virtual void setJobError(const Str&) = 0;
 
-	class StatusException : public BaseException {
-	private:
-		StrBuffer mErrString;
-	
-	public:
-		StatusException( const Str &inErrString );
-	
-		virtual void explain( std::ostream &inStr );
-	};
+   struct StatusException : public BaseException {
+     StatusException() {
+     }
+     StatusException( const Str &inErrString ) 
+     {
+       inErrString.getCString (_message);
+     }
+     ~StatusException () throw () {
+     }
+   };
+
+   struct CancelledException : public StatusException {
+     ~CancelledException () throw () {
+     }
+   };
 };
 
 

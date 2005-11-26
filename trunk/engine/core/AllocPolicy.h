@@ -1,3 +1,5 @@
+#if 0 
+
 #ifndef _SeedSearcher_Core_AllocPolicy_h
 #define _SeedSearcher_Core_AllocPolicy_h 
 
@@ -162,9 +164,9 @@ struct PrivatePoolPolicy {
 //
 // File        : $RCSfile: $ 
 //               $Workfile: AllocPolicy.h $
-// Version     : $Revision: 2 $ 
+// Version     : $Revision: 3 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:45 $ 
+//               $Date: 3/03/05 21:34 $ 
 // Description :
 //	The Persistence library contains both high & low level IO classes
 //	and is high-performance, highly reusable framework 
@@ -182,3 +184,5 @@ struct PrivatePoolPolicy {
 // and the library authors appliy.
 //
 
+
+#endif 0 

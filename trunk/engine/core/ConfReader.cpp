@@ -707,120 +707,161 @@ const Str* ConfReaderWrapper::findKey(const Str& inKey) const{
 	return 0;
 }
 
+#include "boost/filesystem/path.hpp"
+#include "boost/filesystem/operations.hpp"
+#include "boost/regex.hpp"
+#include "core/FixedStr.h"
 
-
-void ConfReaderWrapper::readFromFile(const Str& inConfigFile, ConfReaderTree& outTree) 
+void ConfReaderWrapper::readFromFile(const Str& inConfigFile, 
+				     ConfReaderTree& outTree) 
 {
-	typedef Impl1WayDataNode< StrBuffer > StrBufferNode;
-	typedef ImplCyclicList< StrBufferNode > StrBufferList;
-	StrBufferList fileNameList;
+  typedef Impl1WayDataNode< StrBuffer > StrBufferNode;
+  typedef ImplCyclicList< StrBufferNode > StrBufferList;
+  StrBufferList fileNameList;
+  
+  char fileName[1024];
+  inConfigFile.getCString (fileName, sizeof (fileName));
+  //inConfigFile.getFullPath(fileName, sizeof(fileName));
+  //ifstream input (fileName, ios::nocreate | ios::in, filebuf::sh_read);
+  std::ifstream input (fileName);
 
-	char fileName[1024];
-	inConfigFile.getCString (fileName, sizeof (fileName));
-   //inConfigFile.getFullPath(fileName, sizeof(fileName));
-   //ifstream input (fileName, ios::nocreate | ios::in, filebuf::sh_read);
-   std::ifstream input (fileName);
+  StrBuffer key, value;
+  char lineBuf[8 * 1024] = "";
+  while(!input.eof() && input.good ()) {
+    input.getline(lineBuf, sizeof(lineBuf), '\n');
+    if(lineBuf[0] == '#')
+      continue;
 
-
-	StrBuffer key, value;
-
-   char lineBuf[8 * 1024] = "";
-	while(!input.eof() && input.good ()) {
-		input.getline(lineBuf, sizeof(lineBuf), '\n');
-		if(lineBuf[0] == '#')
-			continue;
-		if(lineBuf[0] == '$') {
-			Str line(lineBuf);
-			Str::Index keyBegin= line.indexOf('"');
-			Str::Index keyEnd= line.lastIndexOf('"');
-			if ((keyBegin!=Str::badIndex) && (keyEnd!=Str::badIndex)) {
-				StrBuffer fileName= line.substring(keyBegin+1, keyEnd);
-				bool bPresent = false;
-				for( StrBufferList::ReadIterator_const i(fileNameList); !i.atEnd(); i.next ()) {
-					if ( fileName.equalsIgnoreCase( i->data ) ) {
-						bPresent = true;
-						break;
-					}
-				}
-				if ( !bPresent )
-					fileNameList.addLast( new StrBufferNode( fileName ) );
-				continue;
-			}	
-		}
-      if (!input.eof () && !input.good()){
-         mmustfail (StrBuffer ("Bad conf format, last read line was ", lineBuf));
-      }
-
-		Str line(lineBuf);
-		Str::Index keyEnd= line.indexOf('=');
-		if (keyEnd!=Str::badIndex) {
-			key= line.substring(0, keyEnd);
-			key.trim();
-			value= line.substring(keyEnd+1);
-			value.trim();
-			outTree.set(key, value);
-		}
+    if(lineBuf[0] == '$') {
+      // we are looking for statements like $include "myconf.conf"
+      static const boost::regex e(  "\\$"
+				    "[[:blank:]]*"
+				    "include"
+				    "[[:blank:]]*"
+				    "\""
+				    "([[:print:]]*)"
+				    "\""
+				    "[[:blank:]]*"
+				    );
+      boost::cmatch what;
+      if (!boost::regex_match(lineBuf, what, e))
+	mmustfail (FixedStrBuffer <1024> ("Illegal statement %s", lineBuf));
+      
+      StrBuffer fileName; fileName.set (Str (what [1]));
+      bool bPresent = false;
+      StrBufferList::ReadIterator_const i(fileNameList);
+      for( ; !i.atEnd(); i.next ()) {
+	if ( fileName.equalsIgnoreCase( i->data ) ) {
+	  bPresent = true;
+	  break;
 	}
-
-	for( StrBufferList::ReadIterator i(fileNameList); !i.atEnd(); ) {
-      //
-      // include mechanism, use config as absolute path
-      //FileSpec embConfigFile (i->data);
-		StrBuffer embConfigFile (i->data);
-      //
-      // use current directory as relative path
-      //if (!embConfigFile.exists ()) {
-      if (fileExists (embConfigFile)) {
-         embConfigFile.setLength (inConfigFile.lastIndexOf ("/\\"));
-         embConfigFile.append (i->data);
       }
-		readFromFile( embConfigFile, outTree );
-		StrBufferNode* delNode = i.get();
-		i.next();
-		delete fileNameList.remove( delNode );
-	}
+      if ( !bPresent )
+	fileNameList.addLast( new StrBufferNode( fileName ) );
+      continue;
+    }
+    if (!input.eof () && !input.good()){
+      mmustfail (StrBuffer ("Bad conf format, last read line was ", lineBuf));
+    }
+    
+    Str line(lineBuf);
+    Str::Index keyEnd= line.indexOf('=');
+    if (keyEnd!=Str::badIndex) {
+      key= line.substring(0, keyEnd);
+      key.trim();
+      value= line.substring(keyEnd+1);
+      value.trim();
+      outTree.set(key, value);
+    }
+  }
+  
+  for( StrBufferList::ReadIterator i(fileNameList); !i.atEnd(); ) {
+    //FileSpec embConfigFile (i->data);
+    std::string embConfigFile (i->data);
+    
+    //
+    // include mechanism:
+    // first we try to find the included file from 
+    // the path of the including file
+    boost::filesystem::path embConfigPath (fileName);
+    embConfigPath = embConfigPath.branch_path () / 
+      boost::filesystem::path (embConfigFile);
 
-	debug_mustbe( fileNameList.empty() );
+    if (boost::filesystem::exists (embConfigPath)) {
+      //
+      // the file was found in the relative path
+      embConfigFile = embConfigPath.string ();
+    }
+    else {
+      //
+      // try to find the file in the absolute path 
+      // (or relative to current directory)
+      embConfigPath = boost::filesystem::path (embConfigFile);
+      if (boost::filesystem::exists (embConfigPath)){
+	embConfigFile = embConfigPath.string ();
+      }
+      else {
+	mmustfail (
+	   FixedStrBuffer <1024> (
+	     "While reading %s, could not include %s",
+	     static_cast <const char*> (fileName), 
+	     static_cast <const char*> (embConfigFile.c_str())
+           )
+        );
+      }
+    }
+
+    if (!embConfigFile.empty ()) {
+      //
+      // the file exists, so read it
+      readFromFile( Str (embConfigFile), outTree );
+    }
+    StrBufferNode* delNode = i.get();
+    i.next();
+    delete fileNameList.remove( delNode );
+  }
+  debug_mustbe( fileNameList.empty() );
 }
 
 
 // used for the save operation, to walk through all the tree
-static void Iterate(std::ostream& out, const Str& path, const ConfReaderTree::Node* node)
+static void Iterate(std::ostream& out, 
+		    const Str& path, 
+		    const ConfReaderTree::Node* node)
 {
-    if (node!=NULL)
-    {
-        const ConfReaderTree::Nodes& nodes = node->getChildren();
-        if (nodes.empty()) return;
-        for (ConfReaderTree::Nodes::ReadIterator_const i(nodes.getFirst()); !i.atEnd(); i.next())
-        {
-            const ConfReaderTree::Node* childNode = i.get();
-            const char* key = childNode->getKey().getChars();
-
-            const char* value = childNode->getValue().getChars();
-            if ((key) && (value))
-                out  << path.getChars()  
-                     << key 
-                     << " = " 
-                     << ((value)? value : "<null>") 
-                     << std::endl;
-            
-            StrBuffer childPath = path;
-            childPath.append(key); 
-            childPath.append("/"); 
-            Iterate(out, childPath, childNode);
-        }
+  if (node!=NULL) {
+    const ConfReaderTree::Nodes& nodes = node->getChildren();
+    if (nodes.empty()) return;
+    ConfReaderTree::Nodes::ReadIterator_const i(nodes.getFirst());
+    for (; !i.atEnd(); i.next()) {
+      const ConfReaderTree::Node* childNode = i.get();
+      const char* key = childNode->getKey().getChars();
+      
+      const char* value = childNode->getValue().getChars();
+      if ((key) && (value))
+	out  << path.getChars()  
+	     << key 
+	     << " = " 
+	     << ((value)? value : "<null>") 
+	     << std::endl;
+      
+      StrBuffer childPath = path;
+      childPath.append(key); 
+      childPath.append("/"); 
+	Iterate(out, childPath, childNode);
     }
+  }
 }
 
 
 void ConfReaderWrapper::saveToFile(const Str& inConfigFile, 
                                    ConfReaderTree& inTree)
 {
-	char fileName[1024];
-	//inConfigFile.getFullPath(fileName, sizeof(fileName));
-   inConfigFile.getCString (fileName, sizeof(fileName));
-   std::ofstream output(fileName);
-   Iterate(output, "", inTree.getRoot());
+  char fileName[1024];
+  //inConfigFile.getFullPath(fileName, sizeof(fileName));
+  inConfigFile.getCString (fileName, sizeof(fileName));
+  std::ofstream output(fileName);
+  Iterate(output, "", inTree.getRoot());
 }
 
 
@@ -1825,9 +1866,9 @@ void ConfReader::ValueNotFound::explain (std::ostream& out)
 //
 // File        : $RCSfile: $ 
 //               $Workfile: ConfReader.cpp $
-// Version     : $Revision: 8 $ 
+// Version     : $Revision: 10 $ 
 //               $Author: Aviad $
-//               $Date: 4/11/04 17:59 $ 
+//               $Date: 30/01/05 2:50 $ 
 // Description :
 //	The Persistence library contains both high & low level IO classes
 //	and is high-performance, highly reusable framework 

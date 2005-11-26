@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: SeedSearcher.cpp $
-// Version     : $Revision: 33 $ 
+// Version     : $Revision: 35 $ 
 //               $Author: Aviad $
-//               $Date: 10/01/05 1:55 $ 
+//               $Date: 3/03/05 21:34 $ 
 // Description :
 //    Concrete class for seed-searching in a preprocessor
 //
@@ -448,9 +448,7 @@ struct TableSearcher {
       virtual void addSequences (const Preprocessor::Node& node)=0;
 
    };
-   class Seed : 
-      public AbstractSeed,
-      public POOL_ALLOCATED(Seed)
+   class Seed : public AbstractSeed
    {
    public:
       inline Seed (const Key& key) : AbstractSeed (key) {
@@ -470,9 +468,7 @@ struct TableSearcher {
       }
    };
 
-   class SpecializedSeed : 
-      public AbstractSeed,
-      public POOL_ALLOCATED(SpecializedSeed)
+   class SpecializedSeed : public AbstractSeed
    {
    public:
       SpecializedSeed (const Key& key) : AbstractSeed (key)   {
@@ -767,7 +763,7 @@ static int extendedTableSearch (
          // now concentrate on those position that did not match
          // any of the former working-assignments
          currentPositions = nextPositions;
-         nextPositions.clear ();
+			reserveClear (nextPositions);
       } // finished with one unified-node, next one please
    } // finished all nodes, bye!
 

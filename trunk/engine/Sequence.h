@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $
 //               $Workfile: Sequence.h $
-// Version     : $Revision: 31 $
+// Version     : $Revision: 33 $
 //               $Author: Aviad $
-//               $Date: 10/01/05 1:53 $
+//               $Date: 3/03/05 21:34 $
 // Description :
 //    Concrete classes for sequences, sequence positions
 //
@@ -27,9 +27,8 @@
 #include "Defs.h"
 #include "core/STLHelper.h"
 #include "core/Str.h"
-#include "core/PoolAllocated.h"
 
-class Sequence : public POOL_ALLOCATED(Sequence) {
+class Sequence {
 public:
    typedef int ID;
    typedef StrBuffer Name;
@@ -72,7 +71,7 @@ private:
 };
 
 
-class SeqPosition : public POOL_ALLOCATED(SeqPosition) {
+class SeqPosition {
 public:
   enum {
     _DEFAULT_ALLIGNMENT_CHAR_ = '-'
@@ -182,14 +181,10 @@ typedef Vec <Sequence const*> SequenceVector;
 
 //
 // a vector of positions
-class PositionVector :
-   public Vec <SeqPosition const*>,
-   public POOL_ALLOCATED(PositionVector)
+class PositionVector : public Vec <SeqPosition const*>
 {
 public:
    PositionVector () {
-   }
-   PositionVector (int size) : Vec <SeqPosition const*> (size) {
    }
    ~PositionVector () {
    }

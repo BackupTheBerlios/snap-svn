@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Alphabet.h $
-// Version     : $Revision: 14 $ 
+// Version     : $Revision: 16 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:44 $ 
+//               $Date: 3/03/05 21:34 $ 
 // Description :
 //    Concrete class describing an alphabet - 
 //       which is considered to be "small". 
@@ -81,8 +81,6 @@ public:
    class UnknownCodeError : public BaseException {
    public:
       UnknownCodeError (Char c) : _c (c) {
-      }
-      ~UnknownCodeError () {
       }
       virtual void explain (std::ostream& o) {
          o << "Unknown code: '"<< _c << "'";

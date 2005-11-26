@@ -20,24 +20,31 @@
 
 
 //	}{ BASE_DEBUG -- debugging
+//
+// define BASE_DEBUG if you want debug_only to be compiled
+// even in release builds
 
 #ifndef BASE_DEBUG
-#	if ENV_COMPILER==ENV_MICROSOFT
-#		ifdef _DEBUG
-#			define BASE_DEBUG 1
-#		else
-#			define BASE_DEBUG 0
-#		endif
-#	elif ENV_COMPILER==ENV_GCC
-#               ifndef NDEBUG
-#                       define BASE_DEBUG 1
-#		else
-#        		define BASE_DEBUG 0
-#               endif
-#       else
-#		define BASE_DEBUG 0
-#	endif
+#   if ENV_COMPILER==ENV_MICROSOFT
+#      ifdef _DEBUG
+#         define BASE_DEBUG 1
+#      else
+#         define BASE_DEBUG 0
+#      endif
+#   elif ENV_COMPILER==ENV_GCC
+#      ifndef NDEBUG
+#         define BASE_DEBUG 1
+#      else
+#         define BASE_DEBUG 0
+#      endif
+#   else
+#      define BASE_DEBUG 0
+#   endif
+#else
+#   undef BASE_DEBUG
+#   define BASE_DEBUG 1
 #endif
+
 
 
 
@@ -83,30 +90,25 @@
 	};
 #endif
 
+class Str;
 
-class BaseException  {
+class BaseException : public std::exception {
 public:
   BaseException();
-  virtual ~BaseException();
+  BaseException (const std::string& in)  {
+	  init (in);
+  }
+  BaseException (const Str& in);
+  virtual ~BaseException() throw ();
 
-  virtual bool bypassStackTrace () const;
-  //  Write short explanation message to the 'out'. The message should be
-  //  applicable in the context "The operation failed because of <message>"
-  //  Example: "system error 25"
-  virtual void explain (std::ostream&);
-
-  //	Gets called right before throw usually
-  //	to gather exception information
-  void willThrow() const;
-  
-  class	Support {
-  public:
-    virtual ~Support();
-    virtual void willThrow(const BaseException& inExcp, void* inContext)= 0;
-  };
-	
-  static void setSupport(Support* in);
-  static Support* getSupport();
+  virtual const char* what () const throw ();
+  virtual void explain (std::ostream& out) const {
+	out << typeid (*this).name ();
+	if (!_message.empty ()) {
+      out << ": "
+          << _message;
+    }
+  }
   
   //
   // break when BaseException constructor is called
@@ -117,14 +119,19 @@ public:
   // break when throwx is called
   static void breakOnThrow (bool);
   static bool breakOnThrow ();
-};
+  
+protected:
+	void init (const std::string&);
+	std::string _message;
 
+private:
+  std::string _buffer;
+};
 
 
 template<class Exception>
 inline void throwx(const Exception& in) {
-	in.willThrow();
-	throw in;
+  throw in;
 }
 
 
@@ -137,17 +144,26 @@ inline void throwx(const Exception& in) {
 class ProgramException : public BaseException {
 public:
   ProgramException(int inCode, 
-		   const char* inFileName=0, const char* inError=0);
-   virtual void explain (std::ostream&);
-   static void raise(int lineNo, 
-		     const char* fileName=0, const char* inError=0);
+		   const char* inFileName=0, 
+		   const char* inError=0);
+  virtual ~ProgramException () throw () {
+  }
 
-   int getCode() const { return code; }
+   static void raise(int lineNo, 
+		     const char* fileName=0, 
+		     const char* inError=0);
+
+
+   virtual void explain (std::ostream&) const;
+
+   int getCode() const { 
+     return _code; 
+   }
 	
 protected:
-   int code;
-   const char* fileName;
-   std::string error;
+   int _code;
+   const char* _fileName;
+   std::string _error;
 };
 
 
@@ -259,9 +275,9 @@ inline const T& tmax(const T& a, const T& b) {
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Defs.h $
-// Version     : $Revision: 16 $ 
+// Version     : $Revision: 18 $ 
 //               $Author: Aviad $
-//               $Date: 4/11/04 17:59 $ 
+//               $Date: 3/03/05 21:34 $ 
 // Description :
 //	The Core library contains contains basic definitions and classes
 // which are useful to any highly-portable applications

@@ -179,8 +179,10 @@ struct PosWeightsReader : public WeightsReader
          _temp.trim ();
          while (!_temp.empty()) {
             int count = sscanf (_temp, "%lf = [%d, %d]", &w, &i1, &i2);
-            mmustbe ((count == 3) && (i1 <= i2) && (w>=0) && (i1 >= 0),
-               StrBuffer (Str ("bad positional-weight format: "), _temp));
+				if (!(count == 3) && (i1 <= i2) && (w>=0) && (i1 >= 0)) {
+					throw BaseException (StrBuffer (Str ("bad positional-weight format: "), _temp));
+				}
+               
             _entries.push_back(new SeqWeightDB::PositionalWeight::Entry (i1, i2-i1, seqWeight * w));
 
             _temp.set (_temp.substring(_temp.indexOf(']') + 1));

@@ -1,3 +1,5 @@
+#if 0 
+
 #ifndef _SeedSearcher_Core_PoolAllocated_h
 #define _SeedSearcher_Core_PoolAllocated_h
 
@@ -38,9 +40,9 @@ typename TPoolAllocated<T, UserAllocator>::TObjectPool TPoolAllocated<T, UserAll
 //
 // File        : $RCSfile: $ 
 //               $Workfile: PoolAllocated.h $
-// Version     : $Revision: 5 $ 
+// Version     : $Revision: 6 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:45 $ 
+//               $Date: 3/03/05 21:34 $ 
 // Description :
 //	The Core library contains contains basic definitions and classes
 // which are useful to any highly-portable applications
@@ -58,3 +60,4 @@ typename TPoolAllocated<T, UserAllocator>::TObjectPool TPoolAllocated<T, UserAll
 // and the library authors appliy.
 //
 
+#endif 

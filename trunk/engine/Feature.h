@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Feature.h $
-// Version     : $Revision: 18 $ 
+// Version     : $Revision: 20 $ 
 //               $Author: Aviad $
-//               $Date: 10/01/05 1:45 $ 
+//               $Date: 3/03/05 21:34 $ 
 // Description :
 //    Concrete cache for Hyper-Geometric distribution values
 //
@@ -367,7 +367,6 @@ protected:
    const FeatureParameters& _parameters;
    int _numSeedsSearched;
    int _numProjections;
-   double _log10_seedsSearched;
 
    Persistance::TextTableReport::Format _motifPositionFormat;
    Persistance::TextTableReport::Format _seedFormat;

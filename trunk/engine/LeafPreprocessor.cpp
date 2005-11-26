@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: LeafPreprocessor.cpp $
-// Version     : $Revision: 23 $ 
+// Version     : $Revision: 25 $ 
 //               $Author: Aviad $
-//               $Date: 12/12/04 12:16 $ 
+//               $Date: 3/03/05 21:34 $ 
 // Description :
 //    Concrete preprocessor class - based on a hash table
 //
@@ -31,12 +31,11 @@ USING_TYPE (LeafPreprocessor, LeafNode);
 USING_TYPE (LeafPreprocessor, Rep);
 
 
-struct LeafPreprocessor::Rep : public SeedHash::Table <LeafNode, LeafNode::TAllocator>
+struct LeafPreprocessor::Rep : public SeedHash::Table <LeafNode>
 {
    //
    typedef LeafNode NodeType;
-   typedef NodeType::TAllocator TAllocator;
-   typedef SeedHash::Table <NodeType, TAllocator> SuperClass;
+   typedef SeedHash::Table <NodeType> SuperClass;
 
    //
    //
@@ -45,13 +44,11 @@ struct LeafPreprocessor::Rep : public SeedHash::Table <LeafNode, LeafNode::TAllo
    {
    }
    ~Rep () {
-      bool personallyKillNode = _allocator.cleanupMemory ();
-      clear (personallyKillNode);
+      clear ();
    }
 
    virtual NodeType* createCluster (const SeedHash::AssgKey& key) {
-      NodeType* temp = new (_allocator) NodeType (key);
-      temp->setupMemory (_allocator);
+      NodeType* temp = new NodeType (key);
       return temp;
    }
 
@@ -74,7 +71,6 @@ struct LeafPreprocessor::Rep : public SeedHash::Table <LeafNode, LeafNode::TAllo
       return *seed;
    }
 
-   TAllocator _allocator;
    int _seedLength;
 };
 
@@ -170,9 +166,7 @@ LeafPreprocessor::Rep* LeafPreprocessor::buildNoNegatives (
                DLOG.flush ();
 #           endif
 
-            //
-            // hack, we use the alloc polict TBase interface here
-            inParm->cleanupMemory ();
+				delete inParm;
             return false;
          }
 

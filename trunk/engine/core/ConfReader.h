@@ -21,7 +21,7 @@ public:
 
     //
     // exceptions
-    class GeneralError;
+    struct GeneralError;
     class ConfigError;
     class PackageNotFound;
     class ValueNotFound;
@@ -207,9 +207,11 @@ private:
 //
 
 
-class ConfReader::GeneralError : public BaseException    {
-    //
-    //
+struct ConfReader::GeneralError : public BaseException    {
+  //
+  //
+  ~GeneralError () throw () {
+  }
 };
 
 
@@ -218,14 +220,18 @@ class ConfReader::ConfigError : public ConfReader::GeneralError    {
     //
     //
 public:
-	ConfigError (const Str& /* inError */);
-    ConfigError (const Str& /* inError */, const Str& /* inPackageName */);
-    ConfigError (const Str& /* inError */, const Str& /* inPackageName */, const Str& /* inValueName */);
-
-    virtual void explain (std::ostream &);
+  ConfigError (const Str& /* inError */);
+  ConfigError (const Str& /* inError */, const Str& /* inPackageName */);
+  ConfigError (const Str& /* inError */, 
+	       const Str& /* inPackageName */, 
+	       const Str& /* inValueName */);
+  ~ConfigError () throw () {
+  }
+  
+  virtual void explain (std::ostream &);
 
 protected:
-	StrBuffer message;
+  StrBuffer message;
 };
 
 
@@ -234,11 +240,14 @@ class ConfReader::PackageNotFound : public ConfReader::GeneralError    {
     //
     //
 public:
-	PackageNotFound (const Str& /* inPackageName */);
-   virtual void explain (std::ostream&);
+  PackageNotFound (const Str& /* inPackageName */);
+  ~PackageNotFound () throw () {
+  }
 
+  virtual void explain (std::ostream&);
+  
 private:
-    StrBuffer package;
+  StrBuffer package;
 };
 
 
@@ -246,12 +255,15 @@ class ConfReader::ValueNotFound : public ConfReader::GeneralError  {
     //
     //
 public:
-	ValueNotFound (const Str& /* inPackageName */, const Str& /* inValueName */);
-   virtual void explain (std::ostream&);
+  ValueNotFound (const Str& /* inPackageName */, 
+		 const Str& /* inValueName */);
+  ~ValueNotFound () throw () {
+  }
+  virtual void explain (std::ostream&);
 
 private:
-    StrBuffer package;
-    StrBuffer value;
+  StrBuffer package;
+  StrBuffer value;
 };
 
 
@@ -294,7 +306,7 @@ public:
 
 #endif
 
-/* $Header: /SeedSearcher/core/ConfReader.h 5     27/08/04 2:09 Aviad $	
+/* $Header: /SeedSearcher/core/ConfReader.h 7     3/03/05 21:34 Aviad $	
 
     Utility classes that help to share configuration information 
 across different Server componenent.
@@ -302,9 +314,9 @@ across different Server componenent.
 
 // File        : $RCSfile: $ 
 //               $Workfile: ConfReader.h $
-// Version     : $Revision: 5 $ 
+// Version     : $Revision: 7 $ 
 //               $Author: Aviad $
-//               $Date: 27/08/04 2:09 $ 
+//               $Date: 3/03/05 21:34 $ 
 // Description :
 //	The Persistence library contains both high & low level IO classes
 //	and is high-performance, highly reusable framework 

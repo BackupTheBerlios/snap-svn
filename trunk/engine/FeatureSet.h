@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: FeatureSet.h $
-// Version     : $Revision: 2 $ 
+// Version     : $Revision: 5 $ 
 //               $Author: Aviad $
-//               $Date: 16/12/04 6:15 $ 
+//               $Date: 3/03/05 21:34 $ 
 // Description :
 //    Concrete class describing a set of features.
 //    contains algorithms for replacing redundant features
@@ -73,7 +73,9 @@ public:
    typedef std::set <Feature_var, Comparator> Features;
    typedef Features::iterator iterator;
    typedef Features::reverse_iterator reverse_iterator;
+	typedef Features::const_iterator const_iterator;
    typedef IteratorWrapper <Features> Iterator;
+   typedef CIteratorWrapper <Features> CIterator;
    typedef IteratorWrapper <Features, reverse_iterator> RIterator;
 
 public:
@@ -93,6 +95,9 @@ public:
       std::pair <Features::iterator, bool> result = _features.insert(f);
       return result.second;
    }
+	void insertFeatures (iterator begin, iterator end)	{
+		_features.insert (begin, end);
+	}
    //
    // removes the feature pointed by the iterator from the set
    // and insert the feature f instead
@@ -121,6 +126,9 @@ public:
    Iterator getIterator () {
       return Iterator (begin (), end());
    }
+	CIterator getIterator() const {
+		return CIterator (_features.begin (), _features.end());
+	}
    RIterator getRIterator () {
       return RIterator (begin (), end());
    }

@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: PrefixTreePreprocessor.cpp $
-// Version     : $Revision: 41 $ 
+// Version     : $Revision: 43 $ 
 //               $Author: Aviad $
-//               $Date: 10/01/05 1:52 $ 
+//               $Date: 3/03/05 21:34 $ 
 // Description :
 //    Concrete preprocessor class - based on a prefix tree
 //
@@ -31,8 +31,6 @@
 #include "persistance/OArchive.h"
 #include "DebugLog.h"
 
-#include "core/AllocPolicy.h"
-
 #include <algorithm>
 #include <time.h>
 
@@ -42,8 +40,6 @@ USING_TYPE (PrefixTreePreprocessor, TreeNode);
 USING_TYPE (PrefixTreePreprocessor, TreeNodeRep);
 USING_TYPE (PrefixTreePreprocessor, SeqPositions);
 
-typedef PrivatePoolPolicy CurrentAllocPolicy;
-
 
 /*****************************
  * TreeNodeRep
@@ -52,8 +48,7 @@ typedef PrivatePoolPolicy CurrentAllocPolicy;
 
 
 class PrefixTreePreprocessor::TreeNodeRep :
-  public Preprocessor::NodeRep,
-  public CurrentAllocPolicy::Traits<TreeNodeRep>::TBase
+  public Preprocessor::NodeRep
 {
    //
    // tree-building interface
@@ -165,23 +160,17 @@ public:
        _db (inDb),
        _code (code)
    {
-     _root = new (_allocator) TreeNodeRep (this);
-     _root->setupMemory (_allocator);
+     _root = new TreeNodeRep (this);
    }
 
    ~TreeRep () {
-     bool shouldCleanup = _allocator.cleanupMemory ();
-     if (shouldCleanup)
        delete _root;
+		 _root = NULL;
    }
 
   TreeNodeRep* createNode (TreeNodeRep* parent) {
-    TreeNodeRep* result = new (_allocator) TreeNodeRep (parent);
-    result->setupMemory (_allocator);
+    TreeNodeRep* result = new TreeNodeRep (parent);
     return result;
-  }
-  void destroyNode (TreeNodeRep* node) {
-    _allocator.cleanupMemory (node);
   }
   TreeNodeRep* getRoot () {
     return _root;
@@ -194,7 +183,6 @@ public:
    TreeNodeRep* _root;
    const SequenceDB* _db;
    const AlphabetCode& _code;
-   TreeNodeRep::TAllocator _allocator;
 };
 
 
@@ -827,7 +815,7 @@ inline void TreeNodeRep::dispose (bool isRoot)
    if (_children) {
       for (int i=0 ; i<cardinality ; i++) {
          if (_children [i]) {
-            _host->destroyNode (_children [i]);
+				delete _children [i];
             _children [i] = NULL;
          }
       }
@@ -872,7 +860,7 @@ void TreeNodeRep::removeChild (int index)
    );
 
    //delete _children [index];
-   _host->destroyNode (_children [index]);
+   delete _children [index];
    _children [index] = NULL;
 }
 

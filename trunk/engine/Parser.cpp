@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Parser.cpp $
-// Version     : $Revision: 39 $ 
+// Version     : $Revision: 42 $ 
 //               $Author: Aviad $
-//               $Date: 10/01/05 1:56 $ 
+//               $Date: 3/03/05 21:34 $ 
 // Description :
 //    Concrete Parser for seed-searcher options
 //
@@ -39,14 +39,9 @@ using namespace std;
 
 
 struct ParserError : public BaseException {
-   ParserError (std::string const & s) : _error (s) {
+   ParserError (std::string const & s) 
+		: BaseException (std::string ("Error in arguments: ") + s) {
    }
-
-   virtual void explain (std::ostream& out) {
-      out << "Error in arguments: " <<_error;
-   }
-
-   std::string _error;
 };
 
 
@@ -602,6 +597,18 @@ DEFINE_OUTPUT_SEED_PARSER_OPTION(
    __generateBayesian
 );
 
+DEFINE_OUTPUT_SEED_PARSER_OPTION(
+   seedlog,
+   "Sseedlog",
+   "<exhaustive | on | off> enable/supress logging of the seed featureset"
+		"\non => output **each and every seen seed** to a .exhaustive file, and also log the featureset after every search"
+      "\npos => log the featureset after every search"
+      "\noff => no gratuitous logging",
+   "off",
+   GetOptWrapper::_required_argument_,
+   __generateSeedlog
+);
+
 DEFINE_SEED_PARSER_OPTION(
    help,
    "Shelp",
@@ -715,6 +722,7 @@ struct MyOptions {
       REGISTER_SEED_PARSER_OPTION_CLASS (pssm, _list);
       REGISTER_SEED_PARSER_OPTION_CLASS (motif, _list);
       REGISTER_SEED_PARSER_OPTION_CLASS (sample, _list);
+		REGISTER_SEED_PARSER_OPTION_CLASS (seedlog, _list);
    }
    GetOptParser::OptionList _list;   
 } __options;
@@ -867,7 +875,8 @@ void Parser::checkCompatibility (const Parser& in)
    if (__prep == _prep_leaf_) {
       //
       // leaf preprocessor only supports seeds of constant length
-      mmustbe (in.__seed_l >= __prep_l, "leaf preprocessor only supports seeds that are equal or longer in length to its depth.");
+      if (in.__seed_l < __prep_l)
+			throw BaseException (Str ("leaf preprocessor only supports seeds that are equal or longer in length to its depth."));
    }
    else {
       mustbe (__prep == _prep_tree_);

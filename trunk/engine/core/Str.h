@@ -76,8 +76,15 @@ public:
       // Use getCString() when you need to convert to c-style string.
       return mData;
    }
-   void getCString(char* inDest, Size inDestSize) const;
+
    // Copy my data and trailing '\0' to 'inDest' up to 'inDestSize' bytes.
+   void getCString(char* inDest, Size inDestSize) const;
+   // Copy my data to a std string
+   std::string& getCString (std::string& in) const {
+     in.replace (in.begin (), in.end (), getChars (), length ());
+     debug_mustbe (Str (in).equals (*this));
+     return in;
+   }
    
    Str substring(Index inStart, Index inEnd) const;
    // Return part of me between the indices 'inStart' and 'inEnd'
@@ -125,7 +132,7 @@ protected:
    
    void copyFrom(const Str& in, Index inStart, Size inLength);
    void checkIndex(Index in) const {
-      if (in > mLength)
+      if ((in > mLength) || (in < 0))
          throwx (IndexOutOfBounds());
    }
    
@@ -257,9 +264,9 @@ inline bool operator >= (const Str& a, const Str& b) {
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Str.h $
-// Version     : $Revision: 11 $ 
+// Version     : $Revision: 13 $ 
 //               $Author: Aviad $
-//               $Date: 16/12/04 6:06 $ 
+//               $Date: 30/01/05 2:48 $ 
 // Description :
 //	The Core library contains contains basic definitions and classes
 // which are useful to any highly-portable applications

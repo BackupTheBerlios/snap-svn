@@ -27,42 +27,44 @@ StatusReporter::~StatusReporter() {
 
 bool 
 StatusReporter::hasUserCancelled() {
-
-	//no point in querying if we already know the user
-	//has cancelled
-	if( !mUserCancelled ) {
-	
-		char query[256];
-			
-		connect();
+  //no point in querying if we already know the user
+  //has cancelled
+  if( !mUserCancelled ) {
+    
+    char query[256];
+    
+    connect();
+    
+    sprintf( query, "SELECT cancel_flag from jobs where id='%d'", mJobID );
+    
+    if( mysql_query( &mSQLObj, query ) ) { //fatal?
+      throw StatusException( "query failed\n" );
+    }
+    
+    MYSQL_RES *result = mysql_use_result( &mSQLObj );
+    
+    MYSQL_ROW row = mysql_fetch_row(result);
+    
+    if( row == 0 ) {
+      throw StatusException(  
+			    "StatusReporter::hasUserCancelled - Error "
+			    "couldn't retrieve row cancel_flag from DB!!!\n" );
+    }
+    
+    mUserCancelled = (*(row[0]) == '1');
+    disconnect();
+    
+  }
 		
-		sprintf( query, "SELECT cancel_flag from jobs where id='%d'", mJobID );
-		
-		if( mysql_query( &mSQLObj, query ) ) { //fatal?
-			throw StatusException( "query failed\n" );
-		}
-		
-		MYSQL_RES *result = mysql_use_result( &mSQLObj );
-		
-		MYSQL_ROW row = mysql_fetch_row(result);
-		
-		if( row == 0 ) {
-			throw StatusException(  
-	      "StatusReporter::hasUserCancelled - Error "
-	      "couldn't retrieve row cancel_flag from DB!!!\n" );
-		}
-		
-		mUserCancelled = (*(row[0]) == '1');
-		disconnect();
-		
-	}
-		
-		
-	return mUserCancelled;
+  return mUserCancelled;
 }
 
 void 
-StatusReporter::setProgress( int inPercentDone ) {
+StatusReporter::setProgress( int inPercentDone ) 
+{
+  DLOG.writeln ();
+  DLOG << "Progress " << inPercentDone << '%' << DLOG.EOL ();
+  DLOG.flush();
 
   char query[256];
   
@@ -90,9 +92,11 @@ StatusReporter::setJobStarted()
   
   connect();
   
-  sprintf( query, "UPDATE jobs SET job_status='%d', pid='%d', start_time=now() WHERE id='%d'", 
+  sprintf( query, 
+	   "UPDATE jobs SET job_status='%d', pid='%d',"
+	   "start_time=now() WHERE id='%d'", 
 	   PROCESSING_STATUS, mPid, mJobID );
-
+  
   debug_only (printf( query ););
   
   if( mysql_query( &mSQLObj, query ) ) {
@@ -107,12 +111,12 @@ StatusReporter::setJobStarted()
 
 void 
 StatusReporter::setJobCancelled() {
-	setJobStatus(CANCELLED_STATUS, true);
+  setJobStatus(CANCELLED_STATUS, true);
 }
 
 void 
 StatusReporter::setJobDone() {
-	setJobStatus(DONE_STATUS, true);
+  setJobStatus(DONE_STATUS, true);
 }
 
 void 
@@ -129,48 +133,46 @@ StatusReporter::connect()
     throw StatusException( "init MYSQL failed!\n" );
   }
   
-  if( !mysql_real_connect(&mSQLObj, mHostName, mUserName, mPassword, mDBName, 0, NULL, 0) ) {
+  if( !mysql_real_connect(&mSQLObj, mHostName, mUserName, 
+			  mPassword, mDBName, 0, NULL, 0) ) {
     throw StatusException( "error connecting to mysql\n" );
   }
-
 }
 
 void 
 StatusReporter::setJobStatus( JobStatus inStatus, bool inSetEndTime )
 {
-
-	char query[256];
-
-	connect();
-	
-	if( inSetEndTime )
-		sprintf( query, "UPDATE jobs SET job_status='%d',  "
-		" end_time = now() WHERE id='%d'", inStatus, mJobID );
-	else
-		sprintf( query, "UPDATE jobs SET job_status='%d' WHERE id='%d'", 
-														inStatus, mJobID );
-	
-	if( mysql_query( &mSQLObj, query ) ) {
-		throw StatusException( "update status failed\n" );
-	}
-	
-	disconnect();
-
+  char query[256];
+  
+  connect();
+  
+  if( inSetEndTime )
+    sprintf( query, "UPDATE jobs SET job_status='%d',  "
+	     " end_time = now() WHERE id='%d'", inStatus, mJobID );
+  else
+    sprintf( query, "UPDATE jobs SET job_status='%d' WHERE id='%d'", 
+	     inStatus, mJobID );
+  
+  if( mysql_query( &mSQLObj, query ) ) {
+    throw StatusException( "update status failed\n" );
+  }
+  
+  disconnect();
 }
 
 void 
 StatusReporter::disconnect()
 {
-	mysql_close( &mSQLObj );
+  mysql_close( &mSQLObj );
 }
 
 
 StatusReportManager::Sentry::Sentry( int argc, char **argv, Argv &outArgv )
 {
-   debug_only (
-      printf("\nConnecting to DB...\n");
-   );
-
+  debug_only (
+	      printf("\nConnecting to DB...\n");
+  );
+  
    /* 
    In Server mode, the first parameters on the command
    line are: db_host, db_name, db_user, db_pass, job_id
@@ -195,7 +197,7 @@ StatusReportManager::Sentry::Sentry( int argc, char **argv, Argv &outArgv )
       boost::shared_ptr <BaseStatusReporter> (
          new StatusReporter (db_host, db_name, db_user, db_pass, job_id)
       )
-      );
+   );
 
    StatusReportManager::setJobStarted ();
 }

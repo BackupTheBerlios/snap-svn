@@ -4,7 +4,7 @@
 	Version="7.10"
 	Name="Persistance"
 	ProjectGUID="{16C4D29E-6206-48AF-AE0E-E413B563CE75}"
-	SccProjectName="&quot;$/SeedSearcher&quot;, ECAAAAAA"
+	SccProjectName="&quot;$/SeedSearcher.2332&quot;, RLDAAAAA"
 	SccAuxPath=""
 	SccLocalPath=".."
 	SccProvider="MSSCCI:Microsoft Visual SourceSafe"
@@ -129,113 +129,113 @@
 			Name="Source Files"
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm">
 			<File
-				RelativePath="..\..\seedsearcher\Persistance\Error.cpp">
+				RelativePath="..\persistance\AbstractFormat.h">
 			</File>
 			<File
-				RelativePath="..\..\seedsearcher\Persistance\IArchive.cpp">
+				RelativePath="..\persistance\Error.cpp">
 			</File>
 			<File
-				RelativePath="..\..\seedsearcher\Persistance\InputStream.cpp">
+				RelativePath="..\persistance\IArchive.cpp">
 			</File>
 			<File
-				RelativePath="..\..\seedsearcher\Persistance\IRegistry.cpp">
+				RelativePath="..\persistance\InputStream.cpp">
 			</File>
 			<File
-				RelativePath="..\..\seedsearcher\Persistance\OArchive.cpp">
+				RelativePath="..\persistance\IRegistry.cpp">
 			</File>
 			<File
-				RelativePath="..\..\seedsearcher\Persistance\Object.cpp">
+				RelativePath="..\persistance\OArchive.cpp">
 			</File>
 			<File
-				RelativePath="..\..\seedsearcher\Persistance\ORegistry.cpp">
+				RelativePath="..\persistance\Object.cpp">
 			</File>
 			<File
-				RelativePath="..\..\seedsearcher\Persistance\OutputStream.cpp">
+				RelativePath="..\persistance\ORegistry.cpp">
 			</File>
 			<File
-				RelativePath="..\..\seedsearcher\Persistance\StreamBuffer.cpp">
+				RelativePath="..\persistance\OutputStream.cpp">
 			</File>
 			<File
-				RelativePath="..\..\seedsearcher\Persistance\TextReader.cpp">
+				RelativePath="..\persistance\StreamBuffer.cpp">
+			</File>
+			<File
+				RelativePath="..\persistance\TextReader.cpp">
 			</File>
 			<File
 				RelativePath="..\persistance\TextTableReport.cpp">
 			</File>
 			<File
-				RelativePath="..\..\seedsearcher\Persistance\TextWriter.cpp">
+				RelativePath="..\persistance\TextWriter.cpp">
 			</File>
 			<File
-				RelativePath="..\..\seedsearcher\Persistance\TFactory.cpp">
+				RelativePath="..\persistance\TFactory.cpp">
+			</File>
+			<File
+				RelativePath="..\persistance\UnbufferedChannel.h">
 			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl;inc">
 			<File
-				RelativePath="..\..\seedsearcher\Persistance\AbstractFormat.h">
+				RelativePath="..\persistance\Defs.h">
 			</File>
 			<File
-				RelativePath="..\..\seedsearcher\Persistance\Defs.h">
+				RelativePath="..\persistance\Error.h">
 			</File>
 			<File
-				RelativePath="..\..\seedsearcher\Persistance\Error.h">
+				RelativePath="..\persistance\IArchive.h">
 			</File>
 			<File
-				RelativePath="..\..\seedsearcher\Persistance\IArchive.h">
+				RelativePath="..\persistance\InputStream.h">
 			</File>
 			<File
-				RelativePath="..\..\seedsearcher\Persistance\InputStream.h">
+				RelativePath="..\persistance\IODefs.h">
 			</File>
 			<File
-				RelativePath="..\..\seedsearcher\Persistance\IODefs.h">
+				RelativePath="..\persistance\IRegistry.h">
 			</File>
 			<File
-				RelativePath="..\..\seedsearcher\Persistance\IRegistry.h">
+				RelativePath="..\persistance\OArchive.h">
 			</File>
 			<File
-				RelativePath="..\..\seedsearcher\Persistance\OArchive.h">
+				RelativePath="..\persistance\Object.h">
 			</File>
 			<File
-				RelativePath="..\..\seedsearcher\Persistance\Object.h">
+				RelativePath="..\persistance\ORegistry.h">
 			</File>
 			<File
-				RelativePath="..\..\seedsearcher\Persistance\ORegistry.h">
+				RelativePath="..\persistance\OutputStream.h">
 			</File>
 			<File
-				RelativePath="..\..\seedsearcher\Persistance\OutputStream.h">
+				RelativePath="..\persistance\StdInputStream.h">
 			</File>
 			<File
-				RelativePath="..\..\seedsearcher\Persistance\StdInputStream.h">
+				RelativePath="..\persistance\StdOutputStream.h">
 			</File>
 			<File
-				RelativePath="..\..\seedsearcher\Persistance\StdOutputStream.h">
+				RelativePath="..\persistance\STLPersist.h">
 			</File>
 			<File
-				RelativePath="..\..\seedsearcher\Persistance\STLPersist.h">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\Persistance\StreamBuffer.h">
+				RelativePath="..\persistance\StreamBuffer.h">
 			</File>
 			<File
 				RelativePath="..\persistance\StrInputStream.h">
 			</File>
 			<File
-				RelativePath="..\..\seedsearcher\Persistance\StrOutputStream.h">
+				RelativePath="..\persistance\StrOutputStream.h">
 			</File>
 			<File
-				RelativePath="..\..\seedsearcher\Persistance\TextReader.h">
+				RelativePath="..\persistance\TextReader.h">
 			</File>
 			<File
 				RelativePath="..\persistance\TextTableReport.h">
 			</File>
 			<File
-				RelativePath="..\..\seedsearcher\Persistance\TextWriter.h">
+				RelativePath="..\persistance\TextWriter.h">
 			</File>
 			<File
-				RelativePath="..\..\seedsearcher\Persistance\TFactory.h">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\Persistance\UnbufferedChannel.h">
+				RelativePath="..\persistance\TFactory.h">
 			</File>
 		</Filter>
 		<Filter

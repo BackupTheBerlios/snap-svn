@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Defs.h $
-// Version     : $Revision: 15 $ 
+// Version     : $Revision: 18 $ 
 //               $Author: Aviad $
-//               $Date: 10/01/05 1:44 $ 
+//               $Date: 3/03/05 21:34 $ 
 // Description :
 //    Forward definitions and global definitions for the 
 //    seed-searcher application
@@ -26,6 +26,7 @@
 //
 
 #include "core/Defs.h"
+#include <boost/shared_ptr.hpp>
 
 class AlphabetCode;
 
@@ -46,6 +47,10 @@ class PositionVector;
 
 class RandomProjections;
 class PSSM;
+
+
+class FeatureSet;
+typedef boost::shared_ptr <FeatureSet> FeatureSet_ptr;
 
 //
 //
@@ -102,25 +107,6 @@ enum PositionWeightType {
 //
 // reserve space in vectors while building the tree
 #define SEED_RESERVE_VECTOR_SPACE_OPTIMIZATION 1
-
-//
-// allocate objects in pools (reduces calls to new/delete)
-#define SEED_POOL_ALLOCATION_OPTIMIZATION 0
-
-#if SEED_POOL_ALLOCATION_OPTIMIZATION
-   //
-   // inherit from TPoolAllocated class
-#  define POOL_ALLOCATED(T) TPoolAllocated<T>
-#else
-   //
-   // dummy class
-   class TStdAllocated {
-   };
-   
-   //
-   // inherit from dummy class instead
-#  define POOL_ALLOCATED(T) TStdAllocated
-#endif
 
 //
 // use Doug Lee's malloc - much better than Microsoft's malloc!

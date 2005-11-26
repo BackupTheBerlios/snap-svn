@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: StdOptions.h $
-// Version     : $Revision: 32 $ 
+// Version     : $Revision: 34 $ 
 //               $Author: Aviad $
-//               $Date: 10/01/05 1:52 $ 
+//               $Date: 1/03/05 22:24 $ 
 // Description :
 //    Concrete implmentations for Langauge, ScoreFunction, WeightFunction etc
 //
@@ -282,32 +282,32 @@ class FeatureFilterLink : public SeedSearcher::FeatureFilter {
    // that do only partial processing of a feature, before passing
    // the feature along to the next FeatureFilter link
 public:
-   FeatureFilterLink (SeedSearcher::FeatureFilter* next, bool owner) 
-   : _owner (owner), _next (next) {
+	FeatureFilterLink (boost::shared_ptr <SeedSearcher::FeatureFilter>& next) 
+   : _next (next) {
    }
    FeatureFilterLink (const FeatureFilterLink& in)
-   :  _owner (true), _next (in._next->clone ())
+   : _next (in._next->clone ())
    {
    }
 
    virtual ~FeatureFilterLink () {
-      if (_owner)
-         delete _next;
    }
    virtual bool add (Feature_var feature) {
       return _next->add (feature);
    }
 
-   virtual const SeedSearcher::FeatureArray& getArray () const {
+   virtual const FeatureSet_ptr getArray () const {
       return _next->getArray ();
    }
-   virtual SeedSearcher::FeatureArray& getArray () {
+   virtual FeatureSet_ptr getArray () {
       return _next->getArray ();
    }
+	virtual void finalize () {
+		_next->finalize ();
+	}
 
 protected:
-   bool _owner;
-   SeedSearcher::FeatureFilter* _next;
+	boost::shared_ptr <SeedSearcher::FeatureFilter> _next;
 };
 
 /*
@@ -376,19 +376,22 @@ class KBestFilter : public SeedSearcher::FeatureFilter {
    // this class is intended to maintain a buffer of the K-best
    // features found.
 public:
-   KBestFilter (int k, int maxRedundancyOffset);
+   //KBestFilter (int k, int maxRedundancyOffset);
+	KBestFilter (int k, int maxRedundancyOffset, FeatureSet_ptr = FeatureSet_ptr ());
    KBestFilter (const KBestFilter& in) 
    :  _maxElements (in._maxElements),
-      _maxRedundancyOffset (in._maxRedundancyOffset) 
-      
+      _maxRedundancyOffset (in._maxRedundancyOffset),
+		_features (new FeatureSet)
    {
+		//
+		// we do not copy the featureset contents
    }
    virtual ~KBestFilter ();
 
    //
    // takes ownership of Assignment & Cluster
    virtual bool add (Feature_var feature) {
-      return _features.insertOrReplace1 (
+      return _features->insertOrReplace1 (
          feature, 
          FeatureSet::featureRedundancyCheck (
             FeatureSet::SymmetricMaxOffsetRedundancyCheck (
@@ -399,21 +402,23 @@ public:
       );
    }
 
-   virtual SeedSearcher::FeatureArray& getArray () {
+   virtual FeatureSet_ptr getArray () {
       return _features;
    }
-   virtual const SeedSearcher::FeatureArray& getArray () const {
+   virtual const FeatureSet_ptr getArray () const {
       return _features;
    }
-
    virtual FeatureFilter* clone () {
       return new KBestFilter (*this);
    }
 
+	virtual void finalize () {
+	}
+
 protected:
    int _maxElements;
    int _maxRedundancyOffset;
-   FeatureSet _features;
+	boost::shared_ptr <FeatureSet> _features;
 };
 
 
@@ -421,9 +426,10 @@ protected:
 //
 class KBestComplementFilter : public KBestFilter {
 public:
-   KBestComplementFilter (  int k, int maxRedundancyOffset, 
-                              const Langauge& langauge)
-   :  KBestFilter (k, maxRedundancyOffset), _langauge (langauge)
+   KBestComplementFilter (	int k, int maxRedundancyOffset, 
+									const Langauge& langauge,
+									FeatureSet_ptr features = FeatureSet_ptr ())
+   :  KBestFilter (k, maxRedundancyOffset, features), _langauge (langauge)
    {
    }
    KBestComplementFilter (const KBestComplementFilter& in)
@@ -434,7 +440,7 @@ public:
    }
 
    virtual bool add (Feature_var feature) {
-      return _features.insertOrReplace1 (
+      return _features->insertOrReplace1 (
          feature, 
          FeatureSet::featureReverseRedundancyCheck (
             FeatureSet::SymmetricMaxOffsetRedundancyCheck (
@@ -463,7 +469,7 @@ class GoodFeaturesFilter : public FeatureFilterLink {
    //                   (2) are present in at least k positive sequences
    //                   (3) are presnt in at least n percent of positive sequences
 public:
-   GoodFeaturesFilter (SeedSearcher::FeatureFilter* next, bool owner,
+	GoodFeaturesFilter (boost::shared_ptr <SeedSearcher::FeatureFilter>& next,
                   const SeqCluster& db,
                   const SeqWeightFunction& wf,
                   double minScore, 
@@ -497,6 +503,34 @@ private:
    int _minPositiveSeqs;
    const SeqWeightFunction& _wf;
 };
+
+class FeaturePrintFilter : public FeatureFilterLink {
+   //
+   // this class is intended to allow only features that
+   // are good enough - (1) have a score high enough
+   //                   (2) are present in at least k positive sequences
+   //                   (3) are presnt in at least n percent of positive sequences
+public:
+	FeaturePrintFilter (	boost::shared_ptr <SeedSearcher::FeatureFilter>& next,
+								const Str& name);
+
+   //
+   // takes ownership of Assignment & Cluster
+   virtual bool add (Feature_var feature);
+
+	virtual FeatureFilter* clone () {
+		mustfail ();
+		return NULL;
+	}
+
+	virtual void finalize () {
+		_writer.flush ();
+	}
+
+protected:
+	Persistance::TextWriter _writer;
+};
+
 
 struct StatFix {
    //

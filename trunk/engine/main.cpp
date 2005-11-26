@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: main.cpp $
-// Version     : $Revision: 65 $ 
+// Version     : $Revision: 68 $ 
 //               $Author: Aviad $
-//               $Date: 10/01/05 1:49 $ 
+//               $Date: 3/03/05 21:34 $ 
 // Description :
 //    main routine for the seed-searcher program
 //
@@ -52,6 +52,14 @@ using namespace std;
 using namespace Persistance;
 
 
+static const char buildComment [] = 
+	"Release notes: \n"
+	"1) Michal - more strict bonferroni correction\n"
+	"2) Tommy - special option shows seeds in .log\n"
+	"3) Yoseph - special option shows all scores received in a setting\n"
+	"\n";
+
+
 //
 //
 enum {
@@ -91,9 +99,17 @@ static void welcomeMessage ()
    DLOG  << "SeedSearcher v" 
          << main_definitions::__versionMajor << '.' 
          << main_definitions:: __versionMinor;
+
+   switch (main_definitions::__stability) {
+      case main_definitions::_alpha_version_:   DLOG << " alpha build"; break;
+      case main_definitions::_beta_version_:    DLOG << " beta build";  break;
+      case main_definitions::_stable_version_:  DLOG << " release build"; break;
+   }
+
    debug_only (
-      DLOG << " (Debug)";
+      DLOG << " (Debug) ";
    );
+
 #ifdef __TIMESTAMP__
    DLOG << " Compiled on " << __TIMESTAMP__;
 #endif
@@ -102,7 +118,9 @@ static void welcomeMessage ()
         << "by Yoseph Barash (hoan@cs.huji.ac.il)" << DLOG.EOL ()
         << "and Aviad Rozenhek (aviadr@cs.huji.ac.il) " << DLOG.EOL ()
         << DLOG.EOL ();
+	DLOG << buildComment << DLOG.EOL ();
    DLOG.flush ();
+
 }
 
 
@@ -158,45 +176,25 @@ int exit_value = 0;
 
       StatusReportManager::setJobDone ();
    }
-   catch (BaseStatusReporter::StatusException& x) {
-      //
-      // write exception info
-      cerr << endl;
-      x.explain (cerr);
-      cerr << endl;
-      exit_value = 1;
-
-      try {
-	      //
-	      // aborted by user, 
-	      StatusReportManager::setJobCancelled ();
-      }
-      catch (...) {
-      	cerr << endl << "StatusReportManager Error" << endl;
-      }
+   catch (const BaseStatusReporter::CancelledException&) {
+		try {
+			//
+			// aborted by user, 
+			StatusReportManager::setJobCancelled ();
+		}
+		catch (...) {
+			cerr << endl << "StatusReportManager Error" << endl;
+		}
+		throw;
    }
-   catch (BaseException& x) {
-      //
-      // processing error
-      std::string buffer;
-      {  std::ostringstream stream;
-         x.explain(stream);
-         buffer = stream.str ();
-      }
-
-      //
-      // write exception info
-      cerr << endl;
-      cerr << buffer;
-      cerr << endl;
-      exit_value = 1;
-
+   catch (const std::exception& x) {
       try {
-	      StatusReportManager::setJobError(Str (buffer));
+			StatusReportManager::setJobError(x.what ());
       }
       catch (...) {
-	      cerr << endl << "StatusReportManager Error" << endl;
+			cerr << endl << "StatusReportManager Error" << endl;
       }
+      throw;
    }
    catch (...) {
       try {
@@ -238,7 +236,8 @@ static void printSeedFile (TextTableReport::TextOutput& seedsFile,
    for (int i=0 ; i<3; i++) {
       if (outputs[i] != Parser::_out_none_)  {
          char buffer [8096];
-         main_definitions::getOutputFileName(buffer, true, index, fileStub, names [i]);
+         main_definitions::getOutputFileName(buffer, true, 
+					     index, fileStub, names [i]);
          boost::filesystem::path leaf (buffer);
          seedsFile << Str (leaf.leaf ()) << '\t';
       }
@@ -251,11 +250,12 @@ static void printSeedFile (TextTableReport::TextOutput& seedsFile,
    seedsFile.flush();
 }
 
-static void printSeqMatrix (SeedSearcherMain::Results& results)
+static void printSeqMatrix (FeatureSet& bestFeatures,
+                            SeedSearcherMain::Parameters& parameters)
 {
    TextTableReport::TextOutput matrixFile (
       main_definitions::openFile (true, -1, 
-                                 StrBuffer (results.getParameters ().name ()), 
+                                 StrBuffer (parameters.name ()), 
                                  main_definitions::MATRIX_FILE_STUB));
    //
    // create the format of the table
@@ -263,7 +263,7 @@ static void printSeqMatrix (SeedSearcherMain::Results& results)
    // the next columns are names of the motifs
    Persistance::TextTableReport::Format format;
    format.addField("Seq-Name", 13);
-   FeatureSet::Iterator feature_it = results.getFeatures ().getIterator();
+   FeatureSet::Iterator feature_it = bestFeatures.getIterator();
    for (; feature_it.hasNext() ; feature_it.next()) {
       std::string feature_name;
       {  Persistance::TextWriter writer (new Persistance::StrOutputStream (feature_name));
@@ -274,9 +274,8 @@ static void printSeqMatrix (SeedSearcherMain::Results& results)
 
    //
    // get the seq iterator and the weight function
-   SequenceDB::SequenceIterator it = 
-      results.getParameters ().db ().sequenceIterator ();
-   const SeqWeightFunction& wf = results.getParameters ().wf ();
+   SequenceDB::SequenceIterator it = parameters.db ().sequenceIterator ();
+   const SeqWeightFunction& wf = parameters.wf ();
 
    //
    // go over all sequences
@@ -292,7 +291,7 @@ static void printSeqMatrix (SeedSearcherMain::Results& results)
 
       //
       // go over all results
-      FeatureSet::Iterator feature_it = results.getFeatures ().getIterator ();
+      FeatureSet::Iterator feature_it = bestFeatures.getIterator ();
       for (; feature_it.hasNext() ; feature_it.next ()) {
          Feature& feature = *(feature_it.get ());
          debug_mustbe (feature.cluster ().hasPositions ());
@@ -337,26 +336,23 @@ protected:
       Parser::OutputType gPSSM = params.parser ().__generatePSSM;
       Parser::OutputType gMotif = params.parser ().__generateMotif;
       Parser::OutputType gBayesian = params.parser ().__generateBayesian;
+		Parser::OutputType gSeedlog = params.parser ().__generateSeedlog;
 
       //
       // should we generate a file that contains only the seeds?
       bool gSeeds =  (gMotif  != Parser::_out_none_)  ||
          (gPSSM   != Parser::_out_none_)  ||
-         (gBayesian != Parser::_out_none_);
+         (gBayesian != Parser::_out_none_) ||
+			(gSeedlog != Parser::_out_none_);
 
       if (!gSeeds)
          return;
 
-      boost::shared_ptr <SeedSearcher::FeatureFilter> bestFeatures (
-         SeedSearcherMain::CmdLineParameters::setupFeatureContainer (
-            params.parser (), params.langauge ()
-         )
-      );
-
-      int maxElements = params.parser ().__seed_n;
-      FeatureSet::Iterator feature_it = results.getFeatures ().getIterator();
-      for (; ((*bestFeatures)->size () < maxElements) && (feature_it.hasNext()) ; feature_it.next())
-         bestFeatures->add(*feature_it );
+		//
+		// get features without any redundancies
+      FeatureSet_ptr bestFeatures =
+			SeedSearcherMain::FeatureSetManager::removeRedundancies (
+				*params.bestFeatures ().getArray(), params);
 
       int bonfN = 
          params.parser ().__score_bonf? results.numSeedsSearched () : 0;
@@ -375,10 +371,10 @@ protected:
 
       //
       // we print the results to the log
-      PositionVector pos;
-      PositionVector neg;
+      PositionVector pos;	pos.reserve(1024);
+      PositionVector neg;	neg.reserve(1024);
       Persistance::TextTableReport::TextOutput dlog (DLOG);
-      feature_it = (*bestFeatures)->getIterator();
+		FeatureSet::Iterator feature_it = bestFeatures->getIterator();
       for (int i=0; feature_it.hasNext() ; feature_it.next(), ++i) {
 
          Feature& feature = *(feature_it.get ());
@@ -386,9 +382,10 @@ protected:
          //
          // first we find the positive and negative positions
          // of this feature
-         pos.clear();
-         neg.clear();
+			reserveClear(pos);
+			reserveClear(neg);
          printer.addPositions (feature, pos, neg);
+         debug_mustbe (feature.cluster ().hasPositions ());
 
          main_definitions::printMotif (
                   params.parser ().__score_partial,
@@ -403,9 +400,9 @@ protected:
 			   pos, neg, 
 			   fileStub, feature, i
 			);
-
-         printSeqMatrix (results);
       }
+
+      printSeqMatrix (*bestFeatures, results.getParameters ());
    }
 }; 
 
@@ -447,7 +444,7 @@ static void mainRoutine (int argc,
    time (&cleanupStart);
 }
 
-
+#if 0
 #if SEED_DL_MALLOC_OPTIMIZATION
 
 #include "core/dlmalloc.h"
@@ -493,3 +490,4 @@ void operator delete[] (void* inPtr)
 }
 
 #endif
+#endif  

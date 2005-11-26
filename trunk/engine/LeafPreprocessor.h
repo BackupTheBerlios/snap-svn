@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: LeafPreprocessor.h $
-// Version     : $Revision: 13 $ 
+// Version     : $Revision: 15 $ 
 //               $Author: Aviad $
-//               $Date: 4/11/04 17:52 $ 
+//               $Date: 3/03/05 21:34 $ 
 // Description :
 //    Concrete preprocessor class - based on a hash table
 //
@@ -26,18 +26,14 @@
 
 #include "Preprocessor.h"
 #include "SeedHash.h"
-#include "core/AllocPolicy.h"
 
 class LeafPreprocessor : public Preprocessor {
 public:
    struct Rep;
 
-   typedef PrivatePoolPolicy AllocPolicy;
-
    class LeafNode :  
       public Preprocessor::NodeRep, 
-      public SeedHash::Cluster <LeafNode>,
-      public AllocPolicy::Traits <LeafNode>::TBase
+      public SeedHash::Cluster <LeafNode>
    {
    public:
       LeafNode (const SeedHash::AssgKey& key) 

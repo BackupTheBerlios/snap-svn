@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Parser.h $
-// Version     : $Revision: 30 $ 
+// Version     : $Revision: 32 $ 
 //               $Author: Aviad $
-//               $Date: 10/01/05 1:56 $ 
+//               $Date: 1/03/05 22:22 $ 
 // Description :
 //    Concrete Parser for seed-searcher options
 //
@@ -176,6 +176,9 @@ public:
    //
    // flag that determines if .sample file should be created
    OutputType __generateBayesian;
+   //
+   // flag that determines if seeds should be outputed to the log
+   OutputType __generateSeedlog;
 #if 0
    //
    // (in seed performance test)

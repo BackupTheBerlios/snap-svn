@@ -10,23 +10,23 @@
 #include <fstream>
 
 struct main_definitions {
-
    enum {
+      _alpha_version_,
+      _beta_version_,
+      _stable_version_,
+
       __versionMajor = 2,
-      __versionMinor = 332
+      __versionMinor = 3321,
+      __stability = _alpha_version_
    };
 
    //
    //
    struct MainError : public BaseException {
-      MainError (std::string const & s) : _error (s) {
+      MainError (std::string const & s) : BaseException (s) {
       }
-
-      virtual void explain (std::ostream& out) {
-         out << "Error in main: " << _error;
+      ~MainError () throw () {
       }
-
-      std::string _error;
    };
 
    //

@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: SequenceDB.cpp $
-// Version     : $Revision: 22 $ 
+// Version     : $Revision: 24 $ 
 //               $Author: Aviad $
-//               $Date: 10/01/05 1:53 $ 
+//               $Date: 3/03/05 21:34 $ 
 // Description :
 //    Concrete repository for sequences
 //
@@ -41,14 +41,9 @@ using namespace std;
 *****************/
 
 struct DBError : public BaseException {
-   DBError (std::string const & s) : _error (s) {
+   DBError (std::string const & s)
+		: BaseException (std::string ("Error in sequence file: ") + s) {
    }
-
-   virtual void explain (std::ostream& out) {
-      out << "Error in sequence file: " << _error;
-   }
-
-   std::string _error;
 };
 
 

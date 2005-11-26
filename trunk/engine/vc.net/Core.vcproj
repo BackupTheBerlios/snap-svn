@@ -4,7 +4,8 @@
 	Version="7.10"
 	Name="Core"
 	ProjectGUID="{A9E58B03-3A1B-4F52-9BC8-2376A2D6CAF5}"
-	SccProjectName="&quot;$/SeedSearcher&quot;, ECAAAAAA"
+	RootNamespace="Core"
+	SccProjectName="&quot;$/SeedSearcher.2332&quot;, RLDAAAAA"
 	SccAuxPath=""
 	SccLocalPath=".."
 	SccProvider="MSSCCI:Microsoft Visual SourceSafe"
@@ -135,7 +136,7 @@
 				RelativePath="..\core\ConfReader.cpp">
 			</File>
 			<File
-				RelativePath="..\..\seedsearcher\Core\Defs.cpp">
+				RelativePath="..\core\Defs.cpp">
 			</File>
 			<File
 				RelativePath="..\core\dlmalloc.c">
@@ -147,38 +148,38 @@
 				RelativePath="..\core\GetOptParser.cpp">
 			</File>
 			<File
-				RelativePath="..\..\seedsearcher\Core\HashTable.cpp">
+				RelativePath="..\core\HashTable.cpp">
 			</File>
 			<File
-				RelativePath="..\..\seedsearcher\Core\Str.cpp">
+				RelativePath="..\core\Str.cpp">
 			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl;inc">
 			<File
-				RelativePath="..\core\AllocPolicy.h">
-			</File>
-			<File
 				RelativePath="..\CORE\Argv.h">
 			</File>
 			<File
-				RelativePath="..\..\seedsearcher\Core\AutoPtr.h">
+				RelativePath="..\core\AutoPtr.h">
+			</File>
+			<File
+				RelativePath="..\core\Bitset.h">
 			</File>
 			<File
 				RelativePath="..\..\seedsearcher\Core\Bitset.h">
 			</File>
 			<File
-				RelativePath="..\..\seedsearcher\Core\Compiler.h">
+				RelativePath="..\core\Compiler.h">
 			</File>
 			<File
 				RelativePath="..\core\ConfReader.h">
 			</File>
 			<File
-				RelativePath="..\..\seedsearcher\Core\Defs.h">
+				RelativePath="..\core\Defs.h">
 			</File>
 			<File
-				RelativePath="..\..\seedsearcher\Core\dlmalloc.h">
+				RelativePath="..\core\dlmalloc.h">
 			</File>
 			<File
 				RelativePath="..\core\FixedStr.h">
@@ -187,19 +188,16 @@
 				RelativePath="..\core\GetOptParser.h">
 			</File>
 			<File
-				RelativePath="..\..\seedsearcher\Core\HashTable.h">
+				RelativePath="..\core\HashTable.h">
 			</File>
 			<File
 				RelativePath="..\CORE\ImplList.h">
 			</File>
 			<File
-				RelativePath="..\CORE\PoolAllocated.h">
+				RelativePath="..\core\STLHelper.h">
 			</File>
 			<File
-				RelativePath="..\..\seedsearcher\Core\STLHelper.h">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\Core\Str.h">
+				RelativePath="..\core\Str.h">
 			</File>
 		</Filter>
 		<Filter

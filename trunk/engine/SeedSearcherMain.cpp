@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $
 //               $Workfile: SeedSearcherMain.cpp $
-// Version     : $Revision: 29 $
+// Version     : $Revision: 32 $
 //               $Author: Aviad $
-//               $Date: 10/01/05 1:54 $
+//               $Date: 3/03/05 21:34 $
 // Description :
 //    Concrete and interface classes for seting-up
 //    a seed-searching environment or program
@@ -99,23 +99,18 @@ void SeedSearcherMain::afterProjection (int /* search handle */,
 
 
 AutoPtr <SeedSearcherMain::Results>
-SeedSearcherMain::search (boost::shared_ptr <Parameters> inParams)
+SeedSearcherMain::search (boost::shared_ptr <CmdLineParameters> inParams)
 {
-   /*
-   mustbe (inParams.get ());
-   _params = inParams;
-   */
-
    //
-   // copy the params, create a fresh feature vector
-   // no copying of previous seeds is done here
+   // copy the params
    Parameters currentPameters = *inParams;
-   currentPameters.bestFeatures (
-      boost::shared_ptr <SeedSearcher::FeatureFilter> (
-         inParams->bestFeatures ().clone()
-      )
-   );
-   debug_mustbe (currentPameters.bestFeatures ().getArray().size () == 0);
+
+	// create a fresh feature set, with all extended filters
+	currentPameters.bestFeatures (
+		FeatureSetManager::createFilters(*inParams, true)
+	);
+
+   debug_mustbe (currentPameters.bestFeatures ().getArray()->size () == 0);
 
    int totalNumOfSeedsFound = 0;
    int numOfProjections = currentPameters.projections ().numOfProjections ();
@@ -154,11 +149,14 @@ SeedSearcherMain::search (boost::shared_ptr <Parameters> inParams)
    //
    // now we bonferroni-correct all the scores of the seeds found
    // and insert the new seeds to the original feature array
+   // TODO: correctly bonf correct
    FeatureSet::Iterator it = currentPameters.bestFeatures()->getIterator();
    for (; it.hasNext () ; it.next()) {
-      (*it)->numSeedsSearched(totalNumOfSeedsFound / numOfProjections);
+      (*it)->numSeedsSearched(totalNumOfSeedsFound);
       inParams->bestFeatures ().add (*it);
    }
+	inParams->bestFeatures ().finalize ();
+
 
    //
    // now output all the seeds
@@ -170,11 +168,14 @@ void SeedSearcherMain::search (ParameterIterator& it)
    for (; it.hasNext () ; it.next ()) {
       //
       // get current run parameters
-      boost::shared_ptr <Parameters> params = it.get ();
+      boost::shared_ptr <Parameters> pparams = it.get ();
+		boost::shared_ptr <CmdLineParameters> params = 
+			boost::shared_dynamic_cast < 
+				CmdLineParameters > (pparams);
 
       beforeSearch (*params);
-
-      AutoPtr <Results> results = search (params);
+		
+      AutoPtr <Results>	 results = search (params);
 
       afterSearch (*results);
    }
@@ -440,40 +441,16 @@ void SeedSearcherMain::CmdLineParameters::setupScoreFunc ()
 
 void SeedSearcherMain::CmdLineParameters::setupFeatureContainer ()
 {
-   //
-   // HACK: 
-   // we create a container that's twice as large as necessary
-   // because some of the features will be redundant
-   _parser.__seed_n *= 2;
-   //
-   // use GoodFeaturesFilter to allow only features above a threshold
-   _bestFeatures.reset (new GoodFeaturesFilter (
-         setupFeatureContainer (_parser, *_langauge),
-         true,
-         SeqCluster (*_db),
-         *_wf,
-         _parser.__score_min,
-         _parser.__score_min_seq,
-         _parser.__score_min_seq_per
-      )
-   );
-      
-   _parser.__seed_n /= 2;
+	boost::shared_ptr <FeatureSet> newFeatureContainer (new FeatureSet);
+	if (_bestFeatures) {
+		//
+		// import all features from the previous container
+		newFeatureContainer->insertFeatures (_bestFeatures->getArray ()->begin (), _bestFeatures->getArray ()->end ());
+	}
+
+	_bestFeatures = FeatureSetManager::createFilters (*this, false, newFeatureContainer);
 }
 
-SeedSearcher::FeatureFilter*
-   SeedSearcherMain::CmdLineParameters::
-      setupFeatureContainer(const Parser& parser, const Langauge& langauge)
-{
-   if (parser.__seed_rr) {
-      return new KBestComplementFilter ( parser.__seed_n,
-                                     parser.__seed_r,
-                                     langauge);
-   }
-   else {
-      return new KBestFilter (parser.__seed_n, parser.__seed_r);
-   }
-}
 
 void SeedSearcherMain::CmdLineParameters::setupLangauge ()
 {
@@ -700,4 +677,86 @@ void ConfParameterIterator::next ()
    }
 
    _updated = false;
+}
+
+
+
+
+SeedSearcher::FeatureFilter_ptr 
+	SeedSearcherMain::FeatureSetManager::createFilters (	
+		const CmdLineParameters& params,
+		bool temporary,
+		FeatureSet_ptr container)
+{
+	const Parser& parser = params.parser ();
+	if (!container) {
+		container.reset(new FeatureSet);
+	}
+
+	//
+	// the temporary FeatureSet may include additional filters, like
+	// the logging filter and the good-features filter
+	//
+	// also, the FeatureSet is built twice, so that after removing redundancies
+	// enough features will remain
+	static const int EXPAND_FACTOR = 2;
+
+	//
+	// build the basic redundancy removing filters
+	SeedSearcher::FeatureFilter_ptr filter;
+	if (parser.__seed_rr) {
+		filter.reset (
+			new KBestComplementFilter ( parser.__seed_n * EXPAND_FACTOR,
+				parser.__seed_r,
+				params.langauge(),
+				container
+			)
+		);
+	}
+	else {
+		filter.reset(
+			new KBestFilter (parser.__seed_n * EXPAND_FACTOR, parser.__seed_r, container)
+		);
+	}
+	
+	if (temporary) {
+		//
+		// use GoodFeaturesFilter to allow only features above a threshold
+		filter.reset (
+			new GoodFeaturesFilter (
+				filter,			
+				SeqCluster (params.db ()),
+				params.wf (),
+				parser.__score_min,
+				parser.__score_min_seq,
+				parser.__score_min_seq_per 
+			)
+		);
+
+		//
+		//
+		if (parser.__generateSeedlog == Parser::_out_all_) {
+			//
+			// we insert a filter which prints to file all given seeds
+			filter.reset (new FeaturePrintFilter (filter, params.name ()));
+		}
+	}
+
+	return filter;
+};
+
+FeatureSet_ptr SeedSearcherMain::FeatureSetManager::removeRedundancies (
+	const FeatureSet& features, const CmdLineParameters& params)
+{
+	//
+	// creates a new empty container with only the redundancy removing filters
+	SeedSearcher::FeatureFilter_ptr bestFeatures = 
+		createFilters (params, false);
+
+	int maxElements = params.parser ().__seed_n;
+	FeatureSet::CIterator feature_it = features.getIterator();
+	for (; ((*bestFeatures)->size () < maxElements) && (feature_it.hasNext()) ; feature_it.next())
+		bestFeatures->add(*feature_it );
+
+	return bestFeatures->getArray();
 }

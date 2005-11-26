@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Feature.cpp $
-// Version     : $Revision: 26 $ 
+// Version     : $Revision: 28 $ 
 //               $Author: Aviad $
-//               $Date: 10/01/05 1:45 $ 
+//               $Date: 3/03/05 21:34 $ 
 // Description :
 //    Concrete cache for Hyper-Geometric distribution values
 //
@@ -55,13 +55,6 @@ FeatureInvestigator::FeatureInvestigator (const FeatureParameters& in,
    _numSeedsSearched (numSeeds),
    _numProjections (numProjections)
 {
-   if (_numSeedsSearched > 0) {
-      //
-      // we use the average number of seeds found on a projection
-      _log10_seedsSearched = 
-         ::log10 (static_cast <double> (_numSeedsSearched / _numProjections));
-   }
-
    //
    // motif position format
    _motifPositionFormat.addField("Actual-Data", outputLength + 4);

@@ -1,5 +1,8 @@
 #include "Defs.h"
+
 #include <typeinfo>
+#include <sstream>
+#include "Str.h"
 
 #if BASE_DEBUG 
 
@@ -44,98 +47,109 @@ static DebuggerBreak	_breakOnThrow(false);
 static DebuggerBreak	breakOnAssertion;
 
 #if BASE_DEBUG
-   static bool		throwOnAssertion= false;
+	static bool		throwOnAssertion = true;
 #endif
 
-static BaseException::Support* support;	//=0 implicitly
+
+
 
 BaseException::BaseException()
 {
-	_breakOnException.engage();
 }
 
-BaseException::~BaseException() {
+BaseException::BaseException (const Str& in)  {
+	std::string s;
+	in.getCString(s);
+	init (s);
+}
+
+
+void BaseException::init (const std::string& inMessage)
+{
+	_message = inMessage;
+}
+
+BaseException::~BaseException() throw (){
 }
 
 void BaseException::breakOnThrow (bool inBreak)
 {
-	_breakOnThrow.set (inBreak);
+  _breakOnThrow.set (inBreak);
 }
 
 bool BaseException::breakOnThrow ()
 {
-	return _breakOnThrow;
+  return _breakOnThrow;
 }
 
 bool BaseException::breakOnException ()
 {
-	return _breakOnException;
+  return _breakOnException;
 }
 
-bool BaseException::bypassStackTrace () const
+const char* BaseException::what () const throw () 
 {
-	return false;
+  {
+    std::ostringstream out;
+    explain (out);
+    out.flush ();
+    const_cast <std::string&> (_buffer) = out.str ();
+  }
+  return _buffer.c_str ();
 }
 
-void BaseException::explain(std::ostream& out) 
-{
-   std::string name;
-	out << "exception " << typeid (*this).name ();
-}
 
-void BaseException::willThrow() const {
-    _breakOnThrow.engage ();
-	if (support)
-		support->willThrow(*this, NULL);
-}
-
-void BaseException::setSupport(Support* in) {
-	support= in;
-}
-
-BaseException::Support* BaseException::getSupport() {
-	return support;
-}
-
-BaseException::Support::~Support() {
-}
-
-ProgramException::ProgramException(int inCode, const char* inFileName, const char* inError) 
-:  code(inCode), fileName(inFileName)
+ProgramException::ProgramException(int inCode, 
+				   const char* inFileName, 
+				   const char* inError) 
+:  _code(inCode), _fileName(inFileName)
 {
    if (inError)
-      error = inError;
+      _message = inError;
 }
 
-void ProgramException::explain (std::ostream& out) {
-	out << "program error " << code;
-	if (fileName) 
-		out << "(file " << fileName << ")";
-   if (!error.empty ())
-      out << ' ' << error;
-
-}
-
-void ProgramException::raise(int lineNo, const char* fileName, const char* error)
+void ProgramException::explain (std::ostream& out) const
 {
-	ProgramException pex(lineNo, fileName, error);
-	exception_action(pex, fileName, lineNo);
-	throwx (pex);
+  out << "program error " 
+      << _code;
+  if (_fileName) {
+    out << "(thrown from " 
+	<< _fileName << ")";
+  }
+
+  if (!_message.empty ()) {
+    out << ' ' 
+	<< _message;
+  }
+  
+}
+
+void ProgramException::raise(int lineNo, 
+			     const char* fileName, 
+			     const char* error)
+{
+  ProgramException pex(lineNo, fileName, error);
+  exception_action(pex, fileName, lineNo);
+  throwx (pex);
 }
 
 
 #if BASE_DEBUG
 
-void exception_action(BaseException &/*inException*/, const char* /*file*/, int /*line*/)
+void exception_action(BaseException &/*inException*/, 
+		      const char* /*file*/, 
+		      int /*line*/)
 {
 	_breakOnException.engage();
 }
 
-void signal_assertion(const char* /*msg*/, const char* file, int lineNo)
+void signal_assertion(const char* msg,
+		      const char* file, 
+		      int lineNo)
 {
-	breakOnAssertion.engage();
-	if (throwOnAssertion) 
-		throwx (ProgramException(lineNo, file));
+  breakOnAssertion.engage();
+  if (throwOnAssertion) 
+    ProgramException::raise (lineNo, file, msg);
 }
 
 #endif
@@ -143,9 +157,9 @@ void signal_assertion(const char* /*msg*/, const char* file, int lineNo)
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Defs.cpp $
-// Version     : $Revision: 9 $ 
+// Version     : $Revision: 11 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:45 $ 
+//               $Date: 3/03/05 21:34 $ 
 // Description :
 //	The Core library contains contains basic definitions and classes
 // which are useful to any highly-portable applications

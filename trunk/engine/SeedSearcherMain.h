@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: SeedSearcherMain.h $
-// Version     : $Revision: 18 $ 
+// Version     : $Revision: 21 $ 
 //               $Author: Aviad $
-//               $Date: 10/01/05 1:54 $ 
+//               $Date: 3/03/05 21:34 $ 
 // Description :
 //    Concrete and interface classes for seting-up 
 //    a seed-searching environment or program
@@ -42,6 +42,7 @@ public:
    class Parameters;
    class CmdLineParameters;
    struct PreprocessorFactory;
+	struct FeatureSetManager;
 
    class ParameterIterator {
    public:
@@ -82,7 +83,7 @@ public:
    //
    // use search parameters to perform actual seed searching!
    // returns the number of seeds found
-   AutoPtr <Results> search (boost::shared_ptr <Parameters> in);
+   AutoPtr <Results> search (boost::shared_ptr <CmdLineParameters> in);
 
    //
    // conduct multiple searches using multiple parameters
@@ -203,10 +204,10 @@ public:
 
    //
    // get the current feature in the iteration
-   const FeatureSet& getFeatures () const {
+   const FeatureSet_ptr getFeatures () const {
       return _params->bestFeatures ().getArray ();
    }
-   FeatureSet& getFeatures () {
+   FeatureSet_ptr getFeatures () {
       return _params->bestFeatures ().getArray ();
    }
    //
@@ -282,9 +283,6 @@ public:
    virtual void setupPreprocessor ();
    virtual void setupWeightFunction ();
 
-   static SeedSearcher::FeatureFilter*
-      setupFeatureContainer(const Parser&, const Langauge&);
-
    const Parser& parser () const {
       return _parser;
    }
@@ -353,6 +351,20 @@ private:
    ImplCyclicList <ParamNode> _list;
    bool _useInitParameters;
    bool _updated;
+};
+
+struct SeedSearcherMain::FeatureSetManager {
+	//
+	// create a new FeatureSet, using:
+	// 1) redundancy removing filters
+	// 2) Feature selection filters (if temporary)
+	// 3) applicative filters (if temporary and requested by user)
+	static SeedSearcher::FeatureFilter_ptr createFilters (	
+		const CmdLineParameters&, bool temporary, FeatureSet_ptr = FeatureSet_ptr ());
+
+	//
+	//
+	static FeatureSet_ptr removeRedundancies (const FeatureSet&, const CmdLineParameters&);
 };
 
 #endif

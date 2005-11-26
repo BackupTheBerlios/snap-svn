@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: StdOptions.cpp $
-// Version     : $Revision: 32 $ 
+// Version     : $Revision: 35 $ 
 //               $Author: Aviad $
-//               $Date: 10/12/04 21:16 $ 
+//               $Date: 3/03/05 21:34 $ 
 // Description :
 //    Concrete implmentations for Langauge, ScoreFunction, WeightFunction etc
 //
@@ -304,11 +304,16 @@ void ACGTLangauge::complement (const Str& in, StrBuffer& out) const
 // KBestFilter
 //
 
-KBestFilter::KBestFilter (int k, int maxRedundancyOffset)
-: _maxElements (k), _maxRedundancyOffset (maxRedundancyOffset) 
+
+KBestFilter::KBestFilter (int k, int maxRedundancyOffset, FeatureSet_ptr container)
+: _maxElements (k), _maxRedundancyOffset (maxRedundancyOffset), _features (container)
 {
    debug_mustbe (_maxRedundancyOffset>=0);
    debug_mustbe (_maxElements>0);
+
+	if (!_features) {
+		_features.reset (new FeatureSet);
+	}
 }
 
 KBestFilter::~KBestFilter ()
@@ -320,14 +325,13 @@ KBestFilter::~KBestFilter ()
 //
 
 GoodFeaturesFilter::GoodFeaturesFilter (
-                           SeedSearcher::FeatureFilter* next, 
-                           bool owner                    ,
+								 boost::shared_ptr <SeedSearcher::FeatureFilter>& next, 
                            const SeqCluster& db          ,
                            const SeqWeightFunction& wf   ,
                            double minScore               , 
                            int minPos                    , 
                            int minPosPercent             )
-:  FeatureFilterLink (next, owner),
+:  FeatureFilterLink (next),
    _minScore (minScore),
    _wf (wf)
 {
@@ -439,7 +443,50 @@ int StatFix::bonferroni (SeedSearcher::FeatureFilter& features, int N, double P)
    return 0;
 }
 
+#include <fstream>
+#include "Persistance/StdOutputStream.h"
+#include "core/Str.h"
 
+FeaturePrintFilter::FeaturePrintFilter (	
+	boost::shared_ptr <SeedSearcher::FeatureFilter>& next,
+	const Str& name)
+: FeatureFilterLink (next), _writer (NULL)
+{
+	std::string filename;
+	name.getCString (filename);	filename += ".exhaustive";
+   AutoPtr <std::ofstream> file = new std::ofstream (filename.c_str (),
+      std::ios::out | std::ios::trunc | std::ios::binary);
+
+	if( ! file->is_open() ) {
+		std::string err ("Cannot open file for ");
+		err += filename;
+      mmustfail (filename.c_str ());
+	}
+
+	_writer.setStream (new Persistance::StdOutputStream (file.release(), true));
+}
+
+//
+// takes ownership of Assignment & Cluster
+bool FeaturePrintFilter::add (Feature_var feature)
+{
+	//
+	// the purpose here is to get a summary of all scores 
+	// for generating statistics 
+	_writer << feature->log2score ();
+
+#if 1 
+	//
+	// just for debugging, we also print the seed
+	_writer << '\t' << Format (feature->assignment ());
+#endif
+
+	_writer.writeln ();
+
+	//
+	// now actually add the seed to the feature container
+	return _next->add (feature);
+}
 
 
 

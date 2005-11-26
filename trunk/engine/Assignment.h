@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Assignment.h $
-// Version     : $Revision: 22 $ 
+// Version     : $Revision: 24 $ 
 //               $Author: Aviad $
-//               $Date: 10/01/05 1:43 $ 
+//               $Date: 3/03/05 21:34 $ 
 // Description :
 //    Concrete class describing an assignment - 
 //       which is a sequence of assignment positions.
@@ -305,8 +305,7 @@ public:
       //
       //
       debug_mustbe (assg.length() == projection.length());
-      _positions.clear ();
-      _positions.reserve(projection.length());
+		reserveClear (_positions, projection.length());
 
       CIterator assgIt (assg.iterator());
       CIterator projIt (projection.iterator());

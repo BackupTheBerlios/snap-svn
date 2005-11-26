@@ -34,7 +34,18 @@ SOURCES = Alphabet.cpp Assignment.cpp Cluster.cpp \
 		boost/filesystem/operations_posix_windows.cpp				\
 		boost/filesystem/path_posix_windows.cpp						\
 		boost/filesystem/convenience.cpp							\
-		boost/filesystem/exception.cpp								
+		boost/filesystem/exception.cpp								\
+		boost/regex/c_regex_traits.cpp								\
+		boost/regex/c_regex_traits_common.cpp						\
+		boost/regex/cregex.cpp										\
+		boost/regex/fileiter.cpp									\
+		boost/regex/instances.cpp									\
+		boost/regex/posix_api.cpp									\
+		boost/regex/regex.cpp										\
+		boost/regex/regex_synch.cpp									\
+		boost/regex/w32_regex_traits.cpp							\
+		boost/regex/wide_posix_api.cpp								\
+		boost/regex/winstances.cpp										
 
 		
 MYSQL_LIB_DIR = /sw/lib/mysql
@@ -68,6 +79,8 @@ clean:
 	rm -r -f Release
 	rm -r -f */Release
 	rm -r -f boost/test/*.o
+	rm -r -f boost/filesystem/*.o
+	rm -r -f boost/regex/*.o	
 
 tags:
 	etags --language=c++ *.h *.cpp

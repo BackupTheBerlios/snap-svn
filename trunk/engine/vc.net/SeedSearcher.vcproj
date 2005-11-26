@@ -4,7 +4,7 @@
 	Version="7.10"
 	Name="SeedSearcher"
 	ProjectGUID="{3071C567-8503-473B-A530-6D93E43B1809}"
-	SccProjectName="&quot;$/SeedSearcher&quot;, ECAAAAAA"
+	SccProjectName="&quot;$/SeedSearcher.2332&quot;, RLDAAAAA"
 	SccAuxPath=""
 	SccLocalPath=".."
 	SccProvider="MSSCCI:Microsoft Visual SourceSafe"
@@ -55,8 +55,7 @@
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
-				Name="VCPostBuildEventTool"
-				CommandLine="copy $(TargetPath) $(SolutionDir)\..\winseedD.exe"/>
+				Name="VCPostBuildEventTool"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -99,6 +98,7 @@
 				RuntimeLibrary="4"
 				BufferSecurityCheck="FALSE"
 				EnableFunctionLevelLinking="FALSE"
+				DisableLanguageExtensions="FALSE"
 				ForceConformanceInForLoopScope="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="0"
@@ -166,6 +166,12 @@
 		</File>
 		<File
 			RelativePath="..\SeedPerformance.cpp">
+			<FileConfiguration
+				Name="Release|Win32"
+				ExcludedFromBuild="TRUE">
+				<Tool
+					Name="VCCLCompilerTool"/>
+			</FileConfiguration>
 		</File>
 		<File
 			RelativePath="..\Todo.txt">

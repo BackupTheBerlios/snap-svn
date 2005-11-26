@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: SeedSearcher.h $
-// Version     : $Revision: 25 $ 
+// Version     : $Revision: 28 $ 
 //               $Author: Aviad $
-//               $Date: 10/01/05 1:54 $ 
+//               $Date: 3/03/05 21:34 $ 
 // Description :
 //    Concrete class for seed-searching in a preprocessor
 //
@@ -28,10 +28,6 @@
 #include "Assignment.h"
 #include "AssignmentFormat.h"
 #include "PrefixTreePreprocessor.h"
-
-//
-// fwd declaration
-class FeatureSet;
 
 class SeedSearcher {
 public:
@@ -55,14 +51,17 @@ public:
       // takes ownership of Assignment & Cluster
       virtual bool add (Feature_var feature) =0;
 
-      FeatureArray* operator -> () { return &(getArray ()); }
-      const FeatureArray* operator -> () const { return &(getArray ()); }
+      FeatureSet_ptr operator -> () { return getArray (); }
+      const FeatureSet_ptr operator -> () const { return getArray (); }
 
-      virtual const FeatureArray& getArray () const = 0;
-      virtual FeatureArray& getArray () = 0;
+      virtual const FeatureSet_ptr getArray () const = 0;
+      virtual FeatureSet_ptr getArray () = 0;
+
+		virtual void finalize () = 0;
 
       virtual FeatureFilter* clone () = 0;
    };
+	typedef boost::shared_ptr <FeatureFilter> FeatureFilter_ptr;
 
    class SearchParameters : public FeatureParameters {
    public:

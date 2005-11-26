@@ -2,11 +2,11 @@ SCC = This is a Source Code Control file
 
 [Core.vcproj]
 SCC_Aux_Path = "C:\Aviad\Dev\SNAP\VSS"
-SCC_Project_Name = "$/SeedSearcher/vc.net", BJAAAAAA
+SCC_Project_Name = "$/SeedSearcher.2332/vc.net", ZODAAAAA
 
 [Persistance.vcproj]
 SCC_Aux_Path = "C:\Aviad\Dev\SNAP\VSS"
-SCC_Project_Name = "$/SeedSearcher/vc.net", BJAAAAAA
+SCC_Project_Name = "$/SeedSearcher.2332/vc.net", ZODAAAAA
 
 [seed.sln]
 SCC_Aux_Path = "C:\Aviad\Dev\SNAP\VSS"
@@ -14,12 +14,12 @@ SCC_Project_Name = "$/SeedSearcher/vc.net", BJAAAAAA
 
 [SeedSearcher.vcproj]
 SCC_Aux_Path = "C:\Aviad\Dev\SNAP\VSS"
-SCC_Project_Name = "$/SeedSearcher/vc.net", BJAAAAAA
+SCC_Project_Name = "$/SeedSearcher.2332/vc.net", ZODAAAAA
 
 [SeedSearcherCore.vcproj]
 SCC_Aux_Path = "C:\Aviad\Dev\SNAP\VSS"
-SCC_Project_Name = "$/SeedSearcher/vc.net", BJAAAAAA
+SCC_Project_Name = "$/SeedSearcher.2332/vc.net", ZODAAAAA
 
 [UnitTests.vcproj]
 SCC_Aux_Path = "C:\Aviad\Dev\SNAP\VSS"
-SCC_Project_Name = "$/SeedSearcher/vc.net", BJAAAAAA
+SCC_Project_Name = "$/SeedSearcher.2332/vc.net", ZODAAAAA

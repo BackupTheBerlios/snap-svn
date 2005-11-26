@@ -9,6 +9,38 @@
 // choose between wrapper or standard vector
 #define USE_VECTOR_WRAPPER BASE_DEBUG
 
+
+//
+// remove elements from vector, while preserving its capacity
+template <class _Seq>
+static inline void reserveResize (_Seq& sequence, size_t n, size_t res)
+{
+	sequence.reserve (res);
+	sequence.resize (n);
+	debug_mustbe (sequence.capacity () >= res);
+}
+
+template <class _Seq>
+static inline void reserveResize (_Seq& sequence, size_t n)
+{
+	reserveResize (sequence, n, sequence.size ());
+}
+
+//
+// remove all elements from vector, 
+// while preserving its capacity
+template <class _Seq>
+static inline void reserveClear (_Seq& sequence, size_t res)
+{
+	reserveResize (sequence, 0, res);
+}
+
+template <class _Seq>
+static inline void reserveClear (_Seq& sequence)
+{
+	reserveClear (sequence, sequence.size ());
+}
+
 //
 // wrapper for std::vector which checks bounds
 template <typename T>
@@ -385,9 +417,9 @@ protected:
 //
 // File        : $RCSfile: $ 
 //               $Workfile: STLHelper.h $
-// Version     : $Revision: 24 $ 
+// Version     : $Revision: 26 $ 
 //               $Author: Aviad $
-//               $Date: 10/12/04 21:17 $ 
+//               $Date: 3/03/05 21:34 $ 
 // Description :
 //	The Core library contains contains basic definitions and classes
 // which are useful to any highly-portable applications
