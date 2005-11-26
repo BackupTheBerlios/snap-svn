@@ -1,4 +1,4 @@
-- reverse sequence
+(Yoseph) - reverse sequence 
 - random projections :
 	input: weights & sequences
 	output: what are the seeds/motifs
@@ -11,16 +11,18 @@
 		number of projections position, number of randomizations
 
 	future: 
-1) real counts: count the weights
+(Yoseph) 1) real counts: count the weights
 2) total-counts/gene counts
-	gene counts - prevent overlaps (or math fix later on)
-			* option to have at least k positions in gene to count it
+	total counts - prevent overlaps (or math fix later on)
+	(YTD) gene counts	- option to have at least k positions in gene to count it
 
 3) N in sequence : do not allow more than k- N in a KMer
-4) statistical fix for score
+		(does not allow any N's in a KNER)
+(Yoseph) 4) statistical fix for score
 
 random projections :
 go down the tree until there is no more than k sequences (gene counts)from positively labeled
+	(impossible)
 K positions (total counts)
 
 strategy:  K best / score less than: (both)

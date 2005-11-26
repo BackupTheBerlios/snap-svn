@@ -40,6 +40,10 @@ public:
       return result;
    }
 
+   Code_ptr getCode () const {
+      return _code;
+   }
+
    class UnknownCodeError : public BaseException {
    public:
       UnknownCodeError (Char c) : _c (c) {
@@ -59,5 +63,6 @@ private:
 };
 
 #endif
+
 
 

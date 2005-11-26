@@ -20,6 +20,15 @@
 #define BEGIN_NAMESPACE(name) namespace name {
 #define END_NAMESPACE(name) };
 
+//
+// definitions for 'typename' keyword. some compilers (VC 6.0) dont support it properly
+// while others (gcc) enforce it rather strictly.
+#if ENV_C_SUPPORTS & ENV_TYPENAME_KEYWORD
+#  define TYPENAME typename
+#else
+#  define TYPENAME
+#endif
+
 
 
 //	}{ BASE_DEBUG -- debugging
@@ -199,6 +208,28 @@ protected:
      // using is not properly handled by compiler
 #    define USING_TYPE(type_path, type) typedef type_path::type type;
 #endif
+
+
+//
+// min/max templates, more efficient than MACRO versions 
+template <class T>
+inline const T& tmin(const T& a, const T& b) {
+	return a < b ? a : b;
+}
+template <class T>
+inline const T& tmax(const T& a, const T& b) {
+	return  a < b ? b : a;
+}
+
+   
+struct SystemInfo {
+   static size_t getPageSize ();
+};
+
+
+//
+// optimizations: should use Doug Lee's malloc? 
+#define CORE_DL_MALLOC_OPTIMIZATION 1
 
 
 

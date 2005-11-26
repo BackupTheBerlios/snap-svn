@@ -22,7 +22,6 @@ public:
 public:
    class Position;
    class PositionIterator;
-   class Writer;
    
    enum Strategy {
       discrete, // consider all characters discretly (N) 
@@ -131,13 +130,6 @@ public:
       const Position& _position;
    };
 
-   class Writer {
-   public:
-      virtual ~Writer () {
-      };
-
-      virtual void write (const Position&, Persistance::TextWriter&) = 0;
-   };
    
 public:
    Assignment () {
@@ -181,6 +173,7 @@ private:
 };
 
 #endif // _SeedSearcher_Assignment_h
+
 
 
 

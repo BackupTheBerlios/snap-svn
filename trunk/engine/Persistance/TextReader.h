@@ -4,16 +4,22 @@
 #include "Core/Defs.h"
 
 #include "StreamBuffer.h"
-#include <string>
+//#include <string>
 
-namespace Persistance {
+
+class StrBuffer;
+class Str;
+
+BEGIN_NAMESPACE (Persistance);
+
 
 class	InputStream;
+
 
 class	TextReader {
 public:
 	TextReader (InputStream*, bool = true);
-	~TextReader ();
+	virtual ~TextReader ();
 
 	class Overflow: public BaseException {};
 	class InvalidFormat: public BaseException {};
@@ -36,7 +42,7 @@ public:
 	TextReader& operator >> (unsigned long& out)	{ read ((unsigned int&)out); return *this; }
 	TextReader& operator >> (float& out)			{ read (out); return *this; }	
 	TextReader& operator >> (double& out)			{ read (out); return *this; }
-   TextReader& operator >> (std::string& out)		{ read (out); return *this; }
+   TextReader& operator >> (StrBuffer& out)		{ read (out); return *this; }
 	TextReader& operator >> (char* out)				{ read (out); return *this; }
 	TextReader& operator >> (EndOfLine)				{ read (endl); return *this; }
 
@@ -50,13 +56,14 @@ public:
 	void read (unsigned int& out);
 	void read (float& out);
 	void read (double& out);
-	void read (std::string& out);
+	void read (StrBuffer& out);
 	void read (char* out);
-   void readln (std::string& out);
+   void readln (StrBuffer& out);
 	void readln (char* out);
 	void read (char* out, size_t inSize);
 	virtual void read (EndOfLine);
 
+   void readUntil (StrBuffer& outBuffer, const Str& separator);
    void skipWhitespace ();
 
 	// low-level interface
@@ -71,22 +78,28 @@ public:
 		return stream;
 	}
 
+   int getBytesReadCount () const {
+      return readCount;
+   }
+
 private:
-	bool iseol (Byte);
+	static bool iseol (Byte);
 	short readShort ();
 	int readInt ();
 	long readLong ();
 	//int64_t readInt64 ();
 	double readDouble ();
 
+private:
 	InputStream* stream;
 	bool owner;
 	Byte buf	[1024];
 	int bufStart, bufEnd;
 	int unreadBufSize;
+   int readCount;
 };
 
-}; // Persistance
+END_NAMESPACE (Persistance);
 
 #endif
 

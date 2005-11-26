@@ -5,8 +5,32 @@
 #include "Error.h"
 
 #include "Core/AutoPtr.h"
+#include "Core/Str.h"
 
 using namespace Persistance;
+
+static void throwTypeNotMatchedException (bool strict, int expected, int inArchive)
+{
+   if (strict) {
+      RaisePersistanceError3 (
+         "code %d expected, code %d in archive", expected , inArchive);         
+   }
+   else {
+      RaisePersistanceError3 (
+         "expected %d bytes, %d bytes actually in archive", expected , inArchive);         
+   }
+}
+
+
+
+//used in case the deserialization is out-of-sync with the archive.
+//throws an exception indicating the problem
+void IArchive ::throwTypeNotMatchedException(int expected, int inArchive)
+{
+   ::throwTypeNotMatchedException (_strict, expected, inArchive);
+}
+
+
 
 ///
 /// default constructor
@@ -15,10 +39,14 @@ IArchive::IArchive(InputStream* in, TFactoryList* factories)
 :  _text (false), _factories (factories), _reader (in)
 {
    //
-   // read text flag from stream
-   char c;
-   _reader>> _text >> c;
-   debug_mustbe (c == ' ');
+   // read option flags from stream
+   _reader >> _text  >> TextReader::endl
+           >> _meta  >> TextReader::endl
+           >> _strict>> TextReader::endl;
+
+   //
+   // update factory list with factory ids
+   _factories->serialize (*this);
 }
 
 
@@ -50,30 +78,47 @@ Prefix IArchive::readPrefix()
 
 
 
-/*******************************************************************/
-/*                                                                 */
-/*  function operator << ( Object& param)                      */
-/*                                                                 */
-/*  Purpose :  This is used to deserialize a reference to an object*/
-/*                                                                 */
-/*  Returns : CSZ_ArchiveIn&                                       */
-/*                                                                 */
-/*  Argumenents : Object& param- since all serialized objects  */
-/*                                  must be derived from Object*/
-/*                                  this polymorphic function is   */
-/*                                  possible.                      */
-/*                                                                 */
-/*  Throws: 1)CSZ_ERR_VALIDATE_PREFIX_FAILURE when the prefix read */
-/*                     is not preClass                             */
-/*                                                                 */
-/*          2)CSZ_ERR_DIFFRENT_CLASS_MEMBER_FAILURE when the class */
-/*                 found in arciove doesn't match the one expected.*/
-/*                                                                 */
-/*          3)CSZ_ERR_READ_CLASS_FAILURE when the serializtion     */
-/*                     operation fails. (more general)             */
-/*                                                                 */
-/*******************************************************************/      
+
+static TFactoryBase* readClass (IArchive& in)
+{
+   //
+   // we read the object id in the archive
+   TFactoryList::FactoryID id;
+   in >> id;
+   TFactoryBase* factory = in.factories ().getFactory (id);
+   if (!factory) {
+      RaisePersistanceError2 ("Unknown factory id %d", id);
+   }
+   return factory;
+}
+
+static TFactoryBase* validateClassName (IArchive& in, const char* expected)
+{
+   TFactoryBase* factory = readClass (in);
+   const char* class_name = factory->name ();
+	if ( strcmp( expected , class_name) != 0 ) {
+         RaisePersistanceError3 (
+            "Incompatible %s with %s", expected, class_name);
+   }
+
+   return factory;
+}
+
+static Object* createClassObject (IArchive& in, const char* expected)
+{
+   TFactoryBase* factory = (expected == NULL)?
+      readClass (in) : validateClassName (in, expected);
+   return factory->create ();
+}
+
+
 IArchive&  IArchive::operator >> (Object& param)
+{
+   readObject (param);
+   return *this;
+}
+
+void IArchive::readObject (Object& param)
 {
    Prefix preExpected = readPrefix();
 
@@ -82,32 +127,18 @@ IArchive&  IArchive::operator >> (Object& param)
          "Expecting prefix no %d. %d found", preExpected , preClass);
    }
 
-   const char * expected = typeid( param ).name();
-
-   char* tmp;
-   readPrimitiveArray (NULL, tmp);
-   ArrayAutoPtr <char> classname = tmp;
-
-	if ( strcmp( expected , classname.get ()) != 0 ) {
-      RaisePersistanceError2 (
-         "Incompatible %s", typeid(param).name());
-	}
-	else {
-		param.serialize(*this);
-	}
-
-	return *this;	
+	param.serialize(*this);
 }
 
 
 
 
 
-long IArchive::readPrimArrayHelper (size_t elementSize, long *n)
+static int readPrimArrayHelper (IArchive& in, size_t elementSize, int *n)
 {
 	//
 	// check that expected prefix
-   Prefix preExpected = readPrefix();
+   Prefix preExpected = in.readPrefix();
    if ( preExpected != preArray )   {
       RaisePersistanceError3 (
          "Expecting prefix no %d. %d found", preExpected , preClass);
@@ -116,13 +147,13 @@ long IArchive::readPrimArrayHelper (size_t elementSize, long *n)
   //
   // check expected PrimType size
   Persistance::Flag actualSize;
-  *this >> actualSize;
+  in >> actualSize;
 
   if (elementSize != actualSize)
-	  throwTypeNotMatchedException(elementSize, actualSize);
+	  throwTypeNotMatchedException(in.strict (), elementSize, actualSize);
 
-   long len;
-   readPrimitive(len);
+   int len;
+   in >> len;
    if ( n != NULL)
       *n = len;
  
@@ -135,7 +166,8 @@ long IArchive::readPrimArrayHelper (size_t elementSize, long *n)
 }
 
 
-Object* IArchive::readObjectElem (ArrayAutoPtr <char>& class_name)
+
+Object* IArchive::readObjectElem (const char*& class_name)
 {
    Object* object = NULL;
    Prefix preExpected = readPrefix();
@@ -151,12 +183,11 @@ Object* IArchive::readObjectElem (ArrayAutoPtr <char>& class_name)
                "Expecting prefix no. %d. %d found", preExpected , preClass );
          }
          else {
-            char* tmp;
-            readPrimitiveArray (NULL, tmp);
-            class_name = tmp;
 
             // invoke the function, and upcast it from CSZ_Object to T.               
-            object = _factories->createObject (class_name);
+
+            object = 
+               createClassObject (*this, NULL);
          }
          break;
       }
@@ -173,27 +204,74 @@ Object* IArchive::readObjectElem (ArrayAutoPtr <char>& class_name)
 
 
 
-static bool strict = true;
 
-static void throwTypeNotMatchedException (int expected, int inArchive)
-{
-   if (strict) {
-      RaisePersistanceError3 (
-         "code %d expected, code %d in archive", expected , inArchive);         
+
+template <class PrimType>
+static void readPrimitive(IArchive& in, PrimType& param) {
+   if (in.text ()) {
+      char c;
+      in.reader() >> param >> c;
+      debug_mustbe (c==' ');
    }
    else {
-      RaisePersistanceError3 (
-         "expected %d bytes, %d bytes actually in archive", expected , inArchive);         
+      char *ptr = reinterpret_cast <char*> (&param);
+      in.reader ().read (ptr, sizeof(param));
    }
 }
 
+static void readPrimitive(IArchive& in, unsigned char& param) {
+   if (in.text ()) {
+      char c;
+      short x;
+      in.reader() >> x >> c;
+      param = x;
+      debug_mustbe (c == ' ');
+   }
+   else {
+      char *ptr = reinterpret_cast <char*> (&param);
+      in.reader ().read (ptr, sizeof(unsigned char));
+   }
+}
 
+//
+// Reads an array of primitive - typed data or
+// a class/union/struct from the archive,
+// into a referenced pointer.
+// of course, memory is allocated for that pointer
+// automatically
+// the function also reads back the number of items 
+// in the array into the 1st parameter (n).
+// optionally, n could be NULL
+template <typename PrimType>
+static void readPrimitiveArray (IArchive& in, PrimType*& params, int* n) {
+   static_cast <double> (*params);
+   int len = readPrimArrayHelper (in, sizeof (PrimType), n);
+   if (in.text ()) {
+      for (int i=0 ; i<len ; i++) 
+         readPrimitive (params[i]);
+   }
+   else {
+      size_t nbytes = len * sizeof (PrimType);
+      in.reader ().read ((char*)params, nbytes);
+   }
+}
 
-//used in case the deserialization is out-of-sync with the archive.
-//throws an exception indicating the problem
-void IArchive ::throwTypeNotMatchedException(int expected, int inArchive)
-{
-   ::throwTypeNotMatchedException (expected, inArchive);
+template <typename PrimType>
+static void readPrimitiveBuffer (IArchive& in, PrimType* params, int size, int* n) {
+   static_cast <double> (*params);
+   int len = readPrimArrayHelper (in, sizeof (PrimType), n);
+   if (size < len) {
+      RaisePersistanceError2 ("Buffer size too small %d", size);
+   }
+
+   if (in.text ()) {
+      for (int i=0 ; i<len ; i++) 
+         readPrimitive (in, params[i]);
+   }
+   else {
+      size_t nbytes = len * sizeof (PrimType);
+      in.reader ().read ((char*)params, nbytes);
+   }
 }
 
 
@@ -205,14 +283,20 @@ static void readPrimitiveT (IArchive& cia,
    //match the length of param to the length saved in archive,
    //to help ensure the Serialization/Deserialization matches.
    Persistance::Flag expected, inArchive;
-   
-   expected = strict? code : sizeof(param);
-   cia.readPrimitive(inArchive);
-   if (expected != inArchive )
-      throwTypeNotMatchedException(expected, inArchive);
+
+   if (cia.meta ()) {
+      expected = cia.strict ()? code : sizeof(param);
+      
+      int bytesSoFar = cia.reader ().getBytesReadCount ();
+      bytesSoFar = cia.reader ().getBytesReadCount ();
+
+      readPrimitive(cia, inArchive);
+      if (expected != inArchive )
+         throwTypeNotMatchedException(cia.strict (), expected, inArchive);
+   }
    
 	//restore actual data
-   cia.readPrimitive (param);
+   readPrimitive (cia, param);
 }
 
 
@@ -301,3 +385,119 @@ IArchive&  IArchive :: operator >> (double& param)
 	return *this;
 }
 
+IArchive&  IArchive :: operator >> (char*& param)
+{
+   readString (param);
+	return *this;
+}
+
+IArchive&  IArchive :: operator >> (StrBuffer& param)
+{
+   readString (param);
+	return *this;
+}
+
+const char* IArchive::readString (char*& str)
+{
+   int len;
+   return readString (str, len);
+}
+
+const char* IArchive::readString (StrBuffer& str)
+{
+   char* ptr;
+   str.acquire ((char*)readString (ptr));
+   return ptr;
+}
+
+const char* IArchive::readString (char*& str, int& len)
+{
+   str = NULL;
+   *this >> len;
+   if (len > 0) {
+      str = new char [len + 1];
+      _reader.read (str, len);
+      str [len] = '\0';
+   }
+   
+   return str;
+}
+
+const char* IArchive::readStringBuffer (char buffer[], int size, int* outLen)
+{
+   buffer[0] = '\0';
+   
+   int len;
+   *this >> len;
+   if (outLen != NULL)
+      *outLen = len;
+
+   debug_mustbe (len < size);
+   if (len > 0) {
+      _reader.read (buffer, len);
+      buffer [len] = '\0';
+   }
+   
+   return buffer;
+}
+
+void IArchive::readBoolBuffer (bool b[], int s, int* l)
+{
+   readPrimitiveBuffer (*this, b, s, l);
+}
+void IArchive::readCharBuffer (char b[], int s, int* l)
+{
+   readPrimitiveBuffer (*this, b, s, l);
+}
+void IArchive::readSCharBuffer (signed char b [], int s, int* l)
+{
+   readPrimitiveBuffer (*this, b, s, l);
+}
+void IArchive::readUCharBuffer (unsigned char b [], int s, int* l)
+{
+   readPrimitiveBuffer (*this, b, s, l);
+}
+void IArchive::readShortBuffer (short b [], int s, int* l)
+{
+   readPrimitiveBuffer (*this, b, s, l);
+}
+void IArchive::readSShortBuffer (signed short b [], int s, int* l)
+{
+   readPrimitiveBuffer (*this, b, s, l);
+}
+void IArchive::readUShortBuffer (unsigned short b [], int s, int* l)
+{
+   readPrimitiveBuffer (*this, b, s, l);
+}
+void IArchive::readIntBuffer (int b [], int s, int* l)
+{
+   readPrimitiveBuffer (*this, b, s, l);
+}
+void IArchive::readSIntBuffer (signed int b [], int s, int* l)
+{
+   readPrimitiveBuffer (*this, b, s, l);
+}
+void IArchive::readUIntBuffer (unsigned int b [], int s, int* l)
+{
+   readPrimitiveBuffer (*this, b, s, l);
+}
+void IArchive::readLongBuffer (long b [], int s, int* l)
+{
+   readPrimitiveBuffer (*this, b, s, l);
+}
+void IArchive::readSLongBuffer (signed long b [], int s, int* l)
+{
+   readPrimitiveBuffer (*this, b, s, l);
+}
+void IArchive::readULongBuffer (unsigned long b [], int s, int* l)
+{
+   readPrimitiveBuffer (*this, b, s, l);
+}
+void IArchive::readFloatBuffer (float b [], int s, int* l)
+{
+   readPrimitiveBuffer (*this, b, s, l);
+}
+void IArchive::readDoubleBuffer (double b [], int s, int* l)
+{
+   readPrimitiveBuffer (*this, b, s, l);
+}

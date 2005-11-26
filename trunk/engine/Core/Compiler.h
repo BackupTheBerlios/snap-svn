@@ -37,6 +37,8 @@
 #define	ENV_PARGMA_ALIGN		0x1000
 #define	ENV_PRAGMA_PACKPUSH		0x2000
 #define	ENV_PRAGMA_PACK			0x4000
+#define	ENV_TYPENAME_KEYWORD 0x8000 // support (or requirement) of typename keyword
+                                     // in templates
 
 //	ENV_C_VERSION					// Compiler version, depends on compiler type
 
@@ -73,9 +75,12 @@
 #		define ENV_C_SUPPORTS (ENV_MSC_EXCEPTIONS_|ENV_MSC_RTTI_|ENV_MSC_BOOL_|ENV_MSC_INT64_|ENV_MSC_NAMESPACES_|ENV_MSC_PRAGMA_ONCE_|ENV_MSC_STD_NAMESPACE_|ENV_PRAGMA_PACKPUSH)
 #		define ENV_LANGUAGE ENV_C
 #	endif
-#elif ENV_COMPILER==ENV_GCC
+#elif ENV_COMPILER & ENV_GCC
 //
-// TODO: determine support issues
+// TODO: determine support issues for gcc
+#  if ENV_C_VERSION >= 1100
+#		define ENV_C_SUPPORTS (ENV_TYPENAME_KEYWORD | ENV_MEMBER_TEMPLATES | ENV_BOOL | ENV_NEWKEYWORDS | ENV_TEMPLATE_ARGS | ENV_EXCEPTIONS | ENV_RTTI | ENV_NAMESPACES);
+#  endif
 #else
 #pragma warning "Compiling with unknown compiler"
 #	define ENV_COMPILER ENV_ANSII_CPP
@@ -83,6 +88,13 @@
 #endif
 
 #define ENV_BUGS ENV_COMPILER
+
+
+#if ENV_C_SUPPORTS & ENV_INT64
+#  if ENV_COMPILER & ENV_MICROSOFT
+      typedef __int64 int64_t;
+#  endif
+#endif
 
 
 /*

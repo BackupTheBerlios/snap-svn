@@ -16,16 +16,33 @@ USING_TYPE (PrefixTreePreprocessor, SeqPositionIterator);
 
 static void rec_addAssignmentNodes (int depth,
                                 int desiredDepth,
+                                int childIndex,
                                 PrefixTreeWalker::NodeVector& nodes,
                                 PrefixTreePreprocessor::NodeRep* inNode,
-                                const Assignment& assg)
+                                const Assignment& assg,
+                                Assignment& path)
 
 {
    if (inNode == NULL)
       return;
 
+   const Assignment::Position& thisPosition = assg [depth -1];
+   if (thisPosition.strategy () == Assignment::together) {
+      //
+      // this means that we got here with 'together' strategy
+      // so we keep the exact same positions in the feature
+      path.setPosition (depth - 1, thisPosition);
+   }
+   else {
+      debug_mustbe (thisPosition.strategy () == Assignment::discrete);
+      //
+      // this means that the exact code of this depth is important
+      path.setPosition (depth -1, 
+         Assignment::Position (childIndex, Assignment::discrete)); 
+   }
+
    if (depth == desiredDepth) {
-      nodes.push_back (inNode);
+      nodes.push_back (PrefixTreeWalker::NodeWithPath (inNode, path));
       //
       // there is no need to go further down the tree
       // because no new positions can be found further down (this is a prefix tree)
@@ -37,27 +54,39 @@ static void rec_addAssignmentNodes (int depth,
    for (; it.hasNext () ; it.next ()) {
       int nodeIndex = it.get ();
       rec_addAssignmentNodes (depth+1, 
-                              desiredDepth, 
+                              desiredDepth,
+                              nodeIndex,
                               nodes, 
                               node.getChild (nodeIndex), 
-                              assg);
+                              assg,
+                              path);
    }
 }
 
 void PrefixTreeWalker::Nodes::addAssignmentNodes (  const PrefixTreePreprocessor& tree,
                                   const Assignment& assg)
 {
-   rec_addAssignmentNodes (0,                      // starting depth
-                           assg.length (),      // desired depth
-                           *this,                  // NodeVector
-                           tree.getRoot (),        // starting node
-                           assg                    // the assignment
-                           );            
+   if (assg.length () <= 0)
+      return;
+
+   Assignment path;
+   PrefixTreePreprocessor::Node node (tree.getRoot ());
+   Assignment::PositionIterator it (assg [0]);
+   for (; it.hasNext () ; it.next ()) {
+      int nodeIndex = it.get ();
+      rec_addAssignmentNodes (1,                         // starting depth
+                              assg.length (),            // desired depth
+                              nodeIndex,
+                              *this,                     // NodeVector
+                              node.getChild (nodeIndex), // starting node
+                              assg,                      // the assignment
+                              path);
+   }
 }
 
 
 
-Preprocessor::SequenceVector* PrefixTreeWalker::Nodes::sequences () 
+AutoPtr <Preprocessor::SequenceVector> PrefixTreeWalker::Nodes::sequences () 
 {
    //
    // multo-importante: the Sequences are repeated in different nodes
@@ -66,7 +95,7 @@ Preprocessor::SequenceVector* PrefixTreeWalker::Nodes::sequences ()
    //
    // TODO: check if comparing the pointers is enought to establish 
    //       the sequence's identity
-   typedef std::set <SequenceDB::Sequence const *> SequenceSet;
+   typedef std::set <Sequence const *> SequenceSet;
    SequenceSet seq;
 
    //
@@ -78,9 +107,9 @@ Preprocessor::SequenceVector* PrefixTreeWalker::Nodes::sequences ()
       PrefixTreePreprocessor::Node node (itNodes.get ());
       SeqPositionIterator itSeq (node.positionsBySequence ());
       for (; itSeq.hasNext () ; itSeq.next ()) {
-	    PrefixTreePreprocessor::SeqPositions seqPos = itSeq.get ();
-	    SequenceDB::Sequence const * newSeq = seqPos.sequence ();
-	    seq.insert (newSeq);
+         PrefixTreePreprocessor::SeqPositions seqPos = itSeq.get ();
+         Sequence const * newSeq = seqPos.sequence ();
+         seq.insert (newSeq);
       }
    }
 
@@ -95,9 +124,9 @@ Preprocessor::SequenceVector* PrefixTreeWalker::Nodes::sequences ()
 //
 // returns a vector of all (unique) positions in the nodes
 // (there are no duplicates in the vector)
-Preprocessor::PositionVector* PrefixTreeWalker::Nodes::positions ()
+AutoPtr <Preprocessor::PositionVector> PrefixTreeWalker::Nodes::positions ()
 {
-   std::set <SequenceDB::Position const *> pos;
+   std::set <Position const *> pos;
    //
    // iterate over all nodes
    NodeIterator itNodes (this->begin (), this->end ());
@@ -127,10 +156,10 @@ Preprocessor::PositionVector* PrefixTreeWalker::Nodes::positions ()
 //
 // returns a vector of all (unique) positions in a particular sequence, in the nodes
 // (there are no duplicates in the vector)
-Preprocessor::PositionVector* 
+AutoPtr <Preprocessor::PositionVector> 
 PrefixTreeWalker::Nodes::positions (SequenceDB::ID id)
 {
-   std::set <SequenceDB::Position const *> pos;
+   std::set <Position const *> pos;
    //
    // iterate over all nodes
    NodeIterator itNodes (this->begin (), this->end ());
@@ -152,6 +181,46 @@ PrefixTreeWalker::Nodes::positions (SequenceDB::ID id)
 	   );
 }
 
+
+void PrefixTreeWalker::Nodes::positions (  
+                     double threshold, 
+                     Preprocessor::PositionVector& positivePositions, 
+                     Preprocessor::PositionVector& negativePositions)
+{
+   std::set <Position const *> pos;
+   std::set <Position const *> neg;
+
+   //
+   // iterate over all nodes
+   NodeIterator itNodes (this->begin (), this->end ());
+   for (; itNodes.hasNext () ; itNodes.next ()) {
+      
+      //
+      // in each node iterate over all positions of that sequence
+      PrefixTreePreprocessor::Node node (itNodes.get ());
+      SeqPositionIterator itSeq (node.positionsBySequence ());
+      for (; itSeq.hasNext () ; itSeq.next ()) {
+         //
+         // for each sequence iterate over all positions
+         PositionIterator itPos (itSeq->iterator ());      
+         for (; itPos.hasNext () ; itPos.next ()) {
+            debug_mustbe ((*itPos)->sequence ()->hasWeight ());
+         
+            if ((*itPos)->sequence ()->weight () >= threshold)
+               pos.insert (itPos.get ());
+            else
+               neg.insert (itPos.get ());
+         }
+      }
+   }
+
+   const int posSize = pos.size ();
+   const int negSize = neg.size ();
+   positivePositions.resize (posSize);
+   negativePositions.resize (negSize);
+   std::copy (pos.begin (), pos.end (), positivePositions.begin ());
+   std::copy (neg.begin (), neg.end (), negativePositions.begin ());
+}
 
 
 

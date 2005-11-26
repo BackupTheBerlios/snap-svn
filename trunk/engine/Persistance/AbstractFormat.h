@@ -44,16 +44,16 @@ public:
    virtual ~AbstractFormat () {
    };
 
-   friend TextWriter& operator << (TextWriter& out, AbstractFormat& format) {
+   friend TextWriter& operator << (TextWriter& out, const AbstractFormat& format) {
       format.write (out);
       return out;
    }
-   friend TextWriter& operator << (TextWriter& out, AbstractFormat::Owner& format) {
+   friend TextWriter& operator << (TextWriter& out, const AbstractFormat::Owner& format) {
       format->write (out);
       return out;
    }
 
-   virtual void write (TextWriter&) = 0;
+   virtual void write (TextWriter&) const= 0;
 
    
 };

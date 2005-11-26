@@ -1,45 +1,91 @@
 #ifndef _SeedSearcher_Sequence_h
 #define _SeedSearcher_Sequence_h
 
-#include "SequenceDB.h"
+#include "Defs.h"
+#include "Persistance/Object.h"
+#include "Core/ChunkAllocator.h"
+#include "Core/Str.h"
+//#include <string>
 
-class SequenceDB::Sequence {
+class Sequence : public Persistance::Object {
 public:
-   Sequence (ID id, const char* data, double wgt) :   _id (id), 
-                                                      _data (data), 
-                                                      _weight (wgt) {
+   typedef int ID;
+   typedef StrBuffer Name;
+
+   Sequence (ID id, const Str& data, const Str& name, double wgt)
+   : _id (id), _data (data), _name (name), _weight (wgt), _hasWeight (true) 
+   {
+   }
+   Sequence (ID id, const Str& data, const Str& name) 
+   : _id (id), _data (data), _name (name), _weight (0xBAADF00D), _hasWeight (false) 
+   {
+   }
+   ~Sequence () {
    }
    int length () const {
       return _data.length ();
    }
-   inline const std::string& data () const {
+   inline const Str& data () const {
       return _data;
    }
    inline ID id () const {
       return _id;
    }
+   const Name& name () const {
+      return _name;
+   }
+   bool hasWeight () const {
+      return _hasWeight;
+   }
+   void weight (double inWeight) {
+      _hasWeight = true;
+      _weight = inWeight;
+   }
    inline double weight () const {
       return _weight;
    }
-   std::string data (int startPos, int length) const {
-      return std::string (_data, startPos, length);
+   void noWeight () {
+      _weight = 0xBAADF00D;
+      _hasWeight = false;
+   }
+   Str data (int startPos, int length) const {
+      return Str (_data, startPos, length);
    }
 
+   void serialize (Persistance::IArchive& in);
+   void serialize (Persistance::OArchive& out);
+   Sequence () {
+   }
+
+#if SEED_CHUNK_ALLOCATION_OPTIMIZATION
+   void* operator new (size_t size) {
+      debug_mustbe (size == sizeof (Sequence));
+      return __allocator.newT ();
+   }
+   void operator delete(void *p)    {
+      __allocator.deleteT (reinterpret_cast <Sequence*> (p));
+   }
+#endif
 
 private:
 	ID _id;
-   std::string _data;
+   StrBuffer _data;
+   Name _name;
    double _weight;
+   bool _hasWeight;
+   static ChunkAllocator <Sequence> __allocator;
 };
 
 
 
-class SequenceDB::Position {
+class Position : public Persistance::Object {
 public:
    //
    // ctor is called in a loop, so must be very effiecient
 	inline Position (Sequence const * seq, int pos) :  _sequence (seq),
                                                       _position (pos) {
+   }
+   ~Position () {
    }
    
    inline char operator [] (int index) const {
@@ -60,16 +106,81 @@ public:
    int position () const {
       return _position;
    }
-   std::string getDataString (int length) const {
-      return std::string (_sequence->data (), _position, length);
+   //
+   // return the sequence string starting at this position, with length 'length'
+   Str getSeedString (int seedLength) const {
+      return Str (_sequence->data (), _position, _position + seedLength);
    }
+   //
+   // returns the sequence string starting at this position, modified by 'offset'
+   // with length 'length'. if offset is too big or too small (negative)
+   // it will return a shorter string. in any case, it always returns 
+   // a valid string.
+   Str getDataString (int offset, int length) const {
+      //
+      // 
+      getModifiedOffsets (offset, length);
+
+      //
+      // keep str's ctor happy
+      if (_position + offset > _sequence->length ()) {
+         return 0;
+      }
+
+      return Str (_sequence->data (), 
+                  _position + offset, 
+                  _position + offset + length);
+   }
+   //
+   //
+   void getModifiedOffsets (int& offset, int& length) const
+   {
+      //
+      // do not go past the beginning of the string
+      int startIndex = _position + offset;
+      if (startIndex < 0) {
+         //
+         // the string is truncated in the left, so return less bytes
+         length += startIndex;
+         startIndex = 0;
+      }
+
+      //
+      // do not go beyond the end of the string
+      int endIndex = startIndex + length;
+      if (endIndex > _sequence->length ()) {
+         endIndex = _sequence->length ();
+      }
+
+      //
+      // calculate length
+      length = tmax (endIndex - startIndex, 0);
+   }
+      
+
+   void serialize (Persistance::IArchive& in);
+   void serialize (Persistance::OArchive& out);
+   Position () {
+   }
+
+#if SEED_CHUNK_ALLOCATION_OPTIMIZATION
+   void* operator new (size_t size) {
+      debug_mustbe (size == sizeof (Position));
+      return __allocator.newT ();
+   }
+   void operator delete(void *p)    {
+      __allocator.deleteT (reinterpret_cast <Position*> (p));
+   }
+#endif
 
 private:
 	Sequence const * _sequence;
 	int _position;
+   static ChunkAllocator <Position> __allocator;
 };
 
 
 
 #endif // _SeedSearcher_Sequence_h
+
 

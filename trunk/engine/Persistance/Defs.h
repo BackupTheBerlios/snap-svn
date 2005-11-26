@@ -6,6 +6,7 @@
 namespace Persistance {
 
    class Object;
+   struct Manipulator;
    class Archive;
    class IArchive;
    class OArchive;

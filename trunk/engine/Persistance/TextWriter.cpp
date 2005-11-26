@@ -1,5 +1,6 @@
 #include "TextWriter.h"
 #include "OutputStream.h"
+#include "Core/Str.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -89,15 +90,15 @@ void TextWriter::write(unsigned int in) {
 }
 
 void TextWriter::write(float in) {
-	char buffer[33];
+	char buffer[128];
 	  sprintf (buffer, "%.8f",(double) in);
 	  //_gcvt(in, 8, buffer);
 	write(buffer);
 }
 
 void TextWriter::write(double in) {
-	char buffer[33];
-	  sprintf (buffer, "%.12f",(double) in);
+	char buffer[128];
+	  sprintf (buffer, "%.12g",(double) in);
 	  //	_gcvt(in, 12, buffer);
 	write(buffer);
 }
@@ -107,6 +108,11 @@ void TextWriter::write(const char* in)  {
 		in = "nil";
 	}
 	stream->write(in, strlen(in));
+}
+
+void TextWriter::write(const Str& in)  
+{
+   stream->write(in.getChars (), in.length ());
 }
 
 void TextWriter::write(EndOfLine) {

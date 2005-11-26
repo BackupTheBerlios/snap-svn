@@ -26,6 +26,9 @@ public:
    int numOfProjections () const {
       return _vector.size ();
    }
+   int maxPossibleProjections () const {
+      return _maxPossibleProjections;
+   }
    //
    // returns the length of each projection
    int length () const {
@@ -48,12 +51,16 @@ public:
    typedef Vec <int> RandomPositions;
    typedef Vec <RandomPositions> RandomPositionsVector;
 
+   static void srand (unsigned int seed);
+
 private:
    int _length;
    int _cardinality;
    int _numOfPositions;
+   int _maxPossibleProjections;
    RandomPositionsVector _vector;
 };
 
 
 #endif // _SeedSearcher_RandomProjections_h
+

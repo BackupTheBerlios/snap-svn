@@ -1,9 +1,10 @@
 #ifndef _SeedSearcher_StdOption_h
 #define _SeedSearcher_StdOption_h
 
+#include "Defs.h"
 #include "SequenceDB.h"
 #include "SeedSearcher.h"
-#include "Assignment.h"
+#include "AssignmentFormat.h"
 
 #include "HyperGeoCache.h"
 #include "Core/AutoPtr.h"
@@ -11,45 +12,19 @@
 #include "Persistance/Defs.h"
 #include "Persistance/TextWriter.h"
 
-class AlphabetCode;
-
 
 //
 // this header contains the standard definitions used for SeedSearcher
 //
 
-class HyperGeoScore : public SeedSearcher::ScoreFunction {
-public:
-   HyperGeoScore (bool countWeights,
-                  const SequenceDB::Cluster& positivelyLabeled,   // m
-                  const SequenceDB& allSequences                  // n
-                  );
 
-   virtual ~HyperGeoScore () {
-   }
-/*
-   virtual double score (PrefixTreePreprocessor::GenePositions& , // ?
-   Assignment* optTargetAssignment = NULL,
-   bool* outWorthwhileHint = NULL)
-   */
-  virtual double score (const Assignment& feature,
-                        const Assignment& projection,
-                        const SequenceDB::Cluster& containingFeature// k
-                        );
-
-private:
-   bool _countWeights;
-   const SequenceDB& _allSequences;        // m
-   SequenceDB::Cluster _positivelyLabeled; // n
-   AutoPtr <HyperGeoCache> _cache;
-};
 
 
 class ACGTAlphabet {
    //
    // this class defines the basic ACGT alphabet
 public:
-   static const AlphabetCode& get ();
+   static const AlphabetCode& get (bool cardinalityIncludesN);
    static int cardinality () {
       return 5; // includes the 'N' character
    }
@@ -58,12 +33,12 @@ public:
    }
 };
 
-class ACGTWriter : public Assignment::Writer{
+class ACGTWriter : public AssignmentWriter{
 public:
    virtual ~ACGTWriter () {
    }
 
-   virtual void write (const Assignment::Position&, Persistance::TextWriter& out);
+   virtual void write (const Assignment::Position&, Persistance::TextWriter& out) const ;
 };
 
 class ACGTPosition : public Assignment::Position {
@@ -102,6 +77,10 @@ public:
       return _next->get (index);
    }
 
+   virtual bool isSorted () const {
+      return _next->isSorted ();
+   }
+
 protected:
    SeedSearcher::BestFeatures* _next;
 };
@@ -133,14 +112,18 @@ public:
       return _features [index];
    }
 
+   bool isSorted () const {
+      return _sorted;
+   }
+   void sort ();
+
 private:
    int _k;
    int _size;
    int _maxRedundancyOffset;
    SeedSearcher::Feature* _features;
+   bool _sorted;
 };
-
-
 
 
 
@@ -184,4 +167,25 @@ private:
    SequenceDB::Cluster _posSeqs;
 };
 
+struct StatFix {
+   //
+   // given a list of features with decreasing scores (best ones first)
+   // and a significant cut-off P (all bigger than P are siginificant)
+   // returns the largest index K (1 based), whose value is still bigger than P*K/N.
+   //
+   // if no feature fits, returns 0
+   // TODO: is this correct?
+   static int FDR (SeedSearcher::BestFeatures&, int N, double P);
+
+   //
+   // given a list of features with decreasing scores (best ones first)
+   // and a significant cut-off P (all bigger than P are siginificant)
+   // returns the largest index K (1 based), whose value is still bigger than P/N.
+   //
+   // if no feature fits, returns 0
+   // TODO: is this correct?
+   static int bonferroni (SeedSearcher::BestFeatures&, int N, double P);
+};
+
 #endif // _SeedSearcher_StdOption_h
+

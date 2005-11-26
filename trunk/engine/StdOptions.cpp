@@ -3,86 +3,51 @@
 #include "Persistance/TextWriter.h"
 #include "DebugLog.h"
 
+#ifndef ROUND
+#define ROUND(x) ((x) >= 0 ? (int) ((x) + .5) : -((int) (.5 - (x))))
+#endif
+
+
 
 using namespace std;
 
 static AlphabetCode::Code __acgt;
+static AutoPtr <AlphabetCode> __ACGTN;
 static AutoPtr <AlphabetCode> __ACGT;
 
 
-
-HyperGeoScore::HyperGeoScore (bool countWeights,
-                              const SequenceDB::Cluster& positivelyLabeled,// n
-                              const SequenceDB& allSequences // m
-               )
-:  _countWeights (countWeights),
-   _allSequences (allSequences),
-   _positivelyLabeled (positivelyLabeled)
+static initACGTCode () 
 {
-   _cache = new HyperGeoCache (positivelyLabeled.size (), allSequences.size ());
+   AlphabetCode::copy (__acgt, AlphabetCode::emptyCode ());
+   __acgt ['a'] = __acgt ['A'] = 0;
+   __acgt ['c'] = __acgt ['C'] = 1;
+   __acgt ['g'] = __acgt ['G'] = 2;
+   __acgt ['t'] = __acgt ['T'] = 3;
+   __acgt ['n'] = __acgt ['N'] = 4; // AlphabetCode::dunnoCode;
 }
 
-
-double HyperGeoScore::score (const Assignment& feature,
-                     const Assignment& projection,
-                     const SequenceDB::Cluster& containingFeature// k
-                     )
+const AlphabetCode& ACGTAlphabet::get (bool cardinalityIncludesN)
 {
-   //
-   // TODO: mustbe some easier way...
-   SequenceDB::Cluster positiveContaining;
-   SequenceDB::Cluster::intersect ( _positivelyLabeled,
-                                    containingFeature,
-                                    positiveContaining);
-   //
-   // check if we are counting the weights of all sequences
-   // or just the amount of sequences
-   int posCount;
-   int containingCount;
-   if (_countWeights) {
-      double posWeightCount = positiveContaining.sumWeights (_allSequences);
-      posCount = ROUND (posWeightCount);
+   if (cardinalityIncludesN) {
+      if (!__ACGTN.valid ()) {
+         initACGTCode ();
+         __ACGTN = new AlphabetCode (__acgt, cardinality ());
+      }
 
-      double containingWeightCount = containingFeature.sumWeights (_allSequences);
-      containingCount = ROUND (containingWeightCount);
+      return *__ACGTN;
    }
    else {
-      posCount = positiveContaining.size();
-      containingCount = containingFeature.size();
+      if (!__ACGT.valid ()) {
+         initACGTCode ();
+         __ACGT = new AlphabetCode (__acgt, assgCardinality ());
+      }
+
+      return *__ACGT;
    }
-
-   double score = 
-        _cache->logTail (posCount, containingCount);
-                            
-    //
-    // because with p-values the *smaller* the better
-    // we return the negation of the score (which for good features is probably negative)
-    return -score;
-}
-
-
-
-
-
-
-const AlphabetCode& ACGTAlphabet::get ()
-{
-   if (!__ACGT.valid ()) {
-      AlphabetCode::copy (__acgt, AlphabetCode::emptyCode ());
-      __acgt ['a'] = __acgt ['A'] = 0;
-      __acgt ['c'] = __acgt ['C'] = 1;
-      __acgt ['g'] = __acgt ['G'] = 2;
-      __acgt ['t'] = __acgt ['T'] = 3;
-      __acgt ['n'] = __acgt ['N'] = 4; // AlphabetCode::dunnoCode;
-
-      __ACGT = new AlphabetCode (__acgt, 5);
-   }
-
-   return *__ACGT;
 }
 
 void ACGTWriter::write(const Assignment::Position& pos,
-                                      Persistance::TextWriter& writer) 
+                                      Persistance::TextWriter& writer) const
 {
    char ACGT [] = "ACGTN";
    
@@ -152,7 +117,7 @@ static bool checkSimilarity (int offset,
          return false;
       }
    }
-
+/*
    debug_only (
       DLOG << "Assignments are redundant (offset " 
            << offset 
@@ -162,6 +127,7 @@ static bool checkSimilarity (int offset,
            << Format (b)
            << DLOG.EOL ();
       )
+*/
 
    //
    // they have a common base assignment, so they are similar
@@ -197,18 +163,20 @@ bool KBestFeatures::add (
                   AutoPtr <SequenceDB::Cluster> cluster,
                   double score)
 {
+   _sorted = false;
+
    //
    // we have to check if the assg is similar enough to some 
    // other in the array 
    int worst = 0;
    double worstScore = _features [0]._score;
    for (int i=0 ; i < _size ; i++) {
-      if (checkRedundancy (_maxRedundancyOffset,
-                           *_features [i]._assg, 
-                           *assg)               ) {
-         //
-         // TODO: the bigger the score, the better. right?
-         if (_features [i]._score <  score) {
+      //
+      // the smaller the score, the better.
+      if (_features [i]._score > score) {
+         if (checkRedundancy (_maxRedundancyOffset,
+                              *_features [i]._assg, 
+                              *assg)               ) {
             //
             // replace this similar feature with a better one
             _features [i] = SeedSearcher::Feature (assg.release (), 
@@ -216,13 +184,13 @@ bool KBestFeatures::add (
                                    score);
             return true;
          }
+      }
 
-         //
-         // search for the worst feature in the array
-         if (_features [i]._score < worstScore) {
-            worstScore = _features [i]._score;
-            worst = i;
-         }
+      //
+      // search for the worst feature in the array
+      if (_features [i]._score > worstScore) {
+         worstScore = _features [i]._score;
+         worst = i;
       }
    }
 
@@ -234,7 +202,7 @@ bool KBestFeatures::add (
                                    score);
       return true;
    }
-   else if (worstScore < score) {
+   else if (worstScore > score) {
       debug_mustbe (_size == _k);
       //
       // we have no room in the array, so we have to replace
@@ -250,6 +218,20 @@ bool KBestFeatures::add (
    return false;
 }
 
+struct FeatureComparator{
+   //
+   // put the best scores first
+   bool operator () (const SeedSearcher::Feature& a, const SeedSearcher::Feature& b) {
+      return a._score < b._score;
+   }
+};
+
+void KBestFeatures::sort ()
+{
+   std::sort (_features, _features + _size, FeatureComparator ());
+   _sorted = true;
+}
+
 
 
 
@@ -263,9 +245,12 @@ GoodFeatures::GoodFeatures (SeedSearcher::BestFeatures* next,
                                           int minPos, 
                                           bool isPercent)
 :  BestFeaturesLink (next),
-   _minScore (minScore),
    _posSeqs (posSeqs)
 {
+   //
+   // scores are 'logged' so the minScore should be 'logged' too.
+   _minScore = log (minScore);
+
    if (isPercent) {
       debug_mustbe (minPos >= 0);
       debug_mustbe (minPos <= 100);
@@ -282,9 +267,12 @@ GoodFeatures::GoodFeatures (SeedSearcher::BestFeatures* next,
                                           int minPos, 
                                           int minPosPercent)
 :  BestFeaturesLink (next),
-   _minScore (minScore),
    _posSeqs (posSeqs)
 {
+   //
+   // scores are 'logged' so the minScore should be 'logged' too.
+   _minScore = log (minScore);
+
    debug_mustbe (minPos >= 0);
    debug_mustbe (minPosPercent >= 0);
    debug_mustbe (minPosPercent <= 100);
@@ -302,7 +290,7 @@ bool GoodFeatures::add (
                   AutoPtr <SequenceDB::Cluster> cluster,
                   double score)
 {
-   if (score < _minScore)
+   if (score > _minScore)
       return false;
 
    if (_minPositiveSeqs > 0) {
@@ -318,4 +306,71 @@ bool GoodFeatures::add (
    return _next->add (assg, cluster, score);
 }
 
+
+int StatFix::FDR (SeedSearcher::BestFeatures& features, int N, double P) 
+{
+   debug_mustbe (features.isSorted ());
+
+   //
+   // because we use scores after 'log', we have to also 'log' N, P & K
+   int K = 1;
+   double LOG_P_div_N = ::log (P) - ::log (N);
+   //
+   // first, check that the best feature is good enough, other-wise
+   // there is no point in searching at all
+   if (features.get (K-1)._score > LOG_P_div_N + ::log (K)) {
+      //
+      // no feature is actually good enough
+      return 0;
+   }
+
+   //
+   // now seek backwards the last element (with lowest score)
+   // that is still good enough to face the requirements
+   for (K = features.size () ; K >= 1 ; K--) {
+      double featureScore = features.get (K-1)._score;
+      double LOG_P_div_N_MUL_K = LOG_P_div_N + ::log(K);
+      if (featureScore <= LOG_P_div_N_MUL_K) {
+         return K;
+      }
+   }
+
+   //
+   // 
+   debug_mustfail ();
+   return 0;
+}
+
+int StatFix::bonferroni (SeedSearcher::BestFeatures& features, int N, double P) 
+{
+   debug_mustbe (features.isSorted ());
+
+   //
+   // because we use scores after 'log', we have to also 'log' N, P & K
+
+   int K= 1;
+   double LOG_P_div_N = ::log (P) - ::log (N);
+   //
+   // first, check that the best feature is good enough, other-wise
+   // there is no point in searching at all
+   if (features.get (K-1)._score > LOG_P_div_N) {
+      //
+      // no feature is actually good enough
+      return 0;
+   }
+
+   //
+   // now seek backwards the last element (with lowest score)
+   // that is still good enough to face the requirements
+   for (K = features.size () ; K >= 1 ; K--) {
+      if (features.get (K-1)._score <= LOG_P_div_N) {
+         return K;
+      }
+   }
+
+   //
+   // 
+   debug_mustfail ();
+   return 0;
+}
 

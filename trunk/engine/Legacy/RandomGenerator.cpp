@@ -7,7 +7,7 @@
 #include "ExtraMath.h"
 
 
-tRandomGenerator _RandomProbGenerator;
+//tRandomGenerator _RandomProbGenerator;
 
 unsigned long
 tMarsagliaGenerator::Next()
@@ -40,21 +40,7 @@ tMarsagliaGenerator::tMarsagliaGenerator(unsigned query)
       std::cin >> start;
     }
 
-  srand(start);
-
-  for (j=1;j<=43;j++)        		// make initial numbers.
-    {
-      word1[j]=rand();
-      word1[j]=((word1[j] << 15 ) + rand());
-      word1[j]=((word1[j] << 2 ) + rand()%4);
-      if (word1[j]>4294967291) word1[j] = 4294967291;
-    }
-
-  // initialize markers
-  i=44;  j=23;  carry=1; weyl=rand();
-
-  for (unsigned long a=1,garbage; a<100000; a++)       	// Warm-up
-    garbage = Next();
+  Initialize (start);
 }
 
 void

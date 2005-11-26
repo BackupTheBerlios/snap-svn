@@ -23,8 +23,8 @@ CFG=Core - Win32 Debug
 
 # Begin Project
 # PROP AllowPerConfigDependencies 0
-# PROP Scc_ProjName ""
-# PROP Scc_LocalPath ""
+# PROP Scc_ProjName ""$/SeedSearcher/Core", ZCAAAAAA"
+# PROP Scc_LocalPath "."
 CPP=cl.exe
 RSC=rc.exe
 
@@ -41,7 +41,8 @@ RSC=rc.exe
 # PROP Intermediate_Dir "Release"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
-# ADD CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
+# ADD CPP /nologo /W3 /GR /GX /Zi /O2 /I "." /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /FR /FD /c
+# SUBTRACT CPP /YX
 # ADD BASE RSC /l 0x40d /d "NDEBUG"
 # ADD RSC /l 0x40d /d "NDEBUG"
 BSC32=bscmake.exe
@@ -64,7 +65,7 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
-# ADD CPP /nologo /W3 /Gm /GR /GX /ZI /Od /I "." /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /FD /GZ /c
+# ADD CPP /nologo /W3 /Gm /GR /GX /ZI /Od /I "." /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /FR /FD /GZ /c
 # SUBTRACT CPP /YX
 # ADD BASE RSC /l 0x40d /d "_DEBUG"
 # ADD RSC /l 0x40d /d "_DEBUG"
@@ -88,6 +89,18 @@ LIB32=link.exe -lib
 
 SOURCE=.\Defs.cpp
 # End Source File
+# Begin Source File
+
+SOURCE=.\dlmalloc.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\HashTable.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Str.cpp
+# End Source File
 # End Group
 # Begin Group "Header Files"
 
@@ -102,6 +115,10 @@ SOURCE=.\Bitset.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\ChunkAllocator.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\Compiler.h
 # End Source File
 # Begin Source File
@@ -110,11 +127,19 @@ SOURCE=.\Defs.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\dlmalloc.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\HashTable.h
 # End Source File
 # Begin Source File
 
 SOURCE=.\STLHelper.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Str.h
 # End Source File
 # End Group
 # End Target

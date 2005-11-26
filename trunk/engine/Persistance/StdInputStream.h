@@ -1,47 +1,71 @@
 #ifndef _Persistance_StdInputStream_h
 #define _Persistance_StdInputStream_h
 
+#include "UnbufferedChannel.h."
 #include "InputStream.h"
 #include <istream>
 
-namespace Persistance {
+BEGIN_NAMESPACE (Persistance);
 
-class StdInputStream : public InputStream {
+class StdUnbufferedInput : public UnbufferedInput {
 public:
-   StdInputStream (std::istream& in) : _in (in) {
+   StdUnbufferedInput (std::istream& in) : _in (in) {
    }
-   virtual ~StdInputStream () {
+   virtual ~StdUnbufferedInput () {
    }
 
-protected:
-   virtual void nextBuffer() {
+   virtual Size readBytes(void* outPtr, Size outSize) {
       std::streamsize bytesRead = 0;
-      const std::istream::sentry ok(_in);
+      std::istream::sentry ok(_in, /* noskip */ true);
       if (ok) {
-          _in.read (_buffer, sizeof (_buffer));
-          bytesRead = _in.gcount();
+         _in.read ( (char*)outPtr, outSize);
+         bytesRead = _in.gcount();
       }
       else {
-			throwx (PrematureEOF ());
+         throwx (PrematureEOF ());
       }
 
-   	setupBuffer (reinterpret_cast<Ptr> (_buffer), bytesRead);
+      return bytesRead;
    }
    virtual bool hasMoreBuffers() const {
-      const std::istream::sentry ok(_in);
+      std::istream::sentry ok(_in, /* noskip */ true);
       return ok;
-
-      //return _in.good ();
-   }
-   virtual void flush () {
-	   //nothing to flush on read
    }
 
    std::istream& _in;
-   char _buffer [8 * 1024];
+};
+   
+
+
+class StdInputStream : public SmallChannelInput  {
+public:
+   StdInputStream (std::istream& in) 
+   : SmallChannelInput (&_channel, false), _channel (in) 
+   {
+   }
+
+   StdUnbufferedInput _channel;
 };
 
 
-}; // namespace Persistance
+//
+// Optimization, because most STL streams are unbuffered,
+// this is especially bad for file streams...
+class BufferedStdInputStream : public DChannelInput {
+public:
+   enum { 
+      HUGE_BUFFER = 1024 * 1024 * 4 /* 4 MBytes */ 
+   };
+
+public:
+   BufferedStdInputStream (std::istream& in, int inSize = HUGE_BUFFER) 
+   : DChannelInput (&_channel ,false, inSize), _channel (in) {
+   }
+
+   StdUnbufferedInput _channel;
+};
+  
+   
+END_NAMESPACE (Persistance);
 
 #endif // _Persistance_StdInputStream_h

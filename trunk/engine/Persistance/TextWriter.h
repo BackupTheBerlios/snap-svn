@@ -3,6 +3,8 @@
 
 #include <stdlib.h>
 
+class Str;
+
 namespace Persistance {
 
 class	OutputStream;
@@ -28,6 +30,7 @@ class	TextWriter {
 	TextWriter& operator<<(float in)			{ write(in); return *this; }	
 	TextWriter& operator<<(double in)			{ write(in); return *this; }
 	TextWriter& operator<<(const char* in)		{ write(in); return *this; }
+   TextWriter& operator<<(const Str& in)		{ write(in); return *this; }
 	TextWriter& operator<<(const void* in)		{ write(in); return *this; }
 	TextWriter& operator<<(EndOfLine)			{ write(endl); return *this; }
 
@@ -40,9 +43,10 @@ class	TextWriter {
 	void write(unsigned int in);
 	void write(float in);
 	void write(double in);
-	void write(const char* in);
+   void write(const char* in);
 	void write(const char* in, size_t inSize);
-	void write(const void* inPtr);
+   void write(const void* inPtr);
+   void write(const Str&);
 	virtual void write(EndOfLine);
    void writeln() {
       write (endl);

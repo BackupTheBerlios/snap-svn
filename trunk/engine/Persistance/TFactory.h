@@ -1,11 +1,9 @@
 #ifndef _Persistance_TFactory_h
 #define _Persistance_TFactory_h
 
-#include "Core/Defs.h"
+#include "Defs.h"
 
-namespace Persistance {
-
-class Object;
+BEGIN_NAMESPACE (Persistance);
 
 class TFactoryBase {
    //
@@ -18,10 +16,14 @@ public:
 
    //
    // return the name of the class of the objects this factory makes
-   virtual const char* name ()=0;
+   virtual const char* name ()const = 0;
    //
    // create a new object for this class
-   virtual Object* create ()=0;
+   virtual Object* create () const = 0;
+
+   //
+   // return the std c++ type-info class for the objects this factory makes
+   virtual const std::type_info& type () const = 0;
 };
 
 template <class T>
@@ -33,16 +35,24 @@ class TFactory : public TFactoryBase {
    // Optionally, one might want to create his own factory classes.
    // if this is the case, just derive from TFactoryBase and you're ready to go!
 public:
+   TFactory () {
+   }
+   TFactory (TFactoryList* list) {
+      list->add (this);
+   }
    virtual ~TFactory () {
    }
 
-   virtual const char* name () {
+   virtual const char* name () const{
       return typeid (T).name ();
    }
-   virtual Object* create () {
+   virtual const std::type_info& type () const {
+      return typeid (T);
+   }
+   virtual Object* create () const{
       return createT ();
    }
-   inline T* createT () {
+   inline T* createT () const {
       return new T;
    }
 };
@@ -58,19 +68,29 @@ public:
    TFactoryList ();
    ~TFactoryList ();
 
+   typedef int FactoryID;
+
    bool add (TFactoryBase*);
    bool remove (const char*);
 
-   Object* createObject (const char*);
+   TFactoryBase* getFactory (const std::type_info&) const;
+   TFactoryBase* getFactory (FactoryID) const;
+   Object* createObject (FactoryID) const;
+
+   TFactoryBase* getFactory (const char*) const;
+   Object* createObject (const char*) const;
+
+   void serialize (IArchive&);
+   void serialize (OArchive&);
 
 private:
    class Rep;
-   Rep* rep;
+   Rep* _rep;
 };
 
 
 
-}; // Persistance
+END_NAMESPACE (Persistance);
 
 #endif // _Persistance_TFactory_h
 

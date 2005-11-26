@@ -1,5 +1,4 @@
 #include "HyperGeoCache.h"
-
 #include "Core/HashTable.h"
 
 struct HyperGeoCache::XK {
@@ -59,11 +58,16 @@ HyperGeoCache::HyperGeoCache (int n, int m) {
    _cache = new Cache (m, n);
 }
 
+HyperGeoCache::~HyperGeoCache ()
+{
+   delete _cache;
+}
+
 
 double HyperGeoCache::logTail (int x, int k)
 {
    XK xk (x, k);
-   Score* cachedScore = _cache->find (XK (x, k));
+   Score* cachedScore = _cache->find (xk);
    if (cachedScore == NULL) {
       //
       // TODO: compute actual value
@@ -76,3 +80,94 @@ double HyperGeoCache::logTail (int x, int k)
    
    return cachedScore->score ();
 }
+
+
+
+
+//
+//
+//
+
+
+struct HyperGeoTotalCache::XKNM {
+   inline XKNM (int x, int k, int n, int m) : _x (x), _k (k), _n (n), _m(m) {
+   }
+   inline XKNM (const XKNM& o) : _x (o._x), _k (o._k), _n (o._n), _m(o._m) {
+   }
+   inline bool operator == (const XKNM& o) {
+      return (_x == o._x) && (_k == o._k) && (_n == o._n) && (_m == o._m);
+   }
+
+   int _x;
+   int _k;
+   int _n;
+   int _m;
+};
+
+class HyperGeoTotalCache::Score : public HashLinkEntry <Score> {
+public:
+   typedef HyperGeoTotalCache::XKNM Key;
+   
+   inline Score (const XKNM& xknm, double score) : _xknm (xknm), _score (score) {
+   }
+   inline bool fitsKey (const Key& key) {
+      return (_xknm == key);
+   }
+	inline const Key& getKey() const {
+		return _xknm;
+	}
+	inline static HashValue hash (const Key& inKey) {
+      //
+      // TODO: is this good???
+		return defaultHashFunction( (3*inKey._x) * 
+                                  (7*inKey._k) * 
+                                  (11*inKey._n) * 
+                                  (17*inKey._m));
+	}
+   inline double score () const {
+      return _score;
+   }
+
+private:
+   XKNM _xknm;
+   double _score;
+};
+
+typedef HashTable <HyperGeoTotalCache::Score> TotalCacheBase;
+
+struct HyperGeoTotalCache::Cache : public  TotalCacheBase {
+   Cache () : TotalCacheBase (16 * 256 - 7)
+   {
+   }
+};
+
+HyperGeoTotalCache::HyperGeoTotalCache () 
+{
+   _cache = new Cache ();
+}
+
+HyperGeoTotalCache::~HyperGeoTotalCache ()
+{
+   delete _cache;
+}
+
+
+double HyperGeoTotalCache::logTail (int x, int k, int n, int m)
+{
+   XKNM xknm (x, k, n, m);
+   Score* cachedScore = _cache->find (xknm);
+   if (cachedScore == NULL) {
+      //
+      // TODO: compute actual value
+      double score = 
+         HyperGeometric::logTailhyge (x, m, k, n);
+
+      cachedScore = new Score (xknm, score); 
+      _cache->add (cachedScore);
+   }
+   
+   return cachedScore->score ();
+}
+
+
+

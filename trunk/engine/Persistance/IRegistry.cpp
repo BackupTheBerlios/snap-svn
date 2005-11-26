@@ -10,6 +10,18 @@
 
 using namespace Persistance;
 
+class PointerLink : public IRegistry::AbstractLink {
+public:
+   PointerLink (Object** ppObj) : _ppObject (ppObj) {
+   }
+   virtual void update (Object* instance) {
+      *_ppObject = instance;
+   }
+
+private:
+   Object** _ppObject;
+};
+
 
 // Defines a map of 'Object::OID' to 'Object *' that allows
 //to keep track of objects known to be 'alive' in one place.
@@ -17,7 +29,7 @@ typedef std::map <Object::OID, Object *> InstanceMap;
 
 
 // Defines a pair of 'Object::OID' to 'Object *' 
-typedef std::pair <Object::OID, Object **> Link;
+typedef std::pair <Object::OID, IRegistry::AbstractLink*> Link;
 
 
 // Defines a vector of 'Obj_Ref' that allows
@@ -78,6 +90,12 @@ void IRegistry::clear ()
 void IRegistry::readObject (Object**  p_Obj, 
                             IArchive& cia)
 {
+   readObject (new PointerLink (p_Obj), cia);
+}
+
+void IRegistry::readObject (AbstractLink*  p_Obj, 
+                            IArchive& cia)
+{
    //Read prefix
    Prefix preExpected = cia.readPrefix();
 
@@ -90,11 +108,13 @@ void IRegistry::readObject (Object**  p_Obj,
 
       case preObjInstance: {
          //Object was saved as instance
-         readObjectInstance ( *p_Obj , cia );
+         readObjectInstance ( p_Obj, cia );
          break;
       }
 
       default:      {
+         p_Obj->dispose ();
+         //
          //throw exception
          RaisePersistanceError3 (
             "Expecting prefix no. %d, %d found", preObjLink, preExpected);
@@ -105,7 +125,7 @@ void IRegistry::readObject (Object**  p_Obj,
 
 
 
-void IRegistry::readObjectLink (Object** pp_Obj ,IArchive& cia)
+void IRegistry::readObjectLink (AbstractLink* pp_Obj ,IArchive& cia)
 {
    Object::OID id;
 
@@ -126,7 +146,8 @@ void IRegistry::readObjectLink (Object** pp_Obj ,IArchive& cia)
   }
   else     {
      //initialize it to point at the declaration
-     *pp_Obj = instIt -> second;
+     pp_Obj->update (instIt -> second);
+     pp_Obj->dispose ();
   }
 }
 
@@ -137,7 +158,7 @@ void IRegistry::readObjectLink (Object** pp_Obj ,IArchive& cia)
 ///
 ///
 ///
-void IRegistry::readObjectInstance (Object *& obj, 
+void IRegistry::readObjectInstance (AbstractLink* link, 
                                     IArchive& cia)
 {
 	Object::OID id;
@@ -147,7 +168,10 @@ void IRegistry::readObjectInstance (Object *& obj,
 	cia >> id;
 
    //Deserialize Object
+   Object* obj;
    cia.readObject ( obj );
+   link->update (obj);
+   link->dispose ();
 
    //Create a pair of UID to Object pointer.
    InstanceMap::value_type  map_value( id, obj );      
@@ -199,10 +223,11 @@ void IRegistry::link ()
       }
       else  {
          //Get the pointer to the refernce
-         Object** pp_Obj = linkIt->second;
+         AbstractLink* link = linkIt->second;
 
          //initialize it to point at the declaration
-         *pp_Obj = instIt -> second;
+         link->update (instIt -> second);
+         link->dispose ();
       }
    }
    

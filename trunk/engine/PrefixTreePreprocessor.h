@@ -2,8 +2,9 @@
 #define _SeedSearcher_PrefixTreePreprocessor_h
 
 #include "Preprocessor.h"
+#include "Persistance/Object.h"
 
-class PrefixTreePreprocessor : public Preprocessor {
+class PrefixTreePreprocessor : public Preprocessor, public Persistance::Object {
    //
    // interface inherited from Preprocessor
 public:
@@ -43,22 +44,26 @@ public:
 
    //
    // class that represents a vector of positions of a single sequence
-   class SeqPositions {
+   class SeqPositions : public Persistance::Object {
    public:
      SeqPositions ();
-      SeqPositions (PositionVector*, bool owner = false);
+      explicit SeqPositions (PositionVector*);
       ~SeqPositions ();
 
       SeqPositions& operator = (const SeqPositions&);
 
       PositionIterator iterator ();
-      const SequenceDB::Sequence* sequence () const;
+      const Sequence* sequence () const;
       const PositionVector* positions () const;
       bool empty () const;
       int size () const;
 
+      void serialize (Persistance::IArchive& in);
+      void serialize (Persistance::OArchive& out);
+
+      void dispose (bool disposePositions);
+
    private:
-      bool _owner;
       PositionVector* _positions;
    };
 
@@ -107,8 +112,8 @@ public:
 
       //
       // check if node has any positions for a particular sequence
-      bool hasPositions (SequenceDB::ID);
-      bool hasPositions (SequenceDB::Cluster&);
+      bool hasPositions (SequenceDB::ID) const; 
+      bool hasPositions (const SequenceDB::Cluster&) const;
 
       //
       // returns all the sequences in this node
@@ -122,17 +127,28 @@ public:
    // tree functions
 public:
    PrefixTreePreprocessor (TreeRep*, bool owner = true);
-   
+
    NodeRep* getRoot () const;
    const SequenceDB* getSequenceDB () const;
    int getDepth () const;
 
 
-    //
-    // builds a new prefix tree. uses data from SequenceDB. 
-    // depth is the maximum prefix size
-    static TreeRep* build (SequenceDB*, int depth);
+   //
+   // builds a new prefix tree. uses data from SequenceDB. 
+   // depth is the maximum prefix size
+   static TreeRep* build ( SequenceDB*, 
+                           int depth);
+   
+   static TreeRep* build ( const SequenceDB::Cluster&, 
+                           SequenceDB*, 
+                           int depth);
 
+   void serialize (Persistance::IArchive& in);
+   void serialize (Persistance::OArchive& out);
+   PrefixTreePreprocessor () {
+   }
+
+   static void createFactories (Persistance::TFactoryList&);
 
 private:
    bool _owner;
@@ -140,5 +156,6 @@ private:
 };
 
 #endif // _SeedSearcher_PrefixTreePreprocessor_h
+
 
 

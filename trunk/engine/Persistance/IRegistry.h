@@ -25,16 +25,27 @@ class IRegistry   {
    // are initialized to point to the actual instance
    // create during the archive extraction process
 public:
+   class AbstractLink {
+   public:
+      virtual ~AbstractLink () {
+      }
+      virtual void update (Object*) = 0;
+      virtual void dispose () {
+         delete this;
+      }
+   };
+
    IRegistry ();
    ~IRegistry ();
    
+   void readObject (AbstractLink*, IArchive&);
    void readObject (Object**, IArchive&);
    void link ();
    void clear ();
 
 private:
-   void readObjectLink (Object **, IArchive&);
-   void readObjectInstance (Object *& obj , IArchive&);
+   void readObjectLink (AbstractLink*, IArchive&);
+   void readObjectInstance (AbstractLink* obj , IArchive&);
 
    struct Rep;
    Rep* _rep;

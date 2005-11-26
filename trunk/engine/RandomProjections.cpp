@@ -41,7 +41,7 @@ inline static void createAllProjections (
    if (numOfPositions == 0)
       return;
 
-   for (int i = startingPos ; i < endPos ; i++) {
+   for (int i = startingPos ; i + numOfPositions <= endPos ; i++) {
       positions [index].push_back (i);
       createAllProjections (positions,
                            index,
@@ -70,14 +70,12 @@ static int verifyProjectionNumber( int motifLength,
    // because it is the same as having a shorter assignment
    motifLength--;
 
-  assert(dist<motifLength);
+  assert(dist<=motifLength);
   double tmp = exp( lgamma(motifLength+1)-
 		    (lgamma(dist+1)+lgamma(motifLength-dist+1)) );
   
-  //  uint possibleProjections = ( (tmp - ((int)tmp)) > 0) ? (int) (tmp+1) : (int)tmp; 
-
   typedef unsigned int uint;
-  uint possibleProjections = (int)tmp;   
+  uint possibleProjections = ( (tmp - ((int)tmp)) > 0) ? (int) (tmp+1) : (int)tmp; 
   /*
    * Aviad: removed the comparison with projNum, just return the number
    * of possible projections
@@ -92,7 +90,7 @@ static int verifyProjectionNumber( int motifLength,
    else
    *
    */
-      return (int)possibleProjections;
+   return (int)possibleProjections;
 }
 
 
@@ -131,6 +129,12 @@ RandomProjections::RandomProjections (
 
 static tRandomGenerator rand1;
 
+void RandomProjections::srand (unsigned int seed)
+{
+   rand1.Initialize (seed);
+}
+
+
 //
 // Copied/Adapted from legacy SeedSearcher.cpp
 static void chooseProjections (size_t motifLength,
@@ -156,10 +160,11 @@ static void chooseProjections (size_t motifLength,
 
 
          projectionsSites[i] =  val;
-
+/*
          debug_only (
             cerr<<"found for place "<<i<<"\tprojection\t"<<val<<endl;
          );
+*/
 
          if (dist ==0)
             continue; // if dist ==0 there are no random projections actually
@@ -174,7 +179,7 @@ static void chooseProjections (size_t motifLength,
 
       } while (found == true);
    }
-
+/*
    debug_only (
       // print the projections chosen:
       cerr<<"projection chosen are"<<endl;
@@ -182,6 +187,7 @@ static void chooseProjections (size_t motifLength,
          cerr<<projectionsSites[ii]<<endl;
       }
    );
+*/
 }
 
 
@@ -199,21 +205,22 @@ RandomProjections::RandomProjections (
 {
    //
    // first compute how many projections are possible:   ( length          )
-   int possibleProjections = 
+   _maxPossibleProjections = 
       verifyProjectionNumber (length, numOfPositions);
 
    debug_only (
-      if (  possibleProjections < numOfProjections) 
-         cerr<< "too many projections asked, number of porjections will be only " << possibleProjections << endl;
+      if (  _maxPossibleProjections < numOfProjections) 
+         DLOG << "too many projections asked, number of projections will be only " 
+              << _maxPossibleProjections << DLOG.EOL ();
    );
 
-   if (possibleProjections < numOfProjections) {
+   if (_maxPossibleProjections <= numOfProjections) {
       //
       // just create all the projections possible
-      _vector.resize (possibleProjections);
+      _vector.resize (_maxPossibleProjections);
 
       int index = 0;
-      createAllProjections (_vector, index, 1, length -1, possibleProjections);
+      createAllProjections (_vector, index, 1, length -1, numOfPositions);
    }
    else {
       //
@@ -237,12 +244,13 @@ void RandomProjections::getAssignment (Assignment& assg,
      int pos = rand [i];
       assg.setPosition (pos, randPos);
    }
-
+/*
    debug_only (
       DLOG  << "RandomProjections returned: "
             << Format (assg)
             << DLOG.EOL ()
    );
+*/
 }
 
 Assignment RandomProjections::getAssignment (int index, 
@@ -257,13 +265,15 @@ Assignment RandomProjections::getAssignment (int index,
      int pos = rand [i];
       assg.setPosition (pos, randPos);
    }
-
+/*
    debug_only (
       DLOG  << "RandomProjections returned: "
             << Format (assg)
             << DLOG.EOL ()
    );
+*/
 
    return assg;
 }
+
 

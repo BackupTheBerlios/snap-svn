@@ -35,7 +35,7 @@ Object::OID Persistance::getID(Object& obj)
 }
 */
 
-Object::OID Object::getSafeID(Object *obj)
+Object::OID Object::getSafeID(const Object *obj)
 {
    #if OBJECT_ID_IS_FIELD
       return obj? obj->id : 0;

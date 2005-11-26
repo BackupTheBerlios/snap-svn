@@ -4,6 +4,8 @@
 #include "PrefixTreePreprocessor.h"
 #include "Assignment.h"
 
+class AssignmentWriter;
+
 class SeedSearcher {
 public:
    class ScoreFunction {
@@ -13,11 +15,7 @@ public:
    public:
      virtual ~ScoreFunction () {
      }
-   /*
-     virtual double score (PrefixTreePreprocessor::NodeRep*,
-         Assignment* optTargetAssignment = NULL,
-         bool* outWorthwhileHint = NULL);
-         */
+
      virtual double score (const Assignment& feature,
                            const Assignment& projection,
                            const SequenceDB::Cluster& containingFeature // k
@@ -61,12 +59,22 @@ public:
       const Feature& operator [] (int index) const {
          return get (index);
       };
+
+      virtual bool isSorted () const = 0;
    };
+
+
+//
+//
+// Gene-Counts
+//
+//
 
 
    //
    // search the tree for seeds that correspond to a projection
-   static void prefixTreeSearch (
+   // returns the total number of seeds found
+   static int prefixTreeSearch (
          PrefixTreePreprocessor& tree,       // where to search
          const Assignment& projection,       // how to climb down the tree
          const SequenceDB::Cluster& cluster, // which sequences are positively labeled
@@ -74,7 +82,7 @@ public:
          BestFeatures& bestFeatures          // stores the best features
          )
    {
-      prefixTreeSearch (tree, 
+      return prefixTreeSearch (tree, 
                         projection, 
                         cluster, 
                         scoreFunc, 
@@ -84,7 +92,8 @@ public:
    
    //
    // search the tree for seeds that correspond to a projection   
-   static void prefixTreeSearch (
+   // returns the total number of seeds found
+   static int prefixTreeSearch (
          PrefixTreePreprocessor& tree,       // where to search
          const Assignment& projection,       // how to climb down the tree
          const SequenceDB::Cluster& cluster, // which sequences are positively labeled
@@ -93,6 +102,24 @@ public:
          int desiredDepth                    // desired depth / length of features
          );
 
+//
+//
+// Total-Counts
+//
+//
+
+   //
+   // search the tree for seeds that correspond to a projection (total counts)
+   // returns the total number of seeds found
+   static int totalCountSearch (
+      PrefixTreePreprocessor& tree, // where to search
+      const Assignment& projection, // how to climb down the tree
+      AssignmentWriter& writer,     // (used for hashing)
+      const SequenceDB::Cluster& positivelyLabeled, // which sequences are positively labeled
+      SeedSearcher::ScoreFunction& scoreFunc,       // how to score features
+      SeedSearcher::BestFeatures& bestFeatures      // stores the best features
+         );
 };
 
 #endif // _SeedSearcher_SeedSeacher_h
+

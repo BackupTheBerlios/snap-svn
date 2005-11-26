@@ -135,12 +135,36 @@ public:
    // n - how many balls are red
    // m - how many total balls
    HyperGeoCache (int n, int m);
+   ~HyperGeoCache ();
+
    double logTail (int x, int k);
 
    struct XK;
    class Score;
+
+   struct Cache;
+   Cache* _cache;
+};
+
+
+class HyperGeoTotalCache {
+public:
+   //
+   // k - how many balls taken
+   // x - how many of taken are red
+   // n - how many balls are red
+   // m - how many total balls
+   HyperGeoTotalCache ();
+   ~HyperGeoTotalCache ();
+
+   double logTail (int x, int k, int n, int m);
+
+   struct XKNM;
+   class Score;
+
    struct Cache;
    Cache* _cache;
 };
 
 #endif
+

@@ -18,7 +18,10 @@ class RangeForwardIter {
  public:
 	RangeForwardIter(Value* inLow, Value* inHigh) : cur(inLow-1), last(inHigh) {
 	}
-	bool more() {
+   bool hasNext () const {
+      return (cur+1) < last;
+   }
+   bool next () {
 		return ++cur < last;
 	}
 	Value& operator*() {
@@ -52,16 +55,16 @@ class HashTable {
 	typedef Entry Node;
 	typedef Functor1R<Entry*,bool> Visitor;
 
-	HashTable(size_t inSize): table(0), size(0), count(0)  
+	HashTable(size_t inSize): _table(0), _size(0), _count(0)  
 	{
-		table= makeTable(inSize);
-		size= inSize;
+		_table= makeTable(inSize);
+		_size= inSize;
 	}
 
 	~HashTable() 
 	{
 		clear ();
-		delete[] table;
+		delete[] _table;
 	}
 
 	void add(Entry* in) 
@@ -70,18 +73,18 @@ class HashTable {
 		TableItem& root= tableLookup(in->getKey());
 		in->setNext(root);
 		root= in;
-		count++;
+		_count++;
 	}
 
 	void clear ()
 	{
-		TableIter tabI(table, table+size);
-		while(tabI.more()) {
+		TableIter tabI(_table, _table+_size);
+		while(tabI.next ()) {
 			for(Entry* entry= *tabI; entry; ) {
 				Entry* nextOne= entry->next();
 				delete entry;
 				*tabI= nextOne;
-				count--;
+				_count--;
 				entry= nextOne;
 			}
 		}
@@ -128,7 +131,7 @@ class HashTable {
 
 	void visitAll_const (Visitor& inVisitor) const {
 		TableIter tabI(table, table+size);
-		while(tabI.more()) {
+		while(tabI.next()) {
 			for(Entry* entry= *tabI, *prev= 0; entry; ) {
 				Entry* nextOne= entry->next();
 			#if ENV_BUGS & ENV_MICROSOFT
@@ -147,7 +150,7 @@ class HashTable {
 
 	void visitAll(Visitor& inVisitor) {
 		TableIter tabI(table, table+size);
-		while(tabI.more()) {
+		while(tabI.next()) {
 			for(Entry* entry= *tabI, *prev= 0; entry; ) {
 				Entry* nextOne= entry->next();
 			#if ENV_BUGS & ENV_MICROSOFT
@@ -168,12 +171,52 @@ class HashTable {
 		}
 	}
 
+   class Iterator {
+   public:
+      Iterator (HashTable& table) 
+      : _tableIt (table._table, table._table + table.getTableSize ()), _entry (NULL)
+      {
+         next ();
+      }
+
+      bool hasNext () const {
+         return (_entry != NULL);
+      }
+
+      void next () {
+         if (_entry != NULL)
+            _entry = _entry->next ();
+
+         while ((_entry == NULL) && _tableIt.hasNext ()) {
+            _tableIt.next ();
+            _entry = *_tableIt;
+         }
+      }
+
+      Entry* operator->() const{
+		   return _entry;
+	   }
+	   Entry& operator*() const{
+		   return _entry;
+	   }
+	   Entry* get() const {
+		   return _entry;
+	   }
+
+   private:
+      TableIter _tableIt;
+      Entry* _entry;
+   };
+
+   friend class Iterator;
+
+
 	Entry* find(const Key& inKey) const {
 		return find(inKey, Entry::hash(inKey));
 	}
 	
 	Entry* find(const Key& inKey, HashValue inHash) const {
-		for(Entry* entry= table[hash2Index(inHash)]; entry; entry= entry->next()) {
+		for(Entry* entry= _table[hash2Index(inHash)]; entry; entry= entry->next()) {
 			if (entry->fitsKey(inKey))
 				return entry;
 		}
@@ -181,13 +224,13 @@ class HashTable {
 	}
 
 	void resize(size_t inNewSize) {
-		TableItem* oldTable= table;
-		size_t oldSize= size;
+		TableItem* oldTable= _table;
+		size_t oldSize= _size;
 		table= makeTable(inNewSize);
 		size= inNewSize;
 
 		TableIter tabI(oldTable, oldTable+oldSize);
-		while(tabI.more()) {
+		while(tabI.next()) {
 			for(Entry* entry= *tabI; entry; ) {
 				Entry* nextOne= entry->next();
 				entry->setNext(0);
@@ -197,20 +240,24 @@ class HashTable {
 		delete[] oldTable;
 	}
 
+   size_t getTableSize () const {
+      return _size;
+   }
+
 	size_t getSize() const {	// YTD: change name: size->tabSize, getSize() -> size()
-		return count;
+		return _count;
 	}
 
  protected:
-	TableItem* table;
-	size_t size;
-	size_t count;
+	TableItem* _table;
+	size_t _size;
+	size_t _count;
 
 	size_t hash2Index(HashValue inValue) const {
-		return inValue % size;
+		return inValue % _size;
 	}
 	TableItem& tableLookup(const Key& inKey) const {
-		return table[hash2Index(Entry::hash(inKey))];
+		return _table[hash2Index(Entry::hash(inKey))];
 	}
 	Entry* createLink(Entry* first, Entry* next) {
 		if (first)
@@ -221,7 +268,7 @@ class HashTable {
 	static TableItem* makeTable(size_t inSize) {
 		TableItem* table= new TableItem[inSize];
 		TableIter tabI(table, table + inSize);
-		while(tabI.more()) {
+		while(tabI.next()) {
 			debug_mustbe(table<=tabI.get() && tabI.get() < (table+inSize));
 			*tabI= 0;
 		}

@@ -4,17 +4,44 @@
 
 using namespace Persistance;
 
+
+
+/*
+//
+// specialization
+void writePrimitive(unsigned char param) {
+   if (_text)
+      writePrimitive (static_cast<short> (param));
+   else
+      _writer.write (param);
+
+}
+*/
+
+
+
+
+
+
 ///
 /// default constructor
 ///
 OArchive::OArchive(OutputStream* inStream,
                    TFactoryList* inFactories,
-                   bool asText) 
+                   bool asText,
+                   bool addMeta,
+                   bool strict) 
 :  _text (asText),
+   _meta (addMeta),
+   _strict (strict),
    _writer (inStream),
    _factories (inFactories)
 {
-   _writer << _text << ' ';
+   _writer << _text  << _writer.EOL ()
+           << _meta  << _writer.EOL ()
+           << _strict<< _writer.EOL ();
+
+   _factories->serialize (*this);
 }
 
 OArchive::~OArchive()
@@ -47,40 +74,34 @@ void OArchive::prependPrefix(Prefix pre)
 
 
 
+static void writeClass (OArchive& out, const Object& param)
+{
+   // 
+   //write class id
+   const std::type_info& type = typeid (param); 
+   const char * classname = type.name();
+   TFactoryBase* factory = out.factories ().getFactory (type);
+   if (!factory) {
+      RaisePersistanceError2 ("Factory missing for %s", classname);
+   }
+   //
+   // the factory's address is its ID
+   out << (TFactoryList::FactoryID) factory;
 
+}
 
-/*******************************************************************/
-/*                                                                 */
-/*  function operator << ( CSZ_Object& param)                      */
-/*                                                                 */
-/*  Purpose :  This is used to serialize a reference to an object. */
-/*                                                                 */
-/*  Returns : OArchive&                                       */
-/*                                                                 */
-/*  Argumenents : CSZ_Object& param- since all serialized objects  */
-/*                                  must be derived from CSZ_Object*/
-/*                                  this polymorphic function is   */
-/*                                  possible.                      */
-/*                                                                 */
-/*  Throws: 1)CSZ_ERR_WRITE_CLASS_MEMBER_FAILURE when serializaton */
-/*                    function of the object fails.                */
-/*                                                                 */
-/*          2)CSZ_ERR_WRITE_CLASS_FAILURE when the serializtion    */
-/*                     operation fails. (more general)             */
-/*                                                                 */
-/*******************************************************************/      
-OArchive& OArchive::operator << (Object& param)
+    
+void OArchive::writeObject (const Object& param)
 {
    prependPrefix( preClass );
 
-   //
-   // TODO: put all class names in Archive header
-   //write class name
-	const char * classname = typeid(param).name();
-   *this << classname;
-
    //actual serialization
-    param.serialize( *this);
+   const_cast <Object&> (param).serialize( *this);
+}
+
+OArchive& OArchive::operator << (const Object& param)
+{
+   writeObject (param);
    return (*this);
 }
 
@@ -89,17 +110,28 @@ OArchive& OArchive::operator << (Object& param)
 ///
 /// 
 ///
-OArchive& OArchive::operator << (Object* param)
+void OArchive::writeObject (const Object* param)
 {
 	if (param ==NULL)
 		prependPrefix ( preNullPointer );
 	else	{
 		prependPrefix ( preValidPointer );
-		*this << *param;
-	}
+      prependPrefix( preClass );
 
+      //
+      // write class information
+      writeClass (*this, *param);
+
+      //actual serialization
+      const_cast <Object*> (param)->serialize( *this);
+	}
+}
+
+OArchive& OArchive::operator << (const Object* param)
+{
+   writeObject (param);
 	return *this;
-}																	                  	
+}
 
 
 
@@ -108,42 +140,92 @@ OArchive& OArchive::operator << (Object* param)
 ///
 /// this function registers an object in CSZ_Registrator either as declaration or reference.
 ///
-OArchive& OArchive::registerObject (Object* param)
+OArchive& OArchive::registerObject (const Object* param)
 {
    _registry.registerObject (param , *this);
    return *this;
 }
 
-
-
-void OArchive::writePrimArrayHelper (size_t elementSize, long n)
+OArchive& OArchive::registerObject (const Object* param, bool isInstance)
 {
+   if (isInstance && param != NULL)
+      _registry.registerObjectInstance (param , *this);
+   else 
+      _registry.registerObjectLink (param , *this);
+   return *this;
+}
+
+
+
+template <class PrimType> 
+static void writePrimitive(OArchive& out, PrimType param) {
+   //
+   // make sure PrimType is indeed primitive
+   static_cast <double> (param);
+
+   TextWriter& _writer = out.writer ();
+
+   if (out.text ()) {
+      _writer << param << ' ';
+   }
+   else {
+      //
+      // binary represention
+      const char* ptr = reinterpret_cast <const char*> (&param);
+      _writer.write (ptr, sizeof(PrimType));
+   }
+}
+
+static void writePrimitive(OArchive& out, unsigned char param) {
+   TextWriter& _writer = out.writer ();
+
+   if (out.text ()) {
+      _writer << (short) param << ' ';
+   }
+   else {
+      //
+      // binary represention
+      const char* ptr = reinterpret_cast <const char*> (&param);
+      _writer.write (ptr, sizeof(unsigned char));
+   }
+}
+
+template <typename PrimType>
+static void writePrimitiveArray (OArchive& out, const PrimType* params, int n) 
+{
+   //
+   // make sure PrimType is indeed primitive
+   static_cast <double> (*params);
+   size_t elementSize = sizeof (PrimType);
+
    // check erroneous states
    if (n < 0)  {
       RaisePersistanceError ("Failed to write array (negative length)");
    }
    else {
-      prependPrefix (preArray);
+      out.prependPrefix (preArray);
       //
       // store the size of each element
-      *this << (Persistance::Flag) elementSize;
+      out << (Persistance::Flag) elementSize;
 
       // Store the number of elements in the array
-      writePrimitive ( n );
+      out << n;
+   }
+
+   TextWriter& _writer = out.writer ();
+   if (out.text ())  {
+      for (int i=0 ; i<n ; i++) 
+         writePrimitive (out, params [i]);
+   }
+   else {
+      size_t nbytes = n * sizeof (PrimType);
+      _writer.write (params, nbytes);
    }
 }
 
-OArchive& OArchive::operator << (const char* param)
-{
-   writePrimitiveArray (strlen (param), param);
-   return *this;
-}
-
-
-static bool strict = true;
 
 template <typename PrimType>
-static inline void writePrimitiveT (OArchive& cia,
+static inline void writePrimitiveT (OArchive& out,
                                     PrimType param, 
                                     Persistance::Flag code)
 {
@@ -151,11 +233,14 @@ static inline void writePrimitiveT (OArchive& cia,
    // make sure this is indeed a primitive
    static_cast <double> (param);
 
-   //Save the length/type of param, to help ensure the Serialization/Deserialization matches.      
-   //
-   // TODO: make this safety optional, to save space
-   cia.writePrimitive  ((Persistance::Flag) (strict? code : sizeof(PrimType)));
-   cia.writePrimitive ( param );
+   if (out.meta ()) {
+      //
+      // Save the length/type of param, to help ensure 
+      // the Serialization/Deserialization matches.      
+      Persistance::Flag c = (Persistance::Flag) (out.strict ()? code : sizeof(PrimType));
+      writePrimitive  (out, c);
+   }
+   writePrimitive (out, param );
 }
 
 //
@@ -246,6 +331,48 @@ OArchive& OArchive::operator << (double param)
    return *this;
 }
 
+OArchive& OArchive::operator << (const char* str)
+{
+   writeString (str);
+   return *this;
+}
+
+
+void OArchive::writeString (const char* str)
+{
+   writeString (str, strlen (str));
+}
+
+void OArchive::writeString (const char* str, int len)
+{
+   //
+   // do not write the the closing NULL
+   debug_mustbe (!str [len - 1] == 0);
+
+   *this << len;
+   _writer.write (str, len);
+   if (_text)
+      _writer << ' ';
+}
 
 
 
+void OArchive::writeBoolArray (const bool*, int);
+void OArchive::writeCharArray (const char* a, int l)
+{
+   writePrimitiveArray (*this, a, l);
+}
+
+void OArchive::writeSCharArray (const signed char*, int);
+void OArchive::writeUCharArray (const unsigned char*, int);
+void OArchive::writeShortArray (const short*, int);
+void OArchive::writeSShortArray (const signed short*, int);
+void OArchive::writeUShortArray (const unsigned short*, int);
+void OArchive::writeIntArray (const int*, int);
+void OArchive::writeSIntArray (const signed int*, int);
+void OArchive::writeUIntArray (const unsigned int*, int);
+void OArchive::writeLongArray (const long*, int);
+void OArchive::writeSLongArray (const signed long*, int);
+void OArchive::writeULongArray (const unsigned long*, int);
+void OArchive::writeFloatArray (const float*, int);
+void OArchive::writeDoubleArray (const double*, int);

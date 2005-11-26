@@ -17,33 +17,33 @@
       RaisePersistanceError(arg1);
 
 #  define RaisePersistanceError2(arg1, arg2) {                    \
-         char buffer [128];                                       \
+         char buffer [128 * 16];                                  \
          sprintf(buffer, arg1, arg2);                             \
          Persistance::Error::raise (__FILE__, __LINE__, buffer);  \
       }
 
 #  define RaisePersistanceError3(arg1, arg2, arg3) {              \
-         char buffer [128];                                       \
+         char buffer [128 * 16];                                  \
          sprintf(buffer, arg1, arg2, arg3);                       \
          Persistance::Error::raise (__FILE__, __LINE__, buffer);  \
       }
       
 
 #  define RaisePersistanceError4(arg1, arg2, arg3, arg4) {        \
-         char buffer [128];                                       \
+         char buffer [128 * 16];                                  \
          sprintf(buffer, arg1, arg2, arg3, arg4);                 \
          Persistance::Error::raise (__FILE__, __LINE__, buffer);  \
       }
 
 #  define RaisePersistanceError5(arg1, arg2, arg3, arg4, arg5) {  \
-         char buffer [128];                                       \
+         char buffer [128 * 16];                                  \
          sprintf(buffer, arg1, arg2, arg3, arg4, arg5);           \
          Persistance::Error::raise (__FILE__, __LINE__, buffer);  \
       }
 
 namespace Persistance {
 
-class Error {
+struct Error {
    static void raise (const char*, int, const char*);
    static void raise (int, const char*);
 };

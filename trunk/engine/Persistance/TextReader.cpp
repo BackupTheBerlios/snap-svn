@@ -1,6 +1,7 @@
 #include "TextReader.h"
-
 #include "InputStream.h"
+
+#include "Core/Str.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,7 +12,7 @@ using namespace Persistance;
 
 TextReader::TextReader(InputStream* inStream, bool inOwner) : 
 	stream(inStream), owner(inOwner), bufStart (0), bufEnd (0),
-	unreadBufSize (0)
+	unreadBufSize (0), readCount (0)
 {	
 }
 
@@ -28,10 +29,13 @@ void TextReader::unreadByte (Byte in)
 	++unreadBufSize;
 	if (bufEnd == bufStart)
 		throwx (Overflow ());
+
+   readCount--;
 }
 
 TextReader::Byte TextReader::readByte () 
 {
+   readCount++;
 	if (bufStart != bufEnd) {
 		Byte c = buf [bufStart++];
 		bufStart %= sizeof (buf);
@@ -52,10 +56,11 @@ bool TextReader::atEnd () const
 
 void TextReader::read(bool& out) 
 {
+   skipWhitespace ();
    //
    // TODO: maybe accept other strings as true/false values
    char buffer [8];
-   stream->read (buffer, 5);
+   read (buffer, 5);
    buffer [5] = 0;
 
    if (strcmp (buffer, "true ") == 0)
@@ -315,7 +320,7 @@ void TextReader::read (char* out)
 	*out = '\0';
 }
 
-void TextReader::read (std::string& out)  
+void TextReader::read (StrBuffer& out)  
 {
 	out = "";
     skipWhitespace ();
@@ -347,6 +352,21 @@ void TextReader::read (EndOfLine)
 	}
 }
 
+void TextReader::readUntil (StrBuffer& outBuffer, const Str& separator)
+{
+   outBuffer.set (0);
+   while (!atEnd ()) {
+      Byte c = readByte ();
+      outBuffer.append (c);
+      if (outBuffer.endsWith (separator)) {
+         //
+         // remove the separator from the buffer
+         outBuffer.setLength (outBuffer.length () - separator.length ());
+         break;
+      }
+   }
+}
+
 void TextReader::readln (char* out)  
 {
 	while (!atEnd ()) {
@@ -365,7 +385,7 @@ void TextReader::readln (char* out)
 	*out = '\0';
 }
 
-void TextReader::readln (std::string& out)  
+void TextReader::readln (StrBuffer& out)  
 {
 	out = "";
 	while (!atEnd ()) {
@@ -397,6 +417,7 @@ void TextReader::read (char* out, size_t inSize)
 		}
 		else {
 			stream->read (out, inSize);
+         readCount += inSize;
 			inSize = 0;
 		}
 }
@@ -442,6 +463,7 @@ void TextReader::skip (InputStream::Size in)
 		}
 		else {
 			stream->skip (in);
+         readCount += in;
 			in = 0;
 		}
 }

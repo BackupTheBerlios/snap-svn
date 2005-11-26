@@ -23,8 +23,8 @@ CFG=Persistance - Win32 Debug
 
 # Begin Project
 # PROP AllowPerConfigDependencies 0
-# PROP Scc_ProjName ""
-# PROP Scc_LocalPath ""
+# PROP Scc_ProjName ""$/SeedSearcher/Persistance", ADAAAAAA"
+# PROP Scc_LocalPath "."
 CPP=cl.exe
 RSC=rc.exe
 
@@ -41,7 +41,8 @@ RSC=rc.exe
 # PROP Intermediate_Dir "Release"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
-# ADD CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
+# ADD CPP /nologo /W3 /GR /GX /Zi /O2 /I ".." /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /FR /FD /c
+# SUBTRACT CPP /YX
 # ADD BASE RSC /l 0x40d /d "NDEBUG"
 # ADD RSC /l 0x40d /d "NDEBUG"
 BSC32=bscmake.exe
@@ -64,7 +65,7 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
-# ADD CPP /nologo /W3 /Gm /GR /GX /ZI /Od /I ".." /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /FD /GZ /c
+# ADD CPP /nologo /W3 /Gm /GR /GX /ZI /Od /I ".." /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /FR /FD /GZ /c
 # SUBTRACT CPP /YX
 # ADD BASE RSC /l 0x40d /d "_DEBUG"
 # ADD RSC /l 0x40d /d "_DEBUG"
@@ -94,19 +95,11 @@ SOURCE=.\IArchive.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\IArchive.ii
-# End Source File
-# Begin Source File
-
 SOURCE=.\OArchive.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=.\OArchive.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\OArchive.ii
 # End Source File
 # End Group
 # Begin Group "IO"
@@ -123,6 +116,10 @@ SOURCE=.\InputStream.cpp
 # Begin Source File
 
 SOURCE=.\InputStream.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\IODefs.h
 # End Source File
 # Begin Source File
 
@@ -150,6 +147,10 @@ SOURCE=.\StreamBuffer.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\StrOutputStream.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\TextReader.cpp
 # End Source File
 # Begin Source File
@@ -163,6 +164,10 @@ SOURCE=.\TextWriter.cpp
 # Begin Source File
 
 SOURCE=.\TextWriter.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\UnbufferedChannel.h
 # End Source File
 # End Group
 # Begin Group "Object"
@@ -225,5 +230,9 @@ SOURCE=.\Error.cpp
 SOURCE=.\Error.h
 # End Source File
 # End Group
+# Begin Source File
+
+SOURCE=.\STLPersist.h
+# End Source File
 # End Target
 # End Project

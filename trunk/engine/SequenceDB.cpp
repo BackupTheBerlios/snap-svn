@@ -2,6 +2,11 @@
 #include "Sequence.h"
 #include "SequenceDB.h"
 
+#include "Persistance/OArchive.h"
+#include "Persistance/IArchive.h"
+#include "Persistance/TextReader.h"
+#include "Persistance/StdInputStream.h"
+
 #include <fstream>
 #include <iostream>
 #include <assert.h>
@@ -10,116 +15,139 @@
 using namespace std;
 
 /*****************
- *
- * Most of this file's content has been 
- * copied from legacy SeedSearcher
- *
- *****************/
+*
+* Most of this file's content has been 
+* copied from legacy SeedSearcher
+*
+*****************/
 
 
-static void Err(std::string const & s) {
+static void Err(const char* s) {
    debug_mustfail ();
    cerr<<s<<endl;
    cerr.flush();
    exit(1);
 }
+static void Err(const std::string& s) {
+   Err (s.c_str ());
+}
 
-SequenceDB* SequenceDB::TextFileStorage::load (const AlphabetCode& code, const char* seqFileName)
+
+
+class SequenceDB::TextFileStorage::Rep {
+public:
+   static void insertSequence (  SequenceDB& db          , 
+                                 double* weight          ,
+                                 const std::string& name ,
+                                 const std::string& seq  , 
+                                 SequenceDB::ID id       )  {
+      db._name2ID [Str (name)] = id;
+      Sequence* sequence = (weight != NULL)?
+         new Sequence (id, Str (seq),  Str (name),  *weight) :
+         new Sequence (id, Str (seq), Str (name));
+      
+      db._sequences.push_back(sequence);
+   }
+   
+   static void checkup (SequenceDB& db, const char* seqFileName) {
+      if (!db._sequences.size())
+         Err(StrBuffer ("read no data from the seq file", seqFileName));
+      
+         /*
+         debug_only (
+         cerr<<"read File: "<<endl;
+         for (size_t i = 0; i < db._sequences.size () ;i++) {
+         cerr<< db.getSequence (i).name () << "\t" << db.getSequence (i).data () << endl;
+         }
+         )
+      */
+   }
+};
+
+
+
+SequenceDB* SequenceDB::TextFileStorage::loadFastaInFileWeights (
+                                                                 const AlphabetCode& code,
+                                                                 const char* seqFileName)
 {
    ID id= 0;
-   ifstream In(seqFileName);
+   ifstream In (seqFileName);
    if (! In.is_open())
-      Err(string("unable to open SeqData file ")+ seqFileName);
-
+      Err(StrBuffer ("unable to open SeqData file ", seqFileName));
+   
+   std::string w;
+   std::string s;
+   std::string name;
    auto_ptr <SequenceDB> db (new SequenceDB (code));
    while (!In.eof()) {
-      string name;
-      do
-      getline(In,name,'\t'); // get name
-      while ( (!name.size() && (!In.eof())));
+      name.resize (0);
+      w.resize (0);
+      s.resize (0);
+      
+      do {
+         getline(In,name,'\t'); // get name
+      } while ( (!name.size() && (!In.eof())));
       if ( In.eof())
          break;
       
-      string w;
+      
       double weight = 0.0;
       getline(In,w,'\t'); // get weight
       weight = atof(w.c_str());
       assert( (!In.eof()) && weight>=0.0 && weight<=1.0);
-      string s;
       getline(In,s); // get sequence
       assert( (!In.eof()) && s.size());
-
-      db->_name2ID [name] = id; 
-      db->_id2Name.push_back(name);
-      //tGIDVec::push_back( GetCode(s));
-      //iWeights.push_back(weight);
-      db->_sequences [id] = new Sequence (id, s.c_str (), weight);
+      
+      Rep::insertSequence (*db, &weight, name, s, id);
       id++;
    }
-
-   if (!db->_sequences.size())
-      Err(string("read no data from the seq file")+ seqFileName);
-
-   debug_only (
-      cerr<<"read File: "<<endl;
-      for (size_t i = 0; i < db->_sequences.size () ;i++) {
-         cerr<< db->_id2Name[i] << "\t" << db->getSequence (i).data () << endl;
-      }
-   )
-
+   
    return db.release ();
 }
 
 
 
-
-
-
-
-static void readWeights(string const & fname, map<string,double> & weights)
+static void readWeights(string const & fname, map<StrBuffer,double> & weights)
 {
-  ifstream in(fname.c_str());
-  if (! in.is_open())
-    Err(string("unable to open SeqData file ")+ fname);
-
-  string name,seq,s;
-
-  while (true) {
-    string s,name;
-    double val;
-    while ( (! in.eof()) && (s.size()==0) )
-      in>>s;// skip empty lines;
-    if ( in.eof())
-      break;    
-    // here we handle cases in which the ">" is/is'nt seperated from the name of the gene.
-    if (s ==">")
-      in>>name;
-    else {
-      assert(s[0]=='>');    
-      name = s.substr(1);
-    }
-
-    in>>val;
-    weights[name] = val;
-  }
+   ifstream in(fname.c_str());
+   if (! in.is_open())
+      Err(string("unable to open SeqData file ")+ fname);
    
+   string name, s;
+   while (true) {
+      s.resize (0);
+      name.resize (0);
+      
+      double val;
+      while ( (! in.eof()) && (s.size()==0) )
+         in>>s;// skip empty lines;
+      if ( in.eof())
+         break;    
+      // here we handle cases in which the ">" is/is'nt seperated from the name of the gene.
+      if (s ==">")
+         in>>name;
+      else {
+         assert(s[0]=='>');    
+         name = s.substr(1);
+      }
+      
+      in>>val;
+      weights[Str (name)] = val;
+   }
 }
 
 
 
 
-SequenceDB* SequenceDB::TextFileStorage::load (const AlphabetCode& code,
-                                   const char* seqFileName,
-                                   const char* weightFileName)
+
+SequenceDB* SequenceDB::TextFileStorage::loadFastaNoWeights (
+                                                             const AlphabetCode& code, 
+                                                             const char* seqFileName)
 {
-   map<string,double> weights;
-   readWeights(weightFileName, weights);
-
-
    ifstream in(seqFileName);
    if (! in.is_open())
       Err(string("unable to open SeqData file ")+ seqFileName);
-
+   
    auto_ptr <SequenceDB> db (new SequenceDB (code));
    
    string name,seq,s;
@@ -133,29 +161,23 @@ SequenceDB* SequenceDB::TextFileStorage::load (const AlphabetCode& code,
       assert(s[0]=='>');    
       name = s.substr(1);
    }
-
+   
    char c;
    in.get(c);
    while (c != '\n' && c != EOF)
       in.get(c);
-
+   
    while (in>>s) {
       if ((s[0]=='>') && seq.size()){
-         if (weights.find(name) != weights.end()) {	
-            //
-            //map<string,codeVec>::operator [] (name) = GetCode(seq);
-            db->_name2ID [name] = id;
-            db->_id2Name.push_back(name);
-            db->_sequences.push_back( new Sequence (id, seq.c_str (), (weights.find(name))->second));
-            id++;
-         }
-
-         seq = "";
+         Rep::insertSequence (*db, NULL, name, seq, id);
+         id++;
+         
+         seq.resize (0);
          if (s ==">")
             in>>name;
          else
             name = s.substr(1);	
-
+         
          in.get(c);
          while (c != '\n' && c != EOF)
             in.get(c);
@@ -163,90 +185,166 @@ SequenceDB* SequenceDB::TextFileStorage::load (const AlphabetCode& code,
       else
          seq += s;
    }
-
+   
    if (seq.size()) {
       //
       // BUG FIX: (Aviad). the last sequence (exactly like those before it)
       // should be used only if it has an associated weight
-      if (weights.find(name) != weights.end()) {	
-         db->_name2ID [name] = id;
-         db->_id2Name.push_back(name);
-         db->_sequences.push_back( new Sequence (id, seq.c_str (), (weights.find(name))->second));
-         //
-         //      map<string,codeVec>::operator [] (name) = GetCode(seq);
-      }
+      Rep::insertSequence (*db, NULL, name, seq, id);
    }
-
-   if (!db->_sequences.size())
-      Err(string("read no data/ date that match the weights File data from the seq file: ")+ seqFileName);
-
-   debug_only (
-      cerr<<"read Fasta File: "<<endl;
-      for (size_t i = 0; i < db->_sequences.size () ;i++) {
-         cerr<< db->_id2Name[i] << "\t" << db->getSequence (i).data () << endl;
-      }
-   )
-
+   
+   TextFileStorage::Rep::checkup (*db, seqFileName);
    return db.release ();
 }
 
+
+SequenceDB* SequenceDB::TextFileStorage::loadFastaAndWeights (
+                                                              const AlphabetCode& code,
+                                                              const char* seqFileName,
+                                                              const char* weightFileName)
+{
+   map<StrBuffer,double> weights;
+   readWeights(weightFileName, weights);
+   
+   ifstream in(seqFileName);
+   if (! in.is_open())
+      Err(string("unable to open SeqData file ")+ seqFileName);
+   
+   auto_ptr <SequenceDB> db (new SequenceDB (code));
+   
+   string name,seq,s;
+   ID id =0;
+   in>>s;
+   //
+   // here we handle cases in which the ">" is/is'nt seperated from the name of the gene.
+   if (s ==">")
+      in>>name;
+   else {
+      assert(s[0]=='>');    
+      name = s.substr(1);
+   }
+   
+   char c;
+   in.get(c);
+   while (c != '\n' && c != EOF)
+      in.get(c);
+   
+   while (in>>s) {
+      if ((s[0]=='>') && seq.size()){
+         if (weights.find(Str (name)) != weights.end()) {	
+            //
+            //
+            Rep::insertSequence (*db, 
+                                 &((weights.find(Str (name)))->second),
+                                 name, 
+                                 seq, 
+                                 id++);
+         }
+         
+         debug_only ( size_t capacity = seq.capacity (); );
+         seq.resize (0);
+         debug_mustbe ( capacity == seq.capacity () );
+         
+         if (s ==">")
+            in>>name;
+         else
+            name = s.substr(1);	
+         
+         in.get(c);
+         while (c != '\n' && c != EOF)
+            in.get(c);
+      }
+      else
+         seq += s;
+   }
+   
+   if (seq.size()) {
+      //
+      // BUG FIX: (Aviad). the last sequence (exactly like those before it)
+      // should be used only if it has an associated weight
+      if (weights.find(Str (name)) != weights.end()) {	
+         Rep::insertSequence (*db, &((weights.find(Str (name)))->second), name, seq, id);
+      }
+   }
+   
+   Rep::checkup (*db, seqFileName);
+   return db.release ();
+}
+
+void SequenceDB::TextFileStorage::assignWeights (
+                                                 SequenceDB& db, 
+                                                 const char* weightFileName,
+                                                 bool removeWeightsForMissingSequences)
+{
+   map<StrBuffer,double> weights;
+   readWeights (weightFileName, weights);
+   
+   SequenceIterator it = db.sequenceIterator ();
+   for (; it.hasNext () ; it.next ()) {
+      map<StrBuffer,double>::const_iterator weights_it = 
+         weights.find ((*it)->name ());
+      
+      if (weights_it == weights.end ()) {
+         if (removeWeightsForMissingSequences)
+            (*it)->noWeight ();
+      }
+      else {
+         (*it)->weight (weights_it->second);
+      }
+   }
+}
+
+
+
+
+SequenceDB::~SequenceDB ()
+{
+   int size = _sequences.size ();
+   for (int i=0 ; i<size ; i++)
+      delete _sequences [i];
+   
+   _sequences.clear ();
+}
 
 void SequenceDB::getSequencesAbove (double weight, Cluster& out) const
 {
    out.clear ();
    SequenceIterator it (sequenceIterator ());
    for (; it.hasNext () ; it.next ()) {
-      if (it.get ()->weight () >= weight)
-         out.add (it.get ()->id ());
+      Sequence* seq = it.get ();
+      if (seq->hasWeight ())
+         if (seq->weight () >= weight)
+            out.addSequence (it.get ());
    }
 }
 
-void SequenceDB::Cluster::intersect (const Cluster& a, 
-				     const Cluster& b, 
-				     Cluster& o)
+
+
+#include "Persistance/STLPersist.h"
+
+using namespace Persistance;
+
+void SequenceDB::serialize (Persistance::IArchive& in)
 {
-   o.clear ();
-
-   //
-   // TODO: must be a better/faster way to do this
-   const Cluster* x;
-   const Cluster* y;
-   if (b.size () < a.size ()) {
-       x = &a;
-       y = &b;
-   }
-   else {
-      x = &b;
-      y = &a;
-   }
-
-   SeqSet::const_iterator it = x->_sequences.begin ();
-   for (; it != x->_sequences.end () ; it++) {
-      if (y->find (*it))
-         o.add (*it);
-   }
+   int cardinality;
+   AlphabetCode::Code code;
+   
+   in >> cardinality;
+   in.readCharBuffer (code, sizeof (code));
+   _code = AlphabetCode (code, cardinality);
+   
+   in >> Persistance::ISTLReg <SequenceVector> (_sequences);
+   in >> IMap <Name2ID> (_name2ID);
 }
 
-
-void SequenceDB::Cluster::unify (const Cluster& o)
+void SequenceDB::serialize (Persistance::OArchive& out)
 {
-   SeqSet::const_iterator it = o._sequences.begin ();
-   for (; it != o._sequences.end () ; it++)
-      add (*it);
+   out << (int) _code.cardinality ();
+   out.writeCharArray (_code.getCode (), sizeof (AlphabetCode::Code));
+   
+   out << OSTLReg <SequenceVector> (_sequences);
+   out << OMap <Name2ID> (_name2ID);
 }
 
-double SequenceDB::Cluster::sumWeights (const SequenceDB& db) const
-{
-   double result = 0;
-   SeqSet::const_iterator it =_sequences.begin ();
-   SeqSet::const_iterator end =_sequences.end ();
-
-   for (; it != end ; it++) {
-      const Sequence& seq = db.getSequence (*it);
-      result += seq.weight ();
-   }
-
-   return result;
-}
 
 

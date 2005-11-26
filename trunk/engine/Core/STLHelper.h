@@ -85,28 +85,45 @@ public:
 
    //
    // iteration methods
-   virtual bool hasNext () const {
+   bool hasNext () const {
       return _current != _end;
    }
-   virtual void next () {
+   void next () {
       debug_mustbe (_current != _end);
       _current++; 
    }
-   virtual value_type& get () const {
+   const value_type& get () const {
       debug_mustbe (_current != _end);
       return *_current;
    }
-   value_type* operator -> () {
+   /*
+   value_type get () {
+      debug_mustbe (_current != _end);
+      return *_current;
+   }
+   */
+   value_type* operator -> () const {
       //
       // weird syntax needed in case 'iterator' is a class/struct and 
       // not a pointer
       return &(*_current); 
    }
-   value_type& operator * () {
+   const value_type& operator * () const {
       return *_current;
    }
+   /*
+   value_type operator * () {
+      return *_current;
+   }
+   */
+   iterator getImpl () {
+      return _current;
+   }
+   const iterator getImpl () const {
+      return _current;
+   }
 
-private:
+protected:
    iterator _current;
    iterator _end;
 };
@@ -126,6 +143,8 @@ public:
 
    //
    // Copy Ctor & operator =
+   inline ConstIteratorWrapper () : _current (NULL), _end (NULL) {
+   }
    inline ConstIteratorWrapper (iterator begin, iterator end) : _current (begin), _end (end) {
    }
    inline ConstIteratorWrapper (const ConstIteratorWrapper& i) : _current (i._current), _end (i._end) {
@@ -157,59 +176,118 @@ public:
    inline value_type const& operator * () {
       return *_current;
    }
+   const iterator getImpl () const {
+      return _current;
+   }
 
-private:
+protected:
    iterator _current;
    iterator _end;
 };
-
-
-
 
 
 template <class Container>
-class MapIteratorWrapper {
+class Map1stBinder {
 public:
-   //
-   // underlining iterator
-   typedef typename Container::const_iterator iterator;
-   //
-   // the type of the values we are iterating over
-   typedef typename Container::referent_type referent_type;
+   typedef typename Container::iterator iterator_type;
+   typedef typename Container::const_iterator const_iterator_type;
+   typedef const typename Container::key_type value_type;
 
-   // Copy Ctor & operator =
-   inline MapIteratorWrapper (iterator begin, iterator end) : _current (begin), _end (end) {
-   }
-   inline MapIteratorWrapper (const MapIteratorWrapper& i) : _current (i._current), _end (i._end) {
-   }
-   inline MapIteratorWrapper& operator = (const MapIteratorWrapper& i) {
-      _current = i._current;
-      _end = i._end;
-   }
+   class Iterator {
+   public:
+      Iterator (iterator_type in) : _it (in) {
+      }
+      bool operator == (Iterator o) const{
+         return _it == o._it;
+      }
+      bool operator != (Iterator o) const{
+         return _it != o._it;
+      }
+      void operator ++ () {
+         _it++;
+      }
+      Iterator operator ++ (int) {
+         return Iterator (_it++);
+      }
+      value_type& operator * () const{
+         return _it->first;
+      }
+      iterator_type getImpl () {
+         return _it;
+      }
+      const iterator_type getImpl () const {
+         return _it;
+      }
+   protected:
+      iterator_type _it;
+   };
 
-   //
-   // iteration methods
-   inline bool hasNext () {
-      return _current != _end;
-   }
-   inline void next () {
-      debug_mustbe (_current != _end);
-      _current++; 
-   }
-   inline const referent_type& get () const {
-      debug_mustbe (_current != _end);
-      return _current->second;
-   }
-
-private:
-   iterator _current;
-   iterator _end;
+   class ConstIterator {
+   public:
+      ConstIterator (const_iterator_type in) : _it (in) {
+      }
+      bool operator == (ConstIterator o) const{
+         return _it == o._it;
+      }
+      bool operator != (ConstIterator o) const{
+         return _it != o._it;
+      }
+      void operator ++ () {
+         _it++;
+      }
+      ConstIterator operator ++ (int) {
+         return ConstIterator (_it++);
+      }
+      value_type& operator * () const{
+         return _it->first;
+      }
+      const_iterator_type getImpl () {
+         return _it;
+      }
+      const const_iterator_type getImpl () const {
+         return _it;
+      }
+   protected:
+      const_iterator_type _it;
+   };
+   
+   typedef Iterator iterator;
+   typedef ConstIterator const_iterator;
 };
 
+template <class Container>
+class Map2ndBinder {
+public:
+   typedef typename Container::iterator iterator_type;
+   typedef typename Container::const_iterator const_iterator_type;
+   typedef typename Container::referent_type value_type;
+   
+   typedef Map2ndBinder <Container> iterator;
 
+   Map2ndBinder (iterator_type in) : _it (in) {
+   }
+   bool operator == (Map2ndBinder o) const{
+      return _it == o._it;
+   }
+   bool operator != (Map2ndBinder o) const{
+      return _it != o._it;
+   }
+   void operator ++ () {
+      _it++;
+   }
+   Map2ndBinder operator ++ (int) {
+      return Map2ndBinder (_it++);
+   }
+   value_type& operator * () const{
+      return _it->second;
+   }
+   iterator_type getImpl () {
+      return _it;
+   }
 
-
-
+protected:
+   iterator_type _it;
+};
 
 #endif //_SeedSearcher_STLHelper_h
 

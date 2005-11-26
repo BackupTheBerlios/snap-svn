@@ -23,8 +23,8 @@ CFG=SeedSearcher - Win32 Debug
 
 # Begin Project
 # PROP AllowPerConfigDependencies 0
-# PROP Scc_ProjName ""
-# PROP Scc_LocalPath ""
+# PROP Scc_ProjName ""$/SeedSearcher", ECAAAAAA"
+# PROP Scc_LocalPath "."
 CPP=cl.exe
 RSC=rc.exe
 
@@ -39,9 +39,11 @@ RSC=rc.exe
 # PROP Use_Debug_Libraries 0
 # PROP Output_Dir "Release"
 # PROP Intermediate_Dir "Release"
+# PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
+# ADD CPP /nologo /W3 /GR /GX /Zi /O2 /Op /Oy- /I "." /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /FR /FD /c
+# SUBTRACT CPP /YX
 # ADD BASE RSC /l 0x40d /d "NDEBUG"
 # ADD RSC /l 0x40d /d "NDEBUG"
 BSC32=bscmake.exe
@@ -49,7 +51,8 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386
+# ADD LINK32 /nologo /subsystem:console /debug /machine:I386
+# SUBTRACT LINK32 /profile /nodefaultlib
 
 !ELSEIF  "$(CFG)" == "SeedSearcher - Win32 Debug"
 
@@ -65,7 +68,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /GZ /c
-# ADD CPP /nologo /W3 /Gm /GR /GX /ZI /Od /I "." /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /FD /GZ /c
+# ADD CPP /nologo /W3 /Gm /GR /GX /ZI /Od /I "." /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /FR /FD /GZ /c
 # SUBTRACT CPP /YX
 # ADD BASE RSC /l 0x40d /d "_DEBUG"
 # ADD RSC /l 0x40d /d "_DEBUG"
@@ -74,7 +77,8 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
+# ADD LINK32 /nologo /subsystem:console /debug /machine:I386
+# SUBTRACT LINK32 /profile
 
 !ENDIF 
 
@@ -95,7 +99,19 @@ SOURCE=.\Assignment.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\Cluster.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\DebugLog.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\HyperGeoScore.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\main.cpp
 # End Source File
 # Begin Source File
 
@@ -107,11 +123,19 @@ SOURCE=.\PrefixTreeWalker.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\PSSM.CPP
+# End Source File
+# Begin Source File
+
 SOURCE=.\RandomProjections.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=.\SeedSearcher.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Sequence.cpp
 # End Source File
 # Begin Source File
 
@@ -135,7 +159,23 @@ SOURCE=.\Assignment.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\AssignmentFormat.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Cluster.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\DebugLog.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Defs.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\HyperGeoScore.h
 # End Source File
 # Begin Source File
 
@@ -148,6 +188,10 @@ SOURCE=.\PrefixTreeWalker.h
 # Begin Source File
 
 SOURCE=.\Preprocessor.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\PSSM.h
 # End Source File
 # Begin Source File
 
@@ -226,10 +270,6 @@ SOURCE=.\HyperGeoCache.cpp
 SOURCE=.\HyperGeoCache.h
 # End Source File
 # End Group
-# Begin Source File
-
-SOURCE=.\main.cpp
-# End Source File
 # Begin Source File
 
 SOURCE=.\TODO.TXT

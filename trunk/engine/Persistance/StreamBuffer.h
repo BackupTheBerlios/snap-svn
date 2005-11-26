@@ -1,26 +1,16 @@
 #ifndef _Persistance_StreamBuffer_h
 #define _Persistance_StreamBuffer_h
 
-#include "Core/Defs.h"
+#include "IODefs.h"
 
 namespace Persistance {
 
-class	StreamBuffer   {
+class	StreamBuffer : public IODefs  {
 protected:
 	StreamBuffer();
 	virtual ~StreamBuffer ();
 
 public:
-   typedef int ptrdiff_t; // also defined in <stddefs.h>
-	typedef unsigned char Byte;
-	typedef Byte* Ptr;
-	typedef ptrdiff_t Distance;
-	typedef ptrdiff_t Size;
-
-	typedef Ptr Value;
-	typedef Distance Difference;
-	typedef Size Offset;
-
 	virtual void dispose();			// calls close()
 	virtual void flush();
 	
@@ -30,9 +20,6 @@ public:
 	Size bytesInBuffer() const {
 		return ptr - bufStart;
 	}
-
-	class PrematureEOF: public BaseException {
-	};
 
 	void skipBytes(Size jumpSize);
 	

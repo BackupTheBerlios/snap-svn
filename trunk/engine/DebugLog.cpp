@@ -1,4 +1,4 @@
 #include "DebugLog.h"
 
-Persistance::TextWriter* DebugLog::__textWriter;
-Assignment::Writer* DebugLog::__assgWriter;
+Persistance::TextWriter* SeedSearcherLog::__textWriter;
+AssignmentWriter* SeedSearcherLog::__assgWriter;

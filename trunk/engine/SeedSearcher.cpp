@@ -1,19 +1,36 @@
 #include "SeedSearcher.h"
 #include "Assignment.h"
+#include "Sequence.h"
+#include "PrefixTreeWalker.h"
+#include "Cluster.h"
 
 #include "DebugLog.h"
+#include "Core/HashTable.h"
+#include "Persistance/TextWriter.h"
+#include "Persistance/StrOutputStream.h"
 
 #include <iostream>
 
 using namespace std;
 
 //
+// Gene counts
+//
+
+
+//
 // assignment that lead to a node <--> cluster of sequences in the node
 typedef std::pair <Assignment*, SequenceDB::Cluster*> FeaturePair;
 class FeatureVector : public Vec <FeaturePair> {
-public:
-   void reverse ();
 };
+
+static void clean (FeaturePair& p)
+{
+   delete p.first;
+   delete p.second;
+   p.first = NULL;
+   p.second = NULL;
+}
 
 
 struct FeatureComparator : public std::binary_function<FeaturePair, FeaturePair, bool> {
@@ -50,12 +67,14 @@ static int together (
       typedef std::set <FeaturePair, FeatureComparator> FeatureSet;
       FeatureSet features;
       for (int i=fromIndex ; i<size ; i++) {
+         myFeatures [i].first->setPosition (myDepth-1, thisPosition);
          std::pair<FeatureSet::iterator, bool> result =
             features.insert (myFeatures [i]);
 
          if (result.second == false) {
             //
             // it is already in the set...
+            /*
             debug_only (
                DLOG << "rec_prefixTreeSearch (): grouping together "
                     << Format (*result.first->first)
@@ -63,23 +82,27 @@ static int together (
                     << Format (*myFeatures [i].first)
                     << DLOG.EOL ();
             );
+            */
 
             result.first->second->unify (*myFeatures [i].second);
-         }
-         else {
+
             //
-            // add the position that got us here to the feature
-            result.first->first->setPosition (myDepth-1, thisPosition);
+            // clean memory of this feature
+            clean (myFeatures [i]);
          }
       }
 
       //
       // resize myFeatures and copy the relevant features back from the set
-      size = fromIndex + features.size ();
-      myFeatures.resize (size);
-      IteratorWrapper <FeatureSet> it (features.begin (), features.end ());
-      for (i=fromIndex ; i<size ; it.next (), i++) {
-         myFeatures [i] = *it;
+      int newSize = fromIndex + features.size ();
+      if (size != newSize) {
+         myFeatures.resize (newSize);
+         IteratorWrapper <FeatureSet> it (features.begin (), features.end ());
+         for (int index=fromIndex ; index<newSize ; it.next (), index++) {
+            //
+            // add the position that got us here to the feature
+            myFeatures [index] = *it;
+         }
       }
 
       return features.size ();
@@ -198,33 +221,6 @@ static int rec_prefixTreeSearch (
       // also, the features added are grouped together.
       int firstFeatureIndex = size - newEntries;
       return together (myFeatures, firstFeatureIndex , myDepth, thisPosition);
-/*
-      FeaturePair& firstFeature = myFeatures [firstFeatureIndex];
-      
-      debug_mustbe (firstFeature.first);
-      debug_mustbe (firstFeature.second);
-
-      for (int i=firstFeatureIndex + 1; i<size ; i++) {
-         debug_only (
-            std::cerr << "rec_prefixTreeSearch (): trying to group together "
-                      << *firstFeature.first 
-                      << " with " 
-                      << *myFeatures [i].first
-                      << std::endl;
-         );
-         
-         debug_mustbe (*firstFeature.first  == *myFeatures [i].first);
-         firstFeature.second->unify (*myFeatures [i].second);
-      }
-      if (newEntries > 1 ) {
-         //
-         // get rid of all features except the first one
-         myFeatures.resize (firstFeatureIndex + 1);
-         newEntries = 1;
-      }
-
-      firstFeature.first->setPosition (myDepth-1, thisPosition);
-      */
    }
    else {
       debug_mustbe (thisPosition.strategy () == Assignment::discrete);
@@ -240,7 +236,7 @@ static int rec_prefixTreeSearch (
 }
 
 
-void SeedSearcher::prefixTreeSearch (
+int SeedSearcher::prefixTreeSearch (
          PrefixTreePreprocessor& tree,       // where to search
          const Assignment& projection,       // how to climb down the tree
          const SequenceDB::Cluster& cluster, // which sequences are positively labeled
@@ -250,7 +246,7 @@ void SeedSearcher::prefixTreeSearch (
          )
 {
    debug_mustbe (projection.length () > 0);
-   debug_mustbe (projection.length () < tree.getDepth ());
+   debug_mustbe (projection.length () <= tree.getDepth ());
    debug_mustbe (desiredDepth <= projection.length ());
    debug_mustbe (desiredDepth > 0);
    debug_mustbe (cluster.size () > 0);
@@ -263,6 +259,8 @@ void SeedSearcher::prefixTreeSearch (
    // a projection in the first position is both meaningless
    // and is a lot of hassle to program.
    debug_mustbe (firstPosition.strategy () == Assignment::discrete);
+
+   int totalSeedsFound = 0;
 
    //
    // optimization: we keep the vector here in order to avoid
@@ -306,118 +304,194 @@ void SeedSearcher::prefixTreeSearch (
 
 
       }
-
+      totalSeedsFound += size;
       childFeatures.resize (0);
    }
+
+   return totalSeedsFound;
 }
 
 
 
-/*
-void prefixTreeSearch (PrefixTreePreprocessor::NodeRep* inNode,
-                     ScoreFunction* scoreFunc,
-                     const Assignment& assg,
-                     Assignment& feature,
-                     int desiredLength,
-                     int depth,
-                     int childIndex,
-                     const SequenceDB::Cluster& cluster,
-                     FeatureVector& features) { 
-if (inNode == NULL)
-   return;
+class TotalCountKey {
+public:
+   TotalCountKey (const Assignment& inAssg, AssignmentWriter& writer) : _assg (inAssg) {
+      std::string hashString;
+      {  Persistance::TextWriter textWriter (
+            new Persistance::StrOutputStream (hashString));
 
-PrefixTreePreprocessor::Node node (inNode);
+         textWriter << AssignmentFormat (inAssg, writer);
+      }
 
-AutoPtr <SequenceDB::Cluster> positiveSeqInNode =
-   new SequenceDB::Cluster;
-
-node.getCluster (cluster, *positiveSeqInNode);
-
-//
-// optimization. we are saving a lot of time and space
-// by not going over nodes that dont contain any position
-// from the positively labeled cluster
-if (positiveSeqInNode.empty ()) {
-   return;
-}
-
-if (depth == desiredLength) {
-   //
-   // we are at a leaf
-   Assignment::Position& thisPosition = assg [depth -1];
-   if (thisPosition.strategy () == Assignment::together) {
-      //
-      // this means that we got here with 'together' strategy
-      // so we keep the exact same positions in the feature
-      features.add (new FeaturePair (new Assignment::Position (thisPosition), 
-                                       positiveSeqInNode.release ());
+      _hash = defaultHashFunction (hashString.c_str (), hashString.length ());
    }
-   else {
-      debug_mustbe (thisPosition.strategy () == Assignment::discrete);
-      //
-      // this means that the exact code of this depth is important
-      feature.addPosition (childIndex); 
+   TotalCountKey (const TotalCountKey& o) : _assg (o._assg), _hash (o._hash) {
    }
+
+   HashValue hash () const {
+      return _hash;
+   }
+   const Assignment& assignment () const {
+      return _assg;
+   }
+
+private:
+   Assignment _assg;
+   HashValue _hash;
+};
+
+class TotalCountFeature : public HashLinkEntry <TotalCountFeature> {
+public:
+   typedef TotalCountKey Key;
    
+   inline TotalCountFeature (const Key& key) : _key (key) {
+      _positions = new SeqCluster;
+      debug_mustbe (_key.assignment ().length () > 0);
+   }
+   inline bool fitsKey (const Key& key) {
+      return _key.assignment () == key.assignment ();
+   }
+	inline const Key& getKey() const {
+		return _key;
+	}
+   inline static HashValue hash (const Key& inKey) {
+      return inKey.hash ();
+   }
+   const Assignment& assignment () const {
+      return _key.assignment ();
+   }
+
+   void removeOverlaps () {
+      //
+      // get the length of the feature, needed to compute
+      // the space required between positions, so that no overlaps occur
+      int featureLength = 
+         _key.assignment ().length ();
+
+      SeqCluster::Iterator it (_positions->iterator ());
+      for (; it.hasNext () ; it.next ()) {
+         PosCluster* pos_set = _positions->getPositions (it);
+         if (pos_set != NULL) {
+            pos_set->removeOverlaps (featureLength);
+         }
+      }
+      //
+      // that's it, we have removed all overlaps!!!
+   }
+
+   const SeqCluster& positions () const {
+      return *_positions;
+   }
+   SeqCluster* releasePositions () {
+      return _positions.release ();
+   }
+
+   void addCounts (PrefixTreePreprocessor::Node& node) {
+     PrefixTreePreprocessor::SeqPositionIterator posIt =
+            node.positionsBySequence ();
+         
+      for (; posIt.hasNext () ; posIt.next ()) {
+         addCounts (posIt->sequence (), *posIt->positions ());
+      }
+   }
+
+private:
+   void addCounts (const Sequence* seq, const Preprocessor::PositionVector& newPositions) {
+      debug_mustbe (seq!= NULL);
+      PosCluster& pos_set = _positions->getCreatePositions (seq);
+      ConstIteratorWrapper <Preprocessor::PositionVector> it (newPositions.begin (), 
+                                                              newPositions.end ());
+      for (; it.hasNext () ; it.next ()) {
+         pos_set.addPosition (*it);
+      }
+   }
 
 
 
-}
+private:
+   Key _key;
+   AutoPtr <SeqCluster> _positions;
+};
 
-bool worthWhile = false;
-double score = scoreFunc->score (inNode, &assg, worthWhile);
-if (!worthWhile) 
-   return;
+typedef HashTable <TotalCountFeature> TotalCountTable;
 
 //
-// features of length 0 are meaningless
-debug_mustbe (desiredLength > 0);
-const Assignment::Position& thisPosition = assg [depth -1];
-if (thisPosition.strategy () == Assignment::together) {
-   //
-   // this means that we got here with 'together' strategy
-   // so we keep the exact same positions in the feature
-   feature.addPosition (thisPosition);
-}
-else {
-   debug_mustbe (thisPosition.strategy () == Assignment::discrete);
-   //
-   // this means that the exact code of this depth is important
-   feature.addPosition (childIndex); 
-}
-
-if (depth == desiredLength) {
-   //
-   // we have created a worthwhile feature of the desired length.
-   // TODO: addd it to the feature container
-   return;
-}
- 
-PrefixTreePreprocessor::Node node (inNode);
+// Total counts
 //
-// (1) make a projection then search the tree
-//       
-// (2) search the tree with all random projections at once
+int SeedSearcher::totalCountSearch (
+   PrefixTreePreprocessor& tree, 
+   const Assignment& projection, 
+   AssignmentWriter& writer,
+   const SequenceDB::Cluster& positivelyLabeled, // which sequences are positively labeled
+   SeedSearcher::ScoreFunction& scoreFunc,           // how to score features
+   SeedSearcher::BestFeatures& bestFeatures          // stores the best features
+   )
+{
+   debug_mustbe (projection.length () > 0);
 
-Assignment::PositionIterator posIt (assg [depth]);
-//
-// it is meaningless to have an assignment with
-// with no positions at an index
-debug_mustbe (posIt.hasNext ());
-for (; posIt.hasNext () ; posIt.next () {
-   prefixTreeSearch (node.getChild (posIt.get (),
-                     scoreFunc, 
-                     assg,
-                     desiredLength,
-                     depth
-                     );
+   TotalCountTable hashTable (8 * 1024);
+   PrefixTreeWalker::Nodes nodes;
+
+   //
+   // collect features together, with total counts
+   nodes.addAssignmentNodes (tree, projection);
+   PrefixTreeWalker::NodeIterator it = nodes.iterator ();
+   for (; it.hasNext () ; it.next ()) {
+      const PrefixTreeWalker::NodeWithPath& nodeWithPath = it.get ();
+      PrefixTreePreprocessor::Node node (nodeWithPath.node ());
+
+      //
+      // optimization: get rid of nods with no positions in the positive sequences
+      SeqCluster posContaining;
+      SeqCluster containing;
+      node.getCluster (containing);
+      SeqCluster::intersect (containing, positivelyLabeled, posContaining);
+      if (posContaining.size () <= 0)
+         continue;
+
+      //
+      // create the key for this feature
+      debug_mustbe (nodeWithPath.path ().length () == projection.length ());
+      TotalCountKey key (nodeWithPath.path (), writer);
+      
+      //
+      // search for it in the table
+      TotalCountFeature* cachedSeed = hashTable.find (key);
+      if (cachedSeed == NULL) {
+         //
+         // it is a totally new feature
+         cachedSeed = new TotalCountFeature (key);
+         hashTable.add (cachedSeed);
+      }
+
+      //
+      // it converges to a feature we already have, so we sum their
+      // total counts
+      cachedSeed->addCounts (node);
+   }
+
+   //
+   // now we have to remove position overlaps, e.g. we do not count
+   // 'AAAAAA' (6 A's)  as having the feature 'AA' 5 times, but only 3 times 
+   // TODO: is this correct?
+   TotalCountTable::Iterator featureIt (hashTable);
+   for (; featureIt.hasNext () ; featureIt.next ()) {
+      TotalCountFeature* feature = featureIt.get ();
+      feature->removeOverlaps ();
+
+      //
+      // ok. now we have to score each feature and insert it to a BestFeatures container
+      double score = 
+         scoreFunc.score (feature->assignment (),
+                          projection,
+                          feature->positions ()// k
+                          );
+      
+      bestFeatures.add (new Assignment (feature->assignment ()),
+                        feature->releasePositions (),
+                        score);
+   }
+
+   return hashTable.getSize ();
 }
-}
-*/
-
-
-
-
-
-
 
