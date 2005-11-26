@@ -10,29 +10,28 @@ using namespace Persistance;
 //
 // AssgKey
 SeedHash::AssgKey::AssgKey (const Str& data,  
-                            const AlphabetCode& code, 
-                            AssignmentWriter& writer)
-: _assg (data, code)
+                            const Langauge& langauge)
+: _assg (data, langauge.code ())
 {
    std::string hashString;
    {  Persistance::TextWriter textWriter (
          new Persistance::StrOutputStream (hashString));
 
-      textWriter << AssignmentFormat (_assg, writer);
+      textWriter << AssignmentFormat (_assg, langauge);
    }
 
    _hash = defaultHashFunction (hashString.c_str (), hashString.length ());
 }
 
 SeedHash::AssgKey::AssgKey (const Assignment& assg, 
-                            AssignmentWriter& writer)
+                            const Langauge& langauge)
 : _assg (assg)
 {
    std::string hashString;
    {  Persistance::TextWriter textWriter (
          new Persistance::StrOutputStream (hashString));
 
-      textWriter << AssignmentFormat (_assg, writer);
+      textWriter << AssignmentFormat (_assg, langauge);
    }
 
    _hash = defaultHashFunction (hashString.c_str (), hashString.length ());
@@ -42,10 +41,8 @@ SeedHash::AssgKey::AssgKey (const Assignment& assg,
 // Table
 
 SeedHash::Table::Table (int tableSize, 
-                        const AlphabetCode& code, 
-                        AssignmentWriter& writer)
-: TableBase (tableSize),
-   _code (code), _assgWriter (writer)
+                        const Langauge& langauge)
+: TableBase (tableSize), _langauge (langauge)
 {
 }
 
@@ -55,10 +52,11 @@ SeedHash::Table::~Table ()
    // TODO: we own the positions, so delete them
 }
 
-void SeedHash::Table::addPosition (const Str& seedData, AutoPtr <SeqPosition> position) {
+void SeedHash::Table::addPosition (const Str& seedData, 
+                                   AutoPtr <SeqPosition> position) {
    //
    //
-   AssgKey key (seedData, _code, _assgWriter);
+   AssgKey key (seedData, _langauge);
    Cluster* seed = this->find (key);
    if (seed == NULL) {
       //

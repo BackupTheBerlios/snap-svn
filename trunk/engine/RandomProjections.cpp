@@ -114,12 +114,10 @@ static int verifyProjectionNumber( int motifLength,
 
 RandomProjections::RandomProjections (
    All,              // create all possible projections
-   int cardinality,  // length of the Assignment to create;
    int length,          // length of the assignment to create
    int numOfPositions   // number of positions to select in each assignment
    )
 :_length (length),
- _cardinality (cardinality),
  _numOfPositions (numOfPositions)
 {
    //
@@ -133,6 +131,10 @@ RandomProjections::RandomProjections (
                            1, length -1, numOfPositions);
 
    debug_mustbe (_vector.size () == _maxPossibleProjections);
+
+   //
+   // make room for all the assignments
+   _assignments.resize(_vector.size ());
 }
 
 
@@ -213,12 +215,10 @@ static void chooseProjections (
 
 RandomProjections::RandomProjections (
    int numOfProjections,  // create all possible projections
-   int cardinality,        // length of the Assignment to create;
    int length,          // length of the assignment to create
    int numOfPositions   // number of positions to select in each assignment
    )
 :_length (length),
- _cardinality (cardinality),
  _numOfPositions (numOfPositions)
 
 {

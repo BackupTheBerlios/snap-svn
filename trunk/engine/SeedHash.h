@@ -16,8 +16,8 @@ public:
       //
       //
    public:
-      AssgKey (const Str&, const AlphabetCode&, AssignmentWriter&);
-      AssgKey (const Assignment&, AssignmentWriter&);
+      AssgKey (const Str&, const Langauge&);
+      AssgKey (const Assignment&, const Langauge&);
       AssgKey (const AssgKey& o) : _assg (o._assg), _hash (o._hash) {
       }
 
@@ -94,7 +94,7 @@ public:
    typedef HashTable <Cluster> TableBase;
    class Table : public TableBase {
    public:
-      Table (int tableSize, const AlphabetCode&, AssignmentWriter&);
+      Table (int tableSize, const Langauge&);
       virtual ~Table ();
 
       //
@@ -108,8 +108,7 @@ public:
       }
 
    protected:
-      const AlphabetCode& _code;
-      AssignmentWriter& _assgWriter;
+      const Langauge& _langauge;
    };
 };
 

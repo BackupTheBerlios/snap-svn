@@ -34,6 +34,7 @@ using namespace Persistance;
 static const int __versionMajor = 2;
 static const int __versionMinor = 0;
 
+Parser parser;
 
 
 
@@ -82,32 +83,31 @@ static void welcomeMessage ()
    // (2) write execution line
    DLOG << '#' << DLOG.EOL () << "# execution parameters " << DLOG.EOL ();
 
-   for (int i=0 ;i<Parser::__argc ; i++)
-      DLOG << Parser::__argv [i] << ' ';
+   for (int i=0 ;i<parser.__argc ; i++)
+      DLOG << parser.__argv [i] << ' ';
 
    DLOG << DLOG.EOL ();
-/*
+
    //
    // (3) write execution parameters
-   DLOG << "Seed length: " << __SeedL << DLOG.EOL ();
-   DLOG << "No of Random Positions (dist): " << __dist << DLOG.EOL ();
-   DLOG << "Use reverse: " << (__UseRev? "true" : "false") << DLOG.EOL ();
-   DLOG << "No of Random Projections: " << Parser::__proj_n << DLOG.EOL ();
-   DLOG << "Use all possible projections: " << (__allProjections? "true" : "false") << DLOG.EOL ();
-   DLOG << "PSSM length: " << Parser::__seed_o << DLOG.EOL ();
-   DLOG << "No of PSSMs: " << Parser::__seed_n << DLOG.EOL ();
-   DLOG << "Randomization seed: " << __randSeed  << DLOG.EOL ();
-   DLOG << "Threshold for pos/neg cluster assignment: " << __thresh << DLOG.EOL ();
-   DLOG << "Maximum offset to check for seed redundancy: " << Parser::__seed_r << DLOG.EOL ();
-   DLOG << "Partial count: " << (Parser::__score_partial? "on" : "off") << DLOG.EOL ();
-   DLOG << "Minimum positive sequences a Seed must contain: " << Parser::__score_min_seq << DLOG.EOL ();
-   DLOG << "Minimum positive sequences a Seed must contain: " << Parser::__score_min_seq_per << '%' << DLOG.EOL ();
-   DLOG << "Minimum score for seed: log (" << Parser::__score_min << ") = " << log (Parser::__score_min) << DLOG.EOL ();
-   DLOG << "Use Total-Counts: " << (Parser::__count == Parser::total? "true" : "false") << DLOG.EOL ();
-   DLOG << "Use Bonferroni statistical fix: " << (Parser::__score_bonf? "true" : "false") << DLOG.EOL ();
-   DLOG << "Use FDR statistical fix: " << (Parser::__score_fdr? "true" : "false") << DLOG.EOL ();
+   DLOG << "Seed length: " << parser.__seed_l << DLOG.EOL ();
+   DLOG << "No of Random Positions (dist): " << parser.__proj_d << DLOG.EOL ();
+   DLOG << "Use reverse: " << (parser.__count_reverse? "true" : "false") << DLOG.EOL ();
+   DLOG << "No of Random Projections: " << parser.__proj_n << DLOG.EOL ();
+   DLOG << "Use all possible projections: " << (parser.__proj_e? "true" : "false") << DLOG.EOL ();
+   DLOG << "PSSM length: " << parser.__seed_o << DLOG.EOL ();
+   DLOG << "No of PSSMs: " << parser.__seed_n << DLOG.EOL ();
+   DLOG << "Randomization seed: " << parser.__proj_i << DLOG.EOL ();
+   DLOG << "Threshold for pos/neg cluster assignment: " << parser.__weight_t << DLOG.EOL ();
+   DLOG << "Maximum offset to check for seed redundancy: " << parser.__seed_r << DLOG.EOL ();
+   DLOG << "Partial count: " << (parser.__score_partial? "on" : "off") << DLOG.EOL ();
+   DLOG << "Minimum positive sequences a Seed must contain: " << parser.__score_min_seq << DLOG.EOL ();
+   DLOG << "Minimum positive sequences a Seed must contain: " << parser.__score_min_seq_per << '%' << DLOG.EOL ();
+   DLOG << "Minimum score for seed: log (" << parser.__score_min << ") = " << log (parser.__score_min) << DLOG.EOL ();
+   DLOG << "Use Total-Counts: " << (parser.__count == _count_total_? "true" : "false") << DLOG.EOL ();
+   DLOG << "Use Bonferroni statistical fix: " << (parser.__score_bonf? "true" : "false") << DLOG.EOL ();
+   DLOG << "Use FDR statistical fix: " << (parser.__score_fdr? "true" : "false") << DLOG.EOL ();
    DLOG.flush ();
-*/
 }
 
 
@@ -115,27 +115,27 @@ static void welcomeMessage ()
 
 
 
-
+#if 0
 
 static void setupRandomProjections (const AlphabetCode& code,
                                     AutoPtr <RandomProjections>& projections)
 {
    //
    // initialize the random seed
-   RandomProjections::srand (Parser::__proj_i);
-   if (Parser::__proj_e) {
+   RandomProjections::srand (parser.__proj_i);
+   if (parser.__proj_e) {
       projections = new RandomProjections (
          RandomProjections::all,
          code.cardinality (),
-         Parser::__seed_l,
-         Parser::__proj_d);
+         parser.__seed_l,
+         parser.__proj_d);
    }
    else {
       projections = new RandomProjections (
-         Parser::__proj_n,
+         parser.__proj_n,
          code.cardinality (),
-         Parser::__seed_l,
-         Parser::__proj_d);
+         parser.__seed_l,
+         parser.__proj_d);
    }
 }
 
@@ -160,7 +160,7 @@ static void saveTreeFile (SequenceDB* db,
    time_t start, finish;
    time (&start);
 
-   std::string treeFile (Parser::__argv[Parser::__lastFileArg]);
+   std::string treeFile (parser.__argv[parser.__lastFileArg]);
    treeFile.append (".tree");
 
    ofstream treeOut (treeFile.c_str (),
@@ -235,7 +235,7 @@ static void readTreeFile (AutoPtr <SequenceDB>& db,
       << DLOG.EOL ();
    //
    // assign new weights to the sequence db
-   // SequenceDB::TextFileStorage::assignWeights (*db, Parser::__argv [Parser::__firstFileArg], true);
+   // SequenceDB::TextFileStorage::assignWeights (*db, parser.__argv [parser.__firstFileArg], true);
 }
 
 #endif
@@ -243,17 +243,18 @@ static void readTreeFile (AutoPtr <SequenceDB>& db,
 
 
 
-static void setupDB (AutoPtr <SequenceDB>& db, const AlphabetCode& acgt)
+static void setupDB (AutoPtr <SequenceDB>& db, 
+                     const AlphabetCode& acgt)
 {
    DLOG << '#' << DLOG.EOL ()
         << "# SequenceDB: " << DLOG.EOL ();
 
    DLOG  << "Reading Sequence File: " 
-         << Parser::__argv[Parser::__firstFileArg] 
+         << parser.__argv[parser.__firstFileArg] 
          << DLOG.EOL ();
 
    DLOG  << "Reading Weights File: " 
-         << Parser::__argv[Parser::__firstFileArg+1] 
+         << parser.__argv[parser.__firstFileArg+1] 
          << DLOG.EOL ();
 
    DLOG.flush ();
@@ -263,8 +264,8 @@ static void setupDB (AutoPtr <SequenceDB>& db, const AlphabetCode& acgt)
    time_t start, finish;
    time (&start);
    db = SequenceDB::TextFileStorage::loadFastaAndWeights (acgt,
-      Parser::__argv[Parser::__firstFileArg],
-      Parser::__argv[Parser::__firstFileArg+1]);
+      parser.__argv[parser.__firstFileArg],
+      parser.__argv[parser.__firstFileArg+1]);
 
    time (&finish);
 
@@ -294,7 +295,7 @@ static void setupDBAndTree (const AlphabetCode& acgt,
 #endif
    {
       if (!db.valid ())
-         setupDB (db, acgt);
+         setupDB (parser, db, acgt);
 
       DLOG << '#' << DLOG.EOL ()
            << "# PrefixTreePreprocessor "<< DLOG.EOL ();
@@ -302,10 +303,10 @@ static void setupDBAndTree (const AlphabetCode& acgt,
       DLOG.flush ();
 
       tree  = new PrefixTreePreprocessor (
-         PrefixTreePreprocessor::build (  Parser::__proj_spec, 
+         PrefixTreePreprocessor::build (  parser.__proj_spec, 
                                           wf,
                                           *db,
-                                          Parser::__seed_l
+                                          parser.__seed_l
          )
       );
    }
@@ -316,7 +317,7 @@ static void setupDBAndTree (const AlphabetCode& acgt,
 static void openLogFile (ofstream& logOut)
 {
    string outStub;
-   outStub = string(Parser::__argv[Parser::__lastFileArg]);
+   outStub = string(parser.__argv[parser.__lastFileArg]);
    logOut.open ((outStub+".log").c_str(),
       ios_base::out | ios_base::trunc | ios_base::binary);
    if( ! logOut.is_open() )
@@ -347,7 +348,7 @@ static void printMotif (TextWriter& writer,
    //
    // left padding
    const int leftPaddingLength = 
-      getMotifLeftOffset (Parser::__seed_o, assg.length ());
+      getMotifLeftOffset (parser.__seed_o, assg.length ());
 
    if (leftPaddingLength > 0) {
       Str leftPad = 
@@ -363,7 +364,7 @@ static void printMotif (TextWriter& writer,
    //
    // write the actual seed
    const int seedLength = 
-     tmin (Parser::__seed_o - 2 * leftPaddingLength, assg.length ());
+     tmin (parser.__seed_o - 2 * leftPaddingLength, assg.length ());
    Str motif = position.getSeedString (seedLength);
    writer << motif;
 
@@ -374,7 +375,7 @@ static void printMotif (TextWriter& writer,
    //
    // right padding
    const int rightPaddingPosition =
-     Parser::__seed_o - seedLength - leftPaddingLength;
+     parser.__seed_o - seedLength - leftPaddingLength;
    const int rightPaddingLength =  rightPaddingPosition;
    if (rightPaddingLength > 0) {
       Str rightPad = 
@@ -408,11 +409,12 @@ static void printMotif (TextWriter& writer,
 
 
 
+
 //
 // print the positions in the positively labels set in .motif file
 // the other positions are printed in .net.motifs file  
 static void printMotifFile (bool isPositives,
-                            const SeedSearcher::Feature& feature_i,
+                            const Feature& feature_i,
                             const PositionVector& positions,
                             const std::string& allignment,
                             int index)
@@ -422,10 +424,10 @@ static void printMotifFile (bool isPositives,
    char motifFileName [256];
    if (isPositives)
       sprintf (motifFileName, "%s.%d.motifs", 
-	       Parser::__argv[Parser::__lastFileArg], (index+1));
+	       parser.__argv[parser.__lastFileArg], (index+1));
    else
       sprintf (motifFileName, "%s.%d.neg.motifs", 
-	       Parser::__argv[Parser::__lastFileArg], (index+1));
+	       parser.__argv[parser.__lastFileArg], (index+1));
 
    ofstream motifFile (motifFileName,
                    ios_base::out | ios_base::trunc | ios_base::binary);
@@ -437,7 +439,7 @@ static void printMotifFile (bool isPositives,
 
    CPositionIterator it (positions.begin (), positions.end ());
    for (; it.hasNext () ; it.next ()) {
-      printMotif (writer, *feature_i._assg, *(*it), allignment);
+      printMotif (writer, feature_i.assignment (), *(*it), allignment);
    }
 
    writer.flush ();
@@ -446,18 +448,18 @@ static void printMotifFile (bool isPositives,
 
 
 static void printPSSMFile ( const AlphabetCode& code,
-                            const SeedSearcher::Feature& feature_i,
+                            const Feature& feature_i,
                             const PositionVector& positions,
                             int index)
                            
 {
-   const int seed_length = feature_i._assg->length ();
-   const int offset = getMotifLeftOffset (Parser::__seed_o, seed_length);
-   PSSM pssm(code, offset, Parser::__seed_o, positions);
+   const int seed_length = feature_i.assignment ().length ();
+   const int offset = getMotifLeftOffset (parser.__seed_o, seed_length);
+   PSSM pssm(code, offset, parser.__seed_o, positions);
 
    char motifFileName [256];
    sprintf (motifFileName, "%s.%d.pssm", 
-	    Parser::__argv[Parser::__lastFileArg], (index+1));
+	    parser.__argv[parser.__lastFileArg], (index+1));
 
    ofstream motifFile (motifFileName,
                    ios_base::out | ios_base::trunc | ios_base::binary);
@@ -492,7 +494,7 @@ static void printPSSMFile ( const AlphabetCode& code,
 
 
 static void printSeeds (SeqWeightFunction& wf,
-                        SeedSearcher::ScoreFunction& scoreFunc,
+                        ScoreFunction& scoreFunc,
                         const AlphabetCode& code,
                         Preprocessor& preprocessor,
                         int totalNumOfSeedsFound,
@@ -508,10 +510,10 @@ static void printSeeds (SeqWeightFunction& wf,
    //
    // apply stat fixes
    int lastIndexToShow = bestFeatures.size ();
-   if (Parser::__score_fdr) {
+   if (parser.__score_fdr) {
       int K = StatFix::FDR (  bestFeatures, 
                               totalNumOfSeedsFound, 
-                              Parser::__score_min);
+                              parser.__score_min);
 
       lastIndexToShow = tmin (lastIndexToShow, K);
 
@@ -519,10 +521,10 @@ static void printSeeds (SeqWeightFunction& wf,
          << lastIndexToShow << " of " << size << " seeds."
          << DLOG.EOL ();
    }
-   if (Parser::__score_bonf) {
+   if (parser.__score_bonf) {
       int K = StatFix::bonferroni ( bestFeatures, 
                                     totalNumOfSeedsFound, 
-                                    Parser::__score_min);
+                                    parser.__score_min);
 
       lastIndexToShow = tmin (lastIndexToShow, K);
 
@@ -536,7 +538,7 @@ static void printSeeds (SeqWeightFunction& wf,
    //
    // print header
    DLOG << DLOG.EOL ();
-   if (Parser::__score_bonf) {
+   if (parser.__score_bonf) {
       DLOG <<"Bonf(-log10)\t";
    }
    DLOG << "Score(-log10)\tSeed\t\tParameters\t\t\tProjection" << DLOG.EOL ();
@@ -549,13 +551,13 @@ static void printSeeds (SeqWeightFunction& wf,
    int index;
    lastIndexToShow = tmin (size, tmax (lastIndexToShow, 3));
    for (index=0 ; index<lastIndexToShow ; index++) {
-      const SeedSearcher::Feature& feature_i = bestFeatures [index];
+      const Feature& feature_i = bestFeatures [index];
       
-      double log_10_of_score = (feature_i._score) / Log_2_10;
+      double log_10_of_score = (feature_i.score ()) / Log_2_10;
       
       //
       // print bonf correction
-      if (Parser::__score_bonf) {
+      if (parser.__score_bonf) {
          //
          // log10 (score * K) = log10 (score) + log10 (K)
          double bonfScore = log_10_of_score + log_10_numOfSeeds;
@@ -565,20 +567,20 @@ static void printSeeds (SeqWeightFunction& wf,
 
       DLOG  <<  (- log_10_of_score)
             << '\t'
-            << Format (*feature_i._assg);
+            << Format (feature_i.assignment ());
 
       //
       // print score params if available
-      if (feature_i._params) {
+      if (feature_i.scoreParameters ()) {
          DLOG << "\t[";
-         scoreFunc.writeAsText (DLOG, feature_i._params);
+         scoreFunc.writeAsText (DLOG, feature_i.scoreParameters ());
          DLOG << ']';
       }
 
       //
       // print projection details if available
-      if (feature_i._projection) {
-         DLOG << '\t' << Format (*feature_i._projection);
+      if (feature_i.projection ()) {
+         DLOG << '\t' << Format (*feature_i.projection ());
       }
 
       DLOG << DLOG.EOL ();
@@ -586,14 +588,14 @@ static void printSeeds (SeqWeightFunction& wf,
 
    //
    // now print the motif files
-   std::string allignment (Parser::__seed_o, '-');
+   std::string allignment (parser.__seed_o, '-');
    for (index=0 ; index<lastIndexToShow ; index++) {
-      const SeedSearcher::Feature& feature_i = bestFeatures [index];
+      const Feature& feature_i = bestFeatures [index];
 
       //
       // TODO: use the positions in the cluster if they are available
       Preprocessor::NodeCluster motifNodes;
-      preprocessor.add2Cluster (motifNodes, *feature_i._assg);
+      preprocessor.add2Cluster (motifNodes, feature_i.assignment ());
       //motifNodes.addAssignmentNodes (tree, *feature_i._assg);
 
       PositionVector posPositions;
@@ -623,7 +625,7 @@ static void printSeeds (SeqWeightFunction& wf,
    }
 }
 
-
+#endif
 
 static void printGoodbye (time_t start, time_t finish)
 {
@@ -640,19 +642,21 @@ static void printGoodbye (time_t start, time_t finish)
    DLOG.flush ();
 }
 
+#if 0 
+
 static AutoPtr <SeqWeightFunction> createWeightFunction ()
 {
    AutoPtr <SeqWeightFunction> wf;
-   switch (Parser::__weightType) {
-   case Parser::simple:
-      wf = new SimpleWeightFunction (Parser::__weight_t);
+   switch (parser.__weightType) {
+   case _weight_simple_:
+      wf = new SimpleWeightFunction (parser.__weight_t);
       break;
    
-   case Parser::border:
-      wf = new BorderWeightFunction (Parser::__weight_lowt, Parser::__weight_t);
+   case _weight_border_:
+      wf = new BorderWeightFunction (parser.__weight_lowt, parser.__weight_t);
       break;
-   case Parser::interval:
-      wf = new IntervalWeightFunction (Parser::__weight_lowt, Parser::__weight_t);
+   case _weight_interval_:
+      wf = new IntervalWeightFunction (parser.__weight_lowt, parser.__weight_t);
       break;
 
    default:
@@ -660,7 +664,7 @@ static AutoPtr <SeqWeightFunction> createWeightFunction ()
       break;
    };
 
-   if (Parser::__weight_invert)
+   if (parser.__weight_invert)
       wf->invert ();
 
    return wf;
@@ -671,11 +675,11 @@ static AutoPtr <Preprocessor> createPreprocessor (const AlphabetCode& code,
                                                   const SeqWeightFunction& wf)
 {
    AutoPtr <Preprocessor> prep;
-   if (Parser::__prep == Parser::leaf) {
+   if (parser.__prep == _prep_leaf_) {
       LeafPreprocessor::Rep* rep;
-      if (Parser::__proj_spec) {
+      if (parser.__proj_spec) {
          rep = LeafPreprocessor::buildNoNegatives (  
-            Parser::__seed_l, 
+            parser.__seed_l, 
             db, 
             code, 
             SeedSearcherLog::assgWriter (),
@@ -684,7 +688,7 @@ static AutoPtr <Preprocessor> createPreprocessor (const AlphabetCode& code,
       }
       else {
          rep = LeafPreprocessor::build (  
-            Parser::__seed_l, 
+            parser.__seed_l, 
             db, 
             code, 
             SeedSearcherLog::assgWriter ()
@@ -694,12 +698,12 @@ static AutoPtr <Preprocessor> createPreprocessor (const AlphabetCode& code,
       prep = new LeafPreprocessor (rep);
    }
    else {
-      mustbe (Parser::__prep == Parser::tree);
+      mustbe (parser.__prep == _prep_tree_);
       PrefixTreePreprocessor::TreeRep* rep = 
-         PrefixTreePreprocessor::build (  Parser::__proj_spec,
+         PrefixTreePreprocessor::build (  parser.__proj_spec,
                                           wf,
                                           db,
-                                          Parser::__seed_l);
+                                          parser.__seed_l);
 
       prep = new PrefixTreePreprocessor (rep);
       ___kuku = dynamic_cast <PrefixTreePreprocessor*> (prep.get ());
@@ -708,21 +712,21 @@ static AutoPtr <Preprocessor> createPreprocessor (const AlphabetCode& code,
    return prep;
 }
 
-static AutoPtr <SeedSearcher::ScoreFunction> 
+static AutoPtr <ScoreFunction> 
    createScoreFunc ( const SequenceDB& db,
                      const SeqWeightFunction& wf)
 {
-   AutoPtr <SeedSearcher::ScoreFunction> score;
-   if (Parser::__count == Parser::total) {
+   AutoPtr <ScoreFunction> score;
+   if (parser.__count == _count_total_) {
       score = 
-         new HyperGeoScore::FixedTotalCount (Parser::__seed_l, 
-                                             Parser::__score_partial, 
+         new HyperGeoScore::FixedTotalCount (parser.__seed_l, 
+                                             parser.__score_partial, 
                                              wf, 
                                              db);
    }
    else {
       score = 
-         new HyperGeoScore::Simple (Parser::__score_partial, 
+         new HyperGeoScore::Simple (parser.__score_partial, 
                                     wf, 
                                     db);
    }
@@ -739,30 +743,150 @@ static AutoPtr <SeedSearcher::BestFeatures>
    //
    // use GoodFeatures to allow only features above a threshold
    bestFeatures = new GoodFeatures (
-      new KBestFeatures (Parser::__seed_n, Parser::__seed_r),
+      new KBestFeatures (parser.__seed_n, parser.__seed_r),
       true,
       SeqCluster (db),
       wf,
-      Parser::__score_min,
-      Parser::__score_min_seq,
-      Parser::__score_min_seq_per);
+      parser.__score_min,
+      parser.__score_min_seq,
+      parser.__score_min_seq_per);
 
    return bestFeatures;
 }
 
+#endif 
+
+static Persistance::OutputStream* openMotifFile (  
+      bool isPositives, int index, const char* fileStub)
+{
+   //
+   // create the motif file name
+   char motifFileName [1024];
+   if (isPositives)
+      sprintf (motifFileName, "%s.%d.motifs", 
+	       fileStub, (index+1));
+   else
+      sprintf (motifFileName, "%s.%d.neg.motifs", 
+	       fileStub, (index+1));
+
+   ofstream* motifFile = new ofstream (motifFileName,
+                   ios_base::out | ios_base::trunc | ios_base::binary);
+
+   if( ! motifFile->is_open() )
+      Err(string("Cannot open logFile for ") + motifFileName);
+
+   return new StdOutputStream (motifFile, true);
+}
+
+static Persistance::OutputStream* openPSSMFile (  
+      int index, const char* fileStub)
+{
+   //
+   // create the motif file name
+   char motifFileName [1024];
+   sprintf (motifFileName, "%s.%d.PSSM", 
+	      fileStub, (index+1));
+
+   ofstream* motifFile = new ofstream (motifFileName,
+                   ios_base::out | ios_base::trunc | ios_base::binary);
+
+   if( ! motifFile->is_open() )
+      Err(string("Cannot open logFile for ") + motifFileName);
+
+   return new StdOutputStream (motifFile, true);
+}
 
 
+#include "SeedSearcherMain.h"
+
+enum {
+   SeqFileIndex = 0,
+   WgtFileIndex = 1,
+   StubFileIndex = 2,
+   RequiredParams = 3
+};
 
 //
 // Copied/Adapted from legacy SeedSearcher
 int main(int argc, char* argv [])
 {
-   time_t cleanupStart, cleanupFinish;
+   time_t cleanupStart =0, cleanupFinish;
+   time_t start, finish;
 
+   time(&start);
    try {
+      SeedSearcherMain::CmdLineParameters params (argc, argv);
+
+      //
+      // check that we have enough arguments
+      // needs SeqFile RegFile and output-stub
+      int numOfFileArgs = params.parser ().__lastFileArg - 
+            params.parser ().__firstFileArg +1;
+
+      if(numOfFileArgs < RequiredParams)
+         params.parser ().usage ("Missing arguments");
+
+      const char* fileStub = params.parser ().__argv [StubFileIndex];
+      
+      params.setup ();
+      SeedSearcherMain main (params);
+      AutoPtr <SeedSearcherMain::Results> results = main.search ();
+
+      FeatureInvestigator printer ( params, 
+                                    params.parser ().__seed_o);
+
+      //
+      // we print the results to the log
+      for (; results->hasMoreFeatures () ; results->nextFeature ()) {
+
+         Feature& feature = results->getFeature ();
+
+         //
+         // first we find the positive and negative positions
+         // of this feature
+         PositionVector pos;
+         PositionVector neg;
+         printer.addPositions (feature, pos, neg);
+
+         //
+         // now we print the seed result line,
+         // which includes the seed, score projection etc.
+         printer.printSeed (DLOG, feature, pos);
+
+         
+         //
+         // now we print pos & neg motif files
+         for (bool isPos = true ; isPos ; isPos = false) {
+            //
+            // we open a file for the motif
+            TextWriter motifFile (openMotifFile (  isPos, 
+                                                results->featureIndex (),
+                                                fileStub
+                                                ));
+            printer.printMotif ( motifFile, 
+                                 feature, 
+                                 isPos? pos : neg);
+         }
+
+         //
+         // now we print the PSSM files
+         TextWriter pssmFile (openPSSMFile ( results->featureIndex (),
+                                             fileStub
+                                             ));
+
+         printer.printPSSM (pssmFile, feature, pos);
+      }
+
+
+
+      //
+      // now the seeds are waiting in the KBestFeatures 
+
+/*
+
       //
       // parse arguments
-      Parser::parse (argc, argv);
+      parser.parse (argc, argv);
 
       ofstream logOut;
       openLogFile (logOut);
@@ -775,13 +899,13 @@ int main(int argc, char* argv [])
       UnbufferedOutput* channels [] = { &consoleChannel, &fileChannel };
       const int numOfChannels = sizeof (channels) / sizeof (UnbufferedOutput*);
 
-      ACGTWriter assgWriter;
+      ACGTLangauge langauge;
 
       TextWriter consoleWriter (
          new SmallChannelOutput (
             new UnbufferedOutputMux (channels, numOfChannels , false), true));
 
-      SeedSearcherLog::setup (assgWriter);
+      SeedSearcherLog::setup (langauge);
       SeedSearcherLog::setup (consoleWriter);
 
       //
@@ -792,13 +916,14 @@ int main(int argc, char* argv [])
       //
       // for now, only ACGT code is available
       // TODO: add more alphabets
-      const AlphabetCode& acgt = ACGTAlphabet::get (/*include N */ true);
-
+      const AlphabetCode& acgt = ACGTLangauge::getCode (//include N 
+                                                         true);
+      /*
 
       AutoPtr <SequenceDB> db;
       AutoPtr <SeqWeightFunction> wf;
       AutoPtr <Preprocessor> preprocessor;
-      AutoPtr <SeedSearcher::ScoreFunction> score;
+      AutoPtr <ScoreFunction> score;
       AutoPtr <RandomProjections> projections;
       AutoPtr <SeedSearcher::BestFeatures> bestFeatures;
 
@@ -834,7 +959,7 @@ int main(int argc, char* argv [])
 
       //
       // keep only the best features
-      // TODO: what should we do when Parser::__seed_r 
+      // TODO: what should we do when parser.__seed_r 
       // is too large for the length of seed?
       bestFeatures = createFeatureContainer (*db, *wf);
 
@@ -846,9 +971,12 @@ int main(int argc, char* argv [])
       int numOfProjections = projections->numOfProjections ();
       for (int i=0 ; i<numOfProjections ; i++) {
          const Assignment& assg = 
-            projections->getAssignment (  i,
-                                       ACGTPosition (Assignment::together),
-                                       ACGTPosition (Assignment::discrete));
+            projections->getAssignment (  
+               i, 
+               langauge.wildcard (Assignment::together),
+               langauge.wildcard (Assignment::discrete)
+            );
+
          //
          //
          DLOG << "Searching for " << Format (assg) << ": ";
@@ -857,7 +985,8 @@ int main(int argc, char* argv [])
          time_t start, finish;
          time (&start);
 
-         if (Parser::__prep == Parser::tree) {
+
+         if (parser.__prep == _prep_tree_) {
             totalNumOfSeedsFound +=
                SeedSearcher::prefixTreeSearch (
                   dynamic_cast <PrefixTreePreprocessor&> (*preprocessor),
@@ -865,18 +994,19 @@ int main(int argc, char* argv [])
                   *wf,
                   *score,
                   *bestFeatures,
-                  Parser::__proj_spec
+                  parser.__proj_spec,
+                  parser.__count == _count_total_
                );
          }
          else {
             totalNumOfSeedsFound +=
                SeedSearcher::tableSearch (
-                  Parser::__count == Parser::total,
-                  Parser::__proj_spec,
+                  parser.__count == _count_total_,
+                  parser.__proj_spec,
                   acgt,
                   *preprocessor,
                   assg,
-                  assgWriter,
+                  lan,
                   *wf,
                   *score,
                   *bestFeatures
@@ -891,18 +1021,22 @@ int main(int argc, char* argv [])
       //
       // now output all the seeds
       bestFeatures->sort ();
+
+
+
       //
       // do not include N when printing PSSMs
       printSeeds (*wf,
                   *score,
-                  ACGTAlphabet::get (/*include N */ false),
+                  ACGTAlphabet::get (//include N
+                                       false),
                   *preprocessor, 
                   totalNumOfSeedsFound, 
                   *bestFeatures);
+      */
 
-      long finish = time(NULL);
+      finish = time(NULL);
       printGoodbye (start, finish);
-
       cerr << endl << "Cleaning up...";
       time (&cleanupStart);
    }
@@ -917,9 +1051,10 @@ int main(int argc, char* argv [])
    catch (...) {
       cerr << endl << "Unknown Error! aborting..." << endl;
    }
-
-   time(&cleanupFinish);
-   cerr << (cleanupFinish - cleanupStart) << " seconds." << endl;
+   if (cleanupStart) {
+      time(&cleanupFinish);
+      cerr << (cleanupFinish - cleanupStart) << " seconds." << endl;
+   }
 
    return 0;
 }
@@ -928,6 +1063,7 @@ int main(int argc, char* argv [])
 #if SEED_DL_MALLOC_OPTIMIZATION
 
 #include "Core/dlmalloc.h"
+
 
 void * operator new (size_t size)
 {

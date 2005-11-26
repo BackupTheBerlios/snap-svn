@@ -6,7 +6,7 @@
 class AlphabetCode;
 
 class Assignment;
-class AssignmentWriter;
+class Langauge;
 class AssignmentFormat;
 class PositionFormat;
 
@@ -18,6 +18,39 @@ class SeqPosition;
 class SeqCluster;
 class PosCluster;
 class SequenceDB;
+class PositionVector;
+
+class RandomProjections;
+class PSSM;
+
+//
+//
+enum PrepType {
+   _prep_leaf_,
+   _prep_tree_
+};
+
+enum SearchType {
+   _search_default_,
+   _search_table_,
+   _search_tree_, // works only with _prep_tree_ 
+};
+
+//
+//
+enum WeightType {
+   _weight_simple_,
+   _weight_border_,
+   _weight_interval_
+};
+
+//
+//
+enum CountType {
+   _count_total_,
+   _count_gene_
+};
+
 
 
 //

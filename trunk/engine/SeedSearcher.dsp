@@ -143,6 +143,10 @@ SOURCE=.\DebugLog.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\Feature.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\HyperGeoScore.cpp
 
 !IF  "$(CFG)" == "SeedSearcher - Win32 Release"
@@ -264,6 +268,10 @@ SOURCE=.\SeedSearcher.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\SeedSearcherMain.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\Sequence.cpp
 
 !IF  "$(CFG)" == "SeedSearcher - Win32 Release"
@@ -331,6 +339,10 @@ SOURCE=.\Defs.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\Feature.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\HyperGeoCache.cpp
 # End Source File
 # Begin Source File
@@ -372,6 +384,10 @@ SOURCE=.\SeedHash.h
 # Begin Source File
 
 SOURCE=.\SeedSearcher.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\SeedSearcherMain.h
 # End Source File
 # Begin Source File
 

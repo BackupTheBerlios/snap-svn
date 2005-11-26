@@ -185,19 +185,25 @@ protected:
 //
 // mustbe / debug_mustbe
 #ifndef mustbe
-	inline void pexifnot_(bool cond, int lineNo) {
-		if (!cond) ProgramException::raise(lineNo);
+	inline void pexifnot_(bool cond, int lineNo, const char* err=NULL) {
+		if (!cond) ProgramException::raise(lineNo, err);
 	}
-	inline void pexifnot_(const void* ptr, int lineNo) {
-		if (ptr==0) ProgramException::raise(lineNo);		
+	inline void pexifnot_(const void* ptr, int lineNo, const char* err=NULL) {
+		if (ptr==0) ProgramException::raise(lineNo, err);		
 	}
-	inline void pexifnot_(int cond, int lineNo) {
-		if (!cond) ProgramException::raise(lineNo);
+	inline void pexifnot_(int cond, int lineNo, const char* err=NULL) {
+		if (!cond) ProgramException::raise(lineNo, err);
 	}
 	
 	#define mustbe(cond)		pexifnot_((cond), __LINE__)
 	#define mustnot(cond)		pexifnot_(!(cond), __LINE__)
 	#define mustfail()		pexifnot_(bool(false), __LINE__)
+
+   //
+   // with message 
+	#define mmustbe(cond, err)		pexifnot_((cond), __LINE__, err)
+	#define mmustnot(cond, err)		pexifnot_(!(cond), __LINE__, err)
+	#define mmustfail(err)		pexifnot_(bool(false), __LINE__, err)
 
 	#define	debug_assert(cond)	\
 debug_only(signal_assert((cond), #cond, __FILE__, __LINE__))

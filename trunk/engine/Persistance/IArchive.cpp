@@ -227,7 +227,7 @@ static void readPrimitive(IArchive& in, unsigned char& param) {
       char c;
       short x;
       in.reader() >> x >> c;
-      param = x;
+      param = static_cast <unsigned char> (x);
       debug_mustbe (c == ' ');
    }
    else {

@@ -25,7 +25,7 @@ static const unsigned long L_E = (unsigned long) 271828183;
 
 //
 //
-class HyperGeoCache::Score : public SeedSearcher::ScoreParameters, 
+class HyperGeoCache::Score : public ScoreParameters, 
                              public HashLinkEntry <Score> 
 {
 public:
@@ -99,7 +99,7 @@ HyperGeoCache::~HyperGeoCache ()
 }
 
 
-double HyperGeoCache::logTail (int x, int k, SeedSearcher::ScoreParameters** params)
+double HyperGeoCache::logTail (int x, int k, ScoreParameters** params)
 {
    XK xk (x, k);
    Score* cachedScore = _cache->find (xk);
@@ -123,8 +123,9 @@ double HyperGeoCache::logTail (int x, int k)
    return logTail (x, k, NULL);
 }
 
-void HyperGeoCache::writeAsText (Persistance::TextWriter& writer, 
-                                 const SeedSearcher::ScoreParameters* p)
+void HyperGeoCache::writeAsText (
+            Persistance::TextWriter& writer, 
+            const ScoreParameters* p) const
 {
    debug_mustbe (p);
 
@@ -174,7 +175,7 @@ struct HyperGeoTotalCache::XKNM {
 
 //
 //
-class HyperGeoTotalCache::Score :   public SeedSearcher::ScoreParameters,
+class HyperGeoTotalCache::Score :   public ScoreParameters,
                                     public HashLinkEntry <Score> 
 {
 public:
@@ -244,7 +245,7 @@ HyperGeoTotalCache::~HyperGeoTotalCache ()
 
 
 double HyperGeoTotalCache::logTail (int x, int k, int n, int m, 
-                                    SeedSearcher::ScoreParameters** p)
+                                    ScoreParameters** p)
 {
    XKNM xknm (x, k, n, m);
    Score* cachedScore = _cache->find (xknm);
@@ -269,8 +270,9 @@ double HyperGeoTotalCache::logTail (int x, int k, int n, int m)
    return logTail (x, k, n, m, NULL);
 }
 
-void HyperGeoTotalCache::writeAsText (Persistance::TextWriter& writer, 
-                                 const SeedSearcher::ScoreParameters* p)
+void HyperGeoTotalCache::writeAsText (
+               Persistance::TextWriter& writer, 
+               const ScoreParameters* p) const
 {
    debug_mustbe (p);
 

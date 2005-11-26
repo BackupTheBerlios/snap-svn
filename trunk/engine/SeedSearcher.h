@@ -1,107 +1,21 @@
 #ifndef _SeedSearcher_SeedSeacher_h
 #define _SeedSearcher_SeedSeacher_h
 
-#include "PrefixTreePreprocessor.h"
+#include "Feature.h"
 #include "Assignment.h"
+#include "AssignmentFormat.h"
+#include "PrefixTreePreprocessor.h"
 
-class AssignmentWriter;
 
 class SeedSearcher {
 public:
-   //
-   // this class is used to test the correctness of SeedSearcher.
-   // the score function, by recording the score parameters
-   // for a feature, used for later printing.
-   struct ScoreParameters {
-      virtual ~ScoreParameters () {
-      }
-      virtual void dispose () {
-         delete this;
-      }
-   };
-
+   class BestFeatures;
+   class BasicParameters;
+   class SearchParameters;
    typedef SeqWeightFunction WeightFunction;
 
+public:
 
-
-   class ScoreFunction {
-   //
-   // this class represents a scoring scheme for features
-   //
-   // IMPORTANT:
-   // the smaller (more negative) the score, the better.
-   // score MUST be in log2 format.
-   public:
-     virtual ~ScoreFunction () {
-     }
-
-     //
-     // if 'parameters' is NULL, do not return ScoreParameters.
-     virtual double score (const Assignment& feature,
-                           const Assignment& projection,
-                           const SequenceDB::Cluster& containingFeature, // k
-                           ScoreParameters** parameters
-                           ) = 0;
-
-     //
-     // print the score parameters 
-     virtual void writeAsText (Persistance::TextWriter&, const ScoreParameters*) = 0;
-   };
-
-   struct Feature {
-      //
-      // 
-   public:
-      Feature () :  _assg (NULL), _cluster (NULL), _projection (0), 
-         _params (0), _score (0) {
-      }
-      Feature (Assignment* assg, 
-               SequenceDB::Cluster* cluster,
-               const Assignment* projection,
-               ScoreParameters* params,
-               double score)
-         :   _assg(assg), _cluster (cluster), _projection (projection),
-            _params (params), _score (score) 
-      {
-      }
-
-      void dispose () {
-         debug_only (
-            //
-            // guard against repetitive calls to delete
-            debug_mustbe (_score != 0xBAADF00D);
-            _score = 0xBAADF00D;
-            debug_mustbe (_score == 0xBAADF00D);
-         );
-
-         delete _assg;     _assg = NULL;
-         delete _cluster;  _cluster = NULL;
-         if (_params) {
-            _params->dispose ();
-            _params = NULL;
-         }
-      }
-
-      struct Owner {
-	      inline static void acquire(Feature*) {
-	      }
- 	      inline static void release(Feature* ptr) {
- 		      if (ptr) ptr->dispose ();
- 	      }
-      };
-
-
-
-      Assignment* _assg;
-      SequenceDB::Cluster* _cluster;
-      const Assignment* _projection;
-      ScoreParameters* _params;
-      double _score;
-   };
-   //
-   // CORBA notation used here... :-)
-   typedef Feature* Feature_ptr;
-   typedef AutoPtr <Feature, Feature::Owner> Feature_var;
 
 
    class BestFeatures {
@@ -119,7 +33,11 @@ public:
 
       virtual int size () const = 0;
       virtual const Feature& get (int) const = 0;
+      virtual Feature& get (int) = 0;
       const Feature& operator [] (int index) const {
+         return get (index);
+      };
+      Feature& operator [] (int index) {
          return get (index);
       };
 
@@ -127,68 +45,64 @@ public:
       virtual void sort () = 0;
    };
 
+   class SearchParameters : public FeatureInvestigator::Parameters {
+   public:
+      SearchParameters () {
+      }
+      virtual ~SearchParameters () {
+      }
 
-//
-//
-// Gene-Counts
-//
-//
+      //
+      // stores the best features
+      const SeedSearcher::BestFeatures& bestFeatures () const {
+         return *_bestFeatures;
+      }
+      SeedSearcher::BestFeatures& bestFeatures () {
+         return *_bestFeatures;
+      }
+      //
+		// should keep track of all positions
+      CountType countType () const {
+         return _count;
+      }
+      //
+      // should specialize projections?
+      bool useSpecialization () const {
+         return _useSpecialization;
+      }
 
+   protected:
+      AutoPtr <SeedSearcher::BestFeatures> _bestFeatures;
+      bool _useSpecialization;
+      CountType _count;
+   };
 
    //
    // search the tree for seeds that correspond to a projection
    // returns the total number of seeds found
    static int prefixTreeSearch (
-         PrefixTreePreprocessor& tree,       // where to search
-         const Assignment& projection,       // how to climb down the tree
-         WeightFunction& weightFunc,         // which sequences are positively labeled
-         ScoreFunction& scoreFunc,           // how to score features
-         BestFeatures& bestFeatures,         // stores the best features
-         bool specializeProjections          // should specialize projections?
+         SearchParameters& params,
+         const Assignment& projection // how to climb down the tree
          )
    {
-      return prefixTreeSearch (tree, 
-                        projection, 
-                        weightFunc, 
-                        scoreFunc, 
-                        bestFeatures, 
-                        projection.length (),
-                        specializeProjections
-                        );
+      return prefixTreeSearch (params, projection, projection.length ());
    }
    
    //
    // search the tree for seeds that correspond to a projection   
    // returns the total number of seeds found
    static int prefixTreeSearch (
-         PrefixTreePreprocessor& tree,       // where to search
-         const Assignment& projection,       // how to climb down the tree
-         WeightFunction& weightFunc,         // which sequences are positively labeled
-         ScoreFunction& scoreFunc,           // how to score features
-         BestFeatures& bestFeatures,         // stores the best features
-         int desiredDepth,                   // desired depth / length of features
-         bool specializeProjections          // should specialize projections?
+         SearchParameters& params,
+         const Assignment& projection, // how to climb down the tree
+         int length
          );
-
-//
-//
-// Total-Counts
-//
-//
 
    //
    // search the tree for seeds that correspond to a projection (total counts)
    // returns the total number of seeds found
    static int tableSearch (
-      bool totalCount,
-      bool specialization,
-      const AlphabetCode& code,
-      const Preprocessor& data, // where to search
-      const Assignment& projection, // how to climb down the tree
-      AssignmentWriter& writer,     // (used for hashing)
-      const SeqWeightFunction& positivelyLabeled,   // which sequences are positively labeled
-      SeedSearcher::ScoreFunction& scoreFunc,       // how to score features
-      SeedSearcher::BestFeatures& bestFeatures      // stores the best features
+      SearchParameters& params,
+      const Assignment& projection // how to climb down the tree
          );
 };
 

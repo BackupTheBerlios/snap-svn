@@ -8,11 +8,8 @@ ChunkAllocator <LeafPreprocessor::LeafNode>
 
 
 struct LeafPreprocessor::Rep : public SeedHash::Table {
-   Rep ( int seedLength                            , 
-         int tableSize, const AlphabetCode& code   , 
-         AssignmentWriter& assgWriter              )   
-      : SeedHash::Table (tableSize, code, assgWriter), 
-         _seedLength (seedLength) 
+   Rep ( int seedLength, int tableSize, Langauge& langauge)   
+   : SeedHash::Table (tableSize, langauge), _seedLength (seedLength)
    {
    }
 
@@ -126,13 +123,13 @@ LeafPreprocessor::getSequences (const Assignment& assg) const
 
 
 LeafPreprocessor::Rep* LeafPreprocessor::buildNoNegatives (
+                   bool useReverse,
                    int seedLength                  ,
                    const SequenceDB& db            , 
-                   const AlphabetCode& code        , 
-                   AssignmentWriter& assgWriter    ,
+                   Langauge& langauge    ,
                    const SeqWeightFunction& wf     ) 
 {
-   Rep* rep = build (seedLength, db, code, assgWriter);
+   Rep* rep = build (useReverse, seedLength, db, langauge);
    int size = rep->getSize ();
 
    //
@@ -184,10 +181,10 @@ LeafPreprocessor::Rep* LeafPreprocessor::buildNoNegatives (
 //
 //
 LeafPreprocessor::Rep* LeafPreprocessor::build (
+                     bool useReverse               ,
                    int seedLength                  ,
                    const SequenceDB& db            , 
-                   const AlphabetCode& code        , 
-                   AssignmentWriter& assgWriter    ) 
+                   Langauge& langauge    ) 
 {
    time_t start, finish;
    time (&start);
@@ -197,7 +194,7 @@ LeafPreprocessor::Rep* LeafPreprocessor::build (
 
    //
    // TODO: guess an estimate to the number of seeds
-   Rep* rep = new Rep (seedLength, TABLE_SIZE, code, assgWriter);
+   Rep* rep = new Rep (seedLength, TABLE_SIZE, langauge);
 
    //
    //

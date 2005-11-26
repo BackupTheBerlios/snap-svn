@@ -1,3 +1,5 @@
+#if 0 
+
 #include "PrefixTreeWalker.h"
 #include "SequenceDB.h"
 #include "Sequence.h"
@@ -5,11 +7,7 @@
 #include <set>
 
 USING_TYPE (PrefixTreePreprocessor, Node);
-USING_TYPE (PrefixTreePreprocessor, NodeRep);
-USING_TYPE (PrefixTreePreprocessor, PositionVector);
-USING_TYPE (PrefixTreePreprocessor, SequenceVector);
-USING_TYPE (PrefixTreePreprocessor, PositionIterator);
-USING_TYPE (PrefixTreePreprocessor, SequenceIterator);
+USING_TYPE (PrefixTreePreprocessor, TreeNode);
 USING_TYPE (PrefixTreePreprocessor, SeqPositionIterator);
 
 
@@ -18,7 +16,7 @@ static void rec_addAssignmentNodes (int depth,
                                 int desiredDepth,
                                 int childIndex,
                                 PrefixTreeWalker::NodeVector& nodes,
-                                PrefixTreePreprocessor::NodeRep* inNode,
+                                PrefixTreePreprocessor::TreeNode* inNode,
                                 const Assignment& assg,
                                 Assignment& path)
 
@@ -86,7 +84,7 @@ void PrefixTreeWalker::Nodes::addAssignmentNodes (  const PrefixTreePreprocessor
 
 
 
-AutoPtr <Preprocessor::SequenceVector> PrefixTreeWalker::Nodes::sequences () 
+AutoPtr <SequenceVector> PrefixTreeWalker::Nodes::sequences () 
 {
    //
    // multo-importante: the Sequences are repeated in different nodes
@@ -118,13 +116,13 @@ AutoPtr <Preprocessor::SequenceVector> PrefixTreeWalker::Nodes::sequences ()
    int size = seq.size ();
    SequenceSet::iterator begin = seq.begin ();
    SequenceSet::iterator end = seq.end ();
-   return createNewVector <Preprocessor::SequenceVector> (size, begin, end);
+   return createNewVector <SequenceVector> (size, begin, end);
 }
 
 //
 // returns a vector of all (unique) positions in the nodes
 // (there are no duplicates in the vector)
-AutoPtr <Preprocessor::PositionVector> PrefixTreeWalker::Nodes::positions ()
+AutoPtr <PositionVector> PrefixTreeWalker::Nodes::positions ()
 {
    std::set <Position const *> pos;
    //
@@ -146,7 +144,7 @@ AutoPtr <Preprocessor::PositionVector> PrefixTreeWalker::Nodes::positions ()
       }
    }
 
-   return createNewVector <Preprocessor::PositionVector> (
+   return createNewVector <PositionVector> (
 	  pos.size (), 
 	  pos.begin (), 
 	  pos.end ()
@@ -156,7 +154,7 @@ AutoPtr <Preprocessor::PositionVector> PrefixTreeWalker::Nodes::positions ()
 //
 // returns a vector of all (unique) positions in a particular sequence, in the nodes
 // (there are no duplicates in the vector)
-AutoPtr <Preprocessor::PositionVector> 
+AutoPtr <PositionVector> 
 PrefixTreeWalker::Nodes::positions (SequenceDB::ID id)
 {
    std::set <Position const *> pos;
@@ -174,7 +172,7 @@ PrefixTreeWalker::Nodes::positions (SequenceDB::ID id)
       }
    }
 
-   return createNewVector <Preprocessor::PositionVector> (
+   return createNewVector <PositionVector> (
 	   pos.size (), 
 	   pos.begin (), 
 	   pos.end ()
@@ -184,8 +182,8 @@ PrefixTreeWalker::Nodes::positions (SequenceDB::ID id)
 
 void PrefixTreeWalker::Nodes::positions (  
                      double threshold, 
-                     Preprocessor::PositionVector& positivePositions, 
-                     Preprocessor::PositionVector& negativePositions)
+                     PositionVector& positivePositions, 
+                     PositionVector& negativePositions)
 {
    std::set <Position const *> pos;
    std::set <Position const *> neg;
@@ -228,6 +226,10 @@ void PrefixTreeWalker::Nodes::positions (
 
 
 
+
+
+
+#endif 
 
 
 

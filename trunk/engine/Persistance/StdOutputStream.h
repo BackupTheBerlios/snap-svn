@@ -9,22 +9,29 @@ BEGIN_NAMESPACE (Persistance)
 
 class StdUnbufferedOutput : public UnbufferedOutput {
 public:
-   StdUnbufferedOutput (std::ostream& out) : _out (out) {
+   StdUnbufferedOutput (std::ostream& out) : _out (&out) {
+      _owner = false;
+   }
+   StdUnbufferedOutput (std::ostream* out, bool owner) 
+   : _out (out), _owner (owner) {
    }
    virtual ~StdUnbufferedOutput () {
+      if (_owner)
+         delete _out;
    }
    virtual void writeBytes(const void* inPtr, Size inSize) {
-      _out.write ( (const char*)inPtr, inSize);
+      _out->write ( (const char*)inPtr, inSize);
    }
    virtual bool hasMoreBuffers() const {
-      return _out.good ();
+      return _out->good ();
    }
    virtual void flush () {
-      _out.flush ();
+      _out->flush ();
    }
 
 protected:   
-   std::ostream& _out;
+   std::ostream* _out;
+   bool _owner;
 };
 
 
@@ -32,6 +39,10 @@ class StdOutputStream : public SmallChannelOutput  {
 public:
    StdOutputStream (std::ostream& out) 
    : SmallChannelOutput (&_channel, false), _channel (out) 
+   {
+   }
+   StdOutputStream (std::ostream* out, bool owner) 
+   : SmallChannelOutput (&_channel, false), _channel (out, owner) 
    {
    }
 

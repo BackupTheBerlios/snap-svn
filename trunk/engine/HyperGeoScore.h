@@ -10,10 +10,10 @@
 struct HyperGeoScore {
    //
    // simple 'gene-count' hyper-geometric scoring
-   class Simple : public SeedSearcher::ScoreFunction {
+   class Simple : public ScoreFunction {
    public:
       Simple ( bool countWeights                      ,     
-               const SeedSearcher::WeightFunction& wf ,
+               const SeqWeightFunction& wf ,
                const SequenceDB& allSequences         );
 
       virtual ~Simple () {
@@ -23,20 +23,20 @@ struct HyperGeoScore {
       virtual double score (const Assignment& feature,
                            const Assignment& projection,
                            const SeqCluster& containingFeature, // k
-                           SeedSearcher::ScoreParameters** parameters
-                           );
+                           ScoreParameters** parameters
+                           ) const;
 
      //
      // print the score parameters 
      virtual void writeAsText (Persistance::TextWriter&, 
-                               const SeedSearcher::ScoreParameters*);
+                               const ScoreParameters*) const;
 
    private:
       bool _countWeights;
       SeqCluster _allSequences;// m
       SeqCluster _positivelyLabeled; // n
       HyperGeoCache* _cache;
-      const SeedSearcher::WeightFunction& _wf;
+      const SeqWeightFunction& _wf;
    };
 
 
@@ -44,7 +44,7 @@ struct HyperGeoScore {
 
    //
    // simplified 'total-count' scoring: all seeds have the same length.
-   class FixedTotalCount : public SeedSearcher::ScoreFunction {
+   class FixedTotalCount : public ScoreFunction {
    public:
       FixedTotalCount (int seedLength,
                      bool countWeights,
@@ -59,13 +59,13 @@ struct HyperGeoScore {
       virtual double score (const Assignment& feature,
                            const Assignment& projection,
                            const SeqCluster& containingFeature, // k
-                           SeedSearcher::ScoreParameters** parameters
-                           );
+                           ScoreParameters** parameters
+                           ) const;
 
      //
      // print the score parameters 
      virtual void writeAsText (Persistance::TextWriter&, 
-                               const SeedSearcher::ScoreParameters*);
+                               const ScoreParameters*) const;
 
    private:
       bool _countWeights;
@@ -77,7 +77,7 @@ struct HyperGeoScore {
 
    //
    // 'total-count' scoring, which takes into account varying-length seeds
-   class TotalCount : public SeedSearcher::ScoreFunction {
+   class TotalCount : public ScoreFunction {
    public:
       TotalCount (bool countWeights,
                   const SequenceDB::Cluster& positivelyLabeled,   // m
@@ -91,13 +91,13 @@ struct HyperGeoScore {
       virtual double score (const Assignment& feature,
                            const Assignment& projection,
                            const SeqCluster& containingFeature, // k
-                           SeedSearcher::ScoreParameters** parameters
-                           );
+                           ScoreParameters** parameters
+                           ) const;
 
      //
      // print the score parameters 
       virtual void writeAsText ( Persistance::TextWriter&, 
-                                 const SeedSearcher::ScoreParameters*);
+                                 const ScoreParameters*) const ;
 
    private:
       bool _countWeights;

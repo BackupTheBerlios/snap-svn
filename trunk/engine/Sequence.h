@@ -80,12 +80,96 @@ private:
 
 
 
+//
+// basic interface for deciding if a sequence is positive / negative
+class SeqWeightFunction {
+public:
+   SeqWeightFunction () : _invert (false), _partialCount (false) {
+   }
+   virtual ~SeqWeightFunction () {
+   }
+
+   void invert () {
+      _invert = !_invert;
+   }
+
+   //
+   // get/set the partialCount property.
+   // if partialCount is false, weights are discrete.
+   // if partialCount is true, weights are real values
+   bool partialCount () const {
+      return _partialCount;
+   }
+   void partialCount (bool in)  {
+      _partialCount = in;
+   }
+   //
+   // returns the weight of the seq, as determined by this weight function
+   virtual double weight (const Sequence& seq) const {
+      return _partialCount? seq.weight () : (seq.hasWeight ()? 1:0);
+   }
+
+   //
+   // returns true iff the weight belongs to the positive or negative set.
+   // if so, 'outIsPositive' is set to true iff the weight belongs to the
+   // positive set.
+   inline bool isRelevant (const Sequence& seq, bool& outIsPositive) const {
+      return isRelevant (seq.weight (), outIsPositive);
+   }
+   inline bool isRelevant (double weight, bool& outIsPositive) const {
+      bool result = 
+         isRelevantImpl (weight, outIsPositive);
+      if (_invert)
+	    outIsPositive = ! outIsPositive;
+      return result;
+   }
+
+   //
+   // returns true iff the weight belongs to the positive set
+   bool isPositive (double weight) const {
+      bool isPositive = false;
+      bool res = isRelevant (weight, isPositive);
+      return res && isPositive;
+   }
+   bool isPositive (const Sequence& sequence) const {
+      return isPositive (sequence.weight ());
+   }
+
+   //
+   // returns true iff the weight belongs to the negative set
+   bool isNegative (double weight) const{
+      bool isPositive = false;
+      bool res = isRelevant (weight, isPositive);
+      return res && (!isPositive);
+   }
+   bool isNegative (const Sequence& sequence) const {
+      return isNegative (sequence.weight ());
+   }
+   //
+   // is positive or negative
+   bool isRelevant (const Sequence& sequence) const {
+      bool unused;
+      return isRelevant (sequence.weight (), unused);
+   }
+
+protected:
+   virtual bool isRelevantImpl (double weight, bool& outIsPositive) const = 0;
+   bool _partialCount;
+   bool _invert;
+};
+
+
+
+
 class SeqPosition : public Persistance::Object {
 public:
    //
    // ctor is called in a loop, so must be very effiecient
-	inline SeqPosition (Sequence const * seq, int pos) :  _sequence (seq),
-                                                      _position (pos) {
+	inline SeqPosition (Sequence const * seq, int pos) 
+   :  _sequence (seq), _position (pos) {
+   }
+	inline SeqPosition (Sequence const * seq, int pos, bool strand) 
+   :  _sequence (seq), _position (pos), _strand (strand) {
    }
    ~SeqPosition () {
    }
@@ -184,6 +268,7 @@ public:
 private:
 	Sequence const * _sequence;
 	int _position;
+   bool _strand;
    static ChunkAllocator <SeqPosition> __allocator;
 };
 

@@ -30,6 +30,22 @@ protected:
 	virtual bool hasMoreBuffers() const;
 };
 
+class NullOutputStream : public OutputStream {
+public:
+   virtual ~NullOutputStream () {
+   }
+
+protected:
+   virtual bool hasMoreBuffers() const {
+      return true;
+   }
+   virtual void nextBuffer() {
+      setupBuffer (reinterpret_cast<Ptr> (_buffer), sizeof (_buffer));
+   }
+
+   char _buffer [1024];
+};
+
 }; // namesspace Persistance
 
 #endif

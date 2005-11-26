@@ -1,0 +1,56 @@
+Microsoft Visual Studio Solution File, Format Version 7.00
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Core", "Core.vcproj", "{A9E58B03-3A1B-4F52-9BC8-2376A2D6CAF5}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Persistance", "Persistance.vcproj", "{16C4D29E-6206-48AF-AE0E-E413B563CE75}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SeedSearcher", "SeedSearcher.vcproj", "{3071C567-8503-473B-A530-6D93E43B1809}"
+EndProject
+Global
+	GlobalSection(SourceCodeControl) = preSolution
+		SccNumberOfProjects = 3
+		SccProjectUniqueName0 = Core.vcproj
+		SccProjectName0 = \u0022$/SeedSearcher\u0022,\u0020ECAAAAAA
+		SccLocalPath0 = ..
+		SccProvider0 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
+		CanCheckoutShared = false
+		SccProjectFilePathRelativizedFromConnection0 = net\\
+		SccProjectUniqueName1 = Persistance.vcproj
+		SccProjectName1 = \u0022$/SeedSearcher\u0022,\u0020ECAAAAAA
+		SccLocalPath1 = ..
+		SccProvider1 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
+		CanCheckoutShared = false
+		SccProjectFilePathRelativizedFromConnection1 = net\\
+		SccProjectUniqueName2 = SeedSearcher.vcproj
+		SccProjectName2 = \u0022$/SeedSearcher\u0022,\u0020ECAAAAAA
+		SccLocalPath2 = ..
+		SccProvider2 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
+		CanCheckoutShared = false
+		SccProjectFilePathRelativizedFromConnection2 = net\\
+	EndGlobalSection
+	GlobalSection(SolutionConfiguration) = preSolution
+		ConfigName.0 = Debug
+		ConfigName.1 = Release
+	EndGlobalSection
+	GlobalSection(ProjectDependencies) = postSolution
+		{3071C567-8503-473B-A530-6D93E43B1809}.0 = {A9E58B03-3A1B-4F52-9BC8-2376A2D6CAF5}
+		{3071C567-8503-473B-A530-6D93E43B1809}.1 = {16C4D29E-6206-48AF-AE0E-E413B563CE75}
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{A9E58B03-3A1B-4F52-9BC8-2376A2D6CAF5}.Debug.ActiveCfg = Debug|Win32
+		{A9E58B03-3A1B-4F52-9BC8-2376A2D6CAF5}.Debug.Build.0 = Debug|Win32
+		{A9E58B03-3A1B-4F52-9BC8-2376A2D6CAF5}.Release.ActiveCfg = Release|Win32
+		{A9E58B03-3A1B-4F52-9BC8-2376A2D6CAF5}.Release.Build.0 = Release|Win32
+		{16C4D29E-6206-48AF-AE0E-E413B563CE75}.Debug.ActiveCfg = Debug|Win32
+		{16C4D29E-6206-48AF-AE0E-E413B563CE75}.Debug.Build.0 = Debug|Win32
+		{16C4D29E-6206-48AF-AE0E-E413B563CE75}.Release.ActiveCfg = Release|Win32
+		{16C4D29E-6206-48AF-AE0E-E413B563CE75}.Release.Build.0 = Release|Win32
+		{3071C567-8503-473B-A530-6D93E43B1809}.Debug.ActiveCfg = Debug|Win32
+		{3071C567-8503-473B-A530-6D93E43B1809}.Debug.Build.0 = Debug|Win32
+		{3071C567-8503-473B-A530-6D93E43B1809}.Release.ActiveCfg = Release|Win32
+		{3071C567-8503-473B-A530-6D93E43B1809}.Release.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal

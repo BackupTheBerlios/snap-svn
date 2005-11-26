@@ -70,68 +70,6 @@ private:
    PositionSet _set;
 };
 
-//
-// basic interface for deciding if a sequence is positive / negative
-class SeqWeightFunction {
-public:
-   SeqWeightFunction () : _invert (false) {
-   }
-   virtual ~SeqWeightFunction () {
-   }
-
-   void invert () {
-      _invert = !_invert;
-   }
-
-   //
-   // returns true iff the weight belongs to the positive or negative set.
-   // if so, 'outIsPositive' is set to true iff the weight belongs to the
-   // positive set.
-   inline bool isRelevant (const Sequence& seq, bool& outIsPositive) const {
-      return isRelevant (seq.weight (), outIsPositive);
-   }
-   inline bool isRelevant (double weight, bool& outIsPositive) const {
-      bool result = 
-         isRelevantImpl (weight, outIsPositive);
-      if (_invert)
-	    outIsPositive = ! outIsPositive;
-      return result;
-   }
-
-   //
-   // returns true iff the weight belongs to the positive set
-   bool isPositive (double weight) const {
-      bool isPositive = false;
-      bool res = isRelevant (weight, isPositive);
-      return res && isPositive;
-   }
-   bool isPositive (const Sequence& sequence) const {
-      return isPositive (sequence.weight ());
-   }
-
-   //
-   // returns true iff the weight belongs to the negative set
-   bool isNegative (double weight) const{
-      bool isPositive = false;
-      bool res = isRelevant (weight, isPositive);
-      return res && (!isPositive);
-   }
-   bool isNegative (const Sequence& sequence) const {
-      return isNegative (sequence.weight ());
-   }
-   //
-   // is positive or negative
-   bool isRelevant (const Sequence& sequence) const {
-      bool unused;
-      return isRelevant (sequence.weight (), unused);
-   }
-
-protected:
-   virtual bool isRelevantImpl (double weight, bool& outIsPositive) const = 0;
-   bool _invert;
-};
-
-
 
 //
 //
@@ -363,7 +301,7 @@ public:
 
    //
    //
-   struct SumWeights : public SimpleCounter <double> {
+   struct SumSeqWeights : public SimpleCounter <double> {
       inline void perform (const Sequence& seq, PosCluster*) {
          double Wi = ABS (seq.weight () - 0.5) * 2;
          _result += Wi;
@@ -372,10 +310,19 @@ public:
 
 
    //
-   //
+   // useful for counting sequences in a cluster
    struct CountSequences : public SimpleCounter <int> {
       inline void perform (const Sequence&, PosCluster*) {
          _result++;
+      }
+   };
+
+   //
+   // useful for counting all positions in a cluster
+   struct CountPositions : public SimpleCounter <int> {
+      inline void perform (const Sequence&, PosCluster* pos) {
+          debug_mustbe (pos);
+		  _result += pos->size ();
       }
    };
 

@@ -10,13 +10,11 @@ public:
    };
    
    RandomProjections (  All,              // create all possible projections
-                        int cardinality,  // length of the Assignment to create;
                         int length,          // length of the assignment to create
                         int numOfPositions   // number of positions to select in each assignment
                         );
 
    RandomProjections (  int numOfProjections,// num of assignments to generate
-                        int cardinality,     // size of the alphabet
                         int length,          // length of the assignment to create
                         int numOfPositions   // number of positions to select in each assignment
                         );
@@ -53,7 +51,6 @@ public:
 
 private:
    int _length;
-   int _cardinality;
    int _numOfPositions;
    int _maxPossibleProjections;
    RandomPositionsVector _vector;

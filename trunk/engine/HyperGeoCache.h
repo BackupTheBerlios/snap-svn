@@ -140,9 +140,9 @@ public:
    ~HyperGeoCache ();
 
    double logTail (int x, int k);
-   double logTail (int x, int k, SeedSearcher::ScoreParameters**);
+   double logTail (int x, int k, ScoreParameters**);
 
-   void writeAsText (Persistance::TextWriter&, const SeedSearcher::ScoreParameters*);
+   void writeAsText (Persistance::TextWriter&, const ScoreParameters*) const;
 
    struct XK;
    class Score;
@@ -163,9 +163,9 @@ public:
    ~HyperGeoTotalCache ();
 
    double logTail (int x, int k, int n, int m);
-   double logTail (int x, int k, int n, int m, SeedSearcher::ScoreParameters**);
+   double logTail (int x, int k, int n, int m, ScoreParameters**);
 
-   void writeAsText (Persistance::TextWriter&, const SeedSearcher::ScoreParameters*);
+   void writeAsText (Persistance::TextWriter&, const ScoreParameters*) const;
 
    struct XKNM;
    class Score;

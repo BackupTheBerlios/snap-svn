@@ -21,48 +21,48 @@ struct MyOptions {
    int has_arg;
 };
 
-//
-//
-int Parser::__argc = 0;
-char** Parser::__argv = NULL;
+Parser::Parser ()
+{
+   //
+   //
+   __argc = 0;
+   __argv = NULL;
 
-//
-//
-int Parser::__firstFileArg = 0;
-int Parser::__lastFileArg = 0;
+   //
+   //
+   __firstFileArg = 0;
+   __lastFileArg = 0;
 
-//
-//
-bool Parser::__proj_e = false;
-int Parser::__proj_n = 3;
-int Parser::__proj_d = 4;
-bool Parser::__proj_spec = true;
-int Parser::__proj_i; // need to be initialized in main
-int Parser::__seed_n = 5;
-int Parser::__seed_l = 9;
-int Parser::__seed_r = 2;
-int Parser::__seed_o = 20;
-Parser::PrepType Parser::__prep = Parser::leaf;
-bool Parser::__prep_save = false;
-bool Parser::__prep_load = false;
-Parser::CountType Parser::__count = Parser::gene;
-bool Parser::__score_partial = false;
-bool Parser::__count_reverse = false;
-bool Parser::__score_fdr = false;
-bool Parser::__score_bonf = true;
-double Parser::__score_min = 0.5;
-int Parser::__score_min_seq = 1;
-int Parser::__score_min_seq_per = 10;
-double Parser::__weight_t = 0.5;
-double Parser::__weight_interval = 0;
-double Parser::__weight_border = 0;
-bool Parser::__weight_invert = false;
-double Parser::__weight_lowt = 0.5;
-Parser::WeightType Parser::__weightType = Parser::simple;
+   //
+   //
+   __proj_e = false;
+   __proj_n = 3;
+   __proj_d = 4;
+   __proj_spec = true;
+   __proj_i; // need to be initialized in main
+   __seed_n = 5;
+   __seed_l = 9;
+   __seed_r = 2;
+   __seed_o = 20;
+   __prep = _prep_leaf_;
+   __prep_save = false;
+   __prep_load = false;
+   __count = _count_gene_;
+   __score_partial = false;
+   __count_reverse = false;
+   __score_fdr = false;
+   __score_bonf = true;
+   __score_min = 0.5;
+   __score_min_seq = 1;
+   __score_min_seq_per = 10;
+   __weight_t = 0.5;
+   __weight_invert = false;
+   __weight_lowt = 0.5;
+   __weightType = _weight_simple_;
+   __searchType = _search_default_;
+}
 
-
-
-
+   
 enum {
    __PROJ_E,
    __PROJ_N,
@@ -88,6 +88,7 @@ enum {
    __WEIGHT_INTERVAL,
    __WEIGHT_BORDER,
    __WEIGHT_INVERT,
+   __SEARCH_TYPE
 };
 
 static MyOptions my_options [] = { 
@@ -234,11 +235,27 @@ static MyOptions my_options [] = {
       "off",
       optional_argument
    },
+
+   {  "search-t",
+      "<default, table, tree> type of search (tree-search works only with tree-prep",
+      "default",
+      required_argument
+   },
 };
 
 static const int numberOfOptions = sizeof (my_options) / (sizeof (MyOptions));
   
 
+struct ParserError : public BaseException {
+    ParserError (std::string const & s) : _error (s) {
+    }
+
+    virtual void explain (std::ostream& out) {
+        out << "Error in arguments: " << _error;
+    }
+
+    std::string _error;
+};
 
 void Parser::usage (const char* error)
 {
@@ -256,17 +273,6 @@ void Parser::usage (const char* error)
 
    cout << endl;
    cout << endl;
-
-   struct ParserError : public BaseException {
-      ParserError (std::string const & s) : _error (s) {
-      }
-
-      virtual void explain (std::ostream& out) {
-         out << "Error in arguments: " << _error;
-      }
-
-      std::string _error;
-   };
 
    throw ParserError (error);
 }
@@ -357,9 +363,9 @@ void Parser::parse (int argc, char* argv[])
       case __PREP:   {
          Str opt (optarg);
          if (opt.equalsIgnoreCase ("leaf"))
-            __prep = leaf;
+            __prep = _prep_leaf_;
          else if (opt.equalsIgnoreCase ("tree"))
-            __prep = tree;
+            __prep = _prep_tree_;
          else
             usage (StrBuffer ("unknown preprocessor type ", optarg));
          break;
@@ -376,9 +382,9 @@ void Parser::parse (int argc, char* argv[])
       case __COUNT: {
          Str opt (optarg);
          if (opt.equalsIgnoreCase ("gene"))
-            __count = Parser::gene;
+            __count = _count_gene_;
          else if (opt.equalsIgnoreCase ("total"))
-            __count = Parser::total;
+            __count = _count_total_;
          else
             usage (StrBuffer ("Unknown counting type: ", opt));
          break;
@@ -417,12 +423,12 @@ void Parser::parse (int argc, char* argv[])
          break;
 
       case __WEIGHT_INTERVAL:
-         __weightType = Parser::interval;
+         __weightType = _weight_interval_;
          __weight_lowt = atof (optarg);
          break;
 
       case __WEIGHT_BORDER:
-         __weightType = Parser::border;
+         __weightType = _weight_border_;
          __weight_lowt = atof (optarg);
          break;
 
@@ -430,23 +436,51 @@ void Parser::parse (int argc, char* argv[])
          __weight_invert = getOptBoolean (optarg);
          break;
 
+      case __SEARCH_TYPE: {
+         Str opt (optarg);
+         if (opt.equalsIgnoreCase ("default"))
+            __searchType = _search_default_;
+         else if (opt.equalsIgnoreCase ("table"))
+            __searchType = _search_table_;
+         else if (opt.equalsIgnoreCase ("tree"))
+            __searchType = _search_tree_;
+         else
+            usage (StrBuffer ("Unknown counting type: ", opt));
+         break;
+      }
+
       default:
          usage (StrBuffer ("unknown argument: ", __argv [optind]));
          break;
       };
    }
 
-   if (__prep_load) { // needs RegFile and output-stub
-      __firstFileArg = optind;
-      __lastFileArg = optind+1;
-   }
-   else {   // needs SeqFile RegFile and output-stub
-      __firstFileArg = optind;
-      __lastFileArg = optind + 2;
+   __firstFileArg = optind;
+   __lastFileArg = argc - 1;
+
+   //
+   // validate arguments
+   if (__prep != _prep_tree_) {
+      if (__searchType == _search_tree_) {
+         usage ("Can only use tree-search option with tree-preprocessor");
+      }
    }
 
-   if( __lastFileArg >= argc )
-      usage("Missing arguments");
+   if (__searchType == _search_default_)   {
+      switch (__prep) {
+         case _prep_tree_:
+            __searchType = _search_tree_;
+            break;
+
+         case _prep_leaf_:
+            __searchType = _search_table_;
+            break;
+
+         default:
+            mustfail ();
+            break;
+      }
+   }
 }
 
 

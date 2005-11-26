@@ -18,38 +18,65 @@
 //
 
 
-
-
-class ACGTAlphabet {
+class ACGTLangauge : public Langauge{
    //
-   // this class defines the basic ACGT alphabet
+   // this class defines the ACGT langauge
 public:
-   static const AlphabetCode& get (bool cardinalityIncludesN);
-   static int cardinality () {
-      return 5; // includes the 'N' character
+   enum {
+      ACode = 0x1,
+      CCode = 0x2,
+      GCode = 0x4,
+      TCode = 0x8,
+   };
+   ACGTLangauge () : _includeN (false) {
    }
-   static int assgCardinality () {
-      return 4; // does not includes the 'N' character
-   }
-};
-
-class ACGTWriter : public AssignmentWriter{
-public:
-   virtual ~ACGTWriter () {
+   virtual ~ACGTLangauge () {
    }
 
+   //
+   // convert assignment position to text,
+   // used to display search results
    virtual void write (const Assignment::Position&, Persistance::TextWriter& out) const ;
-};
 
-class ACGTPosition : public Assignment::Position {
-public:
-   ACGTPosition (Assignment::Strategy s) 
-   : Position (Assignment::all, ACGTAlphabet::assgCardinality (), s) {
-      index (4, false); // turn off the 'N' position
+   //
+   // returns the complement of an assignemnt 
+   // (for instance the reverse assignment for ACGT langugaue)
+   virtual void complement (const Assignment&, Assignment&) const;
+   virtual void complement (const Str&, StrBuffer) const;
+
+   //
+   // return a wildcard with the appropriate strategy (for searching)
+   virtual Assignment::Position wildcard (Assignment::Strategy s) const {
+      return Assignment::Position (Assignment::all, cardinality (), s);
    }
+
+   //
+   // return the code of the langauge
+   virtual const AlphabetCode& code () const {
+      return getCode (_includeN);
+   }
+   //
+   // get the cardinality of the alphabet 
+   // (depends on inclusion of 'N' in alphabet)
+   int cardinality () const{
+      return _includeN? 5 : 4;
+   }
+   bool includeN () const {
+      return _includeN;
+   }
+   void includeN (bool i) {
+      _includeN = i;
+   }
+   
+   //
+   // 
+   static const AlphabetCode& getCode (bool cardinalityIncludesN);
+
+protected:
+   //
+   // if true includes the char 'N' in the langauge
+   bool _includeN;
 };
-
-
 
 
 //
@@ -143,7 +170,7 @@ public:
       if (_owner)
          delete _next;
    }
-   virtual bool add (SeedSearcher::Feature_var feature) {
+   virtual bool add (Feature_var feature) {
       return _next->add (feature);
    }
 
@@ -151,7 +178,10 @@ public:
       return _next->size ();
    }
 
-   virtual const SeedSearcher::Feature& get (int index) const {
+   virtual const Feature& get (int index) const {
+      return _next->get (index);
+   }
+   virtual Feature& get (int index) {
       return _next->get (index);
    }
 
@@ -180,13 +210,18 @@ public:
 
    //
    // takes ownership of Assignment & Cluster
-   virtual bool add (SeedSearcher::Feature_var feature);
+   virtual bool add (Feature_var feature);
 
    virtual int size () const {
       return _size;
    }
 
-   virtual const SeedSearcher::Feature& get (int index) const {
+   virtual const Feature& get (int index) const {
+      debug_mustbe (index >= 0);
+      debug_mustbe (index < _size);
+      return _features [index];
+   }
+   virtual Feature& get (int index) {
       debug_mustbe (index >= 0);
       debug_mustbe (index < _size);
       return _features [index];
@@ -197,12 +232,46 @@ public:
    }
    void sort ();
 
-private:
+protected:
+   virtual bool checkRedundancy (int index, const Assignment&);
+   bool checkSimilarity (const Assignment&, const Assignment&);
+   static bool checkSimilarity (int, const Assignment&, const Assignment&);
+
+protected:
    int _k;
    int _size;
    int _maxRedundancyOffset;
-   SeedSearcher::Feature* _features;
+   Feature* _features;
    bool _sorted;
+};
+
+
+//
+//
+class KBestFeaturesComplement : public KBestFeatures {
+public:
+   KBestFeaturesComplement (  int k, int maxRedundancyOffset, 
+                              const Langauge& langauge)
+   :  KBestFeatures (k, maxRedundancyOffset), _langauge (langauge)
+   {
+   }
+   virtual ~KBestFeaturesComplement () {
+   }
+
+   virtual bool checkRedundancy (int index, const Assignment& assg) {
+      //
+      // check regular similarity
+      if (checkSimilarity (_features [index].assignment (), assg))
+         return true;
+
+      //
+      // check similarity with reverse
+      return checkSimilarity (
+         _features [index].complement (_langauge), assg);
+   }
+
+protected:
+   const Langauge& _langauge; 
 };
 
 
@@ -223,7 +292,7 @@ public:
 
    //
    // takes ownership of Assignment & Cluster
-   virtual bool add (SeedSearcher::Feature_var feature);
+   virtual bool add (Feature_var feature);
 
    //
    // returns the minimum positive sequences that should contain a feature

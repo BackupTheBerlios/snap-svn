@@ -16,6 +16,47 @@ using namespace std;
 
 
 //
+// Feature
+Feature::Feature () 
+:  _assg (NULL), _cluster (NULL), _projection (0), 
+   _params (0), _score (0) {
+}
+
+Feature::Feature (Assignment* assg, 
+         SequenceDB::Cluster* cluster,
+         const Assignment* projection,
+         ScoreParameters* params,
+         double score)
+:  _assg(assg), _complement (NULL), _projection (projection),
+   _params (params), _cluster (cluster), _score (score) 
+{
+}
+
+void Feature::dispose () {
+   debug_only (
+      //
+      // guard against repetitive calls to delete
+      debug_mustbe (_score != 0xBAADF00D);
+      _score = 0xBAADF00D;
+      debug_mustbe (_score == 0xBAADF00D);
+   );
+
+   delete _assg;     _assg = NULL;
+   delete _cluster;  _cluster = NULL;
+   delete _complement;  _complement = NULL;
+   if (_params) {
+      _params->dispose ();
+      _params = NULL;
+   }
+}
+
+
+
+
+
+
+
+//
 // debug: cross-reference tree-search model with prefix-tree-walk model (safer)
 #define SEED_TREE_SEARCH_DEBUG 0
 
@@ -63,7 +104,8 @@ struct FeatureComparator : public std::binary_function<FeaturePair, FeaturePair,
 
 static int together (FeatureVector& myFeatures, // stores the features of the node
                      int fromIndex,     // from where to start the merge
-                     int myDepth
+                     int myDepth,
+                     bool totalCount
                      )
 {
    int size = myFeatures.size ();
@@ -113,7 +155,12 @@ static int together (FeatureVector& myFeatures, // stores the features of the no
             
             const FeatureSet::iterator& it = result.first;
             SeqCluster* seqCluster = it->second;
-            seqCluster->unify (*myFeatures [i].second);
+            if (totalCount) {
+               seqCluster->unifyPositions (*myFeatures [i].second);
+            }
+            else {
+               seqCluster->unify (*myFeatures [i].second);
+            }
 
             //
             // now we generalize the projection
@@ -149,7 +196,8 @@ static int together (FeatureVector& myFeatures, // stores the features of the no
 static int combineChildSeeds (const Assignment& projection,
                               FeatureVector& myFeatures,
                               int newEntries,
-                              int myDepth)
+                              int myDepth,
+                              bool totalCount)
 {
    if (projection [myDepth].strategy () == Assignment::together) {
       //
@@ -159,7 +207,7 @@ static int combineChildSeeds (const Assignment& projection,
       // also, the features added are grouped together.
       int size = myFeatures.size ();
       int firstFeatureIndex = size - newEntries;
-      return together (myFeatures, firstFeatureIndex , myDepth);
+      return together (myFeatures, firstFeatureIndex , myDepth, totalCount);
    }
    
    return newEntries;
@@ -204,16 +252,13 @@ static void addAssignmentPosition (
 //
 // returns the amount of new entries in myFeatures vector
 static int rec_prefixTreeSearch (
+      SeedSearcher::SearchParameters& params,
       PrefixTreePreprocessor::TreeNodeRep* inNode,  // where to search
       const Assignment& projection,             // how to climb down the tree
-      SeedSearcher::WeightFunction& weightFunc, // which seq are positive
-      SeedSearcher::ScoreFunction& scoreFunc,   // how to score features
       FeatureVector& myFeatures,    // stores the features of the node
       int myDepth,                  // current depth in the tree
       int desiredDepth, // desired depth / length of features                           
-      int childIndex,   // what is my index as child of my parent
-      bool specializeProj
-
+      int childIndex   // what is my index as child of my parent
       )
 {
    if (inNode == NULL)
@@ -225,14 +270,17 @@ static int rec_prefixTreeSearch (
       AutoPtr <SequenceDB::Cluster> seqInNode =
          new SequenceDB::Cluster;
    
-      node.add2SeqCluster (*seqInNode);
+      if (params.countType () == _count_total_) 
+		   node.add2SeqClusterPositions (*seqInNode);
+      else
+         node.add2SeqCluster (*seqInNode);
 
       //
       // we are at the desired length
       myFeatures.push_back(
          FeaturePair (new Assignment, seqInNode.release ()));
 
-      addAssignmentPosition ( specializeProj,
+      addAssignmentPosition ( params.useSpecialization (),
                               projection, 
                               myFeatures, 
                               childIndex, 
@@ -253,15 +301,13 @@ static int rec_prefixTreeSearch (
       const int nextChildIndex = posIt.get ();
       const int newChildEntries = 
          rec_prefixTreeSearch (
+            params,
             node.getChild (nextChildIndex),  // where to search
             projection,             // how to climb down the tree
-            weightFunc,             // which sequences are positively labeled
-            scoreFunc,              // how to score features
             myFeatures,             // stores the features of the node
             myDepth + 1,            // current depth in the tree
             desiredDepth,           // desired depth / length of features
-            nextChildIndex,         // index of the child
-            specializeProj
+            nextChildIndex          // index of the child
          );
 
       //
@@ -277,11 +323,13 @@ static int rec_prefixTreeSearch (
    newEntries = combineChildSeeds (projection, 
                                    myFeatures, 
                                    newEntries, 
-                                   myDepth);
+                                   myDepth,
+                                   params.countType () == _count_total_);
 
    //
    // add our position to all the features
-   addAssignmentPosition ( specializeProj,
+   addAssignmentPosition ( 
+                        params.useSpecialization (),
                         projection, 
                         myFeatures, 
                         childIndex, 
@@ -297,15 +345,14 @@ static int rec_prefixTreeSearch (
 
 
 int SeedSearcher::prefixTreeSearch (
-    PrefixTreePreprocessor& tree,       // where to search
-    const Assignment& projection,       // how to climb down the tree
-    WeightFunction& weightFunc, // which sequences are pos labeled
-    ScoreFunction& scoreFunc,           // how to score features
-    BestFeatures& bestFeatures,         // stores the best features
-    int desiredDepth,                   // desired depth / length of features
-    bool specializeProjection
+      SearchParameters& params,
+      const Assignment& projection, // how to climb down the tree
+      int desiredDepth              // desired depth / length of features
          )
 {
+   const PrefixTreePreprocessor& tree = 
+      dynamic_cast <const PrefixTreePreprocessor&> (params.preprocessor ());
+
    debug_mustbe (projection.length () > 0);
    debug_mustbe (projection.length () <= tree.getDepth ());
    debug_mustbe (desiredDepth <= projection.length ());
@@ -331,16 +378,14 @@ int SeedSearcher::prefixTreeSearch (
       int childIndex = posIt.get ();
       FeatureVector childFeatures;
       rec_prefixTreeSearch (
-		    node.getChild (childIndex), //where to search
-		    projection,    // how to climb down the tree
-		    weightFunc,    // which sequences are positively labeled
-		    scoreFunc,     // how to score features
-		    childFeatures, // storage for all the child's features
-		    1,             // current depth in the tree
-		    desiredDepth,  // desired depth / length of features
-		    childIndex,    // index of the chlid
-          specializeProjection
-		    );
+         params,
+         node.getChild (childIndex), //where to search
+         projection,    // how to climb down the tree
+         childFeatures, // storage for all the child's features
+         1,             // current depth in the tree
+         desiredDepth,  // desired depth / length of features
+         childIndex    // index of the chlid
+      );
 
       //
       // now we have all the relevant features from our child
@@ -360,14 +405,14 @@ int SeedSearcher::prefixTreeSearch (
 
          ScoreParameters* scoreParams = NULL;
          double score = 
-            scoreFunc.score (
+            params.score ().score (
                *feature.first,         // the assignment
                projection,             // the projection,
                *feature.second,        // sequences containing the feature
                &scoreParams
                );
 
-         SeedSearcher::Feature seed_feature (
+         Feature seed_feature (
 				      // the feature's assignment 
 				      feature.first,
 				      // sequences containing the feature  
@@ -377,7 +422,7 @@ int SeedSearcher::prefixTreeSearch (
 				      score);
          //
          // this also cleans up memory, if necessary
-         bestFeatures.add (&seed_feature);
+         params.bestFeatures ().add (&seed_feature);
       }
 
       totalSeedsFound += size;
@@ -487,16 +532,15 @@ struct TableSearcher {
       Table (  bool totalCount,
                bool specialize,
                int tableSize, 
-               const AlphabetCode& code, 
-               AssignmentWriter& writer)
-      :  SeedHash::Table (tableSize, code, writer), 
+               const Langauge& langauge)
+      :  SeedHash::Table (tableSize, langauge), 
          _totalCount (totalCount), _specialize (specialize) {
       }
       //
       //
       void addSeed ( const Assignment& projection, 
                      const Preprocessor::Node& node)   {
-         SeedHash::AssgKey key (projection, _assgWriter);
+         SeedHash::AssgKey key (projection, _langauge);
    
          //
          // search for it in the table
@@ -533,30 +577,19 @@ struct TableSearcher {
 //
 // Total counts
 //
-int SeedSearcher::tableSearch (
-   bool totalCount,
-   bool specialize,
-   const AlphabetCode& code,
-   const Preprocessor& data, 
-   const Assignment& projection, 
-   AssignmentWriter& writer,
-   // which sequences are positively labeled
-   const SeqWeightFunction& wf,
-   SeedSearcher::ScoreFunction& scoreFunc,       // how to score features
-   SeedSearcher::BestFeatures& bestFeatures      // stores the best features
-   )
+int SeedSearcher::tableSearch (  SearchParameters& params,
+                                 const Assignment& projection)
 {
    debug_mustbe (projection.length () > 0);
 
    Preprocessor::NodeCluster nodes;
-   TableSearcher::Table hashTable ( totalCount,
-                                    specialize,
-                                    7 * 1023 * 1024 - 1, 
-                                    code, 
-                                    writer);
+   TableSearcher::Table hashTable ( params.countType () == _count_total_,
+                                    params.useSpecialization (),
+                                    7 * 1023 * 1024 - 1,
+                                    params.langauge ());
    //
    // collect features together, (with optional total counts)
-   data.add2Cluster (nodes, projection);
+   params.preprocessor ().add2Cluster (nodes, projection);
    Preprocessor::NodeIterator it = nodes.iterator ();
    for (; it.hasNext () ; it.next ()) {
       const Preprocessor::AssgNodePair& nodeWithPath = it.get ();
@@ -576,7 +609,7 @@ int SeedSearcher::tableSearch (
       TableSearcher::Seed* feature = 
          dynamic_cast <TableSearcher::Seed*> (featureIt.get ());
 
-      if (totalCount) {
+      if (params.countType () == _count_total_) {
          //
          // now we have to remove position overlaps, e.g. we do not count
          // 'AAAAAA' (6 A's)  as having the feature 'AA' 5 times, but only 3 times 
@@ -592,16 +625,15 @@ int SeedSearcher::tableSearch (
       // ok. now we have to score each feature 
       // and insert it to a BestFeatures container
       double score = 
-         scoreFunc.score (feature->assignment (),
-                          projection,
-                          feature->getCluster (),// k
-                          &scoreParams
-                          );
-
-      
+         params.score ().score (
+                  feature->assignment (),
+                  projection,
+                  feature->getCluster (),// k
+                  &scoreParams
+         );
       
       Assignment* featureAssg;
-      if (specialize) {
+      if (params.useSpecialization ()) {
          featureAssg = 
             dynamic_cast <TableSearcher::SpecializedSeed*> (
                feature)->releaseSpecializtion ();
@@ -616,7 +648,7 @@ int SeedSearcher::tableSearch (
                               scoreParams,
                               score);
       
-      bestFeatures.add (&seed_feature);
+      params.bestFeatures ().add (&seed_feature);
    }
 
    return hashTable.getSize ();

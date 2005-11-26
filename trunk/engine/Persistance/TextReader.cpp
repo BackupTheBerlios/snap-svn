@@ -290,7 +290,7 @@ void TextReader::read (unsigned int& out)
 
 void TextReader::read (float& out) 
 {
-	out = readDouble ();
+	out = (float) readDouble ();
 }
 
 void TextReader::read (double& out) 

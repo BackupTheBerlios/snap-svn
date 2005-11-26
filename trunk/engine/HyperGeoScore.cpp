@@ -10,7 +10,7 @@
 
 HyperGeoScore::Simple::Simple (
                        bool countWeights,
-                       const SeedSearcher::WeightFunction& wf ,
+                       const SeqWeightFunction& wf ,
                        const SequenceDB& allSequences // m
                       )
 :  _countWeights (countWeights),
@@ -33,8 +33,8 @@ HyperGeoScore::Simple::Simple (
 double HyperGeoScore::Simple::score (const Assignment& feature,
                      const Assignment& projection,
                      const SequenceDB::Cluster& containingFeature,// k
-                     SeedSearcher::ScoreParameters** parameters
-                     )
+                     ScoreParameters** parameters
+                     ) const
 {
    //
    // check if we are counting the weights of all sequences
@@ -42,8 +42,8 @@ double HyperGeoScore::Simple::score (const Assignment& feature,
    int posCount;
    int containingCount;
    if (_countWeights) {
-      SeqCluster::SumWeights posWeightCount;
-      SeqCluster::SumWeights negWeightCount;
+      SeqCluster::SumSeqWeights posWeightCount;
+      SeqCluster::SumSeqWeights negWeightCount;
       containingFeature.performDivided (_wf, posWeightCount, negWeightCount);
 
       posCount = ROUND (posWeightCount.result ());
@@ -66,7 +66,7 @@ double HyperGeoScore::Simple::score (const Assignment& feature,
 //
 // print the score parameters 
 void HyperGeoScore::Simple::writeAsText (Persistance::TextWriter& writer, 
-                         const SeedSearcher::ScoreParameters* params)
+                         const ScoreParameters* params) const
 {
    _cache->writeAsText (writer, params);
 }
@@ -114,8 +114,8 @@ HyperGeoScore::FixedTotalCount::FixedTotalCount (int seedLength,
 double HyperGeoScore::FixedTotalCount::score (const Assignment& feature,
                      const Assignment& projection,
                      const SequenceDB::Cluster& containingFeature,// k
-                     SeedSearcher::ScoreParameters** parameters
-                     )
+                     ScoreParameters** parameters
+                     ) const
 {
    //
    // check if we are counting the weights of all sequences
@@ -131,12 +131,12 @@ double HyperGeoScore::FixedTotalCount::score (const Assignment& feature,
       containingCount = ROUND (pos.result () + neg.result ());
    }
    else {
-      SeqCluster::SumWeights pos;
-      SeqCluster::SumWeights neg;
+      SeqCluster::CountPositions pos;
+      SeqCluster::CountPositions neg;
       containingFeature.performDivided (_wf, pos, neg);
       
       posCount = ROUND (pos.result ());
-      containingCount = ROUND (neg.result ());
+      containingCount = ROUND (pos.result () + neg.result ());
    }
 
    return _cache->logTail (posCount, containingCount, parameters);
@@ -145,7 +145,7 @@ double HyperGeoScore::FixedTotalCount::score (const Assignment& feature,
 //
 // print the score parameters 
 void HyperGeoScore::FixedTotalCount::writeAsText (Persistance::TextWriter& writer, 
-                         const SeedSearcher::ScoreParameters* params)
+                         const ScoreParameters* params) const
 {
    _cache->writeAsText (writer, params);
 }
@@ -173,8 +173,8 @@ HyperGeoScore::TotalCount::TotalCount (
 double HyperGeoScore::TotalCount::score (const Assignment& feature,
                      const Assignment& projection,
                      const SequenceDB::Cluster& containingFeature,// k
-                     SeedSearcher::ScoreParameters** parameters
-                     )
+                     ScoreParameters** parameters
+                     ) const
 {
    //
    // TODO: mustbe some easier way...
@@ -227,7 +227,7 @@ double HyperGeoScore::TotalCount::score (const Assignment& feature,
 //
 // print the score parameters 
 void HyperGeoScore::TotalCount::writeAsText (Persistance::TextWriter& writer, 
-                         const SeedSearcher::ScoreParameters* params)
+                         const ScoreParameters* params) const
 {
    _totalCache->writeAsText (writer, params);
 }

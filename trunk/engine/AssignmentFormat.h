@@ -5,34 +5,61 @@
 #include "Persistance/Defs.h"
 #include "Persistance/AbstractFormat.h"
 
+#include "Core/Str.h"
+
 //
 //
-class AssignmentWriter {
+class Langauge {
 public:
-   virtual ~AssignmentWriter () {
-   };
+   //
+   // return the code of the langauge
+   virtual const AlphabetCode& code () const = 0;
+   
+   //
+   // convert assignment position to text,
+   // used to display search results
+   virtual void write ( const Assignment::Position&, 
+                        Persistance::TextWriter&) const = 0;
 
-   virtual void write (const Assignment::Position&, Persistance::TextWriter&) const= 0;
+   Persistance::AbstractFormat::Owner format (const Assignment& assg) const;
+   Persistance::AbstractFormat::Owner format (const Assignment::Position& pos) const;
+
+   //
+   // return a wildcard with the appropriate strategy (for searching)
+   virtual Assignment::Position wildcard (Assignment::Strategy) const = 0;
+
+   //
+   // returns the complement of an assignemnt 
+   // (for instance the reverse assignment for ACGT langugaue)
+   virtual void complement (const Assignment& in, Assignment& out) const {
+      out = in;
+   }
+
+   //
+   // returns the complement of word in the langauge
+   // (for instance the reverse kmer for ACGT langugaue)
+   virtual void complement (const Str& in, StrBuffer& out) const {
+      out= in;
+   }
 };
-
 
 
 //
 //
 class AssignmentFormat : public Persistance::AbstractFormat {
 public:
-   AssignmentFormat (const Assignment& a, AssignmentWriter& writer) 
-      : _assg (a), _writer (writer) {
+   AssignmentFormat (const Assignment& a, const Langauge& langauge) 
+      : _assg (a), _langauge (langauge) {
    }
    virtual void write (Persistance::TextWriter& out) const {
       int length = _assg.length ();
       for (int i=0 ; i<length ; i++)
-         _writer.write (_assg[i], out);
+         _langauge.write (_assg[i], out);
    }
 
 private:
    const Assignment& _assg;
-   AssignmentWriter& _writer;
+   const Langauge& _langauge;
 };
 
 
@@ -40,7 +67,7 @@ private:
 //
 class PositionFormat : public Persistance::AbstractFormat {
 public:
-   PositionFormat (const Assignment::Position& a, AssignmentWriter& writer) 
+   PositionFormat (const Assignment::Position& a, const Langauge& writer) 
       : _pos (a), _writer (writer) {
    }
    virtual void write (Persistance::TextWriter& out) const {
@@ -49,19 +76,19 @@ public:
 
 private:
    const Assignment::Position& _pos;
-   AssignmentWriter& _writer;
+   const Langauge& _writer;
 };
 
+ 
+inline Persistance::AbstractFormat::Owner 
+   Langauge::format (const Assignment& assg) const {
+      return new AssignmentFormat (assg, *this);
+}
+
+inline Persistance::AbstractFormat::Owner 
+   Langauge::format (const Assignment::Position& pos) const {
+      return new PositionFormat (pos, *this);
+}
 
 #endif // _SeedSearcher_AssignmentFormat_h
-
-
-
-
-
-
-
-
-
-
 

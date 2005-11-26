@@ -35,10 +35,22 @@ public:
 // like writing to file and console at the same time
 class UnbufferedOutputMux : public UnbufferedOutput {
 public:
-   UnbufferedOutputMux (UnbufferedOutput** inStreams, int inSize, bool owner) 
-   : _streams (inStreams), _numOfStreams (inSize) {
+   enum {
+      MAX_NUMBER_OF_STREAMS = 32
+   };
+
+   UnbufferedOutputMux (UnbufferedOutput** inStreams, int inSize, bool owner)
+   : _numOfStreams (inSize), _owner (owner) {
+      debug_mustbe (_numOfStreams <= MAX_NUMBER_OF_STREAMS);
+      memcpy ( _streams, 
+               inStreams, 
+               _numOfStreams * sizeof (UnbufferedOutput*));
    }
    virtual ~UnbufferedOutputMux () {
+      if (_owner) {
+         for (int i=0 ; i<_numOfStreams; i++)
+            delete _streams [i];
+      }
    }
    virtual void writeBytes(const void* inPtr, Size inSize) {
       for (int i=0 ; i<_numOfStreams ; i++) {
@@ -57,8 +69,9 @@ public:
    }
 
 private:
-   UnbufferedOutput** _streams;
+   UnbufferedOutput* _streams [MAX_NUMBER_OF_STREAMS];
    int _numOfStreams;
+   bool _owner;
 };
 
 

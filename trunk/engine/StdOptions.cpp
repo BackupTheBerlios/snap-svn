@@ -51,12 +51,12 @@ static void initACGTCode ()
    __acgt ['n'] = __acgt ['N'] = 4; // AlphabetCode::dunnoCode;
 }
 
-const AlphabetCode& ACGTAlphabet::get (bool cardinalityIncludesN)
+const AlphabetCode& ACGTLangauge::getCode (bool cardinalityIncludesN)
 {
    if (cardinalityIncludesN) {
       if (!__ACGTN.valid ()) {
          initACGTCode ();
-         __ACGTN = new AlphabetCode (__acgt, cardinality ());
+         __ACGTN = new AlphabetCode (__acgt, 5);
       }
 
       return *__ACGTN;
@@ -64,14 +64,14 @@ const AlphabetCode& ACGTAlphabet::get (bool cardinalityIncludesN)
    else {
       if (!__ACGT.valid ()) {
          initACGTCode ();
-         __ACGT = new AlphabetCode (__acgt, assgCardinality ());
+         __ACGT = new AlphabetCode (__acgt, 4);
       }
 
       return *__ACGT;
    }
 }
 
-void ACGTWriter::write(const Assignment::Position& pos,
+void ACGTLangauge::write(const Assignment::Position& pos,
                        Persistance::TextWriter& writer) const
 {
    char ACGT [] = "ACGTN";
@@ -83,7 +83,7 @@ void ACGTWriter::write(const Assignment::Position& pos,
       Assignment::PositionIterator it (pos);
       writer << ACGT [it.get ()];
    }
-   else if (c == ACGTAlphabet::assgCardinality ()) {
+   else if (c == cardinality ()) {
       if (pos.strategy ()== Assignment::together)
          writer << '?';
       else
@@ -93,46 +93,46 @@ void ACGTWriter::write(const Assignment::Position& pos,
       char iupac;
       unsigned long code = pos.toULong ();
       switch (code) {
-         case 0x1:   // A - Adenine 
+         case ACode:   // A - Adenine 
             iupac = 'A';
             break;
-         case 0x2:   // C - Cytosine 
+         case CCode:   // C - Cytosine 
             iupac = 'C';
             break;
-         case 0x4:   // G - Guanine 
+         case GCode:   // G - Guanine 
             iupac = 'G';
             break;
-         case 0x8:   // T - Thymine 
+         case TCode:   // T - Thymine 
             iupac = 'T';
             break;
-         case (0x4 + 0x1): // R [GA] purine 
+         case (GCode | ACode): // R [GA] purine 
             iupac = 'R';
             break;
-         case (0x8 + 0x2): // Y [TC] Pyrimidine 
+         case (TCode | CCode): // Y [TC] Pyrimidine 
             iupac = 'Y';
             break;
-         case (0x4 + 0x8): // K [GT] Keto 
+         case (GCode | TCode): // K [GT] Keto 
             iupac = 'K';
             break;
-         case (0x1 + 0x2): // M [AC] Amino 
+         case (ACode | CCode): // M [AC] Amino 
             iupac = 'M';
             break;
-         case (0x4 + 0x2): // S [GC] ? 
+         case (GCode | CCode): // S [GC] ? 
             iupac = 'S';
             break;
-         case (0x1 + 0x8): // W [AT] ? 
+         case (ACode | TCode): // W [AT] ? 
             iupac = 'W';
             break;
-         case (0x4 + 0x8 + 0x2): // B [GTC] ? 
+         case (GCode | TCode | CCode): // B [GTC] ? 
             iupac = 'B';
             break;
-         case (0x4 + 0x1 + 0x8): // D [GAT] ? 
+         case (GCode | ACode | TCode): // D [GAT] ? 
             iupac = 'D';
             break;
-         case (0x1 + 0x2 + 0x8): // H [ACT] ? 
+         case (ACode | CCode | TCode): // H [ACT] ? 
             iupac = 'H';
             break;
-         case (0x4 + 0x2 + 0x1): // V [GCA] ? 
+         case (GCode | CCode | ACode): // V [GCA] ? 
             iupac = 'V';
             break;
          default:
@@ -145,8 +145,101 @@ void ACGTWriter::write(const Assignment::Position& pos,
    }
 }
 
+void ACGTLangauge::complement (const Assignment& in , Assignment& out) const
+{
+   out = Assignment ();
+   for (int i=in.length () - 1; i>=0 ; i--) {
+      const Assignment::Position& p = in.getPosition (i);
+      Assignment::Position r (p.strategy ());
 
+      Assignment::PositionIterator it (p);
+      for (; it.hasNext () ; it.next ()) {
+         //
+         // A <--> T, C <--> G
+         r.index (3 - (it.get ()), true);
+      }
 
+      out.addPosition (r);
+   }
+}
+
+void ACGTLangauge::complement (const Str& in, StrBuffer out) const
+{
+   out.ensureCapacity (in.length ());
+   for (int i=in.length () - 1 ; i>=0 ; i--) {
+      char code = in [i];
+      char reverse;
+      switch (code) {
+         case 'a':
+         case 'A':   // A - Adenine 
+            reverse = 'T';
+            break;
+         case 'c':
+         case 'C':   // C - Cytosine 
+            reverse = 'G';
+            break;
+         case 'g':
+         case 'G':   // G - Guanine 
+            reverse = 'C';
+            break;
+         case 't':
+         case 'T':   // T - Thymine 
+            reverse = 'A';
+            break;
+         case 'r':
+         case 'R': // R [GA] purine 
+            reverse = 'Y';  // [TC]
+            break;
+         case 'y':
+         case 'Y': // Y [TC] Pyrimidine 
+            reverse = 'R'; // [GA]
+            break;
+         case 'k':
+         case 'K': // K [GT] Keto 
+            reverse = 'M'; // [AC]
+            break;
+         case 'm':
+         case ('M'): // M [AC] Amino 
+            reverse = 'K'; // [GT]
+            break;
+         case 's':
+         case ('S'): // S [GC] ? 
+            reverse = 'S'; // [GC]
+            break;
+         case 'w':
+         case ('W'): // W [AT] ? 
+            reverse = 'W'; // [AT]
+            break;
+         case 'b':
+         case ('B'): // B [GTC] ? 
+            reverse = 'V'; // [GAC]
+            break;
+         case 'd':
+         case ('D'): // D [GAT] ? 
+            reverse = 'H'; // [ACT]
+            break;
+         case 'h':
+         case ('H'): // H [ACT] ? 
+            reverse = 'D';  // [AGT]
+            break;
+         case ('V'): // V [GCA] ? 
+            reverse = 'B'; // [GTC]
+            break;
+         
+         case 'n':
+         case 'N':
+         case '?':
+         case '*':
+            reverse = code;
+
+         default:
+            debug_mustfail ();
+            reverse = '!';
+            break;
+      };
+      out.append (reverse);
+   }
+}
 
 
 
@@ -160,7 +253,7 @@ KBestFeatures::KBestFeatures (int k, int maxRedundancyOffset)
 {
    debug_mustbe (_k > 0);
    debug_mustbe (_maxRedundancyOffset>=0);
-   _features = new SeedSearcher::Feature [_k];
+   _features = new Feature [_k];
 }
 
 KBestFeatures::~KBestFeatures ()
@@ -171,7 +264,7 @@ KBestFeatures::~KBestFeatures ()
    delete [] _features;
 }
 
-static bool checkSimilarity (int offset,
+bool KBestFeatures::checkSimilarity (int offset,
                              const Assignment& a, 
                              const Assignment& b)
 {
@@ -208,8 +301,15 @@ static bool checkSimilarity (int offset,
    return true;
 }
 
-static bool checkRedundancy (int maxOffset, const Assignment& a, const Assignment& b)
+bool KBestFeatures::checkRedundancy (int index, const Assignment& b)
 {
+   const Assignment& a = _features [index].assignment ();
+   return checkSimilarity (a, b);
+}
+
+bool KBestFeatures::checkSimilarity (const Assignment& a, const Assignment& b)
+{
+#if 0 
    debug_only (
       DLOG << "Comparing: "
            << Format (a)
@@ -217,9 +317,10 @@ static bool checkRedundancy (int maxOffset, const Assignment& a, const Assignmen
            << Format (b)
            << DLOG.EOL ();
    );
+#endif
 
-   debug_mustbe (maxOffset >= 0);
-   debug_mustbe (maxOffset < a.length ());
+   debug_mustbe (_maxRedundancyOffset >= 0);
+   debug_mustbe (_maxRedundancyOffset < a.length ());
    debug_mustbe (a.length () == b.length ());   
 
    //
@@ -229,7 +330,7 @@ static bool checkRedundancy (int maxOffset, const Assignment& a, const Assignmen
 
    //
    // TODO: is there a better/faster way to do this?
-   for (int offset=1 ; offset <= maxOffset ; offset++) {
+   for (int offset=1 ; offset <= _maxRedundancyOffset ; offset++) {
       if (checkSimilarity (offset, a, b) || checkSimilarity (offset, b, a))
          return true;
    }
@@ -239,7 +340,7 @@ static bool checkRedundancy (int maxOffset, const Assignment& a, const Assignmen
 
 //
 // takes ownership of Assignment & Cluster
-bool KBestFeatures::add (SeedSearcher::Feature_var daFeature)
+bool KBestFeatures::add (Feature_var daFeature)
 {
    _sorted = false;
 
@@ -247,16 +348,14 @@ bool KBestFeatures::add (SeedSearcher::Feature_var daFeature)
    // we have to check if the assg is similar enough to some 
    // other in the array 
    int worst = 0;
-   double worstScore = _features [0]._score;
+   double worstScore = _features [0].score ();
    for (int i=0 ; i < _size ; i++) {
       //
       // we dont allow 'duplicates' in our features
-      if (checkRedundancy (_maxRedundancyOffset,
-                           *_features [i]._assg, 
-                           *daFeature->_assg)               ) {
+      if (checkRedundancy (i, daFeature->assignment ())               ) {
          //
          // the smaller the score, the better.
-         if (_features [i]._score > daFeature->_score) {
+         if (_features [i].score ()> daFeature->score ()) {
             //
             // replace this similar feature with a better one
             _features [i] = *(daFeature.release ());
@@ -271,8 +370,8 @@ bool KBestFeatures::add (SeedSearcher::Feature_var daFeature)
 
       //
       // search for the worst feature in the array
-      if (_features [i]._score > worstScore) {
-         worstScore = _features [i]._score;
+      if (_features [i].score () > worstScore) {
+         worstScore = _features [i].score ();
          worst = i;
       }
    }
@@ -283,7 +382,7 @@ bool KBestFeatures::add (SeedSearcher::Feature_var daFeature)
       _features [_size++] = *(daFeature.release ());
       return true;
    }
-   else if (worstScore > daFeature->_score) {
+   else if (worstScore > daFeature->score ()) {
       debug_mustbe (_size == _k);
       //
       // we have no room in the array, so we have to replace
@@ -300,8 +399,8 @@ bool KBestFeatures::add (SeedSearcher::Feature_var daFeature)
 struct FeatureComparator{
    //
    // put the best scores first
-   bool operator () (const SeedSearcher::Feature& a, const SeedSearcher::Feature& b) {
-      return a._score < b._score;
+   bool operator () (const Feature& a, const Feature& b) {
+      return a.score () < b.score ();
    }
 };
 
@@ -350,14 +449,14 @@ GoodFeatures::GoodFeatures (
 
 //
 // takes ownership of Assignment & Cluster
-bool GoodFeatures::add (SeedSearcher::Feature_var daFeature)
+bool GoodFeatures::add (Feature_var daFeature)
 {
-   if (daFeature->_score > _minScore)
+   if (daFeature->score () > _minScore)
       return false;
 
    if (_minPositiveSeqs > 0) {
       SeqCluster::CountSequences count;
-      daFeature->_cluster->performOnPositives (_wf, count);
+      daFeature->cluster().performOnPositives (_wf, count);
 
       if (count.result () < _minPositiveSeqs)
          return false;
@@ -380,7 +479,7 @@ int StatFix::FDR (SeedSearcher::BestFeatures& features, int N, double P)
    //
    // first, check that the best feature is good enough, other-wise
    // there is no point in searching at all
-   if (features.get (K-1)._score > LOG_P_div_N + ::log (K)) {
+   if (features.get (K-1).score ()> LOG_P_div_N + ::log (K)) {
       //
       // no feature is actually good enough
       return 0;
@@ -390,7 +489,7 @@ int StatFix::FDR (SeedSearcher::BestFeatures& features, int N, double P)
    // now seek backwards the last element (with lowest score)
    // that is still good enough to face the requirements
    for (K = features.size () ; K >= 1 ; K--) {
-      double featureScore = features.get (K-1)._score;
+      double featureScore = features.get (K-1).score ();
       double LOG_P_div_N_MUL_K = LOG_P_div_N + ::log(K);
       if (featureScore <= LOG_P_div_N_MUL_K) {
          return K;
@@ -417,7 +516,7 @@ int StatFix::bonferroni (SeedSearcher::BestFeatures& features, int N, double P)
    //
    // first, check that the best feature is good enough, other-wise
    // there is no point in searching at all
-   if (features.get (K-1)._score > LOG_P_div_N) {
+   if (features.get (K-1).score ()> LOG_P_div_N) {
       //
       // no feature is actually good enough
       return 0;
@@ -427,7 +526,7 @@ int StatFix::bonferroni (SeedSearcher::BestFeatures& features, int N, double P)
    // now seek backwards the last element (with lowest score)
    // that is still good enough to face the requirements
    for (K = features.size () ; K >= 1 ; K--) {
-      if (features.get (K-1)._score <= LOG_P_div_N) {
+      if (features.get (K-1).score () <= LOG_P_div_N) {
          return K;
       }
    }

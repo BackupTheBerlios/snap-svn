@@ -1,12 +1,9 @@
+#ifndef _SeedSearcher_PSSM_h
+#define _SeedSearcher_PSSM_h
+
 #include "Assignment.h"
-#include "PrefixTreePreprocessor.h"
-
-
-
-#include <iostream>
-#include <vector>
-#include <string>
-
+#include "Alphabet.h"
+#include "Sequence.h"
 
 //
 // Adapted from Legacy SeedSearcher
@@ -20,7 +17,8 @@ public:
   bool operator==( const Multinomial& ) const;
   bool operator!=( const Multinomial& )const;
 
-  void set (int n, int pr []) {
+  template <typename PrimType>
+  void set (int n, PrimType pr []) {
      _n = n;
      for (int i=0 ; i<n ; i++) {
         _PR [i] = pr [i];
@@ -69,20 +67,16 @@ class PSSM {
    // so it uses static buffers only
 public:
    enum { MAX_PSSM_LENGTH = 32 };
-/*
-   PSSM (const Assignment& assg, const PrefixTreePreprocessor& tree) {
-      PrefixTreeWalker::Nodes nodes;
-      nodes.addAssignmentNodes (tree, assg);
 
-      set (
-
-   }*/
-   
+   //
+   // creates an empty pssm 
+   PSSM () {
+   }
    PSSM (const AlphabetCode& code, 
-         int offset, 
-         int length, 
-         const PositionVector& posVec) {
-      set (code, offset, length, posVec);
+         int offset, int length, 
+         const PositionVector& posVec  ,
+         const SeqWeightFunction& wf) {
+      set (code, offset, length, posVec, wf);
    }
    ~PSSM () {
    }
@@ -94,17 +88,14 @@ public:
    void set (  const AlphabetCode& code, 
                const int offset, 
                const int length, 
-               const PositionVector& posVec) 
+               const PositionVector& posVec  ,
+               const SeqWeightFunction& wf   ) 
    {
       _length = length;
       //
       // TODO: support partial counts?
-      // TODO: count positive positions only, or all positions?
-      int positions [MAX_PSSM_LENGTH][Assignment::MAX_ALPHABET_SIZE];
+      double positions [MAX_PSSM_LENGTH][Assignment::MAX_ALPHABET_SIZE];
       memset (positions, 0, sizeof (positions));
-
-      //
-      // TODO: what should I do when 
 
       //
       // for all the places the motif exists
@@ -115,11 +106,17 @@ public:
          int myOffset = offset;
          int myLength = length;
          (*it)->getModifiedOffsets (myOffset, myLength);
+         
+         //
+         // get the weight of the seq
+         double weight = wf.weight (*(*it)->sequence ());
 
+         //
+         // 
          for (int i=0; i<myLength ; i++) {
             AlphabetCode::Char c = (*it)->getData(myOffset++);
             AlphabetCode::CodedChar cc = code.code (c);
-            positions [i][cc]++;
+            positions [i][cc] += weight;
          }
       }
 
@@ -183,12 +180,6 @@ inline
 double const * Multinomial::getParams(int & n ) const { n=_n;return _PR;}
 
 
-
-
-
-
-
-
-
+#endif // _SeedSearcher_PSSM_h
 
 

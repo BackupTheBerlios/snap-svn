@@ -222,8 +222,8 @@ class HashTable {
       // somewhat adequately
       debug_only (
          int index=0;
-         int reasonableChainLength = 
-            4 * tmax (2.0, ((double) _count + 1) / (_size));
+         int reasonableChainLength = static_cast <int> (
+            4 * tmax (2.0, ((double) _count + 1) / (_size)));
       );
       
       Entry* entry= _table[hash2Index(inHash)];
