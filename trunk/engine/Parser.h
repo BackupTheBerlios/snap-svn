@@ -84,6 +84,10 @@ protected:
 class Parser {
 public:
    Parser ();
+   Parser (int argc, char* argv []) {
+      *this = Parser ();
+      parse (argc, argv);
+   }
    void restoreDefaults ();
 
    //
@@ -92,11 +96,18 @@ public:
       parse (argv.argc (), argv.argv ());
    }
    void parse (int argc, char* argv[]);
-   void usage (const char*);
+   void usage (const char*) const;
 
    //
    //
    void logParams (Persistance::TextWriter&) const;
+
+   //
+   //
+   void checkCompatibility (const Parser& in);
+   int getNumFileArgs () const {
+      return __argc - __firstFileArg;
+   }
 
    //
    //
@@ -225,7 +236,6 @@ public:
    //
    //
    int __firstFileArg;
-   int __lastFileArg;
 
  private:
    bool Parser::getOptBoolean (char* in, bool* optUnknown = NULL);

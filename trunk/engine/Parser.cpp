@@ -32,7 +32,6 @@ Parser::Parser ()
    //
    //
    __firstFileArg = 0;
-   __lastFileArg = 0;
 
    restoreDefaults ();
 }
@@ -407,7 +406,7 @@ struct ParserError : public BaseException {
     std::string _error;
 };
 
-void Parser::usage (const char* error)
+void Parser::usage (const char* error) const
 {
    cout << endl;
    cout << endl;
@@ -466,6 +465,8 @@ void Parser::parse (int argc, char* argv[])
 {
    __argc = argc;
    __argv = argv;
+
+   __firstFileArg =  argc;
 
    //
    // initialize getopt options
@@ -703,7 +704,6 @@ void Parser::parse (int argc, char* argv[])
    }
 
    __firstFileArg = optind;
-   __lastFileArg = argc - 1;
 
    //
    // validate arguments
@@ -843,6 +843,25 @@ void Parser::logParams (Persistance::TextWriter& out) const
 
 
    out.flush ();
+}
+
+void Parser::checkCompatibility (const Parser& in)
+{
+   //
+   // mustbe the same preprocessor
+   mustbe (in.__prep == __prep);
+   if (__prep == _prep_leaf_) {
+      //
+      // leaf preprocessor only supports seeds of constant length
+      mustbe (in.__seed_l == __seed_l);
+   }
+   else {
+      mustbe (__prep == _prep_tree_);
+      //
+      // in tree prep we can only search seeds that are 
+      // not longer than the depth of the tree
+      mustbe (__seed_l >= in.__seed_l);
+   }
 }
 
 

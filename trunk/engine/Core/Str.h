@@ -217,6 +217,11 @@ public:
    
    void acquire (char*);
    void acquire (char*, int inSize);
+   void acquire (StrBuffer& in) {
+      mLength= in.mLength;
+      mCapacity = in.mCapacity;
+      mData = in.release ();
+   }
    // takes ownership of pointer
    
 protected:

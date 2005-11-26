@@ -287,6 +287,22 @@ const Assignment& RandomProjections::getAssignment (int index,
 */
 }
 
+int RandomProjections::numOfProjections (bool exhaustive, 
+                                          int requestedProjections,
+                                          int length, 
+                                          int numOfPositions)
+{
+   //
+   // first compute how many projections are possible:   ( length          )
+   int maxPossibleProjections = 
+      verifyProjectionNumber (length, numOfPositions);
+
+   if (exhaustive)
+      return maxPossibleProjections;
+   else 
+      return min (maxPossibleProjections, requestedProjections);
+}
+
 
 
 

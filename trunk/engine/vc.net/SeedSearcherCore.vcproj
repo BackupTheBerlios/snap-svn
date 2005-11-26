@@ -276,6 +276,71 @@
 				RelativePath="..\Legacy\getopt.c">
 			</File>
 		</Filter>
+		<Filter
+			Name="StatusReporter">
+			<File
+				RelativePath="..\StatusReporter\BaseStatusReporter.cpp">
+			</File>
+			<File
+				RelativePath="..\StatusReporter\BaseStatusReporter.hpp">
+			</File>
+			<File
+				RelativePath="..\StatusReporter\DummyStatusReporter.cpp">
+			</File>
+			<File
+				RelativePath="..\StatusReporter\DummyStatusReporter.hpp">
+			</File>
+			<File
+				RelativePath="..\StatusReporter\StatusReporter.cpp">
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\StatusReporter\StatusReporter.hpp">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCustomBuildTool"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\StatusReporter\main.cpp">
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+			</File>
+		</Filter>
+		<File
+			RelativePath="..\SeedConf.cpp">
+		</File>
+		<File
+			RelativePath="..\SeedConf.h">
+		</File>
 	</Files>
 	<Globals>
 	</Globals>

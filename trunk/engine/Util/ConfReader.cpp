@@ -620,7 +620,7 @@ void ConfReaderWrapper::set(Key inKey, Str inString) {
 	}
 }
 
-static bool stringToBool (const Str& in, bool out)
+static bool stringToBool (const Str& in, bool& out)
 {
    if (  in.equalsIgnoreCase ("true") || in.equalsIgnoreCase ("on")) {
       out = true;

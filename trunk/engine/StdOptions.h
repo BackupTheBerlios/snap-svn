@@ -29,7 +29,8 @@ public:
    }
 
     struct ExpParameters : public ScoreParameters {
-       ExpParameters (int pos, int neg) : _pos (pos), _neg (neg) {
+       ExpParameters (int pos, int neg) 
+          : _pos (pos), _neg (neg) {
        }
        virtual ~ExpParameters () {
        }

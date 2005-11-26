@@ -152,7 +152,7 @@ void FeatureInvestigator::printSeed (Persistance::TextWriter& writer,
    // print score params if available
    if (feature.scoreParameters ()) {
       writer << "\t[";
-      _parameters.score ().writeAsText (writer, feature.scoreParameters ());
+      feature.scoreFunction ().writeAsText (writer, feature.scoreParameters ());
       writer << ']';
    }
 
@@ -221,9 +221,11 @@ Feature::Feature (Assignment* assg,
          SequenceDB::Cluster* cluster,
          const Assignment* projection,
          ScoreParameters* params,
-         double score)
+         double score,
+         boost::shared_ptr <ScoreFunction> sf)
 :  _assg(assg), _complement (NULL), _projection (projection),
-   _params (params), _cluster (cluster), _score (score) 
+   _params (params), _cluster (cluster), _score (score),
+   _sf (sf)
 {
 }
 
@@ -243,4 +245,6 @@ void Feature::dispose () {
       _params->dispose ();
       _params = NULL;
    }
+
+   _sf.reset ();
 }

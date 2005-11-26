@@ -38,7 +38,8 @@ public:
 
    typedef HyperGeoCache::XK Key;
    
-   inline Score (const XK& xk, double score) : _xk (xk), _score (score) {
+   inline Score (const XK& xk, double score) 
+      : _xk (xk), _score (score) {
    }
    inline bool fitsKey (const Key& key) {
       return (_xk == key);
@@ -194,9 +195,7 @@ public:
    typedef HyperGeoTotalCache::XKNM Key;
    
    inline Score (const XKNM& xknm, double score) 
-      :  _xknm (xknm), 
-         _score (score) 
-   {
+      :  _xknm (xknm), _score (score) {
    }
    inline bool fitsKey (const Key& key) {
       return (_xknm == key);

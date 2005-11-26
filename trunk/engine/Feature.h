@@ -66,7 +66,8 @@ public:
             SeqCluster* cluster,
             const Assignment* projection,
             ScoreParameters* params,
-            double score);
+            double score,
+            boost::shared_ptr <ScoreFunction> sf);
    inline ~Feature () {
    }
    void dispose ();
@@ -85,6 +86,9 @@ public:
    }
    inline const ScoreParameters* scoreParameters () const {
 	   return _params;
+   }
+   const ScoreFunction& scoreFunction () const {
+      return *_sf; 
    }
    inline const Assignment* projection () const {
 	   return _projection;
@@ -125,6 +129,7 @@ protected:
    ScoreParameters* _params;
    SeqCluster* _cluster;
    double _score;
+   boost::shared_ptr <ScoreFunction> _sf;
 };
 //
 // CORBA notation used here... :-)
@@ -182,6 +187,9 @@ public:
    const ScoreFunction& score () const {
       return *_score;
    }
+   boost::shared_ptr <ScoreFunction> getScore () {
+      return _score;
+   }
    //
    // returns the langauge to work with
    void langauge (Langauge* lang) {
@@ -190,26 +198,55 @@ public:
    const Langauge& langauge () const {
       return *_langauge;
    }
+   Feature& createFeature (Feature& out,
+                           Assignment* assg, 
+                           SeqCluster* cluster,
+                           const Assignment* projection)
+   {
+      ScoreParameters* scoreParams = NULL;
+      double score = 
+         _score->log2score (
+                     *assg,         // the assignment
+                     *projection,    // the projection,
+                     *cluster,      // sequences containing the feature
+                     &scoreParams
+                  );
 
-   Feature* createFeature (Assignment const& assg, 
-                           Assignment const& proj) {
+      return out = Feature (
+                        // the feature's assignment 
+                        assg,
+                        // sequences containing the feature  
+                        cluster,
+                        projection,
+                        scoreParams,
+                        score,
+                        _score
+                     );
+   }
+
+
+   Feature& createFeature (Feature& out,
+                           Assignment const& assg, 
+                           Assignment const& proj) 
+   {
       Preprocessor::NodeCluster nodes;
       _preprocessor->add2Cluster (nodes, assg);
 
       SeqCluster* cluster = new SeqCluster;
       nodes.add2SeqClusterPositions (*cluster);
 
-      ScoreParameters* scoreParams = NULL;
-      double featureScore = _score->log2score (  assg, 
-                                             proj, 
-                                             *cluster, 
-                                             &scoreParams);
+      return createFeature (
+               out,
+               new Assignment (assg),
+               cluster,
+               new Assignment (proj));
+   }
 
-      return new Feature ( new Assignment (assg), 
-                           cluster,
-                           new Assignment (proj),
-                           scoreParams,
-                           featureScore);
+   Feature* createFeature (Assignment const& assg, 
+                           Assignment const& proj) {
+      AutoPtr <Feature> feature = new Feature;
+      createFeature (*feature, assg, proj);
+      return feature.release ();
    }
 
 

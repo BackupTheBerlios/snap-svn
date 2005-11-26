@@ -27,6 +27,8 @@ public:
    int maxPossibleProjections () const {
       return _maxPossibleProjections;
    }
+   static int numOfProjections (bool exhaustive, int requestedProjections,
+                                 int length, int numOfPositions);
    //
    // returns the length of each projection
    int length () const {

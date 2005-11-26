@@ -131,6 +131,9 @@
 	</Configurations>
 	<Files>
 		<File
+			RelativePath="..\SeedPerformance.cpp">
+		</File>
+		<File
 			RelativePath="..\boost\test\cpp_main.cpp">
 		</File>
 		<File

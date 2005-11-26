@@ -5,83 +5,152 @@
 #include "LeafPreprocessor.h"
 #include "HyperGeoScore.h"
 
+#include "StatusReporter/BaseStatusReporter.hpp"
 #include <time.h>
 
 USING_TYPE (SeedSearcherMain, CmdLineParameters);
 
-void SeedSearcherMain::beforeSearch (int /* search handle */,
+
+//
+// SeedSearcherMain
+//
+
+
+struct CancelledByUserException : public BaseException {
+};
+
+void SeedSearcherMain::beforeProjection (int /* search handle */,
                               int totalNumOfSeedsFound,
                               const Assignment& assg
                               )
 {
+
+   //
+   // check if we should stop
+   if (StatusReportManager::hasUserCancelled ()) {
+      StatusReportManager::setJobCancelled ();
+      throw CancelledByUserException ();
+   }
+
+   //
+   // output progress message
    DLOG << "Searching for " << Format (assg) << ": ";
    DLOG.flush ();
 
+   //
+   // time the projection
    _lastTotalNumOfSeedsFound = totalNumOfSeedsFound;
    time (&searchStart);
 }
 
-void SeedSearcherMain::afterSearch (int /* search handle */,
+void SeedSearcherMain::afterProjection (int /* search handle */,
                   int totalNumOfSeedsFound,
                   const Assignment&
                               )
 {
+   //
+   // time the projection
    time (&searchFinish);
+
+   //
+   // produce output message
    DLOG << (searchFinish - searchStart) << " seconds, Found "
          << totalNumOfSeedsFound - _lastTotalNumOfSeedsFound 
          << " seeds." << DLOG.EOL ();
+
+   //
+   // indicate progress
+   StatusReportManager::setProgress ();
 }
 
 
 
 
-AutoPtr <SeedSearcherMain::Results> SeedSearcherMain::search () {
+AutoPtr <SeedSearcherMain::Results> 
+SeedSearcherMain::search (boost::shared_ptr <Parameters> inParams) 
+{
+   mustbe (inParams);
+   _params = inParams;
+
    int totalNumOfSeedsFound = 0;
-   int numOfProjections = _params.projections ().numOfProjections ();
+   int numOfProjections = _params->projections ().numOfProjections ();
    for (int i=0 ; i<numOfProjections ; i++) {
       //
       // create 
       const Assignment& assg = 
-         _params.projections ().getAssignment (  i, 
-                                    _params.langauge ().wildcard (assg_together),
-                                    _params.langauge ().wildcard (assg_discrete));
+         _params->projections ().getAssignment (  i, 
+                                    _params->langauge ().wildcard (assg_together),
+                                    _params->langauge ().wildcard (assg_discrete));
 
       //
-      //
-      beforeSearch (i, totalNumOfSeedsFound, assg);
+      // call virtual 'beforeProjection' handler
+      beforeProjection (i, totalNumOfSeedsFound, assg);
 
       //
-      //
-      if (_params.prepType () == _prep_tree_) {
+      // perform the actual search
+      if (_params->prepType () == _prep_tree_) {
          totalNumOfSeedsFound +=
             SeedSearcher::prefixTreeSearch (
-               _params,
+               *_params,
                assg
             );
       }
       else {
          totalNumOfSeedsFound +=
             SeedSearcher::tableSearch (
-               _params,
+               *_params,
                assg
             );
       }
-
-      afterSearch (i, totalNumOfSeedsFound, assg);
+      //
+      // call virtual 'afterProjection' handler
+      afterProjection (i, totalNumOfSeedsFound, assg);
    }
 
    //
    // now output all the seeds
-   _params.bestFeatures()->sort ();
+   _params->bestFeatures()->sort ();
 
    return new Results (_params, totalNumOfSeedsFound);
 }
+
+void SeedSearcherMain::search (ParameterIterator& it)
+{
+   for (; it.hasNext () ; it.next ()) {
+      //
+      // get current run parameters
+      boost::shared_ptr <Parameters> params = it.get ();
+
+      beforeSearch (*params);
+
+      AutoPtr <Results> results = search (params);
+
+      afterSearch (*results);
+   }
+}
+
+
+
+
+
+
+
+
+
+//
+// CmdlineParameters
+//
 
 
 
 void SeedSearcherMain::CmdLineParameters::secondarySetup (int argc, char** argv)
 {
-   _parser.parse (argc, argv);
+   secondarySetup (Parser (argc, argv));
+}
+
+void SeedSearcherMain::CmdLineParameters::secondarySetup (const Parser& inParser)
+{
+   _parser= inParser;
 
    //
    //
@@ -90,6 +159,14 @@ void SeedSearcherMain::CmdLineParameters::secondarySetup (int argc, char** argv)
    //
    // create random projections
    setupProjections ();
+
+   //
+   // create the weight function
+   setupWeightFunction ();
+
+   //
+   // create the hyper-geometric scoring scheme
+   setupScoreFunc ();
 }
 
 void SeedSearcherMain::CmdLineParameters::setup (const Str& seq, const Str& wgt)
@@ -173,6 +250,8 @@ void SeedSearcherMain::CmdLineParameters::setupProjections ()
                _parser.__proj_d)
             );
    }
+
+   _parser.__proj_n = _projections->numOfProjections ();
 }
 
 void SeedSearcherMain::CmdLineParameters::setupDB ()
@@ -314,11 +393,22 @@ void SeedSearcherMain::CmdLineParameters::setupLangauge ()
 }
 
 
-SeedSearcherMain::Results::Results (Parameters& params, int n)
+
+
+
+
+//
+// Results
+//
+
+
+
+
+SeedSearcherMain::Results::Results (boost::shared_ptr <Parameters> params, int n)
 : _index (0), _numSearched (n),
   _params (params)
 {
-   _numFound = _params.bestFeatures ()->size ();
+   _numFound = _params->bestFeatures ()->size ();
 }
 
 SeedSearcherMain::Results::~Results ()
@@ -374,3 +464,144 @@ Preprocessor*
 
 
 
+
+//
+// ConfParameterIterator
+//
+
+#include "SeedConf.h"
+
+ConfParameterIterator::ConfParameterIterator (int argc, char* argv [])
+: _optList (argc, argv), _useInitParameters (true), _updated(false)
+{
+   Parser parser (argc, argv);
+   if (!parser.__conf.empty ()) {
+      SeedConf::read (parser.__conf, _optList);
+      _it = _optList.iterator ();
+      _useInitParameters = false;
+   }
+}
+
+ConfParameterIterator::~ConfParameterIterator ()
+{
+   while (!_list.empty ())
+      delete _list.removeFirst ();
+}
+
+void ConfParameterIterator::setup (const Str& seqFilename, 
+                                   const Str& wgtFilename,
+                                   const Str& stubName)
+{
+   _stub = stubName;
+
+   //
+   // setup the first parameters
+   AutoPtr <CmdLineParameters> params = 
+      new CmdLineParameters (_optList.getInitParser ());
+
+   params->setup (seqFilename, wgtFilename);
+   params->setName (stubName);
+
+   //
+   // add the new entry to the list
+   StatusReportManager::setMaxProgress(params->parser ().__proj_n);
+   _list.addLast (new ParamNode (Param_var (params.release ())));
+
+   if (!_optList.empty ()) {
+      //
+      // the first parameters are used just to setup the system
+      // now we setup the first search parameters
+      params = new CmdLineParameters (*_list.getLast ()->data);
+      params->secondarySetup ( _it.get()->_parser);
+      params->setName (_it.get()->_name);
+
+      //
+      // add the new entry to the list
+      _list.addLast (new ParamNode (Param_var (params.release ())));
+
+      //
+      // calculate the number of projections in all searches
+      // this counts as the max number of progression points
+      int progPoints = 0;
+      SeedConfList::OptionIterator it;
+      for (it = _optList.iterator (); it.hasNext () ; it.next ()) {
+         progPoints += 
+            RandomProjections::numOfProjections (
+               it.get ()->_parser.__proj_e, it.get ()->_parser.__proj_n,
+               it.get ()->_parser.__seed_l, it.get ()->_parser.__proj_d);
+      }
+      StatusReportManager::setMaxProgress(progPoints);
+   }
+}
+
+bool ConfParameterIterator::hasNext () {
+   return _useInitParameters || _it.hasNext ();
+}
+
+boost::shared_ptr <SeedSearcherMain::Parameters> ConfParameterIterator::get () 
+{
+   if (!_useInitParameters) {
+      if (!_updated) {
+         //
+         // generate the new options only once
+         _updated = true;
+
+         //
+         // get parameters of last run
+         AutoPtr <CmdLineParameters> params = 
+            new CmdLineParameters (*_list.getLast ()->data);
+
+         Str name;
+         StrBuffer nameBuffer;
+         if (!_stub.empty ()) {
+            if (!_it.get()->_name.empty ()) {
+               nameBuffer.acquire (
+                  StrBuffer (_stub, Str ("."), _it.get()->_name).release());
+
+               name = nameBuffer;
+            }
+            else {
+               name = _stub;
+            }
+         }
+         else {
+            name = _it.get()->_name;
+         }
+
+         params->setName (name);
+
+         //
+         // update parameters for current options
+         params->secondarySetup ( _it.get()->_parser);
+
+         //
+         // if required, get rid of previous seeds
+         if (_it.get ()->_resetSeeds) {
+            params->setupFeatureContainer ();
+         }
+
+         //
+         // add the new entry to the list
+         _list.addLast (new ParamNode (Param_var (params.release ())));
+      }
+   }
+
+   return _list.getLast ()->data;
+}
+
+void ConfParameterIterator::next ()
+{
+   mustbe (hasNext ());
+   //
+   // 
+   if (_useInitParameters) {
+      _useInitParameters = false;
+   }
+   else {
+      //
+      // next options
+      _it.next ();
+   }
+
+   _updated = false;
+}

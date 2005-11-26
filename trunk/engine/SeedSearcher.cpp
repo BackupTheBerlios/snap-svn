@@ -378,23 +378,16 @@ int SeedSearcher::prefixTreeSearch (
                               );
 #        endif
 
-         ScoreParameters* scoreParams = NULL;
-         double score = 
-            params.score ().log2score (
-               *feature.first,         // the assignment
-               projection,             // the projection,
-               *feature.second,        // sequences containing the feature
-               &scoreParams
-               );
+         Feature seed_feature;
+         params.createFeature (
+            seed_feature,
+            // the feature's assignment 
+            feature.first,
+            // sequences containing the feature  
+            feature.second,
+            &projection
+            );
 
-         Feature seed_feature (
-				      // the feature's assignment 
-				      feature.first,
-				      // sequences containing the feature  
-                  feature.second,
-                  &projection,
-                  scoreParams,
-				      score);
          //
          // this also cleans up memory, if necessary
          params.bestFeatures ().add (&seed_feature);
@@ -624,19 +617,7 @@ int SeedSearcher::tableSearch (  SearchParameters& params,
          USELESS (const int overlappingPositions = )
 	          feature->removeOverlaps ();
       }
-
-      ScoreParameters* scoreParams = NULL;
-      //
-      // ok. now we have to score each feature 
-      // and insert it to a FeatureFilter container
-      double score = 
-         params.score ().log2score (
-                  feature->assignment (),
-                  projection,
-                  feature->getCluster (),// k
-                  &scoreParams
-         );
-      
+     
       Assignment* featureAssg;
       if (params.useSpecialization ()) {
          featureAssg = 
@@ -647,11 +628,12 @@ int SeedSearcher::tableSearch (  SearchParameters& params,
          featureAssg = new Assignment (feature->assignment ());
       }
 
-      Feature seed_feature (  featureAssg,
-                              feature->releaseCluster (),
-                              &projection,
-                              scoreParams,
-                              score);
+      Feature seed_feature;
+      params.createFeature(
+         seed_feature,
+         featureAssg,
+         feature->releaseCluster (),
+         &projection);
       
       params.bestFeatures ().add (&seed_feature);
    }

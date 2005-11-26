@@ -14,241 +14,347 @@
 
 class SeedSearcherMain {
 public:
+   class Results;
    class Parameters;
    class CmdLineParameters;
-   
-   class Results {
-      //
-      // convienience class.
-      // encapsulates results obtained from seed searching.
-      // all the functionality implemented here could be easily replicated
-      // by going over the features in the 'FeatureFilter' container
-      // and querying the preprocessor about those features.
-      // please use the 'FeatureInvestigator' class to print or query
-      // individual features
+   struct PreprocessorFactory;
+
+   class ParameterIterator {
    public:
-      Results (Parameters&, int);
-      ~Results ();
-
-      //
-      // returns the number of seeds considered during the search
-      int numSeedsSearched () const {
-         return _numSearched;
+      virtual ~ParameterIterator () {
       }
 
-      //
-      // returns the number of features discovered
-      int numFeatures () const {
-         return _numFound;
-      }
-
-      //
-      // feature iteration interface
-      bool hasMoreFeatures () const {
-         return _index < _numFound;
-      }
-      void nextFeature () {
-         _index++;
-      }
-      //
-      // go to the first feature (used to reset iteration)
-      void firstFeature () {
-         _index = 0;
-      }
-      void lastFeature () {
-         _index = _numFound - 1;
-      }
-
-      //
-      // return the index of the current feature
-      int featureIndex () const {
-         return _index;
-      }
-
-      //
-      // get the current feature in the iteration
-      const Feature& getFeature () const {
-         return _params.bestFeatures ()->get (_index);
-      }
-      Feature& getFeature () {
-         return _params.bestFeatures ()->get (_index);
-      }
-
-      //
-      // used to retrieve preprocessed data about feature
-      // void (Preprocessor::NodeCluster&) const
-
-   protected:
-      int _index;
-      int _numFound;
-      int _numSearched;
-      Parameters& _params;
+      virtual bool hasNext () = 0;
+      virtual boost::shared_ptr <Parameters> get () = 0;
+      virtual void next () = 0;
    };
 
+
 public:
-   SeedSearcherMain (Parameters& in) : _params (in) {
+   SeedSearcherMain () {
    }
    virtual ~SeedSearcherMain () {
    }
 
-   virtual void beforeSearch (int /* search handle */,
+   //
+   // is called from search before performing new search 
+   virtual void beforeSearch (Parameters& nextParameters) {
+   }
+
+   //
+   // is called from search before performing new search 
+   virtual void beforeProjection (int /* search handle */,
                               int /* total seeds found */,                        
                               const Assignment&
                               );
 
-   virtual void afterSearch (int /* search handle */,
+   virtual void afterProjection (int /* search handle */,
                               int /* total seeds found */,                        
                               const Assignment&
                               ); 
 
-   //
-   //
-   void setupLogging (bool supressConsole);
-   void setupFileLogging (const Str& filename, bool supressConsole);
+   virtual void afterSearch (Results&) {
+   }
 
    //
    // use search parameters to perform actual seed searching!
    // returns the number of seeds found
-   AutoPtr <Results> search ();
+   AutoPtr <Results> search (boost::shared_ptr <SeedSearcherMain::Parameters> in);
+
+   //
+   // conduct multiple searches using multiple parameters
+   void search (ParameterIterator&);
 
 public:
-   //
-   //
-   class Parameters : public SeedSearcher::SearchParameters {
-   public:
-      Parameters () {
-      }
-      virtual ~Parameters () {
-      }
-      Parameters (const Parameters& in) {
-         set (in);
-      }
-      Parameters& operator = (const Parameters& in) {
-         set (in);
-         return *this;
-      }
-      void set (const Parameters& in) {
-         this->SearchParameters::set (in);
+   
 
-         _db = in._db;
-         _projections = in._projections;
-         _searchType = in._searchType;
-         _prepType = in._prepType;
-         _useReverse = in._useReverse;
-      }
-
-      //
-      // returns the Sequence DB
-      const SequenceDB& db () const {
-         return *_db;
-      }
-      //
-      // returns the randome projections for the search
-      const RandomProjections& projections () const {
-         return *_projections;
-      }
-      //
-      // return the search type
-      SearchType searchType () const {
-         return _searchType;
-      }
-      PrepType prepType () const {
-         return _prepType;
-      }
-      bool useReverse () const {
-         return _useReverse;
-      }
-
-   protected:
-      boost::shared_ptr <SequenceDB> _db;
-      boost::shared_ptr <RandomProjections> _projections;
-      SearchType _searchType;
-      PrepType _prepType;
-      bool _useReverse;
-   };
-
-   class CmdLineParameters : public Parameters {
-   public:
-      CmdLineParameters () {
-      }
-      CmdLineParameters (int argc, char** argv) {
-         _parser.parse (argc, argv);
-      }
-      ~CmdLineParameters () {
-      }
-      CmdLineParameters (const CmdLineParameters& in) {
-         set (in);
-      }
-      CmdLineParameters& operator = (const CmdLineParameters& in) {
-         set (in);
-         return *this;
-      }
-      void set (const CmdLineParameters& in) {
-         this->Parameters::set (in);
-
-         _parser = in._parser;
-         _seqFilename = in._seqFilename;;
-         _wgtFilename = in._wgtFilename;
-      }
-
-     
-      //
-      // call this function to initialize the parameters, 
-      // after the appropriate options have been set 
-      void setup (const Str& seqFilename, const Str& wgtFilename);
-      //
-      // call this function if parameters have already been initialized
-      // and you want a second seed-searcher run with different parameters.
-      //
-      // unchanged parameters: 
-      //    Preprocessor, Langauge, FeatureContainer, DB, WeightFunction
-      //
-      // Changable parameters:
-      //    ScoreFunctions, Projections, SearchParameters
-      void secondarySetup (int argc, char** argv);
-
-      virtual void setupParameters ();
-      virtual void setupLangauge ();
-      virtual void setupProjections ();
-      virtual void setupDB ();
-      virtual void setupFeatureContainer ();
-      virtual void setupScoreFunc ();
-      virtual void setupPreprocessor ();
-      virtual void setupWeightFunction ();
-
-      const Parser& parser () const {
-         return _parser;
-      }
-      Parser& parser () {
-         return _parser;
-      }
-      
-   protected:
-      Parser _parser;
-      StrBuffer _seqFilename;
-      StrBuffer _wgtFilename;
-   };
 
    //
    //
-   struct PreprocessorFactory {
-      //
-      //
-      static Preprocessor* createPreprocessor (
-               PrepType,
-               const SequenceDB&,
-               const SeqWeightFunction&,
-               const Langauge&,
-               int featureLength,
-               bool useReverse,
-               bool removeNegatives = false
-            );
-   };
 
 protected:
-   Parameters& _params;
+   boost::shared_ptr <Parameters> _params;
    int _lastTotalNumOfSeedsFound;
    time_t searchStart, searchFinish;
+};
+
+
+
+//
+//
+class SeedSearcherMain::Parameters : public SeedSearcher::SearchParameters {
+public:
+   Parameters () {
+   }
+   virtual ~Parameters () {
+   }
+   Parameters (const Parameters& in) {
+      set (in);
+   }
+   Parameters& operator = (const Parameters& in) {
+      set (in);
+      return *this;
+   }
+   void set (const Parameters& in) {
+      this->SearchParameters::set (in);
+
+      _name = in._name;
+      _db = in._db;
+      _projections = in._projections;
+      _searchType = in._searchType;
+      _prepType = in._prepType;
+      _useReverse = in._useReverse;
+   }
+
+   //
+   // returns the Sequence DB
+   const SequenceDB& db () const {
+      return *_db;
+   }
+   //
+   // returns the randome projections for the search
+   const RandomProjections& projections () const {
+      return *_projections;
+   }
+   //
+   // return the search type
+   SearchType searchType () const {
+      return _searchType;
+   }
+   PrepType prepType () const {
+      return _prepType;
+   }
+   bool useReverse () const {
+      return _useReverse;
+   }
+   const Str& name () const {
+      return _name;
+   }
+
+protected:
+   //
+   // the (optional) name for these settings
+   StrBuffer _name;
+   //
+   // the data to be searched
+   boost::shared_ptr <SequenceDB> _db;
+   //
+   // the projections 
+   boost::shared_ptr <RandomProjections> _projections;
+   //
+   // search type table/tree
+   SearchType _searchType;
+   //
+   // type of preprocessor to generate
+   PrepType _prepType;
+   //
+   //
+   bool _useReverse;
+};
+
+
+
+
+//
+//
+class SeedSearcherMain::Results {
+   //
+   // convienience class.
+   // encapsulates results obtained from seed searching.
+   // all the functionality implemented here could be easily replicated
+   // by going over the features in the 'FeatureFilter' container
+   // and querying the preprocessor about those features.
+   // please use the 'FeatureInvestigator' class to print or query
+   // individual features
+public:
+   Results (boost::shared_ptr <Parameters>, int);
+   ~Results ();
+
+   //
+   // returns the number of seeds considered during the search
+   int numSeedsSearched () const {
+      return _numSearched;
+   }
+
+   //
+   // returns the number of features discovered
+   int numFeatures () const {
+      return _numFound;
+   }
+
+   //
+   // feature iteration interface
+   bool hasMoreFeatures () const {
+      return _index < _numFound;
+   }
+   void nextFeature () {
+      _index++;
+   }
+   //
+   // go to the first feature (used to reset iteration)
+   void firstFeature () {
+      _index = 0;
+   }
+   void lastFeature () {
+      _index = _numFound - 1;
+   }
+
+   //
+   // return the index of the current feature
+   int featureIndex () const {
+      return _index;
+   }
+
+   //
+   // get the current feature in the iteration
+   const Feature& getFeature () const {
+      return _params->bestFeatures ()->get (_index);
+   }
+   Feature& getFeature () {
+      return _params->bestFeatures ()->get (_index);
+   }
+   //
+   // returns the (optional) search name associated with this search
+   const Str& getSearchName () const {
+      return _params->name ();
+   }
+   Parameters& getParameters () {
+      return *_params;
+   }
+
+protected:
+   int _index;
+   int _numFound;
+   int _numSearched;
+   boost::shared_ptr <Parameters> _params;
+};
+
+
+
+//
+//
+class SeedSearcherMain::CmdLineParameters : public SeedSearcherMain::Parameters {
+   //
+   // Concrete implementation of SeedSearcherMain::Parameters
+   // builds parameters from command-line arguments
+public:
+   CmdLineParameters () {
+   }
+   CmdLineParameters (int argc, char** argv) {
+      _parser.parse (argc, argv);
+   }
+   CmdLineParameters (const Parser& inParser) : _parser (inParser) {
+   }
+   ~CmdLineParameters () {
+   }
+   CmdLineParameters (const CmdLineParameters& in) {
+      set (in);
+   }
+   CmdLineParameters& operator = (const CmdLineParameters& in) {
+      set (in);
+      return *this;
+   }
+   void set (const CmdLineParameters& in) {
+      this->Parameters::set (in);
+
+      _parser = in._parser;
+      _seqFilename = in._seqFilename;;
+      _wgtFilename = in._wgtFilename;
+   }
+  
+   //
+   // call this function to initialize the parameters, 
+   // after the appropriate options have been set 
+   void setup (const Str& seqFilename, const Str& wgtFilename);
+   //
+   // call this function if parameters have already been initialized
+   // and you want a second seed-searcher run with different parameters.
+   //
+   // unchanged parameters: 
+   //    Preprocessor, Langauge, FeatureContainer, DB, WeightFunction
+   //
+   // Changable parameters:
+   //    ScoreFunctions, Projections, SearchParameters
+   void secondarySetup (int argc, char** argv);
+   void secondarySetup (const Parser&);
+
+   virtual void setupParameters ();
+   virtual void setupLangauge ();
+   virtual void setupProjections ();
+   virtual void setupDB ();
+   virtual void setupFeatureContainer ();
+   virtual void setupScoreFunc ();
+   virtual void setupPreprocessor ();
+   virtual void setupWeightFunction ();
+
+   const Parser& parser () const {
+      return _parser;
+   }
+   Parser& parser () {
+      return _parser;
+   }
+   void setName (const Str& in) {
+      _name = in;
+   }
+   
+protected:
+   Parser _parser;
+   StrBuffer _seqFilename;
+   StrBuffer _wgtFilename;
+};
+
+
+//
+// creates a preprocessor according to parameters
+struct SeedSearcherMain::PreprocessorFactory {
+   //
+   //
+   static Preprocessor* createPreprocessor (
+            PrepType,
+            const SequenceDB&,
+            const SeqWeightFunction&,
+            const Langauge&,
+            int featureLength,
+            bool useReverse,
+            bool removeNegatives = false
+         );
+};
+
+#include "SeedConf.h"
+#include "Core/ImplList.h"
+
+class ConfParameterIterator : public SeedSearcherMain::ParameterIterator {
+public:
+   ConfParameterIterator (int argc, char* argv []);
+   virtual ~ConfParameterIterator ();
+
+   //
+   // get the initiale arguments parser
+   const Parser& getInitParser () const {
+      return _optList.getInitParser ();
+   }
+
+   //
+   // call this function to initialize the parameters, 
+   // after the appropriate options have been set 
+   void setup (const Str& seqFilename, 
+               const Str& wgtFilename,
+               const Str& stubBasicName);
+
+   virtual bool hasNext ();
+   virtual boost::shared_ptr <SeedSearcherMain::Parameters> get ();
+   virtual void next ();
+
+   typedef boost::shared_ptr <SeedSearcherMain::CmdLineParameters> Param_var;
+   typedef Impl1WayDataNode <Param_var> ParamNode;
+
+private:
+   StrBuffer _stub;
+   SeedConfList _optList;
+   SeedConfList::OptionIterator _it;
+   ImplCyclicList <ParamNode> _list;
+   bool _useInitParameters;
+   bool _updated;
 };
 
 #endif
