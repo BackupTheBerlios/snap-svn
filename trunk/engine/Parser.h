@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Parser.h $
-// Version     : $Revision: 22 $ 
+// Version     : $Revision: 23 $ 
 //               $Author: Aviad $
-//               $Date: 25/08/04 17:57 $ 
+//               $Date: 1/09/04 1:41 $ 
 // Description :
 //    Concrete Parser for seed-searcher options
 //
@@ -28,7 +28,7 @@
 #include "Defs.h"
 #include "core/Str.h"
 #include "core/Argv.h"
-#include "core/Parser.h"
+#include "core/GetOptParser.h"
 #include "persistance/TextWriter.h"
 
 
@@ -131,11 +131,11 @@ public:
    // score using partial counts (weights) or assg_discrete counts
    bool __score_partial;
    //
-   // theshold for counting a sequence as positive
-   double __weight_t;
+   // threshold for counting a sequence as positive
+   float __weight_t;
    bool __weight_invert;
    WeightType __weightType;
-   double __weight_lowt;
+   float __weight_lowt;
 
    //
    // which type of search to perform: tree search or table search
@@ -202,8 +202,9 @@ public:
    bool Parser::getOptBoolean (const char* in, bool* optUnknown = NULL);
    OutputType getOptOutputType(const char*);
    int getInt (const char* in, const char* ctx);
+   static GetOptParser::OptionList& getOptions ();
 
-   GetOptParser _impl;
+   mutable GetOptParser _impl;
 };
 
 #endif

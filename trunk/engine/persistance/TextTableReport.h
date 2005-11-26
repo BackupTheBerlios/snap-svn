@@ -23,7 +23,8 @@ public:
     enum    {
         maxFields = 16,
         maxRecordLength = 16 * 1024,
-        maxHeaderLength = maxRecordLength + 2
+        maxHeaderLength = maxRecordLength + 2,
+        maxFieldSepator = 64
     };
 
 
@@ -45,7 +46,7 @@ public:
         //
         //
     public:
-        Format ();
+        Format (const char* separator = "\t");
         ~Format ();
 
         //
@@ -61,8 +62,13 @@ public:
         //
         Field* field (int);
 
-		void spacesBetweenFields (int);
-		int spacesBetweenFields ();
+        //
+        // sets the separator to be a string of spaces
+        void spacesBetweenFields (int);
+        Str fieldSeparator () const {
+           return _fieldSeparator;
+        }
+        
         //
         //
         Str header () const;
@@ -73,7 +79,7 @@ public:
         int _nfields;
         char _header [maxHeaderLength];
         Field* _fields [maxFields];
-		int _spaceBetweenFields;
+        FixedStrBuffer <maxFieldSepator> _fieldSeparator ;
     };
 
 
@@ -142,9 +148,9 @@ END_NAMESPACE (Persistance);
 //
 // File        : $RCSfile: $ 
 //               $Workfile: TextTableReport.h $
-// Version     : $Revision: 1 $ 
+// Version     : $Revision: 2 $ 
 //               $Author: Aviad $
-//               $Date: 25/08/04 17:57 $ 
+//               $Date: 1/09/04 1:43 $ 
 // Description :
 //	The Persistence library contains both high & low level IO classes
 //	and is high-performance, highly reusable framework 

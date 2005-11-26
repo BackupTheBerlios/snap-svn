@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: TextTableReport.cpp $
-// Version     : $Revision: 1 $ 
+// Version     : $Revision: 2 $ 
 //               $Author: Aviad $
-//               $Date: 25/08/04 17:57 $ 
+//               $Date: 1/09/04 1:43 $ 
 // Description :
 //	The Persistence library contains both high & low level IO classes
 //	and is high-performance, highly reusable framework 
@@ -168,8 +168,6 @@ private:
 
 static const Str newline = "\r\n";
 static const TextTableReport::Data::Spaces spaces;
-static const int spaceBetweenFields = 3;
-
 
 
 //
@@ -361,13 +359,13 @@ int TextTableReport::Field::offset () const
 //
 
 
-TextTableReport::Format::Format () 
+TextTableReport::Format::Format (const char* separator) 
 :  _width (0),
    _length (0),
-   _nfields (0),
-	_spaceBetweenFields (spaceBetweenFields)
+   _nfields (0)
 {
     memset (_fields, 0, sizeof (_fields));
+    _fieldSeparator.set (separator);
 }
 
 TextTableReport::Format::~Format ()
@@ -390,8 +388,8 @@ void TextTableReport::Format::addField (const Str& fieldName, int fieldLength, i
     //
     // for all fields but the first, put some spaces before the beginning of the field
     if (_nfields > 0)   {
-        memset (_header + _width , ' ', _spaceBetweenFields);
-        _width += _spaceBetweenFields;
+        strcpy (_header + _width , _fieldSeparator);
+        _width += _fieldSeparator.length ();
     }
 
     //
@@ -452,15 +450,12 @@ TextTableReport::Field* TextTableReport::Format::field (int index)
     return _fields [index];
 }
 
-void TextTableReport::Format::spacesBetweenFields (int spaces)
+void TextTableReport::Format::spacesBetweenFields (int n)
 {
-	_spaceBetweenFields = spaces;
+   _fieldSeparator.set(Str (spaces, 0, n));
 }
 
-int TextTableReport::Format::spacesBetweenFields ()
-{
-	return _spaceBetweenFields;
-}
+
 
 
 
@@ -578,7 +573,7 @@ void TextTableReport::Data::writeInto (Output& output)
     // output the buffer with the header
 	StrBuffer header = _format.header ();
 	header.trimRight ();
-	header.append ("\r\n");
+	header.append (newline);
     output.writeRecord (header, outputBuffer);
 }
 
@@ -589,7 +584,7 @@ void TextTableReport::Data::writeInto (Output& output)
 static bool writeLineInto (StrBuffer& outputBuffer,
                            TextTableReport::Data::Iterator iterators [],
                            int iteratorCount,
-						   int inSpaceBetweenFields)
+                           const Str& fieldSeparator)
 {
     bool hasMore = false;
     for (int i=0 ; i<iteratorCount ; i++)    {
@@ -623,8 +618,8 @@ static bool writeLineInto (StrBuffer& outputBuffer,
         }
 
         //
-        // insert spaces between fields
-        outputBuffer.append (Str (spaces, 0, inSpaceBetweenFields));
+        // insert the separator between fields
+        outputBuffer.append (fieldSeparator);
     }
 
     return hasMore;
@@ -662,7 +657,7 @@ void TextTableReport::Data::writeInto (StrBuffer& outputBuffer)
     do  {
         //
         // write the line into the buffer
-        hasMore = writeLineInto (outputBuffer, iterators, fields, _format.spacesBetweenFields());
+        hasMore = writeLineInto (outputBuffer, iterators, fields, _format.fieldSeparator ());
 
         //
         // add a newline to terminate the line

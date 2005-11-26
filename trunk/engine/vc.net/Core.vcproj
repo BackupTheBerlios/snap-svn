@@ -127,16 +127,16 @@
 				RelativePath="..\core\FixedStr.cpp">
 			</File>
 			<File
-				RelativePath="..\..\seedsearcher\Core\HashTable.cpp">
+				RelativePath="..\core\GetOptParser.cpp">
 			</File>
 			<File
-				RelativePath="..\core\Parser.cpp">
+				RelativePath="..\..\seedsearcher\Core\HashTable.cpp">
 			</File>
 			<File
 				RelativePath="..\..\seedsearcher\Core\Str.cpp">
 			</File>
 			<File
-				RelativePath="..\..\seedsearcher\Core\dlmalloc.c">
+				RelativePath="..\core\dlmalloc.c">
 			</File>
 		</Filter>
 		<Filter
@@ -164,13 +164,13 @@
 				RelativePath="..\core\FixedStr.h">
 			</File>
 			<File
+				RelativePath="..\core\GetOptParser.h">
+			</File>
+			<File
 				RelativePath="..\..\seedsearcher\Core\HashTable.h">
 			</File>
 			<File
 				RelativePath="..\CORE\ImplList.h">
-			</File>
-			<File
-				RelativePath="..\core\Parser.h">
 			</File>
 			<File
 				RelativePath="..\CORE\PoolAllocated.h">

@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: FixedStr.cpp $
-// Version     : $Revision: 1 $ 
+// Version     : $Revision: 2 $ 
 //               $Author: Aviad $
-//               $Date: 25/08/04 17:56 $ 
+//               $Date: 1/09/04 1:43 $ 
 // Description :
 //	The Core library contains contains basic definitions and classes
 // which are useful to any highly-portable applications
@@ -193,6 +193,15 @@ char FixedStr::getCharAt (Str::Index index) const
     return _buffer [index];
 }
 
+char& FixedStr::getCharAt (Str::Index index) 
+{
+   debug_mustbe (index >=0);
+   debug_mustbe (index <= _capacity);
+
+   return _buffer [index];
+}
+
+
 void FixedStr::setCharAt (Str::Index index, char c)
 {
     debug_mustbe (index >=0);
@@ -201,15 +210,11 @@ void FixedStr::setCharAt (Str::Index index, char c)
     _buffer [index] = c;
 }
 
-FixedStr::operator Str () const
+Str FixedStr::getStr () const
 {
     return Str (_buffer, 0, _length);
 }
 
-FixedStr::operator const char* () const
-{
-    return _buffer;
-}
 
 FixedStr& FixedStr::operator = (const Str& in)
 {

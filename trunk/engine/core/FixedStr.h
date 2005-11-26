@@ -38,13 +38,28 @@ public:
     void append_va (const char*, ...);
     void append_va (VAList, const char*);
 
-    operator Str () const;
-    operator const char* () const;
+    operator Str () const {
+       return getStr ();
+    }
+    Str getStr () const;
+    operator const char* () const {
+       return getChars ();
+    }
+    const char* getChars () const {
+       return _buffer;
+    }
 
     Str::Size length () const;
     
     char getCharAt (Str::Index) const;
+    char& getCharAt (Str::Index);
     void setCharAt (Str::Index, char);
+    char operator [] (Str::Index i) const {
+       return getCharAt (i);
+    }
+    char& operator [] (Str::Index i) {
+       return getCharAt (i);
+    }
 
     FixedStr& operator = (const Str&);
 
@@ -75,9 +90,9 @@ private:
 //
 // File        : $RCSfile: $ 
 //               $Workfile: FixedStr.h $
-// Version     : $Revision: 1 $ 
+// Version     : $Revision: 2 $ 
 //               $Author: Aviad $
-//               $Date: 25/08/04 17:56 $ 
+//               $Date: 1/09/04 1:43 $ 
 // Description :
 //	The Core library contains contains basic definitions and classes
 // which are useful to any highly-portable applications

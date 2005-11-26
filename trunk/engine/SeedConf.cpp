@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: SeedConf.cpp $
-// Version     : $Revision: 2 $ 
+// Version     : $Revision: 3 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:44 $ 
+//               $Date: 1/09/04 1:41 $ 
 // Description :
 //    implementation classes for reading SeedSearcher's conf files.
 //
@@ -74,10 +74,10 @@ SeedConfList::SeedConfList (int argc, char* argv [])
 
 void SeedConfList::init (ConfReader& conf) {
    DLOG << "Checking correctness of " << conf.source () << ':' << DLOG.EOL ();
+   DLOG.flush ();
    if (!conf.valid ()) {
       mmustfail ("The file could not be found");
    }
-   DLOG.flush ();
 }
 
 void SeedConfList::initArgs (const Str& args) {

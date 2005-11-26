@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Assignment.cpp $
-// Version     : $Revision: 21 $ 
+// Version     : $Revision: 22 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:44 $ 
+//               $Date: 1/09/04 1:23 $ 
 // Description :
 //    Concrete class describing an assignment - 
 //       which is a sequence of assignment positions.
@@ -47,6 +47,10 @@ Assignment::Assignment (const Str& data, const AlphabetCode& code)
    for (int i=0 ; i<l ; i++) {
       AlphabetCode::Char c = data.getCharAt (i);
       AlphabetCode::CodedChar cc = code.code (c);
+      if (cc == AlphabetCode::notInCode) {
+         throw AlphabetCode::UnknownCodeError (c);
+      }
+
       //
       // create a position for each char in the string, 
       // using assg_discrete strategy

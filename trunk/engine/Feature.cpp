@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Feature.cpp $
-// Version     : $Revision: 14 $ 
+// Version     : $Revision: 15 $ 
 //               $Author: Aviad $
-//               $Date: 27/08/04 2:08 $ 
+//               $Date: 1/09/04 1:24 $ 
 // Description :
 //    Concrete cache for Hyper-Geometric distribution values
 //
@@ -131,7 +131,7 @@ void FeatureInvestigator::printMotifPosition (
    
    //
    // output sequence weight 
-   writer << " [" << position.sequence ()->weight () << ']';
+   writer << "\t[" << position.sequence ()->weight () << ']';
    
    //
    // output the position index

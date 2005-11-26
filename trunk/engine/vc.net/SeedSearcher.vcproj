@@ -130,20 +130,27 @@
 		</Configuration>
 	</Configurations>
 	<Files>
+		<Filter
+			Name="boost"
+			Filter="">
+			<File
+				RelativePath="..\boost\test\cpp_main.cpp">
+			</File>
+			<File
+				RelativePath="..\boost\test\execution_monitor.cpp">
+			</File>
+			<File
+				RelativePath="..\boost\test\execution_monitor.hpp">
+			</File>
+		</Filter>
 		<File
 			RelativePath="..\SeedPerformance.cpp">
 		</File>
 		<File
-			RelativePath="..\boost\test\cpp_main.cpp">
-		</File>
-		<File
-			RelativePath="..\boost\test\execution_monitor.cpp">
-		</File>
-		<File
-			RelativePath="..\boost\test\execution_monitor.hpp">
-		</File>
-		<File
 			RelativePath="..\main.cpp">
+		</File>
+		<File
+			RelativePath="..\main.h">
 		</File>
 		<File
 			RelativePath="..\makefile">

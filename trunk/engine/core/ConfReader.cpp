@@ -1,5 +1,3 @@
-#include "core/Parser.h"
-
 #include "ConfReader.h"
 //#include "ConfReaderTree.h"
 
@@ -1824,9 +1822,9 @@ void ConfReader::ValueNotFound::explain (std::ostream& out)
 //
 // File        : $RCSfile: $ 
 //               $Workfile: ConfReader.cpp $
-// Version     : $Revision: 6 $ 
+// Version     : $Revision: 7 $ 
 //               $Author: Aviad $
-//               $Date: 27/08/04 2:09 $ 
+//               $Date: 28/08/04 5:40 $ 
 // Description :
 //	The Persistence library contains both high & low level IO classes
 //	and is high-performance, highly reusable framework 

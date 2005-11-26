@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Parser.cpp $
-// Version     : $Revision: 28 $ 
+// Version     : $Revision: 31 $ 
 //               $Author: Aviad $
-//               $Date: 27/08/04 2:08 $ 
+//               $Date: 1/09/04 1:26 $ 
 // Description :
 //    Concrete Parser for seed-searcher options
 //
@@ -29,57 +29,14 @@
 #include <iostream>
 #include <math.h>
 
-#include "core/Parser.h"
+#include "core/GetOptParser.h"
 #include "DebugLog.h"
 using namespace std;
 
 
 
 
-void Parser::restoreDefaults ()
-{
-   //
-   //
-   __proj_e = false;
-   __proj_n = 3;
-   __proj_d = 4;
-   __proj_mid = 0;
-   __proj_spec = false;
-   USELESS (
-    __proj_i; // need to be initialized in main
-   );
-   __seed_n = 5;
-   __seed_l = 9;
-   __seed_r = 2;
-   __seed_o = 20;
-   __prep = _prep_leaf_;
-   __prep_noneg = false;
 
-   __count = _count_gene_;
-   __score_partial = false;
-   __count_reverse = false;
-   __score_fdr = false;
-   __score_bonf = true;
-   __score_min = 0.5;
-   __score_min_seq = 1;
-   __score_min_seq_per = 10;
-   __weight_t = 0.5;
-   __weight_invert = false;
-   __weight_lowt = 0.5;
-   __weightType = _weight_simple_;
-   __searchType = _search_default_;
-   __scoreType = _score_hypegeo_;
-
-   __generatePSSM = _out_pos_;
-   __generateMotif = _out_all_;
-   __generateBayesian = _out_none_;
-
-   __perf_m = 5;
-   __seed_rr = true;
-
-   __perf_comp_l = _perflencomp_none_;
-   __score_norm = _norm_none_;
-}
 
 struct ParserError : public BaseException {
    ParserError (std::string const & s) : _error (s) {
@@ -167,7 +124,7 @@ DEFINE_SEED_PARSER_OPTION(
    conf,
    "Sconf",
    "<filename> name of configuration file",
-   "empty",
+   "",
    GetOptWrapper::_required_argument_,
    {
       Parser* parser = reinterpret_cast <Parser*> (ctx);
@@ -236,11 +193,17 @@ DEFINE_SEED_PARSER_OPTION(proj_spec,
 DEFINE_SEED_PARSER_OPTION(proj_i,
    "Sproj-i", 
    "<seed-number> for random projection generator",   
-   "time",
+   "",
    GetOptWrapper::_required_argument_,
    {
       Parser* parser = reinterpret_cast <Parser*> (ctx);
-      parser->__proj_i = parser->getInt (optarg, this->_name);
+      Str sarg (optarg);
+      if (sarg.empty () || sarg.equalsIgnoreCase ("time"))  {
+         parser->__proj_i = time (NULL);
+      }
+      else {
+         parser->__proj_i = parser->getInt (optarg, this->_name);
+      }
    }
 );
 
@@ -476,45 +439,40 @@ DEFINE_SEED_PARSER_OPTION(
 DEFINE_SEED_PARSER_OPTION(
    weight_t,
    "Sweight-t",
-   "<threshold> for positive sequences",
+   "< <threshold> | interval:<low>:<high> | border:<low>:<high> > type of weight function"
+   " => 'threshold': neg = [0, threshhold], pos = [theshold, 1]\n"
+   " => 'interval':  neg = [0,low] U [high, 1], pos = [low, high]\n"
+   " => 'border':    neg = [0,low], irrelevant = [low, high], pos = [high, 1]",
    "0.5",
    GetOptWrapper::_required_argument_,
    {
       Parser* parser = reinterpret_cast <Parser*> (ctx);
-      parser->__weight_t = atof (optarg);
+      Str opt (optarg);
+      if (opt.equalsIgnoreCase ("interval")) {
+         parser->__weightType = _weight_interval_;
+         int result = sscanf (optarg, "interval:%f:%f", 
+            &parser->__weight_lowt, &parser->__weight_t);
+         
+         if (result != 2) 
+            parser->usage (StrBuffer ("Bad interval weight format: ", opt));
+      }
+      else if (opt.startsWith ("border", true)) {
+         parser->__weightType = _weight_border_;
+         int result = sscanf (optarg, "border:%f:%f", 
+            &parser->__weight_lowt, &parser->__weight_t);
+
+         if (result != 2) 
+            parser->usage (StrBuffer ("Bad border weight format: ", opt));
+      }
+      else if (sscanf (optarg, "%f", &parser->__weight_t) == 1) {
+         parser->__weightType = _weight_simple_;
+      }
+      else {
+         parser->usage (StrBuffer ("Unknown weight function type: ", opt));
+      }
    }
 );
 
-
-DEFINE_SEED_PARSER_OPTION(
-   weight_interval,
-   "Sweight-interval",
-   "<low> defines the interval weight function:"
-      " all sequences in the interval [low, threshold],"
-      " are positives",
-   "off",
-   GetOptWrapper::_required_argument_,
-   {
-      Parser* parser = reinterpret_cast <Parser*> (ctx);
-      parser->__weightType = _weight_interval_;
-      parser->__weight_lowt = atof (optarg);
-   }
-);
-
-DEFINE_SEED_PARSER_OPTION(
-   weight_border,
-   "Sweight-border",
-   "<low> defines the border weight function:"
-      " all below the threshold are negative" 
-      " all above the threshold are positives",
-   "off",
-   GetOptWrapper::_required_argument_,
-   {
-      Parser* parser = reinterpret_cast <Parser*> (ctx);
-      parser->__weightType = _weight_border_;
-      parser->__weight_lowt = atof (optarg);
-   }
-);
 
 DEFINE_SEED_PARSER_OPTION(
    weight_invert,
@@ -555,11 +513,11 @@ DEFINE_SEED_PARSER_OPTION(
 DEFINE_SEED_PARSER_OPTION(
    pssm,
    "Spssm",
-   "[=on | =pos | =off] enable/supress generation of .PSSM files:"
+   "<on | pos | off> enable/supress generation of .PSSM files:"
       "\non => generate all PSSM files."
       "\npos => gnerate only positive PSSM files."
       "\noff => suppress genration of all PSSM files.",
-   "on",
+   "pos",
    GetOptWrapper::_required_argument_,
    { 
       Parser* parser = reinterpret_cast <Parser*> (ctx);
@@ -570,7 +528,7 @@ DEFINE_SEED_PARSER_OPTION(
 DEFINE_SEED_PARSER_OPTION(
    motif,
    "Smotif",
-   "[=on | =pos | =off] enable/supress generation of .motif files"
+   "<on | pos | off> enable/supress generation of .motif files"
       "\non => generate all motif files."
       "\npos => gnerate only positive motif files."
       "\noff => suppress genration of all motif files.",
@@ -585,11 +543,11 @@ DEFINE_SEED_PARSER_OPTION(
 DEFINE_SEED_PARSER_OPTION(
    sample,
    "Ssample",
-   "[=on | =pos | =off] enable/supress generation of .sample files"
+   "<on | pos | off> enable/supress generation of .sample files"
       "\non => generate all sample files."
       "\npos => gnerate only positive sample files."
       "\noff => suppress genration of all sample files.",
-   "on",
+   "off",
    GetOptWrapper::_required_argument_,
    { 
       Parser* parser = reinterpret_cast <Parser*> (ctx);
@@ -705,8 +663,6 @@ struct MyOptions {
       REGISTER_SEED_PARSER_OPTION_CLASS (score_min_seq, _list);
       REGISTER_SEED_PARSER_OPTION_CLASS (score_min_seq_per, _list);
       REGISTER_SEED_PARSER_OPTION_CLASS (weight_t, _list);
-      REGISTER_SEED_PARSER_OPTION_CLASS (weight_interval, _list);
-      REGISTER_SEED_PARSER_OPTION_CLASS (weight_border, _list);
       REGISTER_SEED_PARSER_OPTION_CLASS (weight_invert, _list);
       REGISTER_SEED_PARSER_OPTION_CLASS (search_t, _list);
       REGISTER_SEED_PARSER_OPTION_CLASS (pssm, _list);
@@ -718,7 +674,10 @@ struct MyOptions {
 
 
 
-
+GetOptParser::OptionList& Parser::getOptions () 
+{
+   return __options._list;
+}
 
 Parser::Parser ()
 {
@@ -793,6 +752,15 @@ void Parser::parse (int argc, char* argv[])
    }
 }
 
+void Parser::restoreDefaults ()
+{
+   _impl.restoreDefaults (__options._list, this);
+
+   USELESS (
+      __proj_i; // need to be initialized in main
+   );
+}
+
 static const char* outputTypeName (Parser::OutputType t) {
    switch (t) {
       case Parser::_out_all_: return "all"; break;
@@ -806,112 +774,27 @@ static const char* outputTypeName (Parser::OutputType t) {
 
 void Parser::logParams (Persistance::TextWriter& out) const
 {
-   out << "Seed length: " << __seed_l << out.EOL ();
-   out << "No of Random Positions (dist): " << __proj_d << out.EOL ();
-   out << "No of midsection Random Positions: " << __proj_mid << out.EOL ();
-
-   out << "Preprocessor Type: " << (__prep == _prep_leaf_? "Table" : "Tree") 
-       << out.EOL ();
-   out << "Count Type: " << (__count == _count_total_? "Total" : "Gene") 
-       << out.EOL ();
-   out << "Search Type: " 
-       << (__searchType == _search_table_? "Table" : "Tree") 
-       << out.EOL ();
-   out << "Score-Function Type: " 
-       << ((__scoreType == _score_hypegeo_)? "HyperGeometric" : "Exponential")
-       << out.EOL ();
-   out << "Use reverse: " << __count_reverse << out.EOL ();
-   out << "Partial count: " << __score_partial << out.EOL ();
-   out << "Projection Specialization (expert): " << __proj_spec << out.EOL ();
-   out << "Remove negatives (expert): " << __prep_noneg << out.EOL ();
-
-   out << "No of Random Projections: " << __proj_n << out.EOL ();
-   out << "Use all possible projections: " << __proj_e << out.EOL ();
-
-   out << "PSSM length: " << __seed_o << out.EOL ();
-   out << "No of PSSMs: " << __seed_n << out.EOL ();
-
-   out << "Threshold for pos/neg cluster assignment: " << __weight_t << out.EOL ();
-   out << "Weight Function Type: ";
-   switch (__weightType) {
-      case _weight_simple_:
-         out << "Simple" << out.EOL ();
-         break;
-
-      case _weight_interval_:
-         out << "Interval, low threshold = " << __weight_lowt << out.EOL ();
-         break;
-
-      case _weight_border_:
-         out << "Border, low threshold = " << __weight_lowt << out.EOL ();
-         break;
-   };
-   out << "Weight Function invert: " << (__weight_invert? "on" : "off") << out.EOL ();
-   out << "Maximum offset to check for seed redundancy: " << __seed_r << out.EOL ();
-   out << "Check for seed reverse redundancy: " << __seed_rr << out.EOL ();
-
-   out << "Minimum positive sequences a Seed must contain: " << __score_min_seq << out.EOL ();
-   out << "Minimum positive sequences a Seed must contain: " << __score_min_seq_per << '%' << out.EOL ();
-   out << "Minimum score for seed: ";
-   if (__score_min > 0)
-      out << "-log10 (" << __score_min << ") = " << -log10 (__score_min) << out.EOL ();
-   else
-      out << "off" << out.EOL ();
-
-
-   out << "Use Bonferroni statistical fix: " << __score_bonf << out.EOL ();
-   out << "Use FDR statistical fix: " << __score_fdr << out.EOL ();
-   out << "Randomization seed: " << __proj_i << out.EOL ();
-
-   out << "Generate PSSM: " << outputTypeName (__generatePSSM) << out.EOL ();
-   out << "Genrate Motif: " << outputTypeName (__generateMotif) << out.EOL ();
-   out << "Genrate Motif: " << outputTypeName (__generateBayesian) << out.EOL ();
-
-   out << "#positions considered for sequence during seed-performance check: " 
-       << __perf_m << out.EOL ();
-
-   out << "Seq length compensation in performance evaluation: ";
-   switch (__perf_comp_l)  {
-      case _perflencomp_none_: 
-         out << "none"; 
-         break;
-
-      case _perflencomp_linear_:
-         out << "linear"; 
-         break;
-
-      case _perflencomp_log_:
-         out << "log"; 
-         break;
-
-      default:
-         mustfail ();
+   char** params;
+   int l = _impl.getCompleteParams (params, __argc, __argv, __options._list);
+   out << __argv [0] << ' ';
+   for (int i=0 ; i<l ; i++) {
+      int arg_type = __options._list [i]->argument ();
+      if (arg_type == GetOptWrapper::_no_argument_) {
+         out << "  --" << __options._list [i]->name ();
+      }
+      else if (arg_type == GetOptWrapper::_optional_argument_) {
+         out << "  --" << __options._list [i]->name ();
+         if (Str (params [i]).empty ()) continue;
+         out << '=' << params [i];
+      }
+      else if (!Str (params [i]).empty ())   {
+         out   << "  --" << __options._list [i]->name ()
+               << ' ' << params [i];
+      }
    }
-   out << out.EOL ();
-
-
-   out << "Score normalization: ";
-   switch (__score_norm)  {
-      case _norm_none_: 
-         out << "none"; 
-         break;
-
-      case _norm_linear_background_:
-         out << "linear-bg"; 
-         break;
-
-      case _norm_logit_:
-         out << "logit"; 
-         break;
-
-      default:
-         mustfail ();
-   }
-   out << out.EOL ();
-
-
-
+   out.writeln();
    out.flush ();
+   delete [] params;
 }
 
 void Parser::checkCompatibility (const Parser& in)
