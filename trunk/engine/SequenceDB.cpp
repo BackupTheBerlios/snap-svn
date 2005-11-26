@@ -21,15 +21,23 @@ using namespace std;
 *
 *****************/
 
+struct DBError : public BaseException {
+   DBError (std::string const & s) : _error (s) {
+   }
+
+   virtual void explain (std::ostream& out) {
+      out << "Error in sequence file: " << _error;
+   }
+
+   std::string _error;
+};
+
 
 static void Err(const char* s) {
-   debug_mustfail ();
-   cerr<<s<<endl;
-   cerr.flush();
-   exit(1);
+   throw DBError (s);
 }
 static void Err(const std::string& s) {
-   Err (s.c_str ());
+   throw DBError (s);
 }
 
 

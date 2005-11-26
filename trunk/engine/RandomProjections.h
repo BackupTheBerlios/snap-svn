@@ -40,16 +40,14 @@ public:
       return _numOfPositions;
    }
 
-   void getAssignment ( Assignment&, 
+   const Assignment& getAssignment (
                         int index, 
                         const Assignment::Position& randPos,
                         const Assignment::Position& normalPos) const;
-   Assignment getAssignment ( int index,
-                              const Assignment::Position& randPos,
-                              const Assignment::Position& normalPos) const;
 
    typedef Vec <int> RandomPositions;
    typedef Vec <RandomPositions> RandomPositionsVector;
+   typedef Vec <Assignment> AssignmentVector;
 
    static void srand (unsigned int seed);
 
@@ -59,6 +57,7 @@ private:
    int _numOfPositions;
    int _maxPossibleProjections;
    RandomPositionsVector _vector;
+   AssignmentVector _assignments;
 };
 
 

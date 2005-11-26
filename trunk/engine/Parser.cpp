@@ -257,11 +257,18 @@ void Parser::usage (const char* error)
    cout << endl;
    cout << endl;
 
-   if( error != NULL)
-      cerr << "Error: " << error << endl;
+   struct ParserError : public BaseException {
+      ParserError (std::string const & s) : _error (s) {
+      }
 
-   debug_mustfail ();
-   exit(-1);
+      virtual void explain (std::ostream& out) {
+         out << "Error in arguments: " << _error;
+      }
+
+      std::string _error;
+   };
+
+   throw ParserError (error);
 }
 
 

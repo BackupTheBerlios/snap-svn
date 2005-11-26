@@ -191,7 +191,7 @@ static bool checkSimilarity (int offset,
          return false;
       }
    }
-/*
+
    debug_only (
       DLOG << "Assignments are redundant (offset " 
            << offset 
@@ -201,7 +201,6 @@ static bool checkSimilarity (int offset,
            << Format (b)
            << DLOG.EOL ();
       )
-*/
 
    //
    // they have a common base assignment, so they are similar
@@ -211,6 +210,14 @@ static bool checkSimilarity (int offset,
 
 static bool checkRedundancy (int maxOffset, const Assignment& a, const Assignment& b)
 {
+   debug_only (
+      DLOG << "Comparing: "
+           << Format (a)
+           << ' ' 
+           << Format (b)
+           << DLOG.EOL ();
+   );
+
    debug_mustbe (maxOffset >= 0);
    debug_mustbe (maxOffset < a.length ());
    debug_mustbe (a.length () == b.length ());   
@@ -243,15 +250,22 @@ bool KBestFeatures::add (SeedSearcher::Feature_var daFeature)
    double worstScore = _features [0]._score;
    for (int i=0 ; i < _size ; i++) {
       //
-      // the smaller the score, the better.
-      if (_features [i]._score > daFeature->_score) {
-         if (checkRedundancy (_maxRedundancyOffset,
-                              *_features [i]._assg, 
-                              *daFeature->_assg)               ) {
+      // we dont allow 'duplicates' in our features
+      if (checkRedundancy (_maxRedundancyOffset,
+                           *_features [i]._assg, 
+                           *daFeature->_assg)               ) {
+         //
+         // the smaller the score, the better.
+         if (_features [i]._score > daFeature->_score) {
             //
             // replace this similar feature with a better one
             _features [i] = *(daFeature.release ());
             return true;
+         }
+         else {
+            //
+            // this is a redundant seed, and we already have a better one
+            return false;
          }
       }
 

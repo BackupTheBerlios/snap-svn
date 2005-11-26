@@ -195,7 +195,7 @@ public:
 
       delete [] _positions;
    }
-   void addPosition (int index, const Position* pos) {
+   void addPosition (int index, const SeqPosition* pos) {
       debug_mustbe (index >=0 && index < _cardinality);
       _positions [index]->push_back (pos);
    }
@@ -418,8 +418,8 @@ static TreeRep* build(bool optimize,
       int length = seq->length ();
       numberOfPositions += length;
       for (int i=0 ; i<length ; i++)   {
-         Position* position = 
-            new Position (seq, i);
+         SeqPosition* position = 
+            new SeqPosition (seq, i);
 
          positions->push_back (position);
       }
@@ -434,15 +434,15 @@ static TreeRep* build(bool optimize,
    buildTree (builder, optimize, wf, db.alphabetCode (), root, 0, maxDepth);
 
    time (&finish);
-   int totalBytes =  numberOfPositions * sizeof (Position) +
+   int totalBytes =  numberOfPositions * sizeof (SeqPosition) +
                      builder.numOfNodes () * sizeof (TreeNodeRep) +
                      cardinality * sizeof (TreeNodeRep*) * builder.numOfNodes () + // child arrays
                      builder.numOfVectors () * sizeof (PositionVector) + 
-                     builder.sizeInVectors () * sizeof (Position*) + 
-                     builder.spaceLostInVectors () * sizeof (Position*);
+                     builder.sizeInVectors () * sizeof (SeqPosition*) + 
+                     builder.spaceLostInVectors () * sizeof (SeqPosition*);
                      
    DLOG << "PrefixTreePreprocessor created: (" << (finish - start) << " seconds)" << DLOG.EOL ()
-          << numberOfPositions << " Position objects each of " << sizeof (Position) << " Bytes." << DLOG.EOL ()
+          << numberOfPositions << " SeqPosition objects each of " << sizeof (SeqPosition) << " Bytes." << DLOG.EOL ()
           << builder.numOfNodes () << " Node objects each of " << sizeof (TreeNodeRep) << " Bytes." << DLOG.EOL ()
           << builder.numOfVectors () << " PositionVector objects each of " << sizeof (PositionVector) << " Bytes." << DLOG.EOL ()
           << builder.sizeInVectors () << " total positions in PositionVectors" << DLOG.EOL ()
@@ -493,8 +493,8 @@ void SeqPositions::dispose (bool disposePositions)
    if (disposePositions) {
       PositionIterator it = iterator ();
       for (; it.hasNext () ; it.next ()) {
-         const Position* pos = it.get ();
-         delete const_cast <Position*> (pos);
+         const SeqPosition* pos = it.get ();
+         delete const_cast <SeqPosition*> (pos);
       }
    }
 
@@ -560,7 +560,7 @@ const Sequence* SeqPositions::sequence () const
    return _positions->empty ()? NULL : (*_positions) [0]->sequence ();
 }
 
-const Position* SeqPositions::firstPosition () const
+const SeqPosition* SeqPositions::firstPosition () const
 {
    if (_positions == NULL)
       return NULL;
@@ -932,7 +932,7 @@ void TreeNodeRep::add2Assignment (Assignment& outAssg) const
 {
    //
    debug_mustbe (!_positions.empty ());
-   const Position* samplePosition = _positions[0].firstPosition ();
+   const SeqPosition* samplePosition = _positions[0].firstPosition ();
 
    //
    debug_mustbe (samplePosition != NULL);

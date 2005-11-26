@@ -1,6 +1,6 @@
 #include "Cluster.h"
 #include "SequenceDB.h"
-#include "Legacy/mathplus.h"
+#include "Legacy/MathPlus.h"
 
 #include <limits.h>
 
@@ -375,7 +375,7 @@ void PosCluster::unify (const PosCluster& in)
       _set.insert (*it);
 }
 
-bool PosCluster::addPosition (const Position* in)
+bool PosCluster::addPosition (const SeqPosition* in)
 {
    bool success = 
       _set.insert (in).second;
@@ -383,7 +383,7 @@ bool PosCluster::addPosition (const Position* in)
    return success;
 }
 
-void PosCluster::removePosition (const Position* in)
+void PosCluster::removePosition (const SeqPosition* in)
 {
    USELESS (int result =)
      _set.erase (in);
@@ -408,7 +408,7 @@ int PosCluster::removeOverlaps (int positionDistance)
    // same as the known activity-selection problem.
    // this algorithm yields an optimal solution
    // 
-   Vec <const Position*> positions;
+   Vec <const SeqPosition*> positions;
    PositionSet::reverse_iterator revIt = _set.rbegin();
    for (; revIt != _set.rend () ; revIt++) {
       //

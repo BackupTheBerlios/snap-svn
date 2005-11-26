@@ -80,14 +80,14 @@ private:
 
 
 
-class Position : public Persistance::Object {
+class SeqPosition : public Persistance::Object {
 public:
    //
    // ctor is called in a loop, so must be very effiecient
-	inline Position (Sequence const * seq, int pos) :  _sequence (seq),
+	inline SeqPosition (Sequence const * seq, int pos) :  _sequence (seq),
                                                       _position (pos) {
    }
-   ~Position () {
+   ~SeqPosition () {
    }
    
    inline char operator [] (int index) const {
@@ -168,23 +168,23 @@ public:
 
    void serialize (Persistance::IArchive& in);
    void serialize (Persistance::OArchive& out);
-   Position () {
+   SeqPosition () {
    }
 
 #if SEED_CHUNK_ALLOCATION_OPTIMIZATION
    void* operator new (size_t size) {
-      debug_mustbe (size == sizeof (Position));
+      debug_mustbe (size == sizeof (SeqPosition));
       return __allocator.newT ();
    }
    void operator delete(void *p)    {
-      __allocator.deleteT (reinterpret_cast <Position*> (p));
+      __allocator.deleteT (reinterpret_cast <SeqPosition*> (p));
    }
 #endif
 
 private:
 	Sequence const * _sequence;
 	int _position;
-   static ChunkAllocator <Position> __allocator;
+   static ChunkAllocator <SeqPosition> __allocator;
 };
 
 //
@@ -193,11 +193,11 @@ typedef Vec <Sequence const*> SequenceVector;
 
 //
 // a vector of positions
-class PositionVector : public Vec <Position const*> {
+class PositionVector : public Vec <SeqPosition const*> {
 public:
    PositionVector () {
    }
-   PositionVector (int size) : Vec <Position const*> (size) {
+   PositionVector (int size) : Vec <SeqPosition const*> (size) {
    }
    ~PositionVector () {
    }

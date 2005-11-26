@@ -26,40 +26,64 @@ ostream & operator<<(ostream & os, const Vec<T>& v) {
   return os;
 }
 
+
+
+
 typedef unsigned int uint;
 
-
-
-inline static void createAllProjections (
-                  RandomProjections::RandomPositionsVector& positions,
-                  int& index,
-                  int startingPos, 
-                  int endPos, 
-                  int numOfPositions
-                  )
+static int NChooseK (int n, int k)
 {
-   //
-   // TODO: this implementation is incorrect
-   if (numOfPositions == 0)
-      return;
+   double tmp = exp( lgamma(n+1)-
+		    (lgamma(k+1)+lgamma(n-k+1)) );
 
-   for (int i = startingPos ; i + numOfPositions <= endPos ; i++) {
-      positions [index].push_back (i);
-      createAllProjections (positions,
-                           index,
-                           i+1,
-                           endPos,
-                           numOfPositions-1);
-      index++;
-   }
+   typedef unsigned int uint;
+   uint result = ROUND (tmp);
+
+
+   //
+   // make sure this rounding up is valid
+   mustbe ( ((double) result) - tmp < 0.25);
+   mustbe ( ((double) result) - tmp > -0.25);
+
+   return (int) result;
 }
 
+static int createAllProjections (
+               RandomProjections::RandomPositionsVector& projectionVec,
+               RandomProjections::RandomPositions& chosenPositions,
+               int first, int last, int K)
+{
+   int alreadyChosen = chosenPositions.size ();
+   if (alreadyChosen == K) {
+      //
+      // we have a new projection
+      projectionVec.push_back (chosenPositions);
+      return 1;
+   }
+
+   int projectionsCreated = 0;
+   int leftToChoose = K - alreadyChosen;
+   int size = last - first + 1 - leftToChoose;
+   for (int i=0; i<size ; i++) {
+      chosenPositions.push_back (first+i);
+      projectionsCreated +=
+         createAllProjections (
+                           projectionVec,
+                           chosenPositions,
+                           first + i + 1,
+                           last,
+                           K);
+
+      chosenPositions.pop_back ();
+   }
+
+   return projectionsCreated;
+}
 
 //
 // Copied/Adapted from legacy SeedSearcher.cpp
 static int verifyProjectionNumber( int motifLength,
-					 int dist /*,
-					 int projNum */
+					 int dist
                 )
 {
    if (motifLength <= 2)
@@ -70,32 +94,20 @@ static int verifyProjectionNumber( int motifLength,
    motifLength--;
 
    //
-   // Aviad: TODO: the first position should also never be random...
+   // Aviad: the first position should also never be random...
    // dont allow random positions at the first or last positions in the assignment
    // because it is the same as having a shorter assignment
    motifLength--;
 
   assert(dist<=motifLength);
-  double tmp = exp( lgamma(motifLength+1)-
-		    (lgamma(dist+1)+lgamma(motifLength-dist+1)) );
-  
-  typedef unsigned int uint;
-  uint possibleProjections = ( (tmp - ((int)tmp)) > 0) ? (int) (tmp+1) : (int)tmp; 
+  int result = NChooseK (motifLength, dist);
+
   /*
    * Aviad: removed the comparison with projNum, just return the number
    * of possible projections
-
-  debug_only (
-    if (  possibleProjections < static_cast<uint>(projNum)) 
-      cerr<<string("too many projections asked, number of porjections will be only ") + (int)possibleProjections<<endl;
-  );
-
-   if( ((int)projNum) < ((int)possibleProjections) )
-      return projNum;
-   else
-   *
    */
-   return (int)possibleProjections;
+
+   return result;
 }
 
 
@@ -113,15 +125,14 @@ RandomProjections::RandomProjections (
    //
    // first compute how many projections are possible:
    // I am using a function adapted from legacy SeedSearcher here...
-   int numOfProjections = 
+   _maxPossibleProjections = 
       verifyProjectionNumber (length, numOfPositions);
 
-   //
-   // expand the vector to the required size
-   _vector.resize (numOfProjections);
+   RandomPositions chosenPositions;
+   createAllProjections (  _vector, chosenPositions, 
+                           1, length -1, numOfPositions);
 
-   int index = 0;
-   createAllProjections (_vector, index, 1, length -1, numOfProjections);
+   debug_mustbe (_vector.size () == _maxPossibleProjections);
 }
 
 
@@ -142,10 +153,11 @@ void RandomProjections::srand (unsigned int seed)
 
 //
 // Copied/Adapted from legacy SeedSearcher.cpp
-static void chooseProjections (size_t motifLength,
-				      size_t dist,
-				      size_t projNum ,
-				      Vec<Vec<int> >  & projectionsSites)
+static void chooseProjections (
+               size_t motifLength,
+               size_t dist,
+               size_t projNum ,
+               RandomProjections::RandomPositionsVector& projectionsSites)
 {
    projectionsSites.resize(projNum);
 
@@ -158,7 +170,9 @@ static void chooseProjections (size_t motifLength,
          // NIR: wlog we don't need to project the last position...
          // Vec<int> val = rand1.sampleGroup( motifLength - 1, dist );
          // Aviad: dont allow projection in the first position either
-         Vec<int> val = rand1.sampleGroup( motifLength - 2, dist );
+         RandomProjections::RandomPositions val = 
+            rand1.sampleGroup( motifLength - 2, dist );
+
          debug_mustbe (val.size () == dist);
          for (size_t pos=0 ; pos<dist ; pos++)
             val [pos]++; 
@@ -222,10 +236,11 @@ RandomProjections::RandomProjections (
    if (_maxPossibleProjections <= numOfProjections) {
       //
       // just create all the projections possible
-      _vector.resize (_maxPossibleProjections);
+      RandomPositions chosenPositions;
+      createAllProjections (  _vector, chosenPositions, 
+                              1, length -1, numOfPositions);
 
-      int index = 0;
-      createAllProjections (_vector, index, 1, length -1, numOfPositions);
+      debug_mustbe (_vector.size () == _maxPossibleProjections);
    }
    else {
       //
@@ -235,20 +250,28 @@ RandomProjections::RandomProjections (
       // fixed it.
       chooseProjections (length, numOfPositions, numOfProjections, _vector);
    }
+
+   //
+   // make room for all the assignments
+   _assignments.resize(_vector.size ());
 }
 
-void RandomProjections::getAssignment (Assignment& assg,
-                                       int index, 
-                                       const Assignment::Position& randPos,
-                                       const Assignment::Position& normalPos) const
+const Assignment& RandomProjections::getAssignment (int index, 
+                                 const Assignment::Position& randPos,
+                                 const Assignment::Position& normalPos) const
 {
    const RandomPositions& rand = _vector[index];
 
-   assg = Assignment (normalPos, _length);
+   Assignment* assg = 
+      &(const_cast <AssignmentVector&> (_assignments)) [index];
+
+   *assg = Assignment (normalPos, _length);
    for (int i=0 ; i<_numOfPositions; i++){
-     int pos = rand [i];
-      assg.setPosition (pos, randPos);
+      int pos = rand [i];
+      assg->setPosition (pos, randPos);
    }
+
+   return *assg;
 /*
    debug_only (
       DLOG  << "RandomProjections returned: "
@@ -258,28 +281,6 @@ void RandomProjections::getAssignment (Assignment& assg,
 */
 }
 
-Assignment RandomProjections::getAssignment (int index, 
-                                             const Assignment::Position& randPos,
-                                             const Assignment::Position& normalPos) const
-{
-   const RandomPositions& rand = _vector[index];
-
-   Assignment assg (normalPos, _length);
-
-   for (int i=0 ; i<_numOfPositions; i++){
-     int pos = rand [i];
-      assg.setPosition (pos, randPos);
-   }
-/*
-   debug_only (
-      DLOG  << "RandomProjections returned: "
-            << Format (assg)
-            << DLOG.EOL ()
-   );
-*/
-
-   return assg;
-}
 
 
 

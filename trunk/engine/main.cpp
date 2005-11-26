@@ -39,14 +39,21 @@ static const int __versionMinor = 0;
 
 PrefixTreePreprocessor* ___kuku;
 
+struct MainError : public BaseException {
+   MainError (std::string const & s) : _error (s) {
+   }
+
+   virtual void explain (std::ostream& out) {
+      out << "Error in main: " << _error;
+   }
+
+   std::string _error;
+};
 
 //
 // Copied/Adapted from legacy SeedSearcher
 static void Err(std::string const & s) {
-   debug_mustfail ();
-   cerr<<s<<DLOG.EOL ();
-   cerr.flush();
-   exit(1);
+   throw MainError (s);
 }
 
 
@@ -141,7 +148,7 @@ static TFactoryList* createFactories ()
    new TFactory <PrefixTreePreprocessor> (factories);
    new TFactory <SequenceDB> (factories);
    new TFactory <Sequence> (factories);
-   new TFactory <Position> (factories);
+   new TFactory <SeqPosition> (factories);
 
    return factories.release ();
 }
@@ -331,7 +338,7 @@ inline static int getMotifLeftOffset (int motifLen, int seedLen)
 
 static void printMotif (TextWriter& writer, 
                         const Assignment& assg,
-                        const Position& position,
+                        const SeqPosition& position,
                         const std::string& allignment)
 {
    //
@@ -343,7 +350,8 @@ static void printMotif (TextWriter& writer,
       getMotifLeftOffset (Parser::__seed_o, assg.length ());
 
    if (leftPaddingLength > 0) {
-      Str leftPad = position.getDataString (-leftPaddingLength, leftPaddingLength);
+      Str leftPad = 
+	position.getDataString (-leftPaddingLength, leftPaddingLength);
       writer.write (allignment.c_str (), leftPaddingLength - leftPad.length ());
       writer.write (leftPad);
    }
@@ -354,7 +362,8 @@ static void printMotif (TextWriter& writer,
    
    //
    // write the actual seed
-   const int seedLength = tmin (Parser::__seed_o - 2 * leftPaddingLength, assg.length ());
+   const int seedLength = 
+     tmin (Parser::__seed_o - 2 * leftPaddingLength, assg.length ());
    Str motif = position.getSeedString (seedLength);
    writer << motif;
 
@@ -364,12 +373,15 @@ static void printMotif (TextWriter& writer,
 
    //
    // right padding
-   const int rightPaddingPosition = Parser::__seed_o - seedLength - leftPaddingLength;
+   const int rightPaddingPosition =
+     Parser::__seed_o - seedLength - leftPaddingLength;
    const int rightPaddingLength =  rightPaddingPosition;
    if (rightPaddingLength > 0) {
-      Str rightPad = position.getDataString (rightPaddingPosition, rightPaddingLength);
+      Str rightPad = 
+	position.getDataString (rightPaddingPosition, rightPaddingLength);
       writer.write (rightPad);
-      writer.write (allignment.c_str (), rightPaddingLength - rightPad.length ());
+      writer.write (allignment.c_str (), 
+		    rightPaddingLength - rightPad.length ());
    }
   
    //
@@ -409,9 +421,11 @@ static void printMotifFile (bool isPositives,
    // create the motif file name
    char motifFileName [256];
    if (isPositives)
-      sprintf (motifFileName, "%s.%d.motifs", Parser::__argv[Parser::__lastFileArg], (index+1));
+      sprintf (motifFileName, "%s.%d.motifs", 
+	       Parser::__argv[Parser::__lastFileArg], (index+1));
    else
-      sprintf (motifFileName, "%s.%d.neg.motifs", Parser::__argv[Parser::__lastFileArg], (index+1));
+      sprintf (motifFileName, "%s.%d.neg.motifs", 
+	       Parser::__argv[Parser::__lastFileArg], (index+1));
 
    ofstream motifFile (motifFileName,
                    ios_base::out | ios_base::trunc | ios_base::binary);
@@ -442,7 +456,8 @@ static void printPSSMFile ( const AlphabetCode& code,
    PSSM pssm(code, offset, Parser::__seed_o, positions);
 
    char motifFileName [256];
-   sprintf (motifFileName, "%s.%d.pssm", Parser::__argv[Parser::__lastFileArg], (index+1));
+   sprintf (motifFileName, "%s.%d.pssm", 
+	    Parser::__argv[Parser::__lastFileArg], (index+1));
 
    ofstream motifFile (motifFileName,
                    ios_base::out | ios_base::trunc | ios_base::binary);
@@ -519,19 +534,51 @@ static void printSeeds (SeqWeightFunction& wf,
    DLOG.flush ();
 
    //
+   // print header
+   DLOG << DLOG.EOL ();
+   if (Parser::__score_bonf) {
+      DLOG <<"Bonf(-log10)\t";
+   }
+   DLOG << "Score(-log10)\tSeed\t\tParameters\t\t\tProjection" << DLOG.EOL ();
+
+   static const double Log_2_10 = ::log2 (10);
+   const double log_10_numOfSeeds = ::log10 (totalNumOfSeedsFound);
+
+   //
    // print (do not print less than 3)
    int index;
    lastIndexToShow = tmin (size, tmax (lastIndexToShow, 3));
    for (index=0 ; index<lastIndexToShow ; index++) {
       const SeedSearcher::Feature& feature_i = bestFeatures [index];
-      DLOG << (-feature_i._score)
-         << '\t'
-         << Format (*feature_i._assg);
+      
+      double log_10_of_score = (feature_i._score) / Log_2_10;
+      
+      //
+      // print bonf correction
+      if (Parser::__score_bonf) {
+         //
+         // log10 (score * K) = log10 (score) + log10 (K)
+         double bonfScore = log_10_of_score + log_10_numOfSeeds;
+         DLOG  <<  (- bonfScore)
+               << '\t';
+      }
 
+      DLOG  <<  (- log_10_of_score)
+            << '\t'
+            << Format (*feature_i._assg);
+
+      //
+      // print score params if available
       if (feature_i._params) {
          DLOG << "\t[";
          scoreFunc.writeAsText (DLOG, feature_i._params);
          DLOG << ']';
+      }
+
+      //
+      // print projection details if available
+      if (feature_i._projection) {
+         DLOG << '\t' << Format (*feature_i._projection);
       }
 
       DLOG << DLOG.EOL ();
@@ -591,7 +638,6 @@ static void printGoodbye (time_t start, time_t finish)
       << " after running " << (finish - start) << " seconds."
       << DLOG.EOL ();
    DLOG.flush ();
-   //exit (0);
 }
 
 static AutoPtr <SeqWeightFunction> createWeightFunction ()
@@ -795,11 +841,12 @@ int main(int argc, char* argv [])
       //
       // now run over all projections, searching for seeds.
       // the seeds are stored inside kbestFeatures.
-      Assignment assg;
+
       int totalNumOfSeedsFound = 0;
       int numOfProjections = projections->numOfProjections ();
       for (int i=0 ; i<numOfProjections ; i++) {
-         projections->getAssignment (  assg, i,
+         const Assignment& assg = 
+            projections->getAssignment (  i,
                                        ACGTPosition (Assignment::together),
                                        ACGTPosition (Assignment::discrete));
          //

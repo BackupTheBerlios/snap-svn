@@ -376,7 +376,7 @@ Cluster.o: Cluster.cpp Cluster.h Sequence.h Defs.h Core/Defs.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_vector.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_bvector.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/vector.tcc \
-  Core/ChunkAllocator.h Core/Defs.h Core/Str.h Legacy/mathplus.h \
+  Core/ChunkAllocator.h Core/Defs.h Core/Str.h Legacy/MathPlus.h \
   /usr/include/math.h Core/AutoPtr.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/map \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_tree.h \
@@ -602,10 +602,11 @@ HyperGeoCache.o: HyperGeoCache.cpp Assignment.h Core/Defs.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/vector.tcc \
   Persistance/Defs.h ./Core/Defs.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bitset HyperGeoCache.h \
-  ExtraMath.h /usr/include/math.h SeedSearcher.h PrefixTreePreprocessor.h \
-  Preprocessor.h Defs.h SequenceDB.h Alphabet.h Sequence.h \
-  Persistance/Object.h Persistance/Defs.h Core/ChunkAllocator.h \
-  Core/Defs.h Core/Str.h Cluster.h Legacy/mathplus.h Core/AutoPtr.h \
+  ExtraMath.h Legacy/MathFunctions.h /usr/include/math.h \
+  Legacy/MathPlus.h Legacy/MathPlus.h SeedSearcher.h \
+  PrefixTreePreprocessor.h Preprocessor.h Defs.h SequenceDB.h Alphabet.h \
+  Sequence.h Persistance/Object.h Persistance/Defs.h \
+  Core/ChunkAllocator.h Core/Defs.h Core/Str.h Cluster.h Core/AutoPtr.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/map \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_tree.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/cpp_type_traits.h \
@@ -723,7 +724,7 @@ HyperGeoScore.o: HyperGeoScore.cpp Assignment.h Core/Defs.h \
   Persistance/Defs.h ./Core/Defs.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bitset HyperGeoScore.h \
   Cluster.h Sequence.h Defs.h Persistance/Object.h Persistance/Defs.h \
-  Core/ChunkAllocator.h Core/Defs.h Core/Str.h Legacy/mathplus.h \
+  Core/ChunkAllocator.h Core/Defs.h Core/Str.h Legacy/MathPlus.h \
   /usr/include/math.h Core/AutoPtr.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/map \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_tree.h \
@@ -734,7 +735,8 @@ HyperGeoScore.o: HyperGeoScore.cpp Assignment.h Core/Defs.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_set.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_multiset.h \
   SeedSearcher.h PrefixTreePreprocessor.h Preprocessor.h SequenceDB.h \
-  Alphabet.h HyperGeoCache.h ExtraMath.h
+  Alphabet.h HyperGeoCache.h ExtraMath.h Legacy/MathFunctions.h \
+  Legacy/MathPlus.h
 LeafPreprocessor.o: LeafPreprocessor.cpp Assignment.h Core/Defs.h \
   Core/Compiler.h /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/string \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/c++config.h \
@@ -844,7 +846,7 @@ LeafPreprocessor.o: LeafPreprocessor.cpp Assignment.h Core/Defs.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bitset LeafPreprocessor.h \
   Preprocessor.h Defs.h SequenceDB.h Alphabet.h Sequence.h \
   Persistance/Object.h Persistance/Defs.h Core/ChunkAllocator.h \
-  Core/Defs.h Core/Str.h Cluster.h Legacy/mathplus.h /usr/include/math.h \
+  Core/Defs.h Core/Str.h Cluster.h Legacy/MathPlus.h /usr/include/math.h \
   Core/AutoPtr.h /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/map \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_tree.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/cpp_type_traits.h \
@@ -1064,7 +1066,7 @@ PrefixTreePreprocessor.o: PrefixTreePreprocessor.cpp \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/vector.tcc \
   Alphabet.h Sequence.h Persistance/Object.h Persistance/Defs.h \
   ./Core/Defs.h Core/ChunkAllocator.h Core/Defs.h Core/Str.h Cluster.h \
-  Legacy/mathplus.h /usr/include/math.h Core/AutoPtr.h \
+  Legacy/MathPlus.h /usr/include/math.h Core/AutoPtr.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/map \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_tree.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/cpp_type_traits.h \
@@ -1192,7 +1194,7 @@ PrefixTreeWalker.o: PrefixTreeWalker.cpp PrefixTreeWalker.h Assignment.h \
   PrefixTreePreprocessor.h Preprocessor.h Defs.h SequenceDB.h Alphabet.h \
   Sequence.h Persistance/Object.h Persistance/Defs.h \
   Core/ChunkAllocator.h Core/Defs.h Core/Str.h Cluster.h \
-  Legacy/mathplus.h /usr/include/math.h Core/AutoPtr.h \
+  Legacy/MathPlus.h /usr/include/math.h Core/AutoPtr.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/map \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_tree.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/cpp_type_traits.h \
@@ -1308,7 +1310,7 @@ Preprocessor.o: Preprocessor.cpp Preprocessor.h Defs.h Core/Defs.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/vector.tcc \
   Alphabet.h Sequence.h Persistance/Object.h Persistance/Defs.h \
   ./Core/Defs.h Core/ChunkAllocator.h Core/Defs.h Core/Str.h Cluster.h \
-  Legacy/mathplus.h /usr/include/math.h Core/AutoPtr.h \
+  Legacy/MathPlus.h /usr/include/math.h Core/AutoPtr.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/map \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_tree.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/cpp_type_traits.h \
@@ -1427,7 +1429,8 @@ RandomProjections.o: RandomProjections.cpp RandomProjections.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/vector.tcc \
   Persistance/Defs.h ./Core/Defs.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bitset ExtraMath.h \
-  /usr/include/math.h Legacy/RandomGenerator.h Legacy/Multinomial.h \
+  Legacy/MathFunctions.h /usr/include/math.h Legacy/MathPlus.h \
+  Legacy/MathPlus.h Legacy/RandomGenerator.h Legacy/Multinomial.h \
   DebugLog.h Persistance/TextWriter.h Persistance/AbstractFormat.h \
   ./Persistance/Defs.h ./Core/AutoPtr.h AssignmentFormat.h
 SeedHash.o: SeedHash.cpp SeedHash.h Assignment.h Core/Defs.h \
@@ -1538,7 +1541,7 @@ SeedHash.o: SeedHash.cpp SeedHash.h Assignment.h Core/Defs.h \
   Persistance/Defs.h ./Core/Defs.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bitset Cluster.h \
   Sequence.h Defs.h Persistance/Object.h Persistance/Defs.h \
-  Core/ChunkAllocator.h Core/Defs.h Core/Str.h Legacy/mathplus.h \
+  Core/ChunkAllocator.h Core/Defs.h Core/Str.h Legacy/MathPlus.h \
   /usr/include/math.h Core/AutoPtr.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/map \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_tree.h \
@@ -1660,7 +1663,7 @@ SeedSearcher.o: SeedSearcher.cpp SeedSearcher.h PrefixTreePreprocessor.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/vector.tcc \
   Alphabet.h Sequence.h Persistance/Object.h Persistance/Defs.h \
   ./Core/Defs.h Core/ChunkAllocator.h Core/Defs.h Core/Str.h Cluster.h \
-  Legacy/mathplus.h /usr/include/math.h Core/AutoPtr.h \
+  Legacy/MathPlus.h /usr/include/math.h Core/AutoPtr.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/map \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_tree.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/cpp_type_traits.h \
@@ -1902,7 +1905,7 @@ SequenceDB.o: SequenceDB.cpp Core/Defs.h Core/Compiler.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_bvector.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/vector.tcc \
   Core/ChunkAllocator.h Core/Defs.h Core/Str.h SequenceDB.h Alphabet.h \
-  Cluster.h Legacy/mathplus.h /usr/include/math.h Core/AutoPtr.h \
+  Cluster.h Legacy/MathPlus.h /usr/include/math.h Core/AutoPtr.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/map \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_tree.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/cpp_type_traits.h \
@@ -2029,7 +2032,7 @@ StdOptions.o: StdOptions.cpp StdOptions.h Defs.h Core/Defs.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/vector.tcc \
   Alphabet.h Sequence.h Persistance/Object.h Persistance/Defs.h \
   ./Core/Defs.h Core/ChunkAllocator.h Core/Defs.h Core/Str.h Cluster.h \
-  Legacy/mathplus.h /usr/include/math.h Core/AutoPtr.h \
+  Legacy/MathPlus.h /usr/include/math.h Core/AutoPtr.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/map \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_tree.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/cpp_type_traits.h \
@@ -2041,8 +2044,8 @@ StdOptions.o: StdOptions.cpp StdOptions.h Defs.h Core/Defs.h \
   SeedSearcher.h PrefixTreePreprocessor.h Preprocessor.h Assignment.h \
   Persistance/Defs.h /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bitset \
   AssignmentFormat.h Persistance/AbstractFormat.h ./Persistance/Defs.h \
-  ./Core/AutoPtr.h HyperGeoCache.h ExtraMath.h Persistance/TextWriter.h \
-  DebugLog.h
+  ./Core/AutoPtr.h HyperGeoCache.h ExtraMath.h Legacy/MathFunctions.h \
+  Legacy/MathPlus.h Persistance/TextWriter.h DebugLog.h
 main.o: main.cpp Parser.h SequenceDB.h Core/Defs.h Core/Compiler.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/string \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/c++config.h \
@@ -2150,7 +2153,7 @@ main.o: main.cpp Parser.h SequenceDB.h Core/Defs.h Core/Compiler.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/vector.tcc \
   Alphabet.h Sequence.h Defs.h Persistance/Object.h Persistance/Defs.h \
   ./Core/Defs.h Core/ChunkAllocator.h Core/Defs.h Core/Str.h Cluster.h \
-  Legacy/mathplus.h /usr/include/math.h Core/AutoPtr.h \
+  Legacy/MathPlus.h /usr/include/math.h Core/AutoPtr.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/map \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_tree.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/cpp_type_traits.h \
@@ -2162,10 +2165,11 @@ main.o: main.cpp Parser.h SequenceDB.h Core/Defs.h Core/Compiler.h \
   PrefixTreePreprocessor.h Preprocessor.h Assignment.h Persistance/Defs.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bitset \
   RandomProjections.h SeedSearcher.h HyperGeoScore.h HyperGeoCache.h \
-  ExtraMath.h PSSM.h LeafPreprocessor.h SeedHash.h Core/HashTable.h \
-  StdOptions.h AssignmentFormat.h Persistance/AbstractFormat.h \
-  ./Persistance/Defs.h ./Core/AutoPtr.h Persistance/TextWriter.h \
-  DebugLog.h Persistance/StdOutputStream.h Persistance/OutputStream.h \
+  ExtraMath.h Legacy/MathFunctions.h Legacy/MathPlus.h PSSM.h \
+  LeafPreprocessor.h SeedHash.h Core/HashTable.h StdOptions.h \
+  AssignmentFormat.h Persistance/AbstractFormat.h ./Persistance/Defs.h \
+  ./Core/AutoPtr.h Persistance/TextWriter.h DebugLog.h \
+  Persistance/StdOutputStream.h Persistance/OutputStream.h \
   Persistance/StreamBuffer.h Persistance/IODefs.h \
   Persistance/UnbufferedChannel.h Persistance/InputStream.h \
   Persistance/StdInputStream.h Persistance/TFactory.h \

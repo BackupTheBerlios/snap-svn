@@ -8,6 +8,8 @@
 
 using namespace Persistance;
 
+#define DEBUG_ASSIGNMENT 0
+
 Assignment::Assignment (const Str& data, const AlphabetCode& code)
 {
    debug_mustbe (data.length () > 0);
@@ -38,7 +40,7 @@ void Assignment::setPosition (int index, const Position& p)
 
 void Assignment::unify (const Assignment& o, int startIndex)  
 {
-#if 0
+#if DEBUG_ASSIGNMENT
    DLOG  << "unifying " << Format (*this) 
          << " with " << Format (o) << DLOG.EOL ();
 #endif
@@ -52,7 +54,7 @@ void Assignment::unify (const Assignment& o, int startIndex)
       Position& my_pos = getPosition (i);
       const Position& o_pos = o.getPosition (i);
 
-      debug_only (
+#if DEBUG_ASSIGNMENT
          if ((!my_pos.empty ()) && my_pos.strategy () == discrete) {
             if (!my_pos.contains (o_pos)) {
                DLOG  << "unifying " << Format (*this) 
@@ -61,7 +63,7 @@ void Assignment::unify (const Assignment& o, int startIndex)
                debug_mustfail ();
             }
          }
-      );
+#endif
 
       my_pos.unify (o_pos);
    }

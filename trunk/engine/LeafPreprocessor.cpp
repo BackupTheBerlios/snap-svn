@@ -217,8 +217,8 @@ LeafPreprocessor::Rep* LeafPreprocessor::build (
       //
       //
       for (int i=0 ; i<=length - seedLength ; i++)   {
-         Position* position = 
-            new Position (seq, i);
+         SeqPosition* position = 
+            new SeqPosition (seq, i);
 
          Str data = position->getDataString (0, seedLength);
          debug_mustbe (data.length () == seedLength);
@@ -240,11 +240,11 @@ LeafPreprocessor::Rep* LeafPreprocessor::build (
    }
 
    time (&finish);
-   const int totalBytes =  numberOfPositions * sizeof (Position) + 
+   const int totalBytes =  numberOfPositions * sizeof (SeqPosition) + 
                            rep->getSize () * sizeof (LeafNode);
 
    DLOG << "LeafPreprocessor created: (" << (finish - start) << " seconds)" << DLOG.EOL ()
-          << numberOfPositions << " Position objects each of " << sizeof (Position) << " Bytes." << DLOG.EOL ()
+          << numberOfPositions << " SeqPosition objects each of " << sizeof (SeqPosition) << " Bytes." << DLOG.EOL ()
           << rep->getSize () << " Node objects each of " << sizeof (LeafNode) << " Bytes." << DLOG.EOL ()
           << (totalBytes / 1024) << " KBytes (loose) lower bound to preprocessor size." << DLOG.EOL ()
           << DLOG.EOL ();

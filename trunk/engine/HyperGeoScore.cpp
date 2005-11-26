@@ -1,6 +1,6 @@
 #include "Assignment.h"
 #include "HyperGeoScore.h"
-#include "Legacy/mathplus.h"
+#include "Legacy/MathPlus.h"
 
 
 

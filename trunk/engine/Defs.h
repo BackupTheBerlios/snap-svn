@@ -14,7 +14,7 @@ class Preprocessor;
 class PrefixTreePreprocessor;
 
 class Sequence;
-class Position;
+class SeqPosition;
 class SeqCluster;
 class PosCluster;
 class SequenceDB;

@@ -331,6 +331,14 @@ SOURCE=.\Defs.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\HyperGeoCache.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\HyperGeoCache.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\HyperGeoScore.h
 # End Source File
 # Begin Source File
@@ -387,6 +395,10 @@ SOURCE=.\Legacy\config.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\ExtraMath.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\Legacy\getopt.c
 # End Source File
 # Begin Source File
@@ -416,22 +428,6 @@ SOURCE=.\Legacy\RandomGenerator.cpp
 # Begin Source File
 
 SOURCE=.\Legacy\RandomGenerator.h
-# End Source File
-# End Group
-# Begin Group "Math"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\ExtraMath.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\HyperGeoCache.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\HyperGeoCache.h
 # End Source File
 # End Group
 # Begin Source File

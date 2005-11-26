@@ -55,7 +55,7 @@ SeedHash::Table::~Table ()
    // TODO: we own the positions, so delete them
 }
 
-void SeedHash::Table::addPosition (const Str& seedData, AutoPtr <Position> position) {
+void SeedHash::Table::addPosition (const Str& seedData, AutoPtr <SeqPosition> position) {
    //
    //
    AssgKey key (seedData, _code, _assgWriter);

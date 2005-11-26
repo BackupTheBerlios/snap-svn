@@ -60,7 +60,7 @@ public:
       CPositionIterator iterator () const;
       const Sequence* sequence () const;
       const PositionVector* positions () const;
-      const Position* firstPosition () const;
+      const SeqPosition* firstPosition () const;
       bool empty () const;
       int size () const;
 

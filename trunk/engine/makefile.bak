@@ -330,7 +330,7 @@ Cluster.o: Cluster.cpp Cluster.h Sequence.h Defs.h Core/Defs.h \
   Persistance/Defs.h Core/STLHelper.h /usr/include/c++/3.2/vector \
   /usr/include/c++/3.2/bits/stl_vector.h \
   /usr/include/c++/3.2/bits/stl_bvector.h Core/ChunkAllocator.h \
-  Core/Str.h Legacy/mathplus.h Core/AutoPtr.h /usr/include/c++/3.2/map \
+  Core/Str.h Legacy/MathPlus.h Core/AutoPtr.h /usr/include/c++/3.2/map \
   /usr/include/c++/3.2/bits/stl_tree.h \
   /usr/include/c++/3.2/bits/stl_map.h \
   /usr/include/c++/3.2/bits/stl_multimap.h /usr/include/c++/3.2/set \
@@ -516,10 +516,11 @@ HyperGeoCache.o: HyperGeoCache.cpp Assignment.h Core/Defs.h \
   /usr/include/c++/3.2/bits/istream.tcc Core/STLHelper.h \
   /usr/include/c++/3.2/vector /usr/include/c++/3.2/bits/stl_vector.h \
   /usr/include/c++/3.2/bits/stl_bvector.h Persistance/Defs.h \
-  /usr/include/c++/3.2/bitset HyperGeoCache.h ExtraMath.h SeedSearcher.h \
+  /usr/include/c++/3.2/bitset HyperGeoCache.h ExtraMath.h \
+  Legacy/MathFunctions.h Legacy/MathPlus.h SeedSearcher.h \
   PrefixTreePreprocessor.h Preprocessor.h Defs.h SequenceDB.h Alphabet.h \
   Sequence.h Persistance/Object.h Core/ChunkAllocator.h Core/Str.h \
-  Cluster.h Legacy/mathplus.h Core/AutoPtr.h /usr/include/c++/3.2/map \
+  Cluster.h Core/AutoPtr.h /usr/include/c++/3.2/map \
   /usr/include/c++/3.2/bits/stl_tree.h \
   /usr/include/c++/3.2/bits/stl_map.h \
   /usr/include/c++/3.2/bits/stl_multimap.h /usr/include/c++/3.2/set \
@@ -616,7 +617,7 @@ HyperGeoScore.o: HyperGeoScore.cpp Assignment.h Core/Defs.h \
   /usr/include/c++/3.2/vector /usr/include/c++/3.2/bits/stl_vector.h \
   /usr/include/c++/3.2/bits/stl_bvector.h Persistance/Defs.h \
   /usr/include/c++/3.2/bitset HyperGeoScore.h Cluster.h Sequence.h Defs.h \
-  Persistance/Object.h Core/ChunkAllocator.h Core/Str.h Legacy/mathplus.h \
+  Persistance/Object.h Core/ChunkAllocator.h Core/Str.h Legacy/MathPlus.h \
   Core/AutoPtr.h /usr/include/c++/3.2/map \
   /usr/include/c++/3.2/bits/stl_tree.h \
   /usr/include/c++/3.2/bits/stl_map.h \
@@ -624,7 +625,7 @@ HyperGeoScore.o: HyperGeoScore.cpp Assignment.h Core/Defs.h \
   /usr/include/c++/3.2/bits/stl_set.h \
   /usr/include/c++/3.2/bits/stl_multiset.h SeedSearcher.h \
   PrefixTreePreprocessor.h Preprocessor.h SequenceDB.h Alphabet.h \
-  HyperGeoCache.h ExtraMath.h
+  HyperGeoCache.h ExtraMath.h Legacy/MathFunctions.h
 LeafPreprocessor.o: LeafPreprocessor.cpp Assignment.h Core/Defs.h \
   Core/Compiler.h /usr/include/c++/3.2/string \
   /usr/include/c++/3.2/i586-mandrake-linux-gnu/bits/c++config.h \
@@ -716,7 +717,7 @@ LeafPreprocessor.o: LeafPreprocessor.cpp Assignment.h Core/Defs.h \
   /usr/include/c++/3.2/bits/stl_bvector.h Persistance/Defs.h \
   /usr/include/c++/3.2/bitset LeafPreprocessor.h Preprocessor.h Defs.h \
   SequenceDB.h Alphabet.h Sequence.h Persistance/Object.h \
-  Core/ChunkAllocator.h Core/Str.h Cluster.h Legacy/mathplus.h \
+  Core/ChunkAllocator.h Core/Str.h Cluster.h Legacy/MathPlus.h \
   Core/AutoPtr.h /usr/include/c++/3.2/map \
   /usr/include/c++/3.2/bits/stl_tree.h \
   /usr/include/c++/3.2/bits/stl_map.h \
@@ -815,7 +816,7 @@ main.o: main.cpp Parser.h SequenceDB.h Core/Defs.h Core/Compiler.h \
   /usr/include/c++/3.2/vector /usr/include/c++/3.2/bits/stl_vector.h \
   /usr/include/c++/3.2/bits/stl_bvector.h Alphabet.h Sequence.h Defs.h \
   Persistance/Object.h Persistance/Defs.h Core/ChunkAllocator.h \
-  Core/Str.h Cluster.h Legacy/mathplus.h Core/AutoPtr.h \
+  Core/Str.h Cluster.h Legacy/MathPlus.h Core/AutoPtr.h \
   /usr/include/c++/3.2/map /usr/include/c++/3.2/bits/stl_tree.h \
   /usr/include/c++/3.2/bits/stl_map.h \
   /usr/include/c++/3.2/bits/stl_multimap.h /usr/include/c++/3.2/set \
@@ -823,7 +824,7 @@ main.o: main.cpp Parser.h SequenceDB.h Core/Defs.h Core/Compiler.h \
   /usr/include/c++/3.2/bits/stl_multiset.h PrefixTreePreprocessor.h \
   Preprocessor.h Assignment.h /usr/include/c++/3.2/bitset \
   RandomProjections.h SeedSearcher.h HyperGeoScore.h HyperGeoCache.h \
-  ExtraMath.h PrefixTreeWalker.h PSSM.h LeafPreprocessor.h SeedHash.h \
+  ExtraMath.h Legacy/MathFunctions.h PSSM.h LeafPreprocessor.h SeedHash.h \
   Core/HashTable.h StdOptions.h AssignmentFormat.h \
   Persistance/AbstractFormat.h Persistance/TextWriter.h DebugLog.h \
   Persistance/StdOutputStream.h Persistance/OutputStream.h \
@@ -1013,13 +1014,13 @@ PrefixTreePreprocessor.o: PrefixTreePreprocessor.cpp \
   /usr/include/c++/3.2/vector /usr/include/c++/3.2/bits/stl_vector.h \
   /usr/include/c++/3.2/bits/stl_bvector.h Alphabet.h Sequence.h \
   Persistance/Object.h Persistance/Defs.h Core/ChunkAllocator.h \
-  Core/Str.h Cluster.h Legacy/mathplus.h Core/AutoPtr.h \
+  Core/Str.h Cluster.h Legacy/MathPlus.h Core/AutoPtr.h \
   /usr/include/c++/3.2/map /usr/include/c++/3.2/bits/stl_tree.h \
   /usr/include/c++/3.2/bits/stl_map.h \
   /usr/include/c++/3.2/bits/stl_multimap.h /usr/include/c++/3.2/set \
   /usr/include/c++/3.2/bits/stl_set.h \
   /usr/include/c++/3.2/bits/stl_multiset.h Assignment.h \
-  /usr/include/c++/3.2/bitset PrefixTreeWalker.h Persistance/IArchive.h \
+  /usr/include/c++/3.2/bitset Persistance/IArchive.h \
   Persistance/IRegistry.h Persistance/TextReader.h \
   Persistance/StreamBuffer.h Persistance/IODefs.h Persistance/TFactory.h \
   Persistance/Error.h Persistance/OArchive.h Persistance/ORegistry.h \
@@ -1116,7 +1117,7 @@ Preprocessor.o: Preprocessor.cpp Preprocessor.h Defs.h Core/Defs.h \
   /usr/include/c++/3.2/vector /usr/include/c++/3.2/bits/stl_vector.h \
   /usr/include/c++/3.2/bits/stl_bvector.h Alphabet.h Sequence.h \
   Persistance/Object.h Persistance/Defs.h Core/ChunkAllocator.h \
-  Core/Str.h Cluster.h Legacy/mathplus.h Core/AutoPtr.h \
+  Core/Str.h Cluster.h Legacy/MathPlus.h Core/AutoPtr.h \
   /usr/include/c++/3.2/map /usr/include/c++/3.2/bits/stl_tree.h \
   /usr/include/c++/3.2/bits/stl_map.h \
   /usr/include/c++/3.2/bits/stl_multimap.h /usr/include/c++/3.2/set \
@@ -1214,7 +1215,7 @@ PSSM.o: PSSM.cpp PSSM.h Assignment.h Core/Defs.h Core/Compiler.h \
   /usr/include/c++/3.2/bits/stl_bvector.h Persistance/Defs.h \
   /usr/include/c++/3.2/bitset PrefixTreePreprocessor.h Preprocessor.h \
   Defs.h SequenceDB.h Alphabet.h Sequence.h Persistance/Object.h \
-  Core/ChunkAllocator.h Core/Str.h Cluster.h Legacy/mathplus.h \
+  Core/ChunkAllocator.h Core/Str.h Cluster.h Legacy/MathPlus.h \
   Core/AutoPtr.h /usr/include/c++/3.2/map \
   /usr/include/c++/3.2/bits/stl_tree.h \
   /usr/include/c++/3.2/bits/stl_map.h \
@@ -1310,9 +1311,10 @@ RandomProjections.o: RandomProjections.cpp RandomProjections.h \
   /usr/include/c++/3.2/bits/istream.tcc Core/STLHelper.h \
   /usr/include/c++/3.2/vector /usr/include/c++/3.2/bits/stl_vector.h \
   /usr/include/c++/3.2/bits/stl_bvector.h Persistance/Defs.h \
-  /usr/include/c++/3.2/bitset ExtraMath.h Legacy/RandomGenerator.h \
-  Legacy/Multinomial.h DebugLog.h Persistance/TextWriter.h \
-  Persistance/AbstractFormat.h Core/AutoPtr.h AssignmentFormat.h
+  /usr/include/c++/3.2/bitset ExtraMath.h Legacy/MathFunctions.h \
+  Legacy/MathPlus.h Legacy/RandomGenerator.h Legacy/Multinomial.h \
+  DebugLog.h Persistance/TextWriter.h Persistance/AbstractFormat.h \
+  Core/AutoPtr.h AssignmentFormat.h
 SeedHash.o: SeedHash.cpp SeedHash.h Assignment.h Core/Defs.h \
   Core/Compiler.h /usr/include/c++/3.2/string \
   /usr/include/c++/3.2/i586-mandrake-linux-gnu/bits/c++config.h \
@@ -1403,7 +1405,7 @@ SeedHash.o: SeedHash.cpp SeedHash.h Assignment.h Core/Defs.h \
   /usr/include/c++/3.2/vector /usr/include/c++/3.2/bits/stl_vector.h \
   /usr/include/c++/3.2/bits/stl_bvector.h Persistance/Defs.h \
   /usr/include/c++/3.2/bitset Cluster.h Sequence.h Defs.h \
-  Persistance/Object.h Core/ChunkAllocator.h Core/Str.h Legacy/mathplus.h \
+  Persistance/Object.h Core/ChunkAllocator.h Core/Str.h Legacy/MathPlus.h \
   Core/AutoPtr.h /usr/include/c++/3.2/map \
   /usr/include/c++/3.2/bits/stl_tree.h \
   /usr/include/c++/3.2/bits/stl_map.h \
@@ -1505,7 +1507,7 @@ SeedSearcher.o: SeedSearcher.cpp SeedSearcher.h PrefixTreePreprocessor.h \
   /usr/include/c++/3.2/vector /usr/include/c++/3.2/bits/stl_vector.h \
   /usr/include/c++/3.2/bits/stl_bvector.h Alphabet.h Sequence.h \
   Persistance/Object.h Persistance/Defs.h Core/ChunkAllocator.h \
-  Core/Str.h Cluster.h Legacy/mathplus.h Core/AutoPtr.h \
+  Core/Str.h Cluster.h Legacy/MathPlus.h Core/AutoPtr.h \
   /usr/include/c++/3.2/map /usr/include/c++/3.2/bits/stl_tree.h \
   /usr/include/c++/3.2/bits/stl_map.h \
   /usr/include/c++/3.2/bits/stl_multimap.h /usr/include/c++/3.2/set \
@@ -1515,7 +1517,7 @@ SeedSearcher.o: SeedSearcher.cpp SeedSearcher.h PrefixTreePreprocessor.h \
   Persistance/TextWriter.h Persistance/AbstractFormat.h \
   AssignmentFormat.h Persistance/StrOutputStream.h \
   Persistance/OutputStream.h Persistance/StreamBuffer.h \
-  Persistance/IODefs.h PrefixTreeWalker.h
+  Persistance/IODefs.h
 Sequence.o: Sequence.cpp Sequence.h Defs.h Core/Defs.h Core/Compiler.h \
   /usr/include/c++/3.2/string \
   /usr/include/c++/3.2/i586-mandrake-linux-gnu/bits/c++config.h \
@@ -1706,7 +1708,7 @@ SequenceDB.o: SequenceDB.cpp Core/Defs.h Core/Compiler.h \
   Persistance/Object.h Persistance/Defs.h Core/STLHelper.h \
   /usr/include/c++/3.2/vector /usr/include/c++/3.2/bits/stl_vector.h \
   /usr/include/c++/3.2/bits/stl_bvector.h Core/ChunkAllocator.h \
-  Core/Str.h SequenceDB.h Alphabet.h Cluster.h Legacy/mathplus.h \
+  Core/Str.h SequenceDB.h Alphabet.h Cluster.h Legacy/MathPlus.h \
   Core/AutoPtr.h /usr/include/c++/3.2/map \
   /usr/include/c++/3.2/bits/stl_tree.h \
   /usr/include/c++/3.2/bits/stl_map.h \
@@ -1811,7 +1813,7 @@ StdOptions.o: StdOptions.cpp StdOptions.h Defs.h Core/Defs.h \
   /usr/include/c++/3.2/vector /usr/include/c++/3.2/bits/stl_vector.h \
   /usr/include/c++/3.2/bits/stl_bvector.h Alphabet.h Sequence.h \
   Persistance/Object.h Persistance/Defs.h Core/ChunkAllocator.h \
-  Core/Str.h Cluster.h Legacy/mathplus.h Core/AutoPtr.h \
+  Core/Str.h Cluster.h Legacy/MathPlus.h Core/AutoPtr.h \
   /usr/include/c++/3.2/map /usr/include/c++/3.2/bits/stl_tree.h \
   /usr/include/c++/3.2/bits/stl_map.h \
   /usr/include/c++/3.2/bits/stl_multimap.h /usr/include/c++/3.2/set \
@@ -1820,4 +1822,4 @@ StdOptions.o: StdOptions.cpp StdOptions.h Defs.h Core/Defs.h \
   PrefixTreePreprocessor.h Preprocessor.h Assignment.h \
   /usr/include/c++/3.2/bitset AssignmentFormat.h \
   Persistance/AbstractFormat.h HyperGeoCache.h ExtraMath.h \
-  Persistance/TextWriter.h DebugLog.h
+  Legacy/MathFunctions.h Persistance/TextWriter.h DebugLog.h

@@ -1,11 +1,9 @@
 #ifndef __MathFunctions_h
 #define __MathFunctions_h
 
-//#include <spin.h>
-
 #include <math.h>
 #include <assert.h>
-#include "mathplus.h"
+#include "MathPlus.h"
 
 inline double exp2(double x) 
 { 

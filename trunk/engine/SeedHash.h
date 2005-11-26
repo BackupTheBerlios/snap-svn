@@ -63,7 +63,7 @@ public:
 
       //
       //
-      void addPosition (AutoPtr <Position> pos) {
+      void addPosition (AutoPtr <SeqPosition> pos) {
          PosCluster& posCluster = 
             _cluster->getCreatePositions (pos->sequence ());
 
@@ -99,7 +99,7 @@ public:
 
       //
       //
-      void addPosition (const Str& seedData, AutoPtr <Position> position);
+      void addPosition (const Str& seedData, AutoPtr <SeqPosition> position);
       
       //
       //

@@ -17,7 +17,7 @@ using namespace std;
 
 //
 // debug: cross-reference tree-search model with prefix-tree-walk model (safer)
-#define SEED_TREE_SEARCH_DEBUG 1
+#define SEED_TREE_SEARCH_DEBUG 0
 
 #if SEED_TREE_SEARCH_DEBUG
 static void compareSeedResult (const PrefixTreePreprocessor& tree,
@@ -103,7 +103,7 @@ static int together (FeatureVector& myFeatures, // stores the features of the no
             
             //
             // it is already in the set...
-#           if SEED_TREE_SEARCH_DEBUG && 0
+#           if SEED_TREE_SEARCH_DEBUG
             DLOG << "rec_prefixTreeSearch (): grouping together "
                << Format (resultProjection)
                << " with " 
@@ -372,6 +372,7 @@ int SeedSearcher::prefixTreeSearch (
 				      feature.first,
 				      // sequences containing the feature  
                   feature.second,
+                  &projection,
                   scoreParams,
 				      score);
          //
@@ -611,6 +612,7 @@ int SeedSearcher::tableSearch (
 
       Feature seed_feature (  featureAssg,
                               feature->releaseCluster (),
+                              &projection,
                               scoreParams,
                               score);
       

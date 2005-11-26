@@ -2,7 +2,7 @@
 #define _SeedSearcher_Cluster_h
 
 #include "Sequence.h"
-#include "Legacy/mathplus.h"
+#include "Legacy/MathPlus.h"
 
 #include "Core/AutoPtr.h"
 #include "Core/STLHelper.h"
@@ -18,13 +18,13 @@ class SequenceDB;
 class PosCluster  {
 public:
    struct PositionComparator {
-      bool operator () (const Position* x, const Position* y) const {
+      bool operator () (const SeqPosition* x, const SeqPosition* y) const {
          debug_mustbe (x->sequence () == y->sequence ());
          return (x->position () < y->position ());
       }
    };
 
-   typedef std::set <const Position*, PositionComparator> PositionSet;
+   typedef std::set <const SeqPosition*, PositionComparator> PositionSet;
    typedef IteratorWrapper <PositionSet> Iterator;
    typedef ConstIteratorWrapper <PositionSet> CIterator;
 
@@ -42,8 +42,8 @@ public:
       return _set.size ();
    }
 
-   bool addPosition (const Position*);
-   void removePosition (const Position*);
+   bool addPosition (const SeqPosition*);
+   void removePosition (const SeqPosition*);
 
    void copy (const PosCluster&);
    void intersection (const PosCluster&);

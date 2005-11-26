@@ -27,7 +27,10 @@ public:
    class ScoreFunction {
    //
    // this class represents a scoring scheme for features
+   //
+   // IMPORTANT:
    // the smaller (more negative) the score, the better.
+   // score MUST be in log2 format.
    public:
      virtual ~ScoreFunction () {
      }
@@ -49,13 +52,16 @@ public:
       //
       // 
    public:
-      Feature () : _assg (NULL), _cluster (NULL), _params (0), _score (0) {
+      Feature () :  _assg (NULL), _cluster (NULL), _projection (0), 
+         _params (0), _score (0) {
       }
       Feature (Assignment* assg, 
-               SequenceDB::Cluster* cluster, 
+               SequenceDB::Cluster* cluster,
+               const Assignment* projection,
                ScoreParameters* params,
                double score)
-         : _assg(assg), _cluster (cluster), _params (params), _score (score) 
+         :   _assg(assg), _cluster (cluster), _projection (projection),
+            _params (params), _score (score) 
       {
       }
 
@@ -84,8 +90,11 @@ public:
  	      }
       };
 
+
+
       Assignment* _assg;
       SequenceDB::Cluster* _cluster;
+      const Assignment* _projection;
       ScoreParameters* _params;
       double _score;
    };
