@@ -15,13 +15,13 @@ class SeedSearcherLog {
 public:
    //
    // sets the writer used for logging
-   static void setup (Persistance::TextWriter* in ) {
-      __textWriter.reset (in);
+   static void setup (boost::shared_ptr<Persistance::TextWriter> in) {
+      __textWriter = in;
    }
    //
    // sets the 'data' langauge used for logging (for example ACGT langauge)
-   static void setup (Langauge* in) {
-      __langauge.reset (in);
+   static void setup (boost::shared_ptr <Langauge> in) {
+      __langauge = in;
    }
    inline static Persistance::TextWriter& writer () {
       debug_mustbe (__textWriter.get ());
@@ -60,7 +60,7 @@ public:
          SeedSearcherLog::setupConsoleLogging (suppressConsole);
       }
       ~Sentry () {
-         SeedSearcherLog::setup ((Persistance::TextWriter*) NULL);
+         SeedSearcherLog::setup (boost::shared_ptr <Persistance::TextWriter> ());
       }
       void setupFileLogging (const StrBuffer& filename, bool suppressConsole = false) {
          SeedSearcherLog::setupFileLogging (filename, suppressConsole);

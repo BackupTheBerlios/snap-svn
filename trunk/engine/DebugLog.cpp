@@ -17,7 +17,7 @@ using namespace std;
 void SeedSearcherLog::setupConsoleLogging (bool supress)
 {   
    if (supress) {
-      setup (new TextWriter (new NullOutputStream ()));
+      setup (boost::shared_ptr <TextWriter> (new TextWriter (new NullOutputStream ())));
    }
    else {
       UnbufferedOutput* console = new StdUnbufferedOutput (cout);
@@ -25,7 +25,7 @@ void SeedSearcherLog::setupConsoleLogging (bool supress)
       Persistance::TextWriter* writer = 
          new Persistance::TextWriter (output, true); 
 
-      setup (writer);
+      setup (boost::shared_ptr <Persistance::TextWriter> (writer));
    }
 }
 
@@ -68,7 +68,7 @@ void SeedSearcherLog::setupFileLogging (
       //
       // setup the writer
       Persistance::TextWriter* textWriter = new TextWriter (output, true);
-      setup (textWriter);
+      setup (boost::shared_ptr <Persistance::TextWriter> (textWriter));
    }
    else {
       //
@@ -78,7 +78,7 @@ void SeedSearcherLog::setupFileLogging (
       //
       // setup the writer
       TextWriter* textWriter = new TextWriter (output, true);
-      setup (textWriter);
+      setup (boost::shared_ptr <TextWriter> (textWriter));
    }
 }
 

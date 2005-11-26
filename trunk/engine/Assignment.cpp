@@ -91,7 +91,10 @@ bool AssgPosition::contains (const AssgPosition& p) const
    // if bitwise AND results in a bitset which is equal
    // to the given AssgPosition 'p', then 'this' AssgPosition
    // contains all the flags in 'p'
+   //
+   // NOTE: we should ignore the strategy bit here
    Bits test (this->_bits);
+   test [ASSG_MAX_ALPHABET_SIZE] = true;  // ignore strategies
    test &= p._bits;
    return (test == p._bits);
 
@@ -139,12 +142,21 @@ bool AssignmentBase::contains (const AssignmentBase& o, int startIndex) const
 {
    mustbe (length () == o.length ());
 
-   CIterator it = iterator ();
-   CIterator oit = o.iterator ();
+   bool result = true;
+   CIterator it = iterator (startIndex);
+   CIterator oit = o.iterator (startIndex);
    for (; it.hasNext () ; oit.next (), it.next ()) {
       if (!it->contains(*oit))
-         return false;
+         result = false;
    }
+
+#  if DEBUG_ASSIGNMENT
+      DLOG << Format (SubAssignment (o, startIndex)) 
+           << (result? " <= " : " !<>! ")
+           << Format (SubAssignment (*this, startIndex))
+           << DLOG.EOL ();
+      DLOG.flush ();
+#  endif
 
 /*
    for (int i=startIndex ; i<l ; i++) {
@@ -153,7 +165,7 @@ bool AssignmentBase::contains (const AssignmentBase& o, int startIndex) const
       }
    }
 */
-   return true;
+   return result;
 }
 
 int AssignmentBase::compare (const AssignmentBase& o, int startIndex) const
@@ -162,8 +174,8 @@ int AssignmentBase::compare (const AssignmentBase& o, int startIndex) const
    if (length_diff != 0)
       return length_diff;
 
-   CIterator it = iterator ();
-   CIterator oit = o.iterator ();
+   CIterator it = iterator (startIndex);
+   CIterator oit = o.iterator (startIndex);
    for (; it.hasNext () ; oit.next (), it.next ()) {
       int result = it->compare (*oit);
       if (result != 0)
@@ -177,8 +189,8 @@ bool AssignmentBase::equals (const AssignmentBase& o, int startIndex) const
    if (length () != o.length ())
       return false;
    
-   CIterator it = iterator ();
-   CIterator oit = o.iterator ();
+   CIterator it = iterator (startIndex);
+   CIterator oit = o.iterator (startIndex);
    for (; it.hasNext () ; oit.next (), it.next ()) {
       if (!it->equals (*oit))
          return false;

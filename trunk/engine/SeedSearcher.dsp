@@ -459,8 +459,22 @@ SOURCE=.\boost\type.hpp
 # End Group
 # Begin Source File
 
+SOURCE=.\boost\test\cpp_main.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\boost\test\execution_monitor.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\main.cpp
-# PROP Exclude_From_Build 1
+
+!IF  "$(CFG)" == "SeedSearcher - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "SeedSearcher - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 

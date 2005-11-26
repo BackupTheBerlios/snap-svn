@@ -781,7 +781,7 @@ static void mainRoutine (int argc,
    time (&cleanupStart);
 }
 
-
+/*
 #if SEED_DL_MALLOC_OPTIMIZATION
 
 #include "Core/dlmalloc.h"
@@ -828,4 +828,4 @@ void operator delete[] (void* inPtr)
 
 #endif
 
-
+*/

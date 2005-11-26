@@ -310,7 +310,7 @@ void SeedSearcherMain::CmdLineParameters::setupLangauge ()
                         true // N is considered to be part of the langauge
                         ));
 
-   SeedSearcherLog::setup (_langauge.get ());
+   SeedSearcherLog::setup (_langauge);
 }
 
 

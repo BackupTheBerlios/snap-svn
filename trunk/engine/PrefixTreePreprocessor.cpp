@@ -551,11 +551,9 @@ PrefixTreePreprocessor::~PrefixTreePreprocessor ()
 {
    //
    // delete all positions (go through all positions in the root and --kill--)
-
    //
-   // for now, because cleanup takes too long for some reason,
-   // just let it leak
-#  if 0
+   // turn this off if cleanup is a problem
+#  if 1
       if (_owner)
          delete _rep;
 #  endif

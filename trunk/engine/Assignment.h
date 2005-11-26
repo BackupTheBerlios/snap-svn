@@ -265,11 +265,33 @@ private:
 // this class is used to view a continous-subpart of an assignment
 class SubAssignment : public AssignmentBase {
 public:
+   //
+   // non-const ctors
    SubAssignment (AssignmentBase& in, int begin, int length) 
-      : _assg (in), _begin (begin), _length (length) {
+      : _assg (in), _begin (begin), _length (length), _const (false) {
    }
+   SubAssignment (AssignmentBase& in, int begin) 
+      : _assg (in), _begin (begin), _length (in.length () - begin), _const (false) {
+   }
+
+   //
+   // const ctors
+   SubAssignment (const AssignmentBase& in, int begin, int length) 
+      :  _assg (const_cast <AssignmentBase&> (in)), 
+         _begin (begin), 
+         _length (length), 
+         _const (true) {
+   }
+   SubAssignment (const AssignmentBase& in, int begin) 
+      :  _assg (const_cast <AssignmentBase&> (in)), 
+         _begin (begin), 
+         _length (in.length () - begin), 
+         _const (true) {
+   }
+
    virtual AssgPosition& getPosition (int index) {
       mustbe (index < _length);
+      mustbe (!_const);
       return _assg.getPosition (_begin + index);
    }
    virtual const AssgPosition& getPosition (int index) const {
@@ -292,6 +314,7 @@ public:
    //
    // beginning to the end, respectively
    virtual Iterator iterator (  int begin = 0, int length = assg_end) {
+      mustbe (!_const);
       return _assg.iterator (begin + _begin, length);
    }
    virtual CIterator iterator ( int begin = 0, int length = assg_end) const {
@@ -302,6 +325,7 @@ private:
    AssignmentBase& _assg;
    int _begin;
    int _length;
+   bool _const;
 };
 
 #endif // _SeedSearcher_Assignment_h

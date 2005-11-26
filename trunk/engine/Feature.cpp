@@ -13,7 +13,7 @@
 
 USING_TYPE (Persistance, TextWriter);
 
-FeatureInvestigator::FeatureInvestigator (const Parameters& in, 
+FeatureInvestigator::FeatureInvestigator (const FeatureParameters& in, 
                                           int outputLength)
   :   _outputLength (outputLength),
       _allignment (outputLength, '-'),
@@ -21,7 +21,7 @@ FeatureInvestigator::FeatureInvestigator (const Parameters& in,
 {
 }
 
-FeatureInvestigator::FeatureInvestigator (const Parameters& in, 
+FeatureInvestigator::FeatureInvestigator (const FeatureParameters& in, 
                                           int outputLength,
                                           int numSeeds)
 :  _outputLength (outputLength),

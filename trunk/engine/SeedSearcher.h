@@ -94,7 +94,7 @@ public:
       virtual FeatureArray& getArray () = 0;
    };
 
-   class SearchParameters : public FeatureInvestigator::Parameters {
+   class SearchParameters : public FeatureParameters {
    public:
       SearchParameters () {
       }
@@ -108,7 +108,7 @@ public:
          return *this;
       }
       void set (const SearchParameters& in) {
-         FeatureInvestigator::Parameters::set (in);
+         this->FeatureParameters::set (in);
 
          _bestFeatures = in._bestFeatures;
          _useSpecialization = in._useSpecialization;

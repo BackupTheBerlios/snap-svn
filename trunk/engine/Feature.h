@@ -136,100 +136,99 @@ typedef AutoPtr <Feature, Feature::Owner> Feature_var;
 
 
 
+//
+//
+class FeatureParameters {
+public:
+   FeatureParameters () {
+   }
+   virtual ~FeatureParameters () {
+   }
+   FeatureParameters (const FeatureParameters& in) {
+      set (in);
+   }
+   FeatureParameters& operator = (const FeatureParameters& in) {
+      set (in);
+      return *this;
+   }
+   void set (const FeatureParameters & in) {
+      _preprocessor = in._preprocessor;
+      _langauge =in._langauge;
+      _score = in._score;
+      _wf = in._wf;
+   }
+
+   //
+   // which sequences are positively labeled
+   void wf (SeqWeightFunction* wf) {
+      _wf.reset (wf);
+   }
+   const SeqWeightFunction& wf () const {
+      return *_wf;
+   }
+   //
+   // preprocessed data to search over
+   void preprocessor (Preprocessor* prep) {
+      _preprocessor.reset (prep);
+   }
+   const Preprocessor& preprocessor () const {
+      return *_preprocessor;
+   }
+   //
+   // how to score features
+   void score (ScoreFunction* score) {
+      _score.reset (score);
+   }
+   const ScoreFunction& score () const {
+      return *_score;
+   }
+   //
+   // returns the langauge to work with
+   void langauge (Langauge* lang) {
+      _langauge.reset (lang);
+   }
+   const Langauge& langauge () const {
+      return *_langauge;
+   }
+
+   Feature* createFeature (Assignment const& assg, 
+                           Assignment const& proj) {
+      Preprocessor::NodeCluster nodes;
+      _preprocessor->add2Cluster (nodes, assg);
+
+      SeqCluster* cluster = new SeqCluster;
+      nodes.add2SeqClusterPositions (*cluster);
+
+      ScoreParameters* scoreParams = NULL;
+      double featureScore = _score->log2score (  assg, 
+                                             proj, 
+                                             *cluster, 
+                                             &scoreParams);
+
+      return new Feature ( new Assignment (assg), 
+                           cluster,
+                           new Assignment (proj),
+                           scoreParams,
+                           featureScore);
+   }
+
+
+protected:
+   boost::shared_ptr <SeqWeightFunction> _wf;
+   boost::shared_ptr <Preprocessor> _preprocessor;
+   boost::shared_ptr <ScoreFunction> _score;
+   boost::shared_ptr <Langauge> _langauge;
+};
+
 class FeatureInvestigator {
-public:
-   //
-   //
-   class Parameters {
-   public:
-      Parameters () {
-      }
-      virtual ~Parameters () {
-      }
-      Parameters (const Parameters& in) {
-         set (in);
-      }
-      Parameters& operator = (const Parameters& in) {
-         set (in);
-         return *this;
-      }
-      void set (const Parameters & in) {
-         _preprocessor = in._preprocessor;
-         _langauge =in._langauge;
-         _score = in._score;
-         _wf = in._wf;
-      }
-
-      //
-      // which sequences are positively labeled
-      void wf (SeqWeightFunction* wf) {
-         _wf.reset (wf);
-      }
-      const SeqWeightFunction& wf () const {
-         return *_wf;
-      }
-      //
-      // preprocessed data to search over
-      void preprocessor (Preprocessor* prep) {
-         _preprocessor.reset (prep);
-      }
-      const Preprocessor& preprocessor () const {
-         return *_preprocessor;
-      }
-      //
-      // how to score features
-      void score (ScoreFunction* score) {
-         _score.reset (score);
-      }
-      const ScoreFunction& score () const {
-         return *_score;
-      }
-      //
-      // returns the langauge to work with
-      void langauge (Langauge* lang) {
-         _langauge.reset (lang);
-      }
-      const Langauge& langauge () const {
-         return *_langauge;
-      }
-
-      Feature* createFeature (Assignment const& assg, 
-                              Assignment const& proj) {
-         Preprocessor::NodeCluster nodes;
-         _preprocessor->add2Cluster (nodes, assg);
-
-         SeqCluster* cluster = new SeqCluster;
-         nodes.add2SeqClusterPositions (*cluster);
-
-         ScoreParameters* scoreParams = NULL;
-         double featureScore = _score->log2score (  assg, 
-                                                proj, 
-                                                *cluster, 
-                                                &scoreParams);
-
-         return new Feature ( new Assignment (assg), 
-                              cluster,
-                              new Assignment (proj),
-                              scoreParams,
-                              featureScore);
-      }
-
-
-   protected:
-      boost::shared_ptr <SeqWeightFunction> _wf;
-      boost::shared_ptr <Preprocessor> _preprocessor;
-      boost::shared_ptr <ScoreFunction> _score;
-      boost::shared_ptr <Langauge> _langauge;
-   };
-
    //
    //
 public:
-   FeatureInvestigator (const Parameters&, 
+   FeatureInvestigator (const FeatureParameters&, 
                         int outputLength);
    //
    // use to enable bonferroni
-   FeatureInvestigator (const Parameters&, 
+   FeatureInvestigator (const FeatureParameters&, 
                         int outputLength,
                         int seedsSearched);
    virtual ~FeatureInvestigator () {
@@ -297,7 +296,7 @@ public:
 protected:
    int _outputLength;
    std::string _allignment;
-   const Parameters& _parameters;
+   const FeatureParameters& _parameters;
    int _seedsSearched;
    double log10_seedsSearched;
 };

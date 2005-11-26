@@ -128,7 +128,7 @@ public:
          return *this;
       }
       void set (const Parameters& in) {
-         SeedSearcher::SearchParameters::set (in);
+         this->SearchParameters::set (in);
 
          _db = in._db;
          _projections = in._projections;
@@ -184,7 +184,7 @@ public:
          return *this;
       }
       void set (const CmdLineParameters& in) {
-         SeedSearcherMain::Parameters::set (in);
+         this->Parameters::set (in);
 
          _parser = in._parser;
          _seqFilename = in._seqFilename;;

@@ -48,8 +48,10 @@ LeafPreprocessor::LeafPreprocessor (Rep* rep) : _rep (rep) {
 
 LeafPreprocessor::~LeafPreprocessor () {
    //
-   // currently we have cleanup issues so we dont cleanup and leak
-   // delete _rep;
+   // turn this off if cleanup is a problem
+#  if 1
+      delete _rep;
+#  endif
 }
 
 

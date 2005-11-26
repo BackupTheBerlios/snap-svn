@@ -7,6 +7,8 @@
 #define ROUND(x) ((x) >= 0 ? (int) ((x) + .5) : -((int) (.5 - (x))))
 #endif
 
+#define DEBUG_FILTERS 0 
+
 /**
  * from http://www.loria.fr/~kucherov/SOFTWARE/grappe-3.0/iupac.html
  * IUPAC codes
@@ -278,8 +280,7 @@ bool KBestFilter::checkSimilarity (int offset,
       }
    }
 
-#if 0
-   debug_only (
+#  if DEBUG_FILTERS
       DLOG << "Assignments are redundant (offset " 
            << offset 
            << ") " 
@@ -287,8 +288,8 @@ bool KBestFilter::checkSimilarity (int offset,
            << ' ' 
            << Format (b)
            << DLOG.EOL ();
-      )
-#endif
+      DLOG.flush ();
+#  endif
 
    //
    // they have a common base assignment, so they are similar
@@ -304,15 +305,14 @@ bool KBestFilter::checkRedundancy (int index, const Assignment& b)
 
 bool KBestFilter::checkSimilarity (const AssignmentBase& a, const AssignmentBase& b)
 {
-#if 0 
-   debug_only (
+#  if DEBUG_FILTERS
       DLOG << "Comparing: "
-           << Format (a)
-           << ' ' 
-           << Format (b)
-           << DLOG.EOL ();
-   );
-#endif
+            << Format (a)
+            << ' ' 
+            << Format (b)
+            << DLOG.EOL ();
+      DLOG.flush ();
+#  endif
 
    debug_mustbe (_maxRedundancyOffset >= 0);
    if (a.length () == b.length ()) {
