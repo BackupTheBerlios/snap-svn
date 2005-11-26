@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Parser.h $
-// Version     : $Revision: 26 $ 
+// Version     : $Revision: 28 $ 
 //               $Author: Aviad $
-//               $Date: 4/11/04 17:56 $ 
+//               $Date: 22/11/04 9:36 $ 
 // Description :
 //    Concrete Parser for seed-searcher options
 //
@@ -39,14 +39,23 @@ public:
       *this = Parser ();
       parse (argc, argv);
    }
+   Parser (const Argv& inArgv) {
+      *this = Parser ();
+      parse (inArgv);
+   }
    void restoreDefaults ();
 
    //
    //
    void parse (const Argv& argv) {
-      parse (argv.argc (), argv.argv ());
+      __argv = argv;
+      internalParse ();
    }
-   void parse (int argc, char* argv[]);
+   void parse (int argc, char* argv[]){
+      __argv.set(argc, argv);
+      internalParse();
+   }
+   
    void usage (const char*) const;
 
    //
@@ -57,13 +66,12 @@ public:
    //
    void checkCompatibility (const Parser& in);
    int getNumFileArgs () const {
-      return __argc - __firstFileArg;
+      return __argv.argc () - __firstFileArg;
    }
 
    //
    //
-   int __argc;
-   char** __argv;
+   Argv __argv;
 
    //
    // exhaustive projections
@@ -211,6 +219,9 @@ public:
    static GetOptParser::OptionList& getOptions ();
 
    mutable GetOptParser _impl;
+
+private:
+   void internalParse ();
 };
 
 #endif

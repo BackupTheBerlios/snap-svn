@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $
 //               $Workfile: SeedSearcherMain.cpp $
-// Version     : $Revision: 25 $
+// Version     : $Revision: 26 $
 //               $Author: Aviad $
-//               $Date: 4/11/04 17:54 $
+//               $Date: 22/11/04 9:14 $
 // Description :
 //    Concrete and interface classes for seting-up
 //    a seed-searching environment or program
@@ -31,6 +31,8 @@
 
 #include "status_reporter/BaseStatusReporter.hpp"
 #include <time.h>
+#include <boost/cast.hpp>
+
 
 USING_TYPE (SeedSearcherMain, CmdLineParameters);
 
@@ -239,7 +241,7 @@ void SeedSearcherMain::CmdLineParameters::setup (const Str& seq, const Str& wgt)
 
    //
    // TODO: HACK HERE!!!
-   (dynamic_cast<ACGTLangauge&> (*_langauge)).includeN (false);
+   (boost::polymorphic_downcast<ACGTLangauge*> (_langauge.get ()))->includeN (false);
 }
 
 void SeedSearcherMain::CmdLineParameters::setupParameters ()

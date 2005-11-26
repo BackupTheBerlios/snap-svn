@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: SeedConf.cpp $
-// Version     : $Revision: 3 $ 
+// Version     : $Revision: 4 $ 
 //               $Author: Aviad $
-//               $Date: 1/09/04 1:41 $ 
+//               $Date: 22/11/04 9:14 $ 
 // Description :
 //    implementation classes for reading SeedSearcher's conf files.
 //
@@ -17,13 +17,14 @@
 // this file and as well as its library are released for academic research 
 // only. the LESSER GENERAL PUBLIC LICENSE (LPGL) license
 // as well as any other restrictions as posed by the computational biology lab
-// and the library authors appliy.
+// and the library authors apply.
 // see http://www.cs.huji.ac.il/labs/compbio/LibB/LICENSE
 //
 
 #include "SeedConf.h"
-
 #include "DebugLog.h"
+#include "persistance/TextWriter.h"
+#include "persistance/StrOutputStream.h"
 
 //
 //
@@ -59,11 +60,21 @@ void SeedConf::read (const Str& inConfFileName, SeedConf& in)
 
 static void disallowFileArgs (Parser& parser)
 {
-  if (parser.getNumFileArgs ()> 0) {
-      char buffer [1024];
-      sprintf (buffer, "File arguments are not allowed in conf %s",
-                        parser.__argv [parser.__firstFileArg]);
-      mmustfail (buffer);
+   if (parser.getNumFileArgs ()> 0) {
+      std::string buffer; buffer.reserve(512);
+
+      {  Persistance::TextWriter writer (new Persistance::StrOutputStream (buffer));
+         writer << "File arguments are not allowed in conf. Offending arguments are:";
+         for (int i=0 ; i<=parser.getNumFileArgs () ; i++)  {
+            const char* arg = parser.__argv.argv () [parser.__firstFileArg + i];
+            writer   << writer.EOL () 
+                     << '(' 
+                     << (i+1) 
+                     << ") " 
+                     << arg;
+         }
+      }
+      mmustfail (buffer.c_str());
    }
 }
 
@@ -89,7 +100,7 @@ void SeedConfList::initArgs (const Str& args) {
    //
    // parse the conf arguments
    Parser temp;
-   temp.parse(Argv (_init.__argv [0], args));
+   temp.parse(Argv (_init.__argv.argv () [0], args));
 
    //
    // we dont allow unrecognized switches in conf
@@ -97,7 +108,7 @@ void SeedConfList::initArgs (const Str& args) {
 
    //
    // reapply cmdline arguments
-   temp.parse (_init.__argc, _init.__argv);
+   temp.parse (_init.__argv);
    _init = temp;
 }
 
@@ -124,7 +135,7 @@ void SeedConfList::runArgs (bool resetArgs, bool resetSeeds,
 
    //
    // update with the specific run args
-   options->_parser.parse (Argv (_init.__argv [0], args));
+   options->_parser.parse (Argv (_init.__argv.argv () [0], args));
 
    //
    // make sure we can continue to the next configuration

@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: HyperGeoCache.cpp $
-// Version     : $Revision: 17 $ 
+// Version     : $Revision: 18 $ 
 //               $Author: Aviad $
-//               $Date: 18/10/04 7:48 $ 
+//               $Date: 22/11/04 9:14 $ 
 // Description :
 //    Concrete cache for Hyper-Geometric distribution values
 //
@@ -25,6 +25,7 @@
 #include "HyperGeoCache.h"
 #include "core/HashTable.h"
 #include "persistance/TextWriter.h"
+#include <boost/cast.hpp>
 
 //
 //
@@ -159,13 +160,7 @@ void HyperGeoCache::writeAsText (
    debug_mustbe (p);
 
    const Score* cachedScore;
-#  if BASE_DEBUG
-      cachedScore = dynamic_cast <const Score*> (p);
-#  else
-      //
-      // dont waste time on dynamic cast
-      cachedScore = reinterpret_cast <const Score*> (p);
-#  endif
+   cachedScore = boost::polymorphic_downcast <const Score*> (p);
    debug_mustbe (cachedScore);
 
 
@@ -312,13 +307,7 @@ void HyperGeoTotalCache::writeAsText (
    debug_mustbe (p);
 
    const Score* cachedScore;
-#  if BASE_DEBUG
-      cachedScore = dynamic_cast <const Score*> (p);
-#  else
-      //
-      // dont waste time on dynamic cast
-      cachedScore = reinterpret_cast <const Score*> (p);
-#  endif
+   cachedScore = boost::polymorphic_downcast <const Score*> (p);
    debug_mustbe (cachedScore);
 
 

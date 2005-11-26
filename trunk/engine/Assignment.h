@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Assignment.h $
-// Version     : $Revision: 19 $ 
+// Version     : $Revision: 21 $ 
 //               $Author: Aviad $
-//               $Date: 4/11/04 17:50 $ 
+//               $Date: 22/11/04 9:14 $ 
 // Description :
 //    Concrete class describing an assignment - 
 //       which is a sequence of assignment positions.
@@ -274,10 +274,15 @@ public:
    
 public:
    Assignment () {
+      //
+      // this is a good upper bound on most assignments
+      // this pre-allocation boosts performance
+      _positions.reserve(20);
    }
    Assignment (const Assignment& assg) : _positions (assg._positions) {
    }
    Assignment (const AssignmentBase& assg) {
+      _positions.reserve(assg.length());
       for (CIterator it = assg.iterator (); it.hasNext () ; it.next ()) {
          _positions.push_back (*it);
       }
@@ -296,18 +301,28 @@ public:
       _positions = o._positions;
       return *this;
    }
-   void set (const AssignmentBase& assg, const AssignmentBase& projection) {
-      _positions.clear ();
+   bool specialize (const AssignmentBase& assg, const AssignmentBase& projection) {
+      //
+      //
       debug_mustbe (assg.length() == projection.length());
+      _positions.clear ();
+      _positions.reserve(projection.length());
+
       CIterator assgIt (assg.iterator());
       CIterator projIt (projection.iterator());
       for (; projIt.hasNext () ; projIt.next (), assgIt.next()) {
-         debug_mustbe (assgIt.hasNext());
-         if (projIt->strategy () == assg_together)
-            addPosition(*projIt);
-         else
-            addPosition(*assgIt);
+         if (projIt->contains (*assgIt)) {
+            debug_mustbe (assgIt.hasNext());
+            if (projIt->strategy () == assg_together)
+               addPosition(*projIt);
+            else
+               addPosition(*assgIt);
+         }
+         else {
+            return false;
+         }
       }
+      return true;
    }
    inline Position& operator [] (int index) {
       return _positions [index];

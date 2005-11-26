@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: SeedSearcher.cpp $
-// Version     : $Revision: 27 $ 
+// Version     : $Revision: 29 $ 
 //               $Author: Aviad $
-//               $Date: 4/11/04 17:55 $ 
+//               $Date: 22/11/04 9:14 $ 
 // Description :
 //    Concrete class for seed-searching in a preprocessor
 //
@@ -33,7 +33,8 @@
 #include "persistance/TextWriter.h"
 #include "persistance/StrOutputStream.h"
 
-#include "boost/timer.hpp"
+#include <boost/timer.hpp>
+#include <boost/cast.hpp>
 
 #include <iostream>
 #include <time.h>
@@ -346,7 +347,7 @@ int SeedSearcher::prefixTreeSearch (
          )
 {
    const PrefixTreePreprocessor& tree = 
-      dynamic_cast <const PrefixTreePreprocessor&> (params.preprocessor ());
+      *boost::polymorphic_downcast <const PrefixTreePreprocessor*> (&params.preprocessor ());
 
    debug_mustbe (projection.length () > 0);
    debug_mustbe (projection.length () <= tree.getDepth ());
@@ -667,7 +668,7 @@ static int extendedTableSearch (
    TableSearcher::SeedHashTableBase::Iterator featureIt (shortHashTable);
    for (; featureIt.hasNext () ; featureIt.next ()) {
       TableSearcher::Seed* feature = 
-         dynamic_cast <TableSearcher::Seed*> (featureIt.get ());
+         boost::polymorphic_downcast <TableSearcher::Seed*> (featureIt.get ());
 
       //
       // get the node's assignment and positions
@@ -688,47 +689,65 @@ static int extendedTableSearch (
          debug_mustbe (nextPositions.empty ());
          debug_mustbe (seqCluster.empty ());
          PositionIterator posIt (currentPositions.begin (), currentPositions.end ());
-         if (posIt.hasNext ()) {
-            //
-            // determine current working assignment:
-            // it is the first position's assignment, generalized to fit
-            // the wildcards in the projection
-            currentAssgPostfix.set (
-               Assignment ((*posIt)->getSeedString (postfixLength, prefixLength), params.langauge ().code ()),
-               projectionPostfix
-               );
+         //
+         // determine current working assignment:
+         // it is the first position's assignment, generalized to fit
+         // the wildcards in the projection
+         {
+            bool shouldTryAgain;
+            bool assgFitsProjection;
+            const SeqPosition* current;
+            do {
+               Str actualPostfixSeed = (*posIt)->getSeedString (postfixLength, prefixLength);
+               Assignment actualPostfixAssg (actualPostfixSeed, params.langauge ().code ());
+               assgFitsProjection = 
+                  currentAssgPostfix.specialize(actualPostfixAssg, projectionPostfix);
 
+               current = &(*(*posIt));
+               posIt.next ();
+               shouldTryAgain = !assgFitsProjection && posIt.hasNext ();
+            }
+            while (shouldTryAgain);
+            if (assgFitsProjection) {
+               PosCluster& posCluster = 
+                  currentSeqCluster->getCreatePositions (current->sequence ());
+               posCluster.addPosition (current);
+            }
+            else {
+               debug_mustbe (!posIt.hasNext ());
+            }
+         }
+
+         //
+         // go over all positions left in this node
+         for (; posIt.hasNext() ; posIt.next ()) {
             //
-            // go over all positions left in this node
-            for (; posIt.hasNext() ; posIt.next ()) {
+            // the position's assignment
+            Assignment posAssignment (
+               (*posIt)->getSeedString (postfixLength, prefixLength),
+               params.langauge ().code ()
+               );
+            debug_mustbe (currentAssgPostfix.length () == posAssignment.length ());
+            if (currentAssgPostfix.contains (posAssignment)) {
+               /*
+               DLOG << Format (currentAssgPostfix)
+                     << " contains "
+                     << Format (posAssignment)
+                     << DLOG.EOL ();
+               DLOG.flush ();
+               */
                //
-               // the position's assignment
-               Assignment posAssignment (
-                  (*posIt)->getSeedString (postfixLength, prefixLength),
-                  params.langauge ().code ()
-                  );
-               debug_mustbe (currentAssgPostfix.length () == posAssignment.length ());
-               if (currentAssgPostfix.contains (posAssignment)) {
-                  /*
-                  DLOG << Format (currentAssgPostfix)
-                        << " contains "
-                        << Format (posAssignment)
-                        << DLOG.EOL ();
-                  DLOG.flush ();
-                  */
-                  //
-                  // this position fits with the current working assignment
-                  // add it later (at the end of the loop) for efficiency
-                  PosCluster& posCluster = 
-                     currentSeqCluster->getCreatePositions ((*posIt)->sequence ());
-                  posCluster.addPosition (*posIt);
-               }
-               else {
-                  //
-                  // this position does not fit with current working assignment
-                  // we will examine it again later
-                  nextPositions.push_back(*posIt);
-               }
+               // this position fits with the current working assignment
+               // add it later (at the end of the loop) for efficiency
+               PosCluster& posCluster = 
+                  currentSeqCluster->getCreatePositions ((*posIt)->sequence ());
+               posCluster.addPosition (*posIt);
+            }
+            else {
+               //
+               // this position does not fit with current working assignment
+               // we will examine it again later
+               nextPositions.push_back(*posIt);
             }
          }
 
@@ -802,7 +821,7 @@ int SeedSearcher::tableSearch (  SearchParameters& params,
       TableSearcher::SeedHashTableBase::Iterator featureIt (hashTable);
       for (; featureIt.hasNext () ; featureIt.next ()) {
          TableSearcher::Seed* feature = 
-            dynamic_cast <TableSearcher::Seed*> (featureIt.get ());
+            boost::polymorphic_downcast <TableSearcher::Seed*> (featureIt.get ());
 
          if (params.countType () == _count_total_) {
             //

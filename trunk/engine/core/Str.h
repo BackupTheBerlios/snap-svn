@@ -116,7 +116,7 @@ public:
       return mData;
    }
    const char* end () const {
-      return mData + mLength + 1;
+      return mData + mLength;
    }
    
 protected:
@@ -254,9 +254,9 @@ inline bool operator >= (const Str& a, const Str& b) {
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Str.h $
-// Version     : $Revision: 9 $ 
+// Version     : $Revision: 10 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:45 $ 
+//               $Date: 23/11/04 2:39 $ 
 // Description :
 //	The Core library contains contains basic definitions and classes
 // which are useful to any highly-portable applications

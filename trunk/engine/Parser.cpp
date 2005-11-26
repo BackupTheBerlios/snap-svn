@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Parser.cpp $
-// Version     : $Revision: 35 $ 
+// Version     : $Revision: 36 $ 
 //               $Author: Aviad $
-//               $Date: 4/11/04 17:56 $ 
+//               $Date: 22/11/04 9:14 $ 
 // Description :
 //    Concrete Parser for seed-searcher options
 //
@@ -724,10 +724,7 @@ GetOptParser::OptionList& Parser::getOptions ()
 
 Parser::Parser ()
 {
-   //
-   //
-   __argc = 0;
-   __argv = NULL;
+   __argv.clear ();
 
    //
    //
@@ -740,7 +737,7 @@ void Parser::usage (const char* error) const
 {
    DLOG.writeln();
    DLOG.writeln();
-   DLOG  << "Usage: " << __argv [0] << " [options] <seqfile> <wgtfile> <stub>"
+   DLOG  << "Usage: " << __argv.argv () [0] << " [options] <seqfile> <wgtfile> <stub>"
          << DLOG.EOL ()
          << DLOG.EOL ()
          << "Following is the list of supported options:"
@@ -753,15 +750,12 @@ void Parser::usage (const char* error) const
 
 
 
-void Parser::parse (int argc, char* argv[])
+void Parser::internalParse ()
 {
-   __argc = argc;
-   __argv = argv;
-
-   __firstFileArg =  argc;
+   __firstFileArg =  __argv.argc ();
 
    GET_SEED_PARSER_OPTION_CLASS (help) help_option;
-   _impl.parse (argc, argv, __options._list, this, help_option);
+   _impl.parse (__argv.argc (), __argv.argv (), __options._list, this, help_option);
 
    __firstFileArg = _impl._getopt.optind;
 
@@ -835,8 +829,8 @@ static const char* outputTypeName (Parser::OutputType t) {
 void Parser::logParams (Persistance::TextWriter& out) const
 {
    char** params;
-   int l = _impl.getCompleteParams (params, __argc, __argv, __options._list);
-   out << __argv [0] << ' ';
+   int l = _impl.getCompleteParams (params, __argv.argc (), __argv.argv (), __options._list);
+   out << __argv.argv () [0] << ' ';
    for (int i=0 ; i<l ; i++) {
       int arg_type = __options._list [i]->argument ();
       if (arg_type == GetOptWrapper::_no_argument_) {

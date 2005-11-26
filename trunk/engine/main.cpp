@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: main.cpp $
-// Version     : $Revision: 59 $ 
+// Version     : $Revision: 60 $ 
 //               $Author: Aviad $
-//               $Date: 18/10/04 7:52 $ 
+//               $Date: 22/11/04 9:14 $ 
 // Description :
 //    main routine for the seed-searcher program
 //
@@ -117,8 +117,8 @@ static void welcomeMessage (const Parser& parser)
    DLOG  << '#' << DLOG.EOL () 
          << "# command line" << DLOG.EOL ();
 
-   for (int i=0 ;i<parser.__argc ; i++)
-      DLOG << parser.__argv [i] << ' ';
+   for (int i=0 ;i<parser.__argv.argc (); i++)
+      DLOG << parser.__argv.argv ()[i] << ' ';
    DLOG << DLOG.EOL ();
 
    DLOG  << DLOG.EOL ();

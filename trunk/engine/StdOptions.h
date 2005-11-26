@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: StdOptions.h $
-// Version     : $Revision: 29 $ 
+// Version     : $Revision: 30 $ 
 //               $Author: Aviad $
-//               $Date: 13/11/04 16:36 $ 
+//               $Date: 22/11/04 9:14 $ 
 // Description :
 //    Concrete implmentations for Langauge, ScoreFunction, WeightFunction etc
 //
@@ -35,6 +35,7 @@
 #include "persistance/Defs.h"
 #include "persistance/TextWriter.h"
 
+#include <boost/cast.hpp>
 
 //
 // this header contains the standard definitions used for SeedSearcher
@@ -82,7 +83,7 @@ public:
    virtual void writeAsText ( Persistance::TextWriter& writer, 
                               const ScoreParameters* params) const 
    {
-      const ExpParameters* p = dynamic_cast<const ExpParameters*> (params);
+      const ExpParameters* p = boost::polymorphic_downcast<const ExpParameters*> (params);
       writer << "beta^" << p->_neg << "/alpha^" << p->_pos;
    }
 
