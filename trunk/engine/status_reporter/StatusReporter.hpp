@@ -20,7 +20,7 @@
 		4)Configure db name and password.
 */
 
-#include "/sw/include/mysql/mysql.h"
+#include "/usr/include/mysql/mysql.h"
 #include "BaseStatusReporter.hpp"
 
 class StatusReporter : public BaseStatusReporter {
@@ -63,6 +63,8 @@ public:
 
 	//call when job is completed
 	void setJobDone();
+
+  virtual void setJobError( const Str &inStr );
 	
 protected:
 	void connect();
@@ -73,3 +75,4 @@ protected:
 
 
 #endif //__STATUS_REPORTER_H__
+

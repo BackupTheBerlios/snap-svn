@@ -99,7 +99,7 @@ struct StatusReportManager {
 
    //call once job was succesfully cancelled
    static inline void setJobCancelled() {
-      if (_reporter) _reporter->setJobCancelled ();
+       if (_reporter) _reporter->setJobCancelled ();
    }
 
    //call when job is completed

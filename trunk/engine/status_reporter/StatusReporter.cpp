@@ -47,12 +47,12 @@ StatusReporter::hasUserCancelled() {
 		MYSQL_ROW row = mysql_fetch_row(result);
 		
 		if( row == 0 ) {
-			throw StatusException(  "StatusReporter::hasUserCancelled - Error "
-						"couldn't retrieve row cancel_flag from DB!!!\n" );
+			throw StatusException(  
+	      "StatusReporter::hasUserCancelled - Error "
+	      "couldn't retrieve row cancel_flag from DB!!!\n" );
 		}
 		
 		mUserCancelled = (*(row[0]) == '1');
-		
 		disconnect();
 		
 	}
@@ -64,37 +64,45 @@ StatusReporter::hasUserCancelled() {
 void 
 StatusReporter::setProgress( int inPercentDone ) {
 
-	char query[256];
-
-	connect();
-	
-	sprintf( query, "UPDATE JOBS SET percent_done='%d', last_update_ts=NOW() WHERE id='%d'", 
-				inPercentDone, mJobID );
-	
-	if( mysql_query( &mSQLObj, query ) ) {
-		throw StatusException(  "StatusReporter::setProgress update progress failed\n" );
-		return;
-	}
-	
-	disconnect();
+  char query[256];
+  
+  connect();
+  
+  sprintf( query, 
+	   "UPDATE jobs SET percent_done='%d', last_update_ts=NOW() "
+	   "WHERE id='%d'", 
+	   inPercentDone, mJobID );
+  
+  if( mysql_query( &mSQLObj, query ) ) {
+    throw StatusException(  "StatusReporter::setProgress update "
+			    "progress failed\n" );
+    return;
+  }
+  
+  disconnect();
 
 }
 
 void 
 StatusReporter::setJobStarted()
 {
-	char query[256];
-
-	connect();
-	
-	sprintf( query, "UPDATE JOBS SET job_status='%d', pid='%d', start_time=now() WHERE id='%d'", 
-														PROCESSING_STATUS, mPid, mJobID );
-	
-	if( mysql_query( &mSQLObj, query ) ) {
-		throw StatusException( "update status failed\n" );
-	}
-	
-	disconnect();
+  char query[256];
+  
+  connect();
+  
+  sprintf( query, "UPDATE jobs SET job_status='%d', pid='%d', start_time=now() WHERE id='%d'", 
+	   PROCESSING_STATUS, mPid, mJobID );
+  
+  printf( query );
+  
+  if( mysql_query( &mSQLObj, query ) ) {
+    
+    char tmp[256];
+    sprintf( tmp, "Update Status Failed (%s)", mysql_error(&mSQLObj) );
+    throw StatusException( tmp  );
+  }
+  
+  disconnect();
 }
 
 void 
@@ -107,17 +115,23 @@ StatusReporter::setJobDone() {
 	setJobStatus(DONE_STATUS, true);
 }
 
+void 
+StatusReporter::setJobError(const Str& inStr) {
+  //
+  // TODO: use the error string!
+  setJobStatus(PROCESSING_ERROR_STATUS, true);
+}
+
 void
 StatusReporter::connect()
 {
-
-	if( !mysql_init(&mSQLObj) ) {
-		throw StatusException( "init MYSQL failed!\n" );
-	}
-	
-	if( !mysql_real_connect(&mSQLObj, mHostName, mUserName, mPassword, mDBName, 0, NULL, 0) ) {
-		throw StatusException( "error connecting to mysql\n" );
-	}
+  if( !mysql_init(&mSQLObj) ) {
+    throw StatusException( "init MYSQL failed!\n" );
+  }
+  
+  if( !mysql_real_connect(&mSQLObj, mHostName, mUserName, mPassword, mDBName, 0, NULL, 0) ) {
+    throw StatusException( "error connecting to mysql\n" );
+  }
 
 }
 
@@ -130,10 +144,10 @@ StatusReporter::setJobStatus( JobStatus inStatus, bool inSetEndTime )
 	connect();
 	
 	if( inSetEndTime )
-		sprintf( query, "UPDATE JOBS SET job_status='%d',  "
+		sprintf( query, "UPDATE jobs SET job_status='%d',  "
 		" end_time = now() WHERE id='%d'", inStatus, mJobID );
 	else
-		sprintf( query, "UPDATE JOBS SET job_status='%d' WHERE id='%d'", 
+		sprintf( query, "UPDATE jobs SET job_status='%d' WHERE id='%d'", 
 														inStatus, mJobID );
 	
 	if( mysql_query( &mSQLObj, query ) ) {
@@ -149,9 +163,6 @@ StatusReporter::disconnect()
 {
 	mysql_close( &mSQLObj );
 }
-
-
-{
 
 
 StatusReportManager::Sentry::Sentry( int argc, char **argv, Argv &outArgv )
@@ -178,13 +189,9 @@ StatusReportManager::Sentry::Sentry( int argc, char **argv, Argv &outArgv )
    StatusReportManager::setup (
       boost::shared_ptr <BaseStatusReporter> (
          new StatusReporter (db_host, db_name, db_user, db_pass, job_id)
-
-#				endif
       )
       );
 
    StatusReportManager::setJobStarted ();
 }
-~auto_report () {
-   StatusReportManager::setJobDone ();
-}
+

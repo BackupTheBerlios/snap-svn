@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Feature.cpp $
-// Version     : $Revision: 17 $ 
+// Version     : $Revision: 18 $ 
 //               $Author: Aviad $
-//               $Date: 13/10/04 3:33 $ 
+//               $Date: 18/10/04 8:08 $ 
 // Description :
 //    Concrete cache for Hyper-Geometric distribution values
 //
@@ -109,7 +109,7 @@ void FeatureInvestigator::printMotifPosition (
                      const SeqPosition& position)
 {
    int motifLength = feature.assignment ().length ();
-   StrBuffer buf;
+   StrBuffer buf(_outputLength);
    int middleSection = 
       position.getSeedString (
                            buf, 
@@ -197,13 +197,13 @@ void FeatureInvestigator::createPSSM (Feature& feature_i,
                                       PSSM& outPSSM)
 {
    const int seed_length = feature_i.assignment ().length ();
-   const int offset = getMotifLeftOffset (_outputLength, seed_length);
 
-   outPSSM = PSSM (  _parameters.langauge ().code (), 
-                     offset, 
-                     _outputLength, 
-                     positions,
-                     _parameters.wf ());
+   outPSSM = PSSM (  
+            _parameters.langauge ().code (), 
+		      seed_length,
+		      _outputLength,
+            positions,
+            _parameters.wf ());
 }
    
 

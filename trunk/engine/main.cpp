@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: main.cpp $
-// Version     : $Revision: 58 $ 
+// Version     : $Revision: 59 $ 
 //               $Author: Aviad $
-//               $Date: 13/10/04 3:33 $ 
+//               $Date: 18/10/04 7:52 $ 
 // Description :
 //    main routine for the seed-searcher program
 //
@@ -155,12 +155,10 @@ int exit_value = 0;
          DLOG << (cleanupFinish - cleanupStart) << " seconds." << DLOG.EOL ();
          DLOG.flush ();
       }
+
+      StatusReportManager::setJobDone ();
    }
    catch (BaseStatusReporter::StatusException& x) {
-      //
-      // aborted by user, 
-      StatusReportManager::setJobCancelled ();
-
       //
       // write exception info
       cerr << endl;
@@ -168,6 +166,14 @@ int exit_value = 0;
       cerr << endl;
       exit_value = 1;
 
+      try {
+	//
+	// aborted by user, 
+	StatusReportManager::setJobCancelled ();
+      }
+      catch (...) {
+	cerr << endl << "StatusReportManager Error" << endl;
+      }
    }
    catch (BaseException& x) {
       //
@@ -177,7 +183,6 @@ int exit_value = 0;
          x.explain(stream);
          buffer = stream.str ();
       }
-      StatusReportManager::setJobError(Str (buffer));
 
       //
       // write exception info
@@ -185,9 +190,22 @@ int exit_value = 0;
       cerr << buffer;
       cerr << endl;
       exit_value = 1;
+
+      try {
+	StatusReportManager::setJobError(Str (buffer));
+      }
+      catch (...) {
+	cerr << endl << "StatusReportManager Error" << endl;
+
+      }
    }
    catch (...) {
+     try {
       StatusReportManager::setJobError("Unknown Error");
+     }
+     catch (...) {
+	cerr << endl << "StatusReportManager Error" << endl;
+     }
       throw;
    }
 

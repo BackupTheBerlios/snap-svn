@@ -2,22 +2,22 @@
 #define _SeedSearcher_Sequence_h
 
 //
-// File        : $RCSfile: $ 
+// File        : $RCSfile: $
 //               $Workfile: Sequence.h $
-// Version     : $Revision: 28 $ 
+// Version     : $Revision: 29 $
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:44 $ 
+//               $Date: 18/10/04 7:58 $
 // Description :
-//    Concrete classes for sequences, sequence positions 
+//    Concrete classes for sequences, sequence positions
 //
-// Author: 
+// Author:
 //    Aviad Rozenhek (mailto:aviadr@cs.huji.ac.il) 2003-2004
 //
-// written for the SeedSearcher program. 
-// for details see www.huji.ac.il/~hoan 
+// written for the SeedSearcher program.
+// for details see www.huji.ac.il/~hoan
 // and also http://www.cs.huji.ac.il/~nirf/Abstracts/BGF1.html
 //
-// this file and as well as its library are released for academic research 
+// this file and as well as its library are released for academic research
 // only. the LESSER GENERAL PUBLIC LICENSE (LPGL) license
 // as well as any other restrictions as posed by the computational biology lab
 // and the library authors appliy.
@@ -34,10 +34,10 @@ public:
    typedef int ID;
    typedef StrBuffer Name;
 
-   Sequence (ID id, 
-            const Str& data, 
-            const Str& name, 
-            double wgt, 
+   Sequence (ID id,
+            const Str& data,
+            const Str& name,
+            double wgt,
             Str reverse = NULL)
    : _id (id), _data (data), _reverse (reverse),
      _name (name), _weight (wgt)
@@ -116,10 +116,10 @@ public:
       return isRelevant (seq.weight (), outIsPositive);
    }
    inline bool isRelevant (double weight, bool& outIsPositive) const {
-      bool result = 
+      bool result =
          isRelevantImpl (weight, outIsPositive);
       if (_invert)
-	    outIsPositive = ! outIsPositive;
+       outIsPositive = ! outIsPositive;
       return result;
    }
 
@@ -162,17 +162,22 @@ protected:
 
 class SeqPosition : public POOL_ALLOCATED(SeqPosition) {
 public:
+  enum {
+    _DEFAULT_ALLIGNMENT_CHAR_ = '-'
+  };
+
+public:
    //
    // ctor is called in a loop, so must be very effiecient
-	inline SeqPosition (Sequence const * seq, int pos) 
+   inline SeqPosition (Sequence const * seq, int pos)
    :  _sequence (seq), _position (pos), _strand (_strand_pos_) {
    }
-	inline SeqPosition (Sequence const * seq, int pos, Strand strand) 
+   inline SeqPosition (Sequence const * seq, int pos, Strand strand)
    :  _sequence (seq), _position (pos), _strand (strand) {
    }
    ~SeqPosition () {
    }
-   
+
    inline char operator [] (int index) const {
       return getData (index);
    }
@@ -197,10 +202,10 @@ public:
       return _strand;
    }
    //
-   // returns the sequence string starting at this position, 
-   // modified by 'offset'with length 'length'. 
+   // returns the sequence string starting at this position,
+   // modified by 'offset'with length 'length'.
    // if offset is too big or too small (negative)
-   // it will return a shorter string. in any case, it always returns 
+   // it will return a shorter string. in any case, it always returns
    // a valid string.
    Str getSeedString (int seedLength, int offset = 0) const;
 
@@ -210,12 +215,13 @@ public:
    // returns the index of the beginning of the middle section
    int getSeedString (StrBuffer& outBuffer,  // the string is stored here
                       int inLength,          // desired length
-                      int inDesiredExpansionLeft, 
+                      int inDesiredExpansionLeft,
                       int inDesiredExpansionRight,
-                      char alignment = '-'  // alignment for missing pos
-                      ) const; 
+                      char alignment = _DEFAULT_ALLIGNMENT_CHAR_
+            // alignment for missing pos
+                      ) const;
 
-   int getSeedString (  StrBuffer& outBuffer, 
+   int getSeedString (  StrBuffer& outBuffer,
                         int inLength,  // length of seed before expansion
                         int inDesiredLength,  // length after expansion
                         char alignment = '-'  // alignment for missing pos
@@ -224,27 +230,28 @@ public:
    //
    //
    static int getSeedString (
-	                     Sequence const* sequence,
-	                     int position,
-                        Strand strand,
-                        StrBuffer& outBuffer, 
-                        int inLength,         // length of seed before expansion
-                        int inDesiredLength,  // length after expansion
-                        char alignment = '-'  // alignment for missing pos
+                        Sequence const* sequence,
+                        int position,
+              Strand strand,
+              StrBuffer& outBuffer,
+              int inLength, // length of seed before expansion
+              int inDesiredLength, // length after expansion
+              char alignment = _DEFAULT_ALLIGNMENT_CHAR_
+              // alignment for missing pos
                         );
 
    //
    // the 1st argument (in/out) provides the offset from this position
    // the 2nd argument (in/out) provides the length from the offset
    //
-   // this method makes changes the offset (if necessary) so 
+   // this method makes changes the offset (if necessary) so
    // that it is legal, decreasing the length in accordance.
    // also if the length is too large, it is decreased.
-   void getModifiedOffsets (int& offset, int& length) const;      
+   void getModifiedOffsets (int& offset, int& length) const;
 
 private:
-	Sequence const * _sequence;
-	int _position;
+   Sequence const * _sequence;
+   int _position;
    Strand _strand;
 };
 
@@ -254,7 +261,7 @@ typedef Vec <Sequence const*> SequenceVector;
 
 //
 // a vector of positions
-class PositionVector : 
+class PositionVector :
    public Vec <SeqPosition const*>,
    public POOL_ALLOCATED(PositionVector)
 {

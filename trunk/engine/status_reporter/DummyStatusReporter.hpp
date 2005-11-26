@@ -43,6 +43,9 @@ public:
    //call when job is completed
    void setJobDone();
 
+   //call when job is stopped because of error
+   virtual void setJobError(const Str&);
+
 protected:
    void connect();
    void setJobStatus( JobStatus inStatus );

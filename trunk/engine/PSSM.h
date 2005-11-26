@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: PSSM.h $
-// Version     : $Revision: 10 $ 
+// Version     : $Revision: 11 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:44 $ 
+//               $Date: 18/10/04 7:57 $ 
 // Description :
 //    Concrete class for describing a PSSM
 //
@@ -96,11 +96,11 @@ public:
    // creates an empty pssm 
    PSSM () {
    }
-   PSSM (const AlphabetCode& code, 
-         int offset, int length, 
+   PSSM (const AlphabetCode& code,
+	 int motifLength, int pssmLength,
          const PositionVector& posVec  ,
          const SeqWeightFunction& wf) {
-      set (code, offset, length, posVec, wf);
+     set (code, motifLength, pssmLength, posVec, wf);
    }
    ~PSSM () {
    }
@@ -108,14 +108,15 @@ public:
    //
    // create a PSSM from a vector of positions
    // 'length' is the length of the PSSM
-   // 'offset' is the (often negative) offset from the position to start building
+   // 'offset' is the (often negative) 
+   // offset from the position to start building
    void set (  const AlphabetCode& code, 
-               const int offset, 
-               const int length, 
+	       const int motifLength,
+	       const int pssmLength,
                const PositionVector& posVec  ,
                const SeqWeightFunction& wf   ) 
    {
-      _length = length;
+      _length = pssmLength;
       //
       // TODO: support partial counts?
       double positions [MAX_PSSM_LENGTH][ASSG_MAX_ALPHABET_SIZE];
@@ -125,31 +126,34 @@ public:
       // for all the places the motif exists
       CPositionIterator it (posVec.begin (), posVec.end ());
       for (; it.hasNext () ; it.next ()) {
-         //
-         // go over all positions
-         int myOffset = offset;
-         int myLength = length;
-         (*it)->getModifiedOffsets (myOffset, myLength);
-         
-         //
-         // get the weight of the seq
-         double weight = wf.weight (*(*it)->sequence ());
+	 //
+	 // the following line is wrong, since it itroduces offset errors
+         // (*it)->getModifiedOffsets (myOffset, myLength);
+	 // the following line replaces it
+	StrBuffer buf(_length);
+	(*it)->getSeedString (buf,  motifLength, _length);
 
-         //
-         // 
-         for (int i=0; i<myLength ; i++) {
-            AlphabetCode::Char c = (*it)->getData(myOffset++);
-            AlphabetCode::CodedChar cc = code.code (c);
+	//
+	// get the weight of the seq
+	double weight = wf.weight (*(*it)->sequence ());
+	
+	//
+	// 
+	for (int i=0; i<_length ; i++) {
+	  AlphabetCode::Char c = buf [i];
+	  if (c != SeqPosition::_DEFAULT_ALLIGNMENT_CHAR_) {
+	    AlphabetCode::CodedChar cc = code.code (c);
 	    //
 	    // keep gcc happy
 	    int cc_index = static_cast <int> (cc);
-            positions [i][cc_index] += weight;
-         }
+	    positions [i][cc_index] += weight;
+	  }
+	}
       }
-
+      
       //
       //
-      for (int i=0 ; i <length ; i++) {
+      for (int i=0 ; i <_length ; i++) {
          _positionScores [i].set (code.cardinality (), positions [i]);
       }
    }

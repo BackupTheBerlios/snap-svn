@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: HyperGeoCache.cpp $
-// Version     : $Revision: 16 $ 
+// Version     : $Revision: 17 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:44 $ 
+//               $Date: 18/10/04 7:48 $ 
 // Description :
 //    Concrete cache for Hyper-Geometric distribution values
 //
@@ -135,7 +135,7 @@ double HyperGeoCache::log2Tail (int x, int k, ScoreParameters** params)
 
       //
       // change from ln to 2-base log
-      static const double LN_2 = ::log (2);
+      static const double LN_2 = ::log (static_cast <double> (2));
       double log2score = score / LN_2;
 
       cachedScore = new Score (xk, log2score); 
@@ -287,7 +287,7 @@ double HyperGeoTotalCache::log2Tail (int x, int k, int n, int m,
 
       //
       // change from ln to 2-base log
-      static const double LN_2 = ::log (2);
+      static const double LN_2 = ::log (static_cast <double> (2));
       double log2score = score / LN_2;
 
       cachedScore = new Score (xknm, log2score); 
