@@ -81,7 +81,7 @@ public:
    PSSM (const AlphabetCode& code, 
          int offset, 
          int length, 
-         const Preprocessor::PositionVector& posVec) {
+         const PositionVector& posVec) {
       set (code, offset, length, posVec);
    }
    ~PSSM () {
@@ -94,7 +94,7 @@ public:
    void set (  const AlphabetCode& code, 
                const int offset, 
                const int length, 
-               const Preprocessor::PositionVector& posVec) 
+               const PositionVector& posVec) 
    {
       _length = length;
       //
@@ -108,7 +108,7 @@ public:
 
       //
       // for all the places the motif exists
-      Preprocessor::CPositionIterator it (posVec.begin (), posVec.end ());
+      CPositionIterator it (posVec.begin (), posVec.end ());
       for (; it.hasNext () ; it.next ()) {
          //
          // go over all positions
@@ -181,4 +181,11 @@ int Multinomial::size() const { return _n;}
 inline
 //void Multinomial::getParams(int & n , double const * & p ) const { n=_n;p=_PR;}
 double const * Multinomial::getParams(int & n ) const { n=_n;return _PR;}
+
+
+
+
+
+
+
 

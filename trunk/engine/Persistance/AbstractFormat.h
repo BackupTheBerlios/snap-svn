@@ -61,3 +61,10 @@ public:
 END_NAMESPACE (Persistance);
 
 #endif // _SeedSearcher_Persistance_AbstractFormat_h
+
+
+
+
+
+
+

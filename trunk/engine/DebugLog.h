@@ -1,5 +1,5 @@
 #ifndef _SeedSearcher_DebugLog_h
-#define _SeedSearcher_Defs_h
+#define _SeedSearcher_DebugLog_h
 
 #include "Persistance/Defs.h"
 #include "Persistance/TextWriter.h"
@@ -43,3 +43,10 @@ private:
 
 
 #endif
+
+
+
+
+
+
+

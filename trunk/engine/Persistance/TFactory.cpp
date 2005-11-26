@@ -59,7 +59,9 @@ bool TFactoryList::add (TFactoryBase* factory)
    return_value = _rep->_names.insert( map_value );
    if (return_value.second) {
       const std::type_info& type = factory->type ();
-      bool ok = _rep->_types.insert( Type2FactoryMap::value_type ( &type, factory)).second;
+      bool ok = _rep->_types.insert( 
+         Type2FactoryMap::value_type ( &type, factory)).second;
+
       debug_mustbe (ok);
    }
 
@@ -70,7 +72,6 @@ bool TFactoryList::add (TFactoryBase* factory)
 
 TFactoryBase* TFactoryList::getFactory (const std::type_info& type) const
 {
-   TFactoryBase* factory = NULL;
    Type2FactoryMap::iterator it;
 
    // find the function that allocates an object according to class_name
@@ -86,7 +87,6 @@ TFactoryBase* TFactoryList::getFactory (const std::type_info& type) const
 
 TFactoryBase* TFactoryList::getFactory (FactoryID id) const
 {
-   TFactoryBase* factory = NULL;
    ID2FactoryMap::iterator it;
 
    // find the function that allocates an object according to class_name
@@ -102,7 +102,6 @@ TFactoryBase* TFactoryList::getFactory (FactoryID id) const
 
 TFactoryBase* TFactoryList::getFactory (const char* class_name) const
 {
-   TFactoryBase* factory = NULL;
    Name2FactoryMap::iterator it;
 
    // find the function that allocates an object according to class_name
@@ -195,3 +194,10 @@ void TFactoryList::serialize (IArchive& in)
       }
    }
 }
+
+
+
+
+
+
+

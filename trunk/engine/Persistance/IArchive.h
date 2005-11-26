@@ -16,7 +16,7 @@ namespace Persistance {
 
 class IArchive {
 public:
-	IArchive(InputStream*, TFactoryList*);
+   IArchive(InputStream*, TFactoryList*);
    ~IArchive();
 
    void readBool (bool&);
@@ -180,4 +180,11 @@ private:
 
 
 #endif // _Persistance_IArchive_h
+
+
+
+
+
+
+
 

@@ -22,26 +22,28 @@
 //	ENV_C_SUPPORTS (bit flags)		// Compiler feature flags
 
 #define ENV_MEMBER_TEMPLATES	0x0001	// member templates
-#define ENV_BOOL				0x0002	// "bool" keyword
-#define ENV_NEWKEYWORDS			0x0004	// "explicit", "typename"
-#define ENV_TEMPLATE_ARGS		0x0008	// template<class X=int> 
-#define ENV_EXCEPTIONS			0x0010	// C++ native exception handling 
-#define ENV_RTTI				0x0020	// C++ native RTTI
-#define ENV_NAMESPACES			0x0040	// namespaces support
-#define ENV_PRAGMA_ONCE			0x0080	// #pragma once
-#define ENV_STD_NAMESPACE		0x0100	// using std:: namespace in c++ library
-#define	ENV_INT64				0x0200	// 64 bit integer
-#define	ENV_ARRAY_NEW_DELETE	0x0400	// operators new[](size_t), delete[](void*)
-#define	ENV_DISTINCT_WCHAR		0x0800	// the wchar_t is a distinct builtin type 
-										// (vs. typedef'd to unsigned short)
-#define	ENV_PARGMA_ALIGN		0x1000
-#define	ENV_PRAGMA_PACKPUSH		0x2000
-#define	ENV_PRAGMA_PACK			0x4000
-#define	ENV_TYPENAME_KEYWORD 0x8000 // support (or requirement) of typename keyword
-                                     // in templates
+#define ENV_BOOL		0x0002	// "bool" keyword
+#define ENV_NEWKEYWORDS		0x0004	// "explicit", "typename"
+#define ENV_TEMPLATE_ARGS	0x0008	// template<class X=int> 
+#define ENV_EXCEPTIONS		0x0010	// C++ native exception handling 
+#define ENV_RTTI		0x0020	// C++ native RTTI
+#define ENV_NAMESPACES		0x0040	// namespaces support
+#define ENV_PRAGMA_ONCE		0x0080	// #pragma once
+#define ENV_STD_NAMESPACE	0x0100	// using std:: namespace in c++ library
+#define	ENV_INT64		0x0200	// 64 bit integer
+// operators new[](size_t), delete[](void*)
+#define	ENV_ARRAY_NEW_DELETE	0x0400	
+// the wchar_t is a distinct builtin type 
+// (vs. typedef'd to unsigned short)
+#define	ENV_DISTINCT_WCHAR	0x0800
+#define	ENV_PARGMA_ALIGN	0x1000
+#define	ENV_PRAGMA_PACKPUSH	0x2000
+#define	ENV_PRAGMA_PACK		0x4000
+// support (or requirement) of typename keyword in templates
+#define	ENV_TYPENAME_KEYWORD 0x8000 
 
-//	ENV_C_VERSION					// Compiler version, depends on compiler type
-
+//	ENV_C_VERSION					
+// Compiler version, depends on compiler type
 #if	ENV_COMPILER & ENV_MICROSOFT
 #	ifdef RC_INVOKED
 #		define ENV_LANGUAGE ENV_RC
@@ -78,8 +80,10 @@
 #elif ENV_COMPILER & ENV_GCC
 //
 // TODO: determine support issues for gcc
-#  if ENV_C_VERSION >= 1100
-#		define ENV_C_SUPPORTS (ENV_TYPENAME_KEYWORD | ENV_MEMBER_TEMPLATES | ENV_BOOL | ENV_NEWKEYWORDS | ENV_TEMPLATE_ARGS | ENV_EXCEPTIONS | ENV_RTTI | ENV_NAMESPACES);
+#  if ENV_C_VERSION >= 3
+#	define ENV_C_SUPPORTS (ENV_TYPENAME_KEYWORD | ENV_MEMBER_TEMPLATES | ENV_BOOL | ENV_NEWKEYWORDS | ENV_TEMPLATE_ARGS | ENV_EXCEPTIONS | ENV_RTTI)
+#  else 
+#     pragma warning "unsupported gcc version"
 #  endif
 #else
 #pragma warning "Compiling with unknown compiler"
@@ -91,7 +95,7 @@
 
 
 #if ENV_C_SUPPORTS & ENV_INT64
-#  if ENV_COMPILER & ENV_MICROSOFT
+#  if ENV_COMPILER & ENV_MICROSOFT 
       typedef __int64 int64_t;
 #  endif
 #endif
@@ -102,6 +106,20 @@ Compiler-dependent definitions
 
 */
 
+//
+// should throw out variable/delcarations without use?
+#if ENV_COMPILER & ENV_GCC
+#  define USELESS(commands)
+#else
+#  define USELESS(commands) commands
+#endif
+
 
 #endif // _SeedSearcher_Compiler_h
+
+
+
+
+
+
 

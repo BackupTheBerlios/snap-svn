@@ -161,7 +161,7 @@ template <class PrimType>
 static void writePrimitive(OArchive& out, PrimType param) {
    //
    // make sure PrimType is indeed primitive
-   static_cast <double> (param);
+  USELESS (static_cast <double> (param));
 
    TextWriter& _writer = out.writer ();
 
@@ -195,7 +195,7 @@ static void writePrimitiveArray (OArchive& out, const PrimType* params, int n)
 {
    //
    // make sure PrimType is indeed primitive
-   static_cast <double> (*params);
+  USELESS (static_cast <double> (*params));
    size_t elementSize = sizeof (PrimType);
 
    // check erroneous states
@@ -218,8 +218,9 @@ static void writePrimitiveArray (OArchive& out, const PrimType* params, int n)
          writePrimitive (out, params [i]);
    }
    else {
+      char* ptr = (char*) params; 
       size_t nbytes = n * sizeof (PrimType);
-      _writer.write (params, nbytes);
+      _writer.write (ptr, nbytes);
    }
 }
 
@@ -231,13 +232,14 @@ static inline void writePrimitiveT (OArchive& out,
 {
    //
    // make sure this is indeed a primitive
-   static_cast <double> (param);
+  USELESS (static_cast <double> (param););
 
    if (out.meta ()) {
       //
       // Save the length/type of param, to help ensure 
       // the Serialization/Deserialization matches.      
-      Persistance::Flag c = (Persistance::Flag) (out.strict ()? code : sizeof(PrimType));
+      Persistance::Flag c = 
+	(Persistance::Flag) (out.strict ()? code : sizeof(PrimType));
       writePrimitive  (out, c);
    }
    writePrimitive (out, param );
@@ -357,22 +359,83 @@ void OArchive::writeString (const char* str, int len)
 
 
 
-void OArchive::writeBoolArray (const bool*, int);
+void OArchive::writeBoolArray (const bool* a, int l)
+{
+   writePrimitiveArray (*this, a, l);
+}
+
 void OArchive::writeCharArray (const char* a, int l)
 {
    writePrimitiveArray (*this, a, l);
 }
 
-void OArchive::writeSCharArray (const signed char*, int);
-void OArchive::writeUCharArray (const unsigned char*, int);
-void OArchive::writeShortArray (const short*, int);
-void OArchive::writeSShortArray (const signed short*, int);
-void OArchive::writeUShortArray (const unsigned short*, int);
-void OArchive::writeIntArray (const int*, int);
-void OArchive::writeSIntArray (const signed int*, int);
-void OArchive::writeUIntArray (const unsigned int*, int);
-void OArchive::writeLongArray (const long*, int);
-void OArchive::writeSLongArray (const signed long*, int);
-void OArchive::writeULongArray (const unsigned long*, int);
-void OArchive::writeFloatArray (const float*, int);
-void OArchive::writeDoubleArray (const double*, int);
+void OArchive::writeSCharArray (const signed char* a, int l)
+{
+   writePrimitiveArray (*this, a, l);
+}
+
+void OArchive::writeUCharArray (const unsigned char* a, int l)
+{
+   writePrimitiveArray (*this, a, l);
+}
+
+void OArchive::writeShortArray (const short* a, int l)
+{
+   writePrimitiveArray (*this, a, l);
+}
+
+void OArchive::writeSShortArray (const signed short* a, int l)
+{
+   writePrimitiveArray (*this, a, l);
+}
+
+void OArchive::writeUShortArray (const unsigned short* a, int l)
+{
+   writePrimitiveArray (*this, a, l);
+}
+
+void OArchive::writeIntArray (const int* a, int l)
+{
+   writePrimitiveArray (*this, a, l);
+}
+
+void OArchive::writeSIntArray (const signed int* a, int l)
+{
+   writePrimitiveArray (*this, a, l);
+}
+
+void OArchive::writeUIntArray (const unsigned int* a, int l)
+{
+   writePrimitiveArray (*this, a, l);
+}
+
+void OArchive::writeLongArray (const long* a, int l)
+{
+   writePrimitiveArray (*this, a, l);
+}
+
+void OArchive::writeSLongArray (const signed long* a, int l)
+{
+   writePrimitiveArray (*this, a, l);
+}
+
+void OArchive::writeULongArray (const unsigned long* a, int l)
+{
+   writePrimitiveArray (*this, a, l);
+}
+
+void OArchive::writeFloatArray (const float* a, int l)
+{
+   writePrimitiveArray (*this, a, l);
+}
+
+void OArchive::writeDoubleArray (const double* a, int l)
+{
+   writePrimitiveArray (*this, a, l);
+}
+
+
+
+
+
+

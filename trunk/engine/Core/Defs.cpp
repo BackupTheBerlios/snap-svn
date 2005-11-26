@@ -42,7 +42,11 @@ static DebuggerBreak	_breakOnException(false);
 static DebuggerBreak	_breakOnThrow(false);
 
 static DebuggerBreak	breakOnAssertion;
-static bool		throwOnAssertion= false;
+
+#if BASE_DEBUG
+   static bool		throwOnAssertion= false;
+#endif
+
 static BaseException::Support* support;	//=0 implicitly
 
 BaseException::BaseException()
@@ -136,16 +140,8 @@ void signal_assertion(const char* /*msg*/, const char* file, int lineNo)
 
 #endif
 
-#if ENV_COMPILER & ENV_MICROSOFT
-#  include <windows.h>
-#endif
-size_t SystemInfo::getPageSize () {
-#if ENV_COMPILER & ENV_MICROSOFT
-   SYSTEM_INFO info;
-   GetSystemInfo(&info);
-   return info.dwPageSize; // probable 4K
-#else
-   //
-   // need to define a value...
-#endif
-};
+
+
+
+
+

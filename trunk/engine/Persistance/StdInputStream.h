@@ -1,7 +1,7 @@
 #ifndef _Persistance_StdInputStream_h
 #define _Persistance_StdInputStream_h
 
-#include "UnbufferedChannel.h."
+#include "UnbufferedChannel.h"
 #include "InputStream.h"
 #include <istream>
 
@@ -69,3 +69,10 @@ public:
 END_NAMESPACE (Persistance);
 
 #endif // _Persistance_StdInputStream_h
+
+
+
+
+
+
+

@@ -1,10 +1,29 @@
 #include "Assignment.h"
+#include "Alphabet.h"
 
 #include "Persistance/TextWriter.h"
-
-#include "Alphabet.h"
 #include "Persistance/StdOutputStream.h"
+
+#include "Core/Str.h"
+
 using namespace Persistance;
+
+Assignment::Assignment (const Str& data, const AlphabetCode& code)
+{
+   debug_mustbe (data.length () > 0);
+   //
+   // make room for the positions
+   int l = data.length ();
+   _positions.reserve (l);
+   for (int i=0 ; i<l ; i++) {
+      AlphabetCode::Char c = data.getCharAt (i);
+      AlphabetCode::CodedChar cc = code.code (c);
+      //
+      // create a position for each char in the string, 
+      // using discrete strategy
+      _positions.push_back (Position (cc, discrete));
+   }
+}
 
 
 void Assignment::setPosition (int index, const Position& p)
@@ -13,6 +32,20 @@ void Assignment::setPosition (int index, const Position& p)
       _positions.resize (index +1);
 
    _positions [index] = p;
+}
+
+bool Assignment::contains (const Assignment& o) const
+{
+   int l = length ();
+   debug_mustbe (length () == o.length ());
+   for (int i=0 ; i<l ; i++) {
+      if (!getPosition (i).contains (o [i]))
+         return false;
+      }
+   }
+
+   return true;
+
 }
 
 bool Assignment::equals (const Assignment& o)  const
@@ -99,5 +132,12 @@ Assignment::PositionIterator::PositionIterator (const Position& p)
 }
 
  
+
+
+
+
+
+
+
 
 

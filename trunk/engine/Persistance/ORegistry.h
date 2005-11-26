@@ -40,3 +40,10 @@ private:
 }; // namespace persistance
 
 #endif // _Persistance_ORegistry_h
+
+
+
+
+
+
+

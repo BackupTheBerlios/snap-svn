@@ -1,31 +1,32 @@
 #flags for release version
-#CCFLAGS = -O2 -DNDEBUG
+#CCFLAGS = -g -Wall -O0
+CCFLAGS = -O3 -Wall -DNDEBUG
 
 CC = g++
-CCFLAGS = -g -Wall -O0
 IFLAGS = -I.  
 LDLIBS = -lm 	
 OBJS = $(subst .cpp,.o,${SOURCES})
-SOURCES = Alphabet.cpp Assignment.cpp SequenceDB.cpp \
+SOURCES = Alphabet.cpp Assignment.cpp Cluster.cpp \
+		DebugLog.cpp HyperGeoCache.cpp \
+		HyperGeoScore.cpp \
 		PrefixTreePreprocessor.cpp \
 		PrefixTreeWalker.cpp  \
-		HyperGeoCache.cpp RandomProjections.cpp \
-		SeedSearcher.cpp StdOptions.cpp \
-		Core/Defs.cpp \
-		Persistance/TextWriter.cpp Persistance/OutputStream.cpp \
-		Persistance/StreamBuffer.cpp \
-		Legacy/RandomGenerator.cpp Legacy/Multinomial.cpp
-
-
+		RandomProjections.cpp \
+		SeedSearcher.cpp Sequence.cpp \
+		SequenceDB.cpp StdOptions.cpp \
+		Core/Defs.cpp Core/dlmalloc.c Core/HashTable.cpp \
+		Persistance/Error.cpp Persistance/IArchive.cpp \
+		Persistance/InputStream.cpp Persistance/IRegistry.cpp \
+		Persistance/OArchive.cpp Persistance/Object.cpp \
+		Persistance/ORegistry.cpp Persistance/OutputStream.cpp \
+		Persistance/StreamBuffer.cpp Persistance/TextReader.cpp \
+		Persistance/TextWriter.cpp Persistance/TFactory.cpp \
+		Legacy/RandomGenerator.cpp Legacy/Multinomial.cpp 
 
 all:	depend seed
 
 seed$(EXE): main.o $(OBJS)
-	$(CC) -o seed $(OBJS) main.o
-
-
-%$(EXE): %.o
-	$(CC) -o $@ $< -L. -lPSSM
+	$(CC) $(CCFLAGS) -o seed $(OBJS) main.o
 
 %.o: %.cpp 
 	$(CC) -c $(CCFLAGS) $(IFLAGS) $(LDFLAGS) -o $@ $<
@@ -35,11 +36,19 @@ depend: $(SOURCES)
 	gccmakedep -- $(IFLAGS) $(LDFLAGS) -- *.cpp 
 
 clean:
-	rm -f *~
-	rm -f $(PROG)
-	rm -f core
-	rm -f *.o
-	rm -f *#
+	rm -r -f *~
+	rm -r -f *.o
+	rm -r -f *#
+	rm -r -f Core/*~
+	rm -r -f Core/*.o
+	rm -r -f Core/*#
+	rm -r -f Persistance/*~
+	rm -r -f Persistance/*.o
+	rm -r -f Persistance/*#
+	rm -r -f Legacy/*~
+	rm -r -f Legacy/*.o
+	rm -r -f Legacy/*#
+	rm -f seed
 
 tags:
 	etags --language=c++ *.h *.cpp
@@ -249,7 +258,122 @@ Assignment.o: Assignment.cpp Assignment.h Core/Defs.h Core/Compiler.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/istream \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/istream.tcc \
   Persistance/TextWriter.h Alphabet.h Persistance/StdOutputStream.h \
-  Persistance/OutputStream.h Persistance/StreamBuffer.h
+  Persistance/OutputStream.h Persistance/StreamBuffer.h \
+  Persistance/IODefs.h Persistance/UnbufferedChannel.h \
+  Persistance/InputStream.h
+Cluster.o: Cluster.cpp Cluster.h Sequence.h Defs.h Core/Defs.h \
+  Core/Compiler.h /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/string \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/c++config.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/os_defines.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stringfwd.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/char_traits.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/cstring \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/cstddef \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/stddef.h \
+  /usr/include/string.h /usr/include/_ansi.h /usr/include/newlib.h \
+  /usr/include/sys/config.h /usr/include/machine/ieeefp.h \
+  /usr/include/cygwin/config.h /usr/include/sys/reent.h \
+  /usr/include/_ansi.h /usr/include/sys/_types.h /usr/include/sys/lock.h \
+  /usr/include/sys/string.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_algobase.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/climits \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/limits.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/syslimits.h \
+  /usr/include/limits.h /usr/include/features.h /usr/include/sys/cdefs.h \
+  /usr/include/sys/features.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/cstdlib \
+  /usr/include/stdlib.h /usr/include/machine/stdlib.h \
+  /usr/include/alloca.h /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/new \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/exception \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/iosfwd \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/c++locale.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/clocale \
+  /usr/include/locale.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/cstdio \
+  /usr/include/stdio.h /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/stdarg.h \
+  /usr/include/sys/types.h /usr/include/machine/_types.h \
+  /usr/include/machine/types.h /usr/include/cygwin/types.h \
+  /usr/include/sys/sysmacros.h /usr/include/stdint.h \
+  /usr/include/sys/stdio.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/c++io.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/gthr.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/gthr-default.h \
+  /usr/include/pthread.h /usr/include/signal.h /usr/include/sys/signal.h \
+  /usr/include/cygwin/signal.h /usr/include/sched.h /usr/include/time.h \
+  /usr/include/machine/time.h /usr/include/unistd.h \
+  /usr/include/sys/unistd.h /usr/include/getopt.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/cctype \
+  /usr/include/ctype.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/postypes.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/cwchar \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/ctime \
+  /usr/include/wchar.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/functexcept.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/exception_defines.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_pair.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/type_traits.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_iterator_base_types.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_iterator_base_funcs.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/concept_check.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_iterator.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/debug/debug.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/cassert \
+  /usr/include/assert.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/memory \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/allocator.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/c++allocator.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/ext/new_allocator.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_construct.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_uninitialized.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_raw_storage_iter.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/limits \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_function.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/basic_string.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/atomicity.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/atomic_word.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/algorithm \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_algo.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_heap.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_tempbuf.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/basic_string.tcc \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/ostream \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/ios \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/localefwd.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/ios_base.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/locale_classes.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/streambuf \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/streambuf.tcc \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/basic_ios.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/streambuf_iterator.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/locale_facets.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/cwctype \
+  /usr/include/wctype.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/ctype_base.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/ctype_inline.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/codecvt.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/time_members.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/messages_members.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/basic_ios.tcc \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/ostream.tcc \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/locale \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/locale_facets.tcc \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/typeinfo \
+  Persistance/Object.h Persistance/Defs.h ./Core/Defs.h \
+  Core/ChunkAllocator.h Core/Defs.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/vector \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_vector.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_bvector.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/vector.tcc \
+  Core/dlmalloc.h Core/Str.h Core/STLHelper.h ./Core/Defs.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/map \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_tree.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/cpp_type_traits.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_map.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_multimap.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/set \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_set.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_multiset.h \
+  SequenceDB.h Alphabet.h Legacy/mathplus.h /usr/include/math.h
 DebugLog.o: DebugLog.cpp DebugLog.h Persistance/Defs.h ./Core/Defs.h \
   ./Core/Compiler.h /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/string \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/c++config.h \
@@ -348,8 +472,8 @@ DebugLog.o: DebugLog.cpp DebugLog.h Persistance/Defs.h ./Core/Defs.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/locale_facets.tcc \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/typeinfo \
   Persistance/TextWriter.h Persistance/AbstractFormat.h \
-  ./Persistance/Defs.h ./Core/AutoPtr.h Assignment.h Core/Defs.h \
-  Core/STLHelper.h ./Core/Defs.h \
+  ./Persistance/Defs.h ./Core/AutoPtr.h AssignmentFormat.h Assignment.h \
+  Core/Defs.h Core/STLHelper.h ./Core/Defs.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/vector \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_vector.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_bvector.h \
@@ -455,9 +579,9 @@ HyperGeoCache.o: HyperGeoCache.cpp HyperGeoCache.h /usr/include/assert.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/locale_facets.tcc \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/typeinfo Core/HashTable.h \
   Core/Defs.h
-HyperGeoScore.o: HyperGeoScore.cpp HyperGeoScore.h SeedSearcher.h \
-  PrefixTreePreprocessor.h Preprocessor.h Core/STLHelper.h ./Core/Defs.h \
-  ./Core/Compiler.h /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/string \
+HyperGeoScore.o: HyperGeoScore.cpp HyperGeoScore.h Cluster.h Sequence.h \
+  Defs.h Core/Defs.h Core/Compiler.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/string \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/c++config.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/os_defines.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stringfwd.h \
@@ -553,11 +677,13 @@ HyperGeoScore.o: HyperGeoScore.cpp HyperGeoScore.h SeedSearcher.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/locale \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/locale_facets.tcc \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/typeinfo \
+  Persistance/Object.h Persistance/Defs.h ./Core/Defs.h \
+  Core/ChunkAllocator.h Core/Defs.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/vector \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_vector.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_bvector.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/vector.tcc \
-  SequenceDB.h Core/Defs.h Alphabet.h \
+  Core/dlmalloc.h Core/Str.h Core/STLHelper.h ./Core/Defs.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/map \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_tree.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/cpp_type_traits.h \
@@ -566,14 +692,15 @@ HyperGeoScore.o: HyperGeoScore.cpp HyperGeoScore.h SeedSearcher.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/set \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_set.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_multiset.h \
-  Core/AutoPtr.h Assignment.h Persistance/Defs.h ./Core/Defs.h \
+  SeedSearcher.h PrefixTreePreprocessor.h Preprocessor.h SequenceDB.h \
+  Alphabet.h Core/AutoPtr.h Assignment.h Persistance/Defs.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bitset \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/istream \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/istream.tcc \
-  HyperGeoCache.h ExtraMath.h
+  HyperGeoCache.h ExtraMath.h Legacy/mathplus.h /usr/include/math.h
 PrefixTreePreprocessor.o: PrefixTreePreprocessor.cpp \
-  PrefixTreePreprocessor.h Preprocessor.h Core/STLHelper.h ./Core/Defs.h \
-  ./Core/Compiler.h /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/string \
+  PrefixTreePreprocessor.h Preprocessor.h Defs.h Core/Defs.h \
+  Core/Compiler.h /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/string \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/c++config.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/os_defines.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stringfwd.h \
@@ -668,12 +795,14 @@ PrefixTreePreprocessor.o: PrefixTreePreprocessor.cpp \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/ostream.tcc \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/locale \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/locale_facets.tcc \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/typeinfo \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/vector \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/typeinfo Core/STLHelper.h \
+  ./Core/Defs.h /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/vector \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_vector.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_bvector.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/vector.tcc \
-  SequenceDB.h Core/Defs.h Alphabet.h \
+  SequenceDB.h Alphabet.h Sequence.h Persistance/Object.h \
+  Persistance/Defs.h ./Core/Defs.h Core/ChunkAllocator.h Core/Defs.h \
+  Core/dlmalloc.h Core/Str.h Cluster.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/map \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_tree.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/cpp_type_traits.h \
@@ -682,11 +811,16 @@ PrefixTreePreprocessor.o: PrefixTreePreprocessor.cpp \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/set \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_set.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_multiset.h \
-  Core/AutoPtr.h Sequence.h PrefixTreeWalker.h Assignment.h \
-  Persistance/Defs.h ./Core/Defs.h \
+  Core/AutoPtr.h PrefixTreeWalker.h Assignment.h Persistance/Defs.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bitset \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/istream \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/istream.tcc
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/istream.tcc \
+  Persistance/IArchive.h Persistance/IRegistry.h Persistance/TextReader.h \
+  Persistance/StreamBuffer.h Persistance/IODefs.h Persistance/TFactory.h \
+  Persistance/Object.h Persistance/Error.h ./Core/AutoPtr.h \
+  Persistance/OArchive.h Persistance/ORegistry.h Persistance/TextWriter.h \
+  DebugLog.h Persistance/TextWriter.h Persistance/AbstractFormat.h \
+  ./Persistance/Defs.h AssignmentFormat.h Persistance/STLPersist.h
 PrefixTreeWalker.o: PrefixTreeWalker.cpp PrefixTreeWalker.h Assignment.h \
   Core/Defs.h Core/Compiler.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/string \
@@ -793,7 +927,9 @@ PrefixTreeWalker.o: PrefixTreeWalker.cpp PrefixTreeWalker.h Assignment.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bitset \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/istream \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/istream.tcc \
-  PrefixTreePreprocessor.h Preprocessor.h SequenceDB.h Alphabet.h \
+  PrefixTreePreprocessor.h Preprocessor.h Defs.h SequenceDB.h Alphabet.h \
+  Sequence.h Persistance/Object.h Persistance/Defs.h \
+  Core/ChunkAllocator.h Core/Defs.h Core/dlmalloc.h Core/Str.h Cluster.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/map \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_tree.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/cpp_type_traits.h \
@@ -802,7 +938,7 @@ PrefixTreeWalker.o: PrefixTreeWalker.cpp PrefixTreeWalker.h Assignment.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/set \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_set.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_multiset.h \
-  Core/AutoPtr.h Sequence.h
+  Core/AutoPtr.h
 RandomProjections.o: RandomProjections.cpp RandomProjections.h \
   Assignment.h Core/Defs.h Core/Compiler.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/string \
@@ -912,243 +1048,11 @@ RandomProjections.o: RandomProjections.cpp RandomProjections.h \
   ExtraMath.h Legacy/RandomGenerator.h Legacy/Multinomial.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/iostream \
   /usr/include/math.h DebugLog.h Persistance/TextWriter.h \
-  Persistance/AbstractFormat.h ./Persistance/Defs.h ./Core/AutoPtr.h
+  Persistance/AbstractFormat.h ./Persistance/Defs.h ./Core/AutoPtr.h \
+  AssignmentFormat.h
 SeedSearcher.o: SeedSearcher.cpp SeedSearcher.h PrefixTreePreprocessor.h \
-  Preprocessor.h Core/STLHelper.h ./Core/Defs.h ./Core/Compiler.h \
+  Preprocessor.h Defs.h Core/Defs.h Core/Compiler.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/string \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/c++config.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/os_defines.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stringfwd.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/char_traits.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/cstring \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/cstddef \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/stddef.h \
-  /usr/include/string.h /usr/include/_ansi.h /usr/include/newlib.h \
-  /usr/include/sys/config.h /usr/include/machine/ieeefp.h \
-  /usr/include/cygwin/config.h /usr/include/sys/reent.h \
-  /usr/include/_ansi.h /usr/include/sys/_types.h /usr/include/sys/lock.h \
-  /usr/include/sys/string.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_algobase.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/climits \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/limits.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/syslimits.h \
-  /usr/include/limits.h /usr/include/features.h /usr/include/sys/cdefs.h \
-  /usr/include/sys/features.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/cstdlib \
-  /usr/include/stdlib.h /usr/include/machine/stdlib.h \
-  /usr/include/alloca.h /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/new \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/exception \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/iosfwd \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/c++locale.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/clocale \
-  /usr/include/locale.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/cstdio \
-  /usr/include/stdio.h /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/stdarg.h \
-  /usr/include/sys/types.h /usr/include/machine/_types.h \
-  /usr/include/machine/types.h /usr/include/cygwin/types.h \
-  /usr/include/sys/sysmacros.h /usr/include/stdint.h \
-  /usr/include/sys/stdio.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/c++io.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/gthr.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/gthr-default.h \
-  /usr/include/pthread.h /usr/include/signal.h /usr/include/sys/signal.h \
-  /usr/include/cygwin/signal.h /usr/include/sched.h /usr/include/time.h \
-  /usr/include/machine/time.h /usr/include/unistd.h \
-  /usr/include/sys/unistd.h /usr/include/getopt.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/cctype \
-  /usr/include/ctype.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/postypes.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/cwchar \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/ctime \
-  /usr/include/wchar.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/functexcept.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/exception_defines.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_pair.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/type_traits.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_iterator_base_types.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_iterator_base_funcs.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/concept_check.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_iterator.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/debug/debug.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/cassert \
-  /usr/include/assert.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/memory \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/allocator.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/c++allocator.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/ext/new_allocator.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_construct.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_uninitialized.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_raw_storage_iter.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/limits \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_function.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/basic_string.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/atomicity.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/atomic_word.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/algorithm \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_algo.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_heap.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_tempbuf.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/basic_string.tcc \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/ostream \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/ios \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/localefwd.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/ios_base.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/locale_classes.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/streambuf \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/streambuf.tcc \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/basic_ios.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/streambuf_iterator.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/locale_facets.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/cwctype \
-  /usr/include/wctype.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/ctype_base.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/ctype_inline.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/codecvt.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/time_members.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/messages_members.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/basic_ios.tcc \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/ostream.tcc \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/locale \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/locale_facets.tcc \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/typeinfo \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/vector \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_vector.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_bvector.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/vector.tcc \
-  SequenceDB.h Core/Defs.h Alphabet.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/map \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_tree.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/cpp_type_traits.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_map.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_multimap.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/set \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_set.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_multiset.h \
-  Core/AutoPtr.h Assignment.h Persistance/Defs.h ./Core/Defs.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bitset \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/istream \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/istream.tcc \
-  DebugLog.h Persistance/TextWriter.h Persistance/AbstractFormat.h \
-  ./Persistance/Defs.h ./Core/AutoPtr.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/iostream
-SequenceDB.o: SequenceDB.cpp Core/Defs.h Core/Compiler.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/string \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/c++config.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/os_defines.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stringfwd.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/char_traits.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/cstring \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/cstddef \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/stddef.h \
-  /usr/include/string.h /usr/include/_ansi.h /usr/include/newlib.h \
-  /usr/include/sys/config.h /usr/include/machine/ieeefp.h \
-  /usr/include/cygwin/config.h /usr/include/sys/reent.h \
-  /usr/include/_ansi.h /usr/include/sys/_types.h /usr/include/sys/lock.h \
-  /usr/include/sys/string.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_algobase.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/climits \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/limits.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/syslimits.h \
-  /usr/include/limits.h /usr/include/features.h /usr/include/sys/cdefs.h \
-  /usr/include/sys/features.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/cstdlib \
-  /usr/include/stdlib.h /usr/include/machine/stdlib.h \
-  /usr/include/alloca.h /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/new \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/exception \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/iosfwd \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/c++locale.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/clocale \
-  /usr/include/locale.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/cstdio \
-  /usr/include/stdio.h /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/stdarg.h \
-  /usr/include/sys/types.h /usr/include/machine/_types.h \
-  /usr/include/machine/types.h /usr/include/cygwin/types.h \
-  /usr/include/sys/sysmacros.h /usr/include/stdint.h \
-  /usr/include/sys/stdio.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/c++io.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/gthr.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/gthr-default.h \
-  /usr/include/pthread.h /usr/include/signal.h /usr/include/sys/signal.h \
-  /usr/include/cygwin/signal.h /usr/include/sched.h /usr/include/time.h \
-  /usr/include/machine/time.h /usr/include/unistd.h \
-  /usr/include/sys/unistd.h /usr/include/getopt.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/cctype \
-  /usr/include/ctype.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/postypes.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/cwchar \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/ctime \
-  /usr/include/wchar.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/functexcept.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/exception_defines.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_pair.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/type_traits.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_iterator_base_types.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_iterator_base_funcs.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/concept_check.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_iterator.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/debug/debug.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/cassert \
-  /usr/include/assert.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/memory \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/allocator.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/c++allocator.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/ext/new_allocator.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_construct.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_uninitialized.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_raw_storage_iter.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/limits \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_function.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/basic_string.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/atomicity.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/atomic_word.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/algorithm \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_algo.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_heap.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_tempbuf.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/basic_string.tcc \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/ostream \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/ios \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/localefwd.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/ios_base.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/locale_classes.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/streambuf \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/streambuf.tcc \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/basic_ios.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/streambuf_iterator.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/locale_facets.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/cwctype \
-  /usr/include/wctype.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/ctype_base.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/ctype_inline.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/codecvt.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/time_members.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/messages_members.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/basic_ios.tcc \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/ostream.tcc \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/locale \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/locale_facets.tcc \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/typeinfo Sequence.h \
-  SequenceDB.h Core/STLHelper.h ./Core/Defs.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/vector \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_vector.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_bvector.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/vector.tcc \
-  Alphabet.h /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/map \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_tree.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/cpp_type_traits.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_map.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_multimap.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/set \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_set.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_multiset.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/fstream \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/istream \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/istream.tcc \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/basic_file.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/fstream.tcc \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/iostream
-StdOptions.o: StdOptions.cpp StdOptions.h SequenceDB.h Core/Defs.h \
-  Core/Compiler.h /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/string \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/c++config.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/os_defines.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stringfwd.h \
@@ -1248,7 +1152,375 @@ StdOptions.o: StdOptions.cpp StdOptions.h SequenceDB.h Core/Defs.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_vector.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_bvector.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/vector.tcc \
-  Alphabet.h /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/map \
+  SequenceDB.h Alphabet.h Sequence.h Persistance/Object.h \
+  Persistance/Defs.h ./Core/Defs.h Core/ChunkAllocator.h Core/Defs.h \
+  Core/dlmalloc.h Core/Str.h Cluster.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/map \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_tree.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/cpp_type_traits.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_map.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_multimap.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/set \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_set.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_multiset.h \
+  Core/AutoPtr.h Assignment.h Persistance/Defs.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bitset \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/istream \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/istream.tcc \
+  PrefixTreeWalker.h DebugLog.h Persistance/TextWriter.h \
+  Persistance/AbstractFormat.h ./Persistance/Defs.h ./Core/AutoPtr.h \
+  AssignmentFormat.h Core/HashTable.h Persistance/StrOutputStream.h \
+  Persistance/OutputStream.h Persistance/StreamBuffer.h \
+  Persistance/IODefs.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/iostream
+Sequence.o: Sequence.cpp Sequence.h Defs.h Core/Defs.h Core/Compiler.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/string \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/c++config.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/os_defines.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stringfwd.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/char_traits.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/cstring \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/cstddef \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/stddef.h \
+  /usr/include/string.h /usr/include/_ansi.h /usr/include/newlib.h \
+  /usr/include/sys/config.h /usr/include/machine/ieeefp.h \
+  /usr/include/cygwin/config.h /usr/include/sys/reent.h \
+  /usr/include/_ansi.h /usr/include/sys/_types.h /usr/include/sys/lock.h \
+  /usr/include/sys/string.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_algobase.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/climits \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/limits.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/syslimits.h \
+  /usr/include/limits.h /usr/include/features.h /usr/include/sys/cdefs.h \
+  /usr/include/sys/features.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/cstdlib \
+  /usr/include/stdlib.h /usr/include/machine/stdlib.h \
+  /usr/include/alloca.h /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/new \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/exception \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/iosfwd \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/c++locale.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/clocale \
+  /usr/include/locale.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/cstdio \
+  /usr/include/stdio.h /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/stdarg.h \
+  /usr/include/sys/types.h /usr/include/machine/_types.h \
+  /usr/include/machine/types.h /usr/include/cygwin/types.h \
+  /usr/include/sys/sysmacros.h /usr/include/stdint.h \
+  /usr/include/sys/stdio.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/c++io.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/gthr.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/gthr-default.h \
+  /usr/include/pthread.h /usr/include/signal.h /usr/include/sys/signal.h \
+  /usr/include/cygwin/signal.h /usr/include/sched.h /usr/include/time.h \
+  /usr/include/machine/time.h /usr/include/unistd.h \
+  /usr/include/sys/unistd.h /usr/include/getopt.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/cctype \
+  /usr/include/ctype.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/postypes.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/cwchar \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/ctime \
+  /usr/include/wchar.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/functexcept.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/exception_defines.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_pair.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/type_traits.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_iterator_base_types.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_iterator_base_funcs.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/concept_check.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_iterator.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/debug/debug.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/cassert \
+  /usr/include/assert.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/memory \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/allocator.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/c++allocator.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/ext/new_allocator.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_construct.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_uninitialized.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_raw_storage_iter.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/limits \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_function.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/basic_string.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/atomicity.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/atomic_word.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/algorithm \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_algo.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_heap.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_tempbuf.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/basic_string.tcc \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/ostream \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/ios \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/localefwd.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/ios_base.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/locale_classes.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/streambuf \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/streambuf.tcc \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/basic_ios.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/streambuf_iterator.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/locale_facets.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/cwctype \
+  /usr/include/wctype.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/ctype_base.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/ctype_inline.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/codecvt.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/time_members.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/messages_members.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/basic_ios.tcc \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/ostream.tcc \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/locale \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/locale_facets.tcc \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/typeinfo \
+  Persistance/Object.h Persistance/Defs.h ./Core/Defs.h \
+  Core/ChunkAllocator.h Core/Defs.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/vector \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_vector.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_bvector.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/vector.tcc \
+  Core/dlmalloc.h Core/Str.h Persistance/OArchive.h \
+  Persistance/ORegistry.h Persistance/Object.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/set \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_tree.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/cpp_type_traits.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_set.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_multiset.h \
+  Persistance/TFactory.h Persistance/Error.h Persistance/TextWriter.h \
+  ./Core/AutoPtr.h Persistance/IArchive.h Persistance/IRegistry.h \
+  Persistance/TextReader.h Persistance/StreamBuffer.h \
+  Persistance/IODefs.h Persistance/STLPersist.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/map \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_map.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_multimap.h
+SequenceDB.o: SequenceDB.cpp Core/Defs.h Core/Compiler.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/string \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/c++config.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/os_defines.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stringfwd.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/char_traits.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/cstring \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/cstddef \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/stddef.h \
+  /usr/include/string.h /usr/include/_ansi.h /usr/include/newlib.h \
+  /usr/include/sys/config.h /usr/include/machine/ieeefp.h \
+  /usr/include/cygwin/config.h /usr/include/sys/reent.h \
+  /usr/include/_ansi.h /usr/include/sys/_types.h /usr/include/sys/lock.h \
+  /usr/include/sys/string.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_algobase.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/climits \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/limits.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/syslimits.h \
+  /usr/include/limits.h /usr/include/features.h /usr/include/sys/cdefs.h \
+  /usr/include/sys/features.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/cstdlib \
+  /usr/include/stdlib.h /usr/include/machine/stdlib.h \
+  /usr/include/alloca.h /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/new \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/exception \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/iosfwd \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/c++locale.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/clocale \
+  /usr/include/locale.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/cstdio \
+  /usr/include/stdio.h /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/stdarg.h \
+  /usr/include/sys/types.h /usr/include/machine/_types.h \
+  /usr/include/machine/types.h /usr/include/cygwin/types.h \
+  /usr/include/sys/sysmacros.h /usr/include/stdint.h \
+  /usr/include/sys/stdio.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/c++io.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/gthr.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/gthr-default.h \
+  /usr/include/pthread.h /usr/include/signal.h /usr/include/sys/signal.h \
+  /usr/include/cygwin/signal.h /usr/include/sched.h /usr/include/time.h \
+  /usr/include/machine/time.h /usr/include/unistd.h \
+  /usr/include/sys/unistd.h /usr/include/getopt.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/cctype \
+  /usr/include/ctype.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/postypes.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/cwchar \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/ctime \
+  /usr/include/wchar.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/functexcept.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/exception_defines.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_pair.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/type_traits.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_iterator_base_types.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_iterator_base_funcs.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/concept_check.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_iterator.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/debug/debug.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/cassert \
+  /usr/include/assert.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/memory \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/allocator.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/c++allocator.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/ext/new_allocator.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_construct.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_uninitialized.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_raw_storage_iter.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/limits \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_function.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/basic_string.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/atomicity.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/atomic_word.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/algorithm \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_algo.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_heap.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_tempbuf.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/basic_string.tcc \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/ostream \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/ios \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/localefwd.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/ios_base.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/locale_classes.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/streambuf \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/streambuf.tcc \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/basic_ios.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/streambuf_iterator.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/locale_facets.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/cwctype \
+  /usr/include/wctype.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/ctype_base.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/ctype_inline.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/codecvt.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/time_members.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/messages_members.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/basic_ios.tcc \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/ostream.tcc \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/locale \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/locale_facets.tcc \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/typeinfo Sequence.h \
+  Defs.h Persistance/Object.h Persistance/Defs.h ./Core/Defs.h \
+  Core/ChunkAllocator.h Core/Defs.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/vector \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_vector.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_bvector.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/vector.tcc \
+  Core/dlmalloc.h Core/Str.h SequenceDB.h Core/STLHelper.h ./Core/Defs.h \
+  Alphabet.h Cluster.h /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/map \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_tree.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/cpp_type_traits.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_map.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_multimap.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/set \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_set.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_multiset.h \
+  Persistance/OArchive.h Persistance/ORegistry.h Persistance/Object.h \
+  Persistance/TFactory.h Persistance/Error.h Persistance/TextWriter.h \
+  ./Core/AutoPtr.h Persistance/IArchive.h Persistance/IRegistry.h \
+  Persistance/TextReader.h Persistance/StreamBuffer.h \
+  Persistance/IODefs.h Persistance/TextReader.h \
+  Persistance/StdInputStream.h Persistance/UnbufferedChannel.h. \
+  Persistance/InputStream.h Persistance/OutputStream.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/istream \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/istream.tcc \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/fstream \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/basic_file.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/fstream.tcc \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/iostream \
+  Persistance/STLPersist.h
+StdOptions.o: StdOptions.cpp StdOptions.h Defs.h Core/Defs.h \
+  Core/Compiler.h /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/string \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/c++config.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/os_defines.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stringfwd.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/char_traits.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/cstring \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/cstddef \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/stddef.h \
+  /usr/include/string.h /usr/include/_ansi.h /usr/include/newlib.h \
+  /usr/include/sys/config.h /usr/include/machine/ieeefp.h \
+  /usr/include/cygwin/config.h /usr/include/sys/reent.h \
+  /usr/include/_ansi.h /usr/include/sys/_types.h /usr/include/sys/lock.h \
+  /usr/include/sys/string.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_algobase.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/climits \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/limits.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/syslimits.h \
+  /usr/include/limits.h /usr/include/features.h /usr/include/sys/cdefs.h \
+  /usr/include/sys/features.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/cstdlib \
+  /usr/include/stdlib.h /usr/include/machine/stdlib.h \
+  /usr/include/alloca.h /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/new \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/exception \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/iosfwd \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/c++locale.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/clocale \
+  /usr/include/locale.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/cstdio \
+  /usr/include/stdio.h /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/stdarg.h \
+  /usr/include/sys/types.h /usr/include/machine/_types.h \
+  /usr/include/machine/types.h /usr/include/cygwin/types.h \
+  /usr/include/sys/sysmacros.h /usr/include/stdint.h \
+  /usr/include/sys/stdio.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/c++io.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/gthr.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/gthr-default.h \
+  /usr/include/pthread.h /usr/include/signal.h /usr/include/sys/signal.h \
+  /usr/include/cygwin/signal.h /usr/include/sched.h /usr/include/time.h \
+  /usr/include/machine/time.h /usr/include/unistd.h \
+  /usr/include/sys/unistd.h /usr/include/getopt.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/cctype \
+  /usr/include/ctype.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/postypes.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/cwchar \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/ctime \
+  /usr/include/wchar.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/functexcept.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/exception_defines.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_pair.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/type_traits.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_iterator_base_types.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_iterator_base_funcs.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/concept_check.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_iterator.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/debug/debug.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/cassert \
+  /usr/include/assert.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/memory \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/allocator.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/c++allocator.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/ext/new_allocator.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_construct.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_uninitialized.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_raw_storage_iter.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/limits \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_function.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/basic_string.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/atomicity.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/atomic_word.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/algorithm \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_algo.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_heap.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_tempbuf.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/basic_string.tcc \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/ostream \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/ios \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/localefwd.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/ios_base.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/locale_classes.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/streambuf \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/streambuf.tcc \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/basic_ios.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/streambuf_iterator.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/locale_facets.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/cwctype \
+  /usr/include/wctype.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/ctype_base.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/ctype_inline.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/codecvt.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/time_members.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/messages_members.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/basic_ios.tcc \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/ostream.tcc \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/locale \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/locale_facets.tcc \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/typeinfo SequenceDB.h \
+  Core/STLHelper.h ./Core/Defs.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/vector \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_vector.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_bvector.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/vector.tcc \
+  Alphabet.h Sequence.h Persistance/Object.h Persistance/Defs.h \
+  ./Core/Defs.h Core/ChunkAllocator.h Core/Defs.h Core/dlmalloc.h \
+  Core/Str.h Cluster.h /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/map \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_tree.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/cpp_type_traits.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_map.h \
@@ -1257,12 +1529,13 @@ StdOptions.o: StdOptions.cpp StdOptions.h SequenceDB.h Core/Defs.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_set.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_multiset.h \
   SeedSearcher.h PrefixTreePreprocessor.h Preprocessor.h Core/AutoPtr.h \
-  Assignment.h Persistance/Defs.h ./Core/Defs.h \
+  Assignment.h Persistance/Defs.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bitset \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/istream \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/istream.tcc \
-  HyperGeoCache.h ExtraMath.h Persistance/TextWriter.h DebugLog.h \
-  Persistance/AbstractFormat.h ./Persistance/Defs.h ./Core/AutoPtr.h
+  AssignmentFormat.h Persistance/AbstractFormat.h ./Persistance/Defs.h \
+  ./Core/AutoPtr.h HyperGeoCache.h ExtraMath.h Persistance/TextWriter.h \
+  DebugLog.h
 main.o: main.cpp SequenceDB.h Core/Defs.h Core/Compiler.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/string \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/c++config.h \
@@ -1364,7 +1637,9 @@ main.o: main.cpp SequenceDB.h Core/Defs.h Core/Compiler.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_vector.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_bvector.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/vector.tcc \
-  Alphabet.h /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/map \
+  Alphabet.h Sequence.h Defs.h Persistance/Object.h Persistance/Defs.h \
+  ./Core/Defs.h Core/ChunkAllocator.h Core/Defs.h Core/dlmalloc.h \
+  Core/Str.h Cluster.h /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/map \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_tree.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/cpp_type_traits.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_map.h \
@@ -1373,16 +1648,23 @@ main.o: main.cpp SequenceDB.h Core/Defs.h Core/Compiler.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_set.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/stl_multiset.h \
   PrefixTreePreprocessor.h Preprocessor.h Core/AutoPtr.h Assignment.h \
-  Persistance/Defs.h ./Core/Defs.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bitset \
+  Persistance/Defs.h /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bitset \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/istream \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/istream.tcc \
-  Sequence.h RandomProjections.h SeedSearcher.h StdOptions.h \
-  HyperGeoCache.h ExtraMath.h Persistance/TextWriter.h DebugLog.h \
-  Persistance/AbstractFormat.h ./Persistance/Defs.h ./Core/AutoPtr.h \
+  RandomProjections.h SeedSearcher.h HyperGeoScore.h HyperGeoCache.h \
+  ExtraMath.h PrefixTreeWalker.h PSSM.h \
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/iostream StdOptions.h \
+  AssignmentFormat.h Persistance/AbstractFormat.h ./Persistance/Defs.h \
+  ./Core/AutoPtr.h Persistance/TextWriter.h DebugLog.h \
   Persistance/StdOutputStream.h Persistance/OutputStream.h \
-  Persistance/StreamBuffer.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/iostream \
+  Persistance/StreamBuffer.h Persistance/IODefs.h \
+  Persistance/UnbufferedChannel.h Persistance/InputStream.h \
+  Persistance/StdInputStream.h Persistance/UnbufferedChannel.h. \
+  Persistance/TFactory.h Persistance/OArchive.h Persistance/ORegistry.h \
+  Persistance/Object.h Persistance/TFactory.h Persistance/Error.h \
+  Persistance/TextWriter.h Persistance/IArchive.h Persistance/IRegistry.h \
+  Persistance/TextReader.h \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/fstream \
   /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin/bits/basic_file.h \
-  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/fstream.tcc
+  /usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/bits/fstream.tcc \
+  Core/dlmalloc.h

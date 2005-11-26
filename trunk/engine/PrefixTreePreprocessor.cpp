@@ -12,131 +12,119 @@
 #include <time.h>
 
 
-USING_TYPE (PrefixTreePreprocessor, NodeRep);
 USING_TYPE (PrefixTreePreprocessor, TreeRep);
+USING_TYPE (PrefixTreePreprocessor, TreeNode);
+USING_TYPE (PrefixTreePreprocessor, TreeNodeRep);
 USING_TYPE (PrefixTreePreprocessor, SeqPositions);
-
-USING_TYPE (Preprocessor, PositionVector);
-USING_TYPE (Preprocessor, PositionIterator);
 
 
 ChunkAllocator <PositionVector> PositionVector::__allocator (4);
 
 
 /*****************************
- * NodeRep
+ * TreeNodeRep
  *****************************/
 
 
 
-class PrefixTreePreprocessor::NodeRep : public Persistance::Object {
+class PrefixTreePreprocessor::TreeNodeRep : public Preprocessor::NodeRep,
+                                            public Persistance::Object 
+{
+   //
+   // tree-building interface
 public:
-   NodeRep (NodeRep* parent, int cardinality) : _cardinality (cardinality),
-                                                _parent (parent) {
-      _children = new NodeRep* [cardinality];
-      for (int i=0 ; i<_cardinality ; i++) {
-         _children [i] = NULL;
-      }
-
-#     if SEED_RESERVE_VECTOR_SPACE_OPTIMIZATION
-         //
-         // optimization (?) we use the size of the parent's _position vector
-         // to hint at our _position vector's approximated size
-         if (parent)
-            _positions.reserve (parent->_positions.size () / _cardinality);
-#     endif
-   }
    //
    // used for serialization
-   inline NodeRep () 
-   : _cardinality (0), _children (NULL), _parent (NULL)   {
-   }
+   inline TreeNodeRep (); 
+   inline TreeNodeRep (TreeNodeRep* parent, int cardinality);
+   virtual ~TreeNodeRep ();
 
-   ~NodeRep () {
-      dispose (false);
-   }
+   //
+   //
+   void dispose (bool isRoot);
 
-   void dispose (bool isRoot) {
-      if (_children) {
-         for (int i=0 ; i<_cardinality ; i++) {
-            if (_children [i]) {
-               _children [i]->dispose (false);
-               delete _children [i];
-            }
-         }
-      }
+   //
+   //
+   inline void addSequencePositions (PositionVector* pos);
+   inline int addSequencePositionsFinish () const;
 
-      delete [] _children;
-      _children = NULL;
-
-      //
-      // free memory of all SeqPositions
-      int n = _positions.size ();
-      for (int i=0 ; i<n ; i++) {
-         _positions [i].dispose (isRoot);
-      }
-      _positions.clear ();
-   }
-
-   void addSequencePositions (PositionVector* pos) {
-      debug_mustbe (pos != NULL);
-      debug_mustbe (!pos->empty ());
-      _positions.push_back (SeqPositions (pos));
-   }
-   int addSequencePositionsFinish () const
-   {
-      return _positions.capacity () - _positions.size ();
-   }
-
-   SeqPositionIterator positionsBySequence () {
-      return SeqPositionIterator (_positions.begin (), _positions.end ());
-   }
-   NodeRep* getCreateChild (int index, bool&wasCreated) {
-      debug_mustbe (index >=0);
-      debug_mustbe (index < _cardinality);
-
-      wasCreated = false;
-      if (_children [index] == NULL) {
-         _children [index] = new NodeRep (this, _cardinality);
-         wasCreated = true;
-      }
-
-      return _children [index];
-   }
-   NodeRep* getChild (int index) {
-      debug_mustbe (index >=0);
-      debug_mustbe (index < _cardinality);
-      return _children [index];
-   }
-   
-   SeqPositions getSeqPositions (SequenceDB::ID id);
+   //
+   //
+   TreeNodeRep* getCreateChild (int index, bool& wasCreated);
+   SeqPositions getSeqPositions (SequenceDB::ID id) const;
 
    void serialize (Persistance::IArchive& in);
    void serialize (Persistance::OArchive& out);
 
 #if SEED_CHUNK_ALLOCATION_OPTIMIZATION
    void* operator new (size_t size) {
-      debug_mustbe (size == sizeof (NodeRep));
+      debug_mustbe (size == sizeof (TreeNodeRep));
       return __allocator.newT ();
    }
    void operator delete(void *p)    {
-      __allocator.deleteT (reinterpret_cast <NodeRep*> (p));
+      __allocator.deleteT (reinterpret_cast <TreeNodeRep*> (p));
    }
 #endif
 
+   //
+   // user-friendly tree-node interface
+public:
+   //
+   // return the maximum number of children a node can have (in this tree)
+   inline int getCardinality () const;
+
+   //
+   // get a child of this node of the half-open range [0..cardinality)
+   inline TreeNodeRep* getChild (int) const;
+   //
+   // get parent of this node
+   inline TreeNodeRep* getParent () const;
+   //
+   // return the depth of this node
+   inline int depth () const;
+
+   //
+   // iterate over positions for this node
+   // ordered by their sequence
+   inline CSeqPositionIterator positionsBySequence () const;
+   inline SeqPositionIterator positionsBySequence ();
+
+   //
+   // ownership belongs to the caller
+   inline AutoPtr <PositionVector> getPositions (SequenceDB::ID) const;
+
+   //
+   // iterate over all positions of a particular sequence in this node
+   inline PositionIterator positionIterator (SequenceDB::ID);
+
+   //
+   // general node interface
+public:
+   //
+   // check if node has any positions for a particular sequence
+   virtual bool hasPositions (SequenceDB::ID) const; 
+   virtual bool hasPositions (const SeqWeightFunction&) const;
+
+   //
+   // returns all the sequences in this node
+   virtual void add2SeqCluster (SequenceDB::Cluster& outSeqInNode) const;
+   virtual void add2SeqClusterPositions (SequenceDB::Cluster& outSeqInNode) const;
+   virtual void add2PosCluster (PosCluster&, Sequence::ID) const;
+
+protected:
    // TODO:
    // maybe save space in the tree by storing the cardinality only in one place
    int _cardinality; 
    SeqPositionVector _positions;
-   NodeRep ** _children;
-   NodeRep* _parent;
+   TreeNodeRep ** _children;
+   TreeNodeRep* _parent;
    
-   static ChunkAllocator <NodeRep> __allocator;
+   static ChunkAllocator <TreeNodeRep> __allocator;
 };
 
 //
 // static instantiation
-ChunkAllocator <NodeRep> PrefixTreePreprocessor::NodeRep::__allocator (4);
+ChunkAllocator <TreeNodeRep> PrefixTreePreprocessor::TreeNodeRep::__allocator (4);
 
 
 
@@ -150,7 +138,7 @@ ChunkAllocator <NodeRep> PrefixTreePreprocessor::NodeRep::__allocator (4);
 
 class PrefixTreePreprocessor::TreeRep : public Persistance::Object{
 public:
-   TreeRep (const SequenceDB* inDb, NodeRep* inRoot, int inDepth)
+   TreeRep (const SequenceDB* inDb, TreeNodeRep* inRoot, int inDepth)
       : _depth (inDepth), _root (inRoot), _db (inDb)
    {
    }
@@ -169,7 +157,7 @@ public:
    void serialize (Persistance::OArchive& out);
 
    int _depth;
-   NodeRep* _root;
+   TreeNodeRep* _root;
    const SequenceDB* _db;
 };
 
@@ -204,18 +192,18 @@ public:
       _positions [index]->push_back (pos);
    }
 
-   void finish (NodeRep* parent) {
+   void finish (TreeNodeRep* parent) {
       _spaceLostInVectors += parent->addSequencePositionsFinish ();
    }
 
-   void install (NodeRep* parent) {
+   void install (TreeNodeRep* parent) {
       //
       //
       for (int i=0 ; i < _cardinality ; i++) {
          if (_positions [i]->size () > 0) {
             
             bool wasCreated;
-            NodeRep* child = parent->getCreateChild (i, wasCreated);
+            TreeNodeRep* child = parent->getCreateChild (i, wasCreated);
             child->addSequencePositions (_positions [i]);
 
             int vectorSize = _positions [i]->size ();
@@ -278,7 +266,7 @@ private:
 static void buildTree (PositionsBuilder& builder,
                        const SequenceDB::Cluster* positivelyLabeled, 
                        const AlphabetCode& code,
-                       NodeRep* parent,
+                       TreeNodeRep* parent,
                        int currentDepth, 
                        int maxDepth) {
    if (currentDepth >= maxDepth)
@@ -309,7 +297,7 @@ static void buildTree (PositionsBuilder& builder,
          //
          // we do not continue to build the tree from nodes
          // that do not have any positively labeled positions
-         PrefixTreePreprocessor::Node node (parent);
+         PrefixTreePreprocessor::TreeNode node (parent);
          if (!node.hasPositions (*positivelyLabeled)) {
             return;
          }
@@ -325,7 +313,7 @@ static void buildTree (PositionsBuilder& builder,
    for (; seqIt.hasNext () ; seqIt.next ()) {
       //
       //
-      Preprocessor::PositionIterator it = seqIt->iterator ();
+      PositionIterator it = seqIt->iterator ();
       for (; it.hasNext () ; it.next ()) {
          //
          // decide which child this position belongs to according
@@ -372,7 +360,7 @@ static void buildTree (PositionsBuilder& builder,
    // finished going through all the sequences of the parent
    // now continue to build the tree for all the children
    for (int i=0 ; i < code.cardinality () ; i++) {
-      NodeRep* child = parent->getChild (i);
+      TreeNodeRep* child = parent->getChild (i);
       if (child == NULL) continue;
 
       buildTree (builder, positivelyLabeled, code, child, currentDepth+1, maxDepth);
@@ -391,7 +379,7 @@ static TreeRep* build(const SequenceDB::Cluster* positivelyLabeled,
       db->alphabetCode ().cardinality ();
 
    int numberOfPositions = 0;
-   NodeRep* root = new NodeRep (NULL, cardinality);
+   TreeNodeRep* root = new TreeNodeRep (NULL, cardinality);
    SequenceDB::SequenceIterator it = db->sequenceIterator ();
    for (;it.hasNext () ; it.next ()) {
       //
@@ -425,15 +413,15 @@ static TreeRep* build(const SequenceDB::Cluster* positivelyLabeled,
 
    time (&finish);
    int totalBytes =  numberOfPositions * sizeof (Position) +
-                     builder.numOfNodes () * sizeof (NodeRep) +
-                     cardinality * sizeof (NodeRep*) * builder.numOfNodes () + // child arrays
+                     builder.numOfNodes () * sizeof (TreeNodeRep) +
+                     cardinality * sizeof (TreeNodeRep*) * builder.numOfNodes () + // child arrays
                      builder.numOfVectors () * sizeof (PositionVector) + 
                      builder.sizeInVectors () * sizeof (Position*) + 
                      builder.spaceLostInVectors () * sizeof (Position*);
                      
    DLOG << "PrefixTreePreprocessor created: (" << (finish - start) << " seconds)" << DLOG.EOL ()
           << numberOfPositions << " Position objects each of " << sizeof (Position) << " Bytes." << DLOG.EOL ()
-          << builder.numOfNodes () << " Node objects each of " << sizeof (NodeRep) << " Bytes." << DLOG.EOL ()
+          << builder.numOfNodes () << " Node objects each of " << sizeof (TreeNodeRep) << " Bytes." << DLOG.EOL ()
           << builder.numOfVectors () << " PositionVector objects each of " << sizeof (PositionVector) << " Bytes." << DLOG.EOL ()
           << builder.sizeInVectors () << " total positions in PositionVectors" << DLOG.EOL ()
           << builder.spaceLostInVectors () << " positions lost in PositionVectors capacity" << DLOG.EOL ()
@@ -456,6 +444,8 @@ TreeRep* PrefixTreePreprocessor::build (const SequenceDB::Cluster& positivelyLab
 {
    return ::build (&positivelyLabeled, db, depth);
 }
+
+
 
 
 
@@ -502,7 +492,7 @@ SeqPositions& SeqPositions::operator = (const SeqPositions& pos)
    return *this;
 }
 
-Preprocessor::PositionIterator SeqPositions::iterator ()
+PositionIterator SeqPositions::iterator ()
 {
    if (_positions == NULL) {
       //
@@ -514,6 +504,20 @@ Preprocessor::PositionIterator SeqPositions::iterator ()
    }
 
    return PositionIterator (_positions->begin (), _positions->end ());
+}
+
+CPositionIterator SeqPositions::iterator () const
+{
+   if (_positions == NULL) {
+      //
+      // this is necessary, because sometimes an empty SeqPositions is created
+      // and an iterator is wanted, such as when a vector of nodes is being
+      // searched for all positions in a specific sequence
+      // and one of the nodes does not have such a sequence
+      return CPositionIterator ();
+   }
+
+   return CPositionIterator (_positions->begin (), _positions->end ());
 }
 
 const PositionVector* SeqPositions::positions () const
@@ -569,14 +573,22 @@ PrefixTreePreprocessor::~PrefixTreePreprocessor ()
 }
 
 
+TreeNodeRep* PrefixTreePreprocessor::getRoot () const
+{
+   return _rep->_root;
+}
+
+
 //
 // returns true iff the sequence has at least one position which corresponds
 // to the given assignment
-bool PrefixTreePreprocessor::hasAssignment (SequenceDB::ID id, const Assignment& assg)
+bool PrefixTreePreprocessor::hasAssignment (SequenceDB::ID id, 
+                                            const Assignment& assg)  const
 {
-   PrefixTreeWalker::Nodes nodes;
-   nodes.addAssignmentNodes (*this, assg);
-   PrefixTreeWalker::NodeIterator it (nodes.iterator ());
+   NodeCluster cluster;
+   add2Cluster (cluster, assg);
+
+   NodeIterator it (cluster.iterator ());
    for (; it.hasNext (); it.next ()) {
       Node node (it.get ());
       if (node.hasPositions (id))
@@ -589,25 +601,25 @@ bool PrefixTreePreprocessor::hasAssignment (SequenceDB::ID id, const Assignment&
 //
 // iterate over all sequences that have at least one position which corresponds 
 // to the given assignment
-Preprocessor::SequenceVector*  
-PrefixTreePreprocessor::getSequences (const Assignment& assg)
+AutoPtr <SequenceVector>
+PrefixTreePreprocessor::getSequences (const Assignment& assg)  const
 {
-   PrefixTreeWalker::Nodes nodes;
-   nodes.addAssignmentNodes (*this, assg);
-   return nodes.sequences ();
+   NodeCluster cluster;
+   add2Cluster (cluster, assg);
+   return cluster.sequences ();
 }
 
 
 
 //
 // iterate over all sequences
-Preprocessor::SequenceVector*
-PrefixTreePreprocessor::getSequences ()
+AutoPtr <SequenceVector>
+PrefixTreePreprocessor::getSequences ()  const
 {
    //
    // here we have to copy the vector provided by SequenceDB,
    // into a new vector, which contains exactly the same pointers to Sequnces
-   return createNewVector <Preprocessor::SequenceVector> (
+   return createNewVector <SequenceVector> (
 	  _rep->_db->size (),
 	  _rep->_db->sequences ().begin (),
 	  _rep->_db->sequences ().end ()
@@ -616,26 +628,22 @@ PrefixTreePreprocessor::getSequences ()
 
 //
 // iterate over all positions that correspond to an assignment on a given sequence
-Preprocessor::PositionVector* 
+AutoPtr <PositionVector> 
 PrefixTreePreprocessor::getPositions (SequenceDB::ID id, 
-                                      const Assignment& assg)
+                                      const Assignment& assg)  const
 {
-   PrefixTreeWalker::Nodes nodes;
-   nodes.addAssignmentNodes (*this, assg);
-   return nodes.positions (id);
+   NodeCluster cluster;
+   add2Cluster (cluster, assg);
+   return cluster.positions (id);
 }
 
-int PrefixTreePreprocessor::minAssignmentSize ()
+int PrefixTreePreprocessor::minAssignmentSize ()  const
 {
-   //
-   // TODO: check is this exact?
-   return 1;
+   return 0;
 }
 
-int PrefixTreePreprocessor::maxAssignmentSize ()
+int PrefixTreePreprocessor::maxAssignmentSize () const
 {
-   //
-   // TODO: check is this exact?
    return _rep->_depth;
 }
 
@@ -650,7 +658,7 @@ int PrefixTreePreprocessor::getDepth () const
 
 
 /*****************************
- * NodeRep
+ * TreeNodeRep
  *****************************/
 
 //
@@ -685,7 +693,7 @@ private:
 
 };
 
-SeqPositions PrefixTreePreprocessor::NodeRep::getSeqPositions (SequenceDB::ID id)
+SeqPositions TreeNodeRep::getSeqPositions (SequenceDB::ID id) const
 {
 
    //
@@ -703,26 +711,170 @@ SeqPositions PrefixTreePreprocessor::NodeRep::getSeqPositions (SequenceDB::ID id
    return result? *_found : SeqPositions ();
 }
 
-/*****************************
- * Node
- *****************************/
 
-int PrefixTreePreprocessor::Node::getCardinality ()
+
+TreeNodeRep::TreeNodeRep (TreeNodeRep* parent, 
+                          int cardinality) 
+: _cardinality (cardinality), _parent (parent) 
 {
-   return _rep->_cardinality;
+   _children = new TreeNodeRep* [cardinality];
+   for (int i=0 ; i<_cardinality ; i++) {
+      _children [i] = NULL;
+   }
+   
+#     if SEED_RESERVE_VECTOR_SPACE_OPTIMIZATION
+      //
+      // optimization (?) we use the size of the parent's _position vector
+      // to hint at our _position vector's approximated size
+      if (parent)
+         _positions.reserve (parent->_positions.size () / _cardinality);
+#     endif
 }
 
-NodeRep* PrefixTreePreprocessor::Node::getChild (int index)
+//
+// used for serialization
+TreeNodeRep::TreeNodeRep () 
+: _cardinality (0), _children (NULL), _parent (NULL)   
 {
-   return _rep->getChild (index);
 }
 
-NodeRep* PrefixTreePreprocessor::Node::getParent ()
+TreeNodeRep::~TreeNodeRep () 
 {
-   return _rep->_parent;
+   dispose (false);
 }
 
-int PrefixTreePreprocessor::Node::depth ()
+void TreeNodeRep::dispose (bool isRoot) 
+{
+   if (_children) {
+      for (int i=0 ; i<_cardinality ; i++) {
+         if (_children [i]) {
+            _children [i]->dispose (false);
+            delete _children [i];
+         }
+      }
+   }
+
+   delete [] _children;
+   _children = NULL;
+
+   //
+   // free memory of all SeqPositions
+   int n = _positions.size ();
+   for (int i=0 ; i<n ; i++) {
+      _positions [i].dispose (isRoot);
+   }
+   _positions.clear ();
+}
+
+void TreeNodeRep::addSequencePositions (PositionVector* pos) 
+{
+   debug_mustbe (pos != NULL);
+   debug_mustbe (!pos->empty ());
+   _positions.push_back (SeqPositions (pos));
+}
+
+int TreeNodeRep::addSequencePositionsFinish () const
+{
+   return _positions.capacity () - _positions.size ();
+}
+
+PrefixTreePreprocessor::CSeqPositionIterator TreeNodeRep::
+   positionsBySequence ()  const
+{
+   return CSeqPositionIterator (_positions.begin (), _positions.end ());
+}
+
+PrefixTreePreprocessor::SeqPositionIterator TreeNodeRep::
+   positionsBySequence ()  
+{
+   return SeqPositionIterator (_positions.begin (), _positions.end ());
+}
+
+TreeNodeRep* TreeNodeRep::getCreateChild (int index, bool&wasCreated) 
+{
+   debug_mustbe (index >=0);
+   debug_mustbe (index < _cardinality);
+
+   wasCreated = false;
+   if (_children [index] == NULL) {
+      _children [index] = new TreeNodeRep (this, _cardinality);
+      wasCreated = true;
+   }
+
+   return _children [index];
+}
+
+TreeNodeRep* TreeNodeRep::getChild (int index) const
+{
+   debug_mustbe (index >=0);
+   debug_mustbe (index < _cardinality);
+   return _children [index];
+}
+
+//
+// check if node has any positions for a particular sequence
+bool TreeNodeRep::hasPositions (SequenceDB::ID id) const
+{
+   return !getSeqPositions (id).empty ();
+}
+
+bool TreeNodeRep::hasPositions (const SeqWeightFunction& wf) const
+{
+   CSeqPositionIterator it (positionsBySequence ());
+   for (; it.hasNext () ; it.next ()) {
+      if (wf.isPositive (*it->sequence ()))
+         return true;
+   }
+
+   return false;
+}
+
+//
+// returns all the sequences in this node
+void TreeNodeRep::add2SeqCluster (SequenceDB::Cluster& outSeqInNode) const
+{
+   CSeqPositionIterator it (positionsBySequence ());
+   for (; it.hasNext () ; it.next ()) {
+      outSeqInNode.addSequence (it->sequence ());
+   }
+}
+
+void TreeNodeRep::add2SeqClusterPositions (SequenceDB::Cluster& outSeqInNode) const
+{
+   CSeqPositionIterator it (positionsBySequence ());
+   for (; it.hasNext () ; it.next ()) {
+      outSeqInNode.addSequence (it->sequence ());
+      
+      CPositionIterator posIt (it->iterator ());
+      PosCluster& posCluster = 
+         outSeqInNode.getCreatePositions (it->sequence ());
+      for (; posIt.hasNext () ; posIt.next ()) {
+         posCluster.addPosition (*posIt);
+      }
+   }
+}
+
+void TreeNodeRep::add2PosCluster (PosCluster& posCluster, Sequence::ID id) const
+{
+   PositionIterator posIt (getSeqPositions (id).iterator ());
+   for (; posIt.hasNext () ; posIt.next ()) {
+      posCluster.addPosition (*posIt);
+   }
+}
+
+
+
+int TreeNodeRep::getCardinality () const
+{
+   return _cardinality;
+}
+
+TreeNodeRep* TreeNodeRep::getParent () const
+{
+   return _parent;
+}
+
+int TreeNodeRep::depth () const
 {
    //
    // TODO: not implemented (is it really necessary?)
@@ -731,63 +883,82 @@ int PrefixTreePreprocessor::Node::depth ()
 }
 
 //
+// ownership belongs to the caller
+AutoPtr <PositionVector> 
+   TreeNodeRep::getPositions (SequenceDB::ID id) const
+{
+   const PositionVector* myVector = getSeqPositions (id).positions ();
+   return new PositionVector (*myVector);
+}
+
+//
+// iterate over all positions of a particular sequence in this node
+PositionIterator 
+PrefixTreePreprocessor::TreeNodeRep::positionIterator (SequenceDB::ID id)
+{
+   return getSeqPositions (id).iterator ();
+}
+
+
+
+
+/*****************************
+ * Node
+ *****************************/
+
+TreeNode::TreeNode (TreeNodeRep* in) : _rep (in), Node (in) {
+}
+
+int PrefixTreePreprocessor::TreeNode::getCardinality ()
+{
+   return _rep->getCardinality ();
+}
+
+TreeNodeRep* PrefixTreePreprocessor::TreeNode::getChild (int index)
+{
+   return _rep->getChild (index);
+}
+
+TreeNodeRep* PrefixTreePreprocessor::TreeNode::getParent ()
+{
+   return _rep->getParent ();
+}
+
+int PrefixTreePreprocessor::TreeNode::depth ()
+{
+   return _rep->depth ();
+}
+
+//
 // iterate over positions for this node
 // ordered by their sequence
 PrefixTreePreprocessor::SeqPositionIterator 
-PrefixTreePreprocessor::Node::positionsBySequence ()
+PrefixTreePreprocessor::TreeNode::positionsBySequence ()
 {
    return _rep->positionsBySequence ();
 }
 
 //
 // ownership belongs to the caller
-PositionVector* PrefixTreePreprocessor::Node::getPositions (SequenceDB::ID id)
+AutoPtr <PositionVector> PrefixTreePreprocessor::TreeNode::
+   getPositions (SequenceDB::ID id)
 {
-   return new PositionVector (*_rep->getSeqPositions (id).positions ());
+   return _rep->getPositions (id);
 }
 
 //
 // iterate over all positions of a particular sequence in this node
-PositionIterator 
-PrefixTreePreprocessor::Node::positionIterator (SequenceDB::ID id)
+PositionIterator PrefixTreePreprocessor::TreeNode::
+   positionIterator (SequenceDB::ID id)
 {
-   return _rep->getSeqPositions (id).iterator ();
+   return _rep->positionIterator (id);
 }
 
-//
-// check if node has any positions for a particular sequence
-bool PrefixTreePreprocessor::Node::hasPositions (SequenceDB::ID id) const
-{
-   return !_rep->getSeqPositions (id).empty ();
-}
 
-bool PrefixTreePreprocessor::Node::hasPositions (const SeqCluster& cluster) const
-{
-   SeqPositionIterator it (_rep->positionsBySequence ());
-   for (; it.hasNext () ; it.next ()) {
-      if (cluster.hasSequence (it->sequence ()))
-         return true;
-   }
 
-   return false;
-}
 
-NodeRep* PrefixTreePreprocessor::getRoot () const
-{
-   return _rep->_root;
-}
 
-//
-// returns all the sequences in this node
-void PrefixTreePreprocessor::Node::
-   getCluster (SequenceDB::Cluster& outSeqInNode) const
-{
-   outSeqInNode.clear ();
-   SeqPositionIterator it (_rep->positionsBySequence ());
-   for (; it.hasNext () ; it.next ()) {
-      outSeqInNode.addSequence (it->sequence ());
-   }
-}
+
 
 
 
@@ -818,7 +989,7 @@ void PrefixTreePreprocessor::TreeRep::serialize (Persistance::IArchive& in)
 
 
 
-void PrefixTreePreprocessor::NodeRep::serialize (Persistance::OArchive& out)
+void PrefixTreePreprocessor::TreeNodeRep::serialize (Persistance::OArchive& out)
 {
    out << _cardinality; 
  
@@ -831,12 +1002,12 @@ void PrefixTreePreprocessor::NodeRep::serialize (Persistance::OArchive& out)
    out.registerObject (_parent, false);
 }
 
-void PrefixTreePreprocessor::NodeRep::serialize (Persistance::IArchive& in)
+void PrefixTreePreprocessor::TreeNodeRep::serialize (Persistance::IArchive& in)
 {
    in >> _cardinality; 
    in >> ISTL <SeqPositionVector> (_positions);
 
-   _children = new NodeRep* [_cardinality];
+   _children = new TreeNodeRep* [_cardinality];
    for (int i=0 ; i<_cardinality ; i++)
       in.registerObject (_children [i]);
 
@@ -873,10 +1044,88 @@ void PrefixTreePreprocessor::serialize (Persistance::OArchive& out)
 void PrefixTreePreprocessor::createFactories (TFactoryList& factories)
 {
    new TFactory <TreeRep> (&factories);
-   new TFactory <NodeRep> (&factories);
+   new TFactory <TreeNodeRep> (&factories);
 }
 
 
 
 
 
+
+/********************
+ * NodeCluster
+ ********************/
+
+//
+//
+//
+
+static void rec_addAssignmentNodes (int depth,
+                                int desiredDepth,
+                                int childIndex,
+                                Preprocessor::NodeCluster& nodes,
+                                PrefixTreePreprocessor::TreeNodeRep* inNode,
+                                const Assignment& assg,
+                                Assignment& path)
+
+{
+   if (inNode == NULL)
+      return;
+
+   const Assignment::Position& thisPosition = assg [depth -1];
+   if (thisPosition.strategy () == Assignment::together) {
+      //
+      // this means that we got here with 'together' strategy
+      // so we keep the exact same positions in the feature
+      path.setPosition (depth - 1, thisPosition);
+   }
+   else {
+      debug_mustbe (thisPosition.strategy () == Assignment::discrete);
+      //
+      // this means that the exact code of this depth is important
+      path.setPosition (depth -1, 
+         Assignment::Position (childIndex, Assignment::discrete)); 
+   }
+
+   if (depth == desiredDepth) {
+      nodes.addNode (Preprocessor::AssgNodePair (inNode, path));
+      //
+      // there is no need to go further down the tree
+      // because no new positions can be found further down (this is a prefix tree)
+      return;
+   }
+
+   PrefixTreePreprocessor::TreeNode node (inNode);
+   Assignment::PositionIterator it (assg [depth]);
+   for (; it.hasNext () ; it.next ()) {
+      int nodeIndex = it.get ();
+      rec_addAssignmentNodes (depth+1, 
+                              desiredDepth,
+                              nodeIndex,
+                              nodes, 
+                              node.getChild (nodeIndex), 
+                              assg,
+                              path);
+   }
+}
+
+void PrefixTreePreprocessor::add2Cluster (NodeCluster& cluster, 
+                                          const Assignment& assg)  const
+{
+   if (assg.length () <= 0)
+      return;
+
+   Assignment path;
+   TreeNode node (this->getRoot ());
+   Assignment::PositionIterator it (assg [0]);
+   for (; it.hasNext () ; it.next ()) {
+      int nodeIndex = it.get ();
+      rec_addAssignmentNodes (1,                         // starting depth
+                              assg.length (),            // desired depth
+                              nodeIndex,
+                              cluster,                     // NodeVector
+                              node.getChild (nodeIndex), // starting node
+                              assg,                      // the assignment
+                              path);
+   }
+}

@@ -6,17 +6,17 @@
 
 class	StringDefs {
 public:
-   typedef size_t Size;
+   typedef int Size;
    typedef int Index;
    
    enum {
-      badIndex= (size_t)-1
+      badIndex= (Index)-1
    };
    static bool valid(Index index) {
       return index!=badIndex;
    }
    
-   class	IndexOutOfBounds : public BaseException {};
+   class IndexOutOfBounds : public BaseException {};
 };
 
 
@@ -27,9 +27,12 @@ public:
    typedef char Char;
    
    //
-   // its not really safe to build an str from a std::string because it is likely
+   // its not really safe to build an str from a std::string 
+   // because it is likely
    // to destroy its sequence, this is why this ctor is explicit
-   explicit Str (const std::string& in) : mData ((char*) in.c_str ()), mLength (in.size ()) {
+   explicit Str (const std::string& in) 
+     : mData ((char*) in.c_str ()), mLength (in.size ()) 
+   {
    }
    Str(const char* in= 0);
    Str(const Str&);
@@ -61,7 +64,7 @@ public:
    bool empty() const {
       return mLength==0;
    }
-   void getChars(char* inDest, size_t inDestSize) const;
+   void getChars(char* inDest, Size inDestSize) const;
    // Copy my data to 'inDest' up to 'inDestSize' bytes
    // without the trailing '\0'
    
@@ -73,7 +76,7 @@ public:
       // Use getCString() when you need to convert to c-style string.
       return mData;
    }
-   void getCString(char* inDest, size_t inDestSize) const;
+   void getCString(char* inDest, Size inDestSize) const;
    // Copy my data and trailing '\0' to 'inDest' up to 'inDestSize' bytes.
    
    Str substring(Index inStart, Index inEnd) const;
@@ -140,10 +143,6 @@ public:
    StrBuffer(const Str& in1, const Str& in2);
    StrBuffer(const Str& in1, const Str& in2, const Str& in3);
    StrBuffer(const Str& in1, const Str& in2, const Str& in3, const Str& in4);
-
-   inline operator Str () const {
-      return Str (mData, 0 , mLength);
-   }
    
    void set(const Str& in);
    
@@ -184,7 +183,7 @@ public:
       return getCString();
    }
 
-   void getCString(char* inDest, size_t inDestSize) const {
+   void getCString(char* inDest, Size inDestSize) const {
       Str::getCString(inDest, inDestSize);
    }
       
@@ -239,3 +238,8 @@ inline bool operator >= (const Str& a, const Str& b) {
 }
 
 #endif
+
+
+
+
+

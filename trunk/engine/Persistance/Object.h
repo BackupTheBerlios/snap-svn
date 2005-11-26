@@ -57,3 +57,10 @@ struct Manipulator {
 }; // Persistance
 
 #endif // _Persistance_Object_h
+
+
+
+
+
+
+

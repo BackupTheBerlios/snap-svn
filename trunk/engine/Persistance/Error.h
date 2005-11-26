@@ -52,3 +52,10 @@ struct Error {
 }; // namespace Persistance
 
 #endif // _Persistance_Error_h
+
+
+
+
+
+
+

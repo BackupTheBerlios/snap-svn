@@ -2,6 +2,8 @@
 #include "SequenceDB.h"
 #include "Legacy/mathplus.h"
 
+#include <limits.h>
+
 
 //
 // SequenceComparator
@@ -166,6 +168,29 @@ const PosCluster* SeqCluster::getPositions (ConstIterator& it) const
    return it.getImpl ().getImpl ()->second;
 }
 
+bool SeqCluster::hasPositions (Sequence::ID id) const
+{
+   const PosCluster* pos = getPositions (id);
+   return (pos)? !pos->empty () : false;
+}
+bool SeqCluster::hasPositions (Iterator& it) const
+{
+   const PosCluster* pos = getPositions (it);
+   return (pos)? !pos->empty () : false;
+}
+
+bool SeqCluster::hasPositions (ConstIterator& it) const
+{
+   const PosCluster* pos = getPositions (it);
+   return (pos)? !pos->empty () : false;
+}
+
+bool SeqCluster::hasPositions (const Sequence* seq) const
+{
+   const PosCluster* pos = getPositions (seq);
+   return (pos)? !pos->empty () : false;
+}
+
 
 void SeqCluster::intersect (
                      const SeqCluster& a, 
@@ -307,6 +332,22 @@ int SeqCluster::countPositions () const
    return count;
 }
 
+void SeqCluster::addPos2Vector (PositionVector& out) const
+{
+   perform (AddPositions (out));
+}
+void SeqCluster::addPos2Vector (PositionVector& out, Sequence::ID id) const
+{
+   getPositions (id)->add2Vector (out);
+}
+
+void SeqCluster::addSeq2Vector (SequenceVector& out) const
+{
+   perform (AddSequences (out));
+}
+
+
+
 
 
 
@@ -323,46 +364,56 @@ void PosCluster::unify (const PosCluster& in)
       _set.insert (*it);
 }
 
-void PosCluster::addPosition (const Position* in)
+bool PosCluster::addPosition (const Position* in)
 {
-   _set.insert (in);
+   bool success = 
+      _set.insert (in).second;
+
+   return success;
 }
 
 void PosCluster::removePosition (const Position* in)
 {
-   debug_only (
-      int result = _set.erase (in);
-      debug_mustbe (result == 1);
-   );
+   int result = _set.erase (in);
+   debug_mustbe (result == 1);
 }
 
-void PosCluster::removeOverlaps (int positionDistance)
+int PosCluster::removeOverlaps (int positionDistance)
 {
    debug_mustbe (positionDistance > 0);
-   if (size () <= 0)
-      return;
+   if (size () <= 1)
+      return 0;
+
+   int lastStartPosition = INT_MAX;
 
    //
-   // we remove all the overlaps by starting at a position
-   // and removing all later positions that overlap with it.
+   // greedy algorithm - 
+   // (1) the positions are ordered by starting positions
+   // (2) go from the end of the list to the beginning,
+   //       adding a position iff it does not overlap
    //
-   // TODO: this is not the best way to remove overlaps
-   // there exists an algorithm that minimizes the number of removed positions
-   // to get no overlaps. maybe we should find/implement this algorithm...
+   // same as the known activity-selection problem.
+   // this algorithm yields an optimal solution
+   // 
    Vec <const Position*> positions;
-   PosCluster::Iterator posIt (iterator ());
-   for (int lastPosition = -1; posIt.hasNext () ; posIt.next ()) {
-      int currentPosition = (*posIt)->position ();
-      if (currentPosition <= lastPosition) {
+   PositionSet::reverse_iterator revIt = _set.rbegin();
+   for (; revIt != _set.rend () ; revIt++) {
+      //
+      //
+      const int currentPosition = (*revIt)->position ();
+      const int currentFinishPosition = currentPosition + positionDistance;
+      //
+      //
+      if (currentFinishPosition > lastStartPosition) {
          //
          // this is an overlap, we should remove this position
-         positions.push_back ((*posIt));
+         positions.push_back ((*revIt));
       }
       else {
          //
          // we are keeping this position, we are not keeping any other positions
          // that start before the feature starting here ends
-         lastPosition = currentPosition + positionDistance;
+         lastStartPosition = currentPosition;
       }
    }
 
@@ -373,14 +424,26 @@ void PosCluster::removeOverlaps (int positionDistance)
    for (int i=0 ; i<size ; i++) {
       removePosition (positions [i]);
    }
-   //
-   // now we clear the vector for the next iteration
-   positions.clear ();
 
    //
    // that's it, we have removed all overlaps!!!
    debug_mustbe (this->size () >= 1);
-
+   return size;
 }
+
+void PosCluster::add2Vector (PositionVector& out) const
+{
+   CIterator it (iterator ());
+   for (; it.hasNext () ; it.next ()) {
+      out.push_back (*it);
+   }
+}
+
+
+
+
+
+
+
 
 

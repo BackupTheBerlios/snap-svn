@@ -35,24 +35,6 @@ Package=<4>
 
 ###############################################################################
 
-Project: "Person1"=.\Examples\PersistantPerson\Person1.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-    Begin Project Dependency
-    Project_Dep_Name Persistance
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name Core
-    End Project Dependency
-}}}
-
-###############################################################################
-
 Project: "SeedSearcher"=.\SeedSearcher.dsp - Package Owner=<4>
 
 Package=<5>
@@ -76,22 +58,6 @@ Package=<4>
 ###############################################################################
 
 Project: "Test1"=..\Test1\Test1.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-    begin source code control
-    "$/SeedSearcher", ECAAAAAA
-    .
-    end source code control
-}}}
-
-Package=<4>
-{{{
-}}}
-
-###############################################################################
-
-Project: "old"=..\old\old.dsp - Package Owner=<4>
 
 Package=<5>
 {{{

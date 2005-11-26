@@ -8,35 +8,81 @@ class AssignmentWriter;
 
 class SeedSearcher {
 public:
+   //
+   // this class is used to test the correctness of SeedSearcher.
+   // the score function, by recording the score parameters
+   // for a feature, used for later printing.
+   struct ScoreParameters {
+      virtual ~ScoreParameters () {
+      }
+      virtual void dispose () {
+         delete this;
+      }
+   };
+
+   typedef SeqWeightFunction WeightFunction;
+
+
+
    class ScoreFunction {
    //
    // this class represents a scoring scheme for features
-   // TODO: the bigger the score, the better. right?
+   // the smaller (more negative) the score, the better.
    public:
      virtual ~ScoreFunction () {
      }
 
+     //
+     // if 'parameters' is NULL, do not return ScoreParameters.
      virtual double score (const Assignment& feature,
                            const Assignment& projection,
-                           const SequenceDB::Cluster& containingFeature // k
+                           const SequenceDB::Cluster& containingFeature, // k
+                           ScoreParameters** parameters
                            ) = 0;
+
+     //
+     // print the score parameters 
+     virtual void writeAsText (Persistance::TextWriter&, const ScoreParameters*) = 0;
    };
 
    struct Feature {
       //
       // 
    public:
-      Feature () : _assg (NULL), _cluster (NULL), _score (0) {
+      Feature () : _assg (NULL), _cluster (NULL), _params (0), _score (0) {
       }
-      Feature (Assignment* assg, SequenceDB::Cluster* cluster, double score)
-         : _assg(assg), _cluster (cluster), _score (score) {
+      Feature (Assignment* assg, 
+               SequenceDB::Cluster* cluster, 
+               ScoreParameters* params,
+               double score)
+         : _assg(assg), _cluster (cluster), _params (params), _score (score) 
+      {
       }
+
+      void dispose () {
+         delete _assg;
+         delete _cluster;
+         if (_params) 
+            _params->dispose ();
+      }
+
+      struct Owner {
+	      inline static void acquire(Feature*) {
+	      }
+ 	      inline static void release(Feature* ptr) {
+ 		      if (ptr) ptr->dispose ();
+ 	      }
+      };
 
       Assignment* _assg;
       SequenceDB::Cluster* _cluster;
+      ScoreParameters* _params;
       double _score;
    };
-   
+   //
+   // CORBA notation used here... :-)
+   typedef Feature* Feature_ptr;
+   typedef AutoPtr <Feature, Feature::Owner> Feature_var;
 
 
    class BestFeatures {
@@ -50,9 +96,7 @@ public:
 
       //
       // takes ownership of Assignment & Cluster
-      virtual bool add (AutoPtr <Assignment>,
-                        AutoPtr <SequenceDB::Cluster>,
-                        double score) =0;
+      virtual bool add (Feature_var feature) =0;
 
       virtual int size () const = 0;
       virtual const Feature& get (int) const = 0;
@@ -77,14 +121,14 @@ public:
    static int prefixTreeSearch (
          PrefixTreePreprocessor& tree,       // where to search
          const Assignment& projection,       // how to climb down the tree
-         const SequenceDB::Cluster& cluster, // which sequences are positively labeled
+         WeightFunction& weightFunc,         // which sequences are positively labeled
          ScoreFunction& scoreFunc,           // how to score features
          BestFeatures& bestFeatures          // stores the best features
          )
    {
       return prefixTreeSearch (tree, 
                         projection, 
-                        cluster, 
+                        weightFunc, 
                         scoreFunc, 
                         bestFeatures, 
                         projection.length ());
@@ -96,7 +140,7 @@ public:
    static int prefixTreeSearch (
          PrefixTreePreprocessor& tree,       // where to search
          const Assignment& projection,       // how to climb down the tree
-         const SequenceDB::Cluster& cluster, // which sequences are positively labeled
+         WeightFunction& weightFunc,         // which sequences are positively labeled
          ScoreFunction& scoreFunc,           // how to score features
          BestFeatures& bestFeatures,         // stores the best features
          int desiredDepth                    // desired depth / length of features
@@ -112,7 +156,7 @@ public:
    // search the tree for seeds that correspond to a projection (total counts)
    // returns the total number of seeds found
    static int totalCountSearch (
-      PrefixTreePreprocessor& tree, // where to search
+      Preprocessor& data, // where to search
       const Assignment& projection, // how to climb down the tree
       AssignmentWriter& writer,     // (used for hashing)
       const SequenceDB::Cluster& positivelyLabeled, // which sequences are positively labeled
@@ -122,4 +166,11 @@ public:
 };
 
 #endif // _SeedSearcher_SeedSeacher_h
+
+
+
+
+
+
+
 

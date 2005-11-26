@@ -23,3 +23,9 @@ struct IODefs {
 END_NAMESPACE (Persistance);
 
 #endif // SeedSearcher_Persistance_IODefs_h
+
+
+
+
+
+

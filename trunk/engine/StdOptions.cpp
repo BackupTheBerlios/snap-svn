@@ -7,6 +7,31 @@
 #define ROUND(x) ((x) >= 0 ? (int) ((x) + .5) : -((int) (.5 - (x))))
 #endif
 
+/**
+ * from http://www.loria.fr/~kucherov/SOFTWARE/grappe-3.0/iupac.html
+ * IUPAC codes
+ *
+ * The IUPAC Code is a set of symbols encoding each subset of the four nucleotides. Here is the complete list of these symbols together with the subsets they encode. 
+ * Code Corresponding class Name 
+ * A - Adenine 
+ * C - Cytosine 
+ * G - Guanine 
+ * T - Thymine 
+ * U - Uracil 
+ * R [GA] purine 
+ * Y [TC] Pyrimidine 
+ * K [GT] Keto 
+ * M [AC] Amino 
+ * S [GC] ? 
+ * W [AT] ? 
+ * B [GTC] ? 
+ * D [GAT] ? 
+ * H [ACT] ? 
+ * V [GCA] ? 
+ * N [ACGT] Any 
+**/
+
+
 
 
 using namespace std;
@@ -16,7 +41,7 @@ static AutoPtr <AlphabetCode> __ACGTN;
 static AutoPtr <AlphabetCode> __ACGT;
 
 
-static initACGTCode () 
+static void initACGTCode () 
 {
    AlphabetCode::copy (__acgt, AlphabetCode::emptyCode ());
    __acgt ['a'] = __acgt ['A'] = 0;
@@ -47,7 +72,7 @@ const AlphabetCode& ACGTAlphabet::get (bool cardinalityIncludesN)
 }
 
 void ACGTWriter::write(const Assignment::Position& pos,
-                                      Persistance::TextWriter& writer) const
+                       Persistance::TextWriter& writer) const
 {
    char ACGT [] = "ACGTN";
    
@@ -65,12 +90,66 @@ void ACGTWriter::write(const Assignment::Position& pos,
          writer << '*';
    }
    else {
+      char iupac;
+      unsigned long code = pos.toULong ();
+      switch (code) {
+         case 0x1:   // A - Adenine 
+            iupac = 'A';
+            break;
+         case 0x2:   // C - Cytosine 
+            iupac = 'C';
+            break;
+         case 0x4:   // G - Guanine 
+            iupac = 'G';
+            break;
+         case 0x8:   // T - Thymine 
+            iupac = 'T';
+            break;
+         case (0x4 + 0x1): // R [GA] purine 
+            iupac = 'R';
+            break;
+         case (0x8 + 0x2): // Y [TC] Pyrimidine 
+            iupac = 'Y';
+            break;
+         case (0x4 + 0x8): // K [GT] Keto 
+            iupac = 'K';
+            break;
+         case (0x1 + 0x2): // M [AC] Amino 
+            iupac = 'M';
+            break;
+         case (0x4 + 0x2): // S [GC] ? 
+            iupac = 'S';
+            break;
+         case (0x1 + 0x8): // W [AT] ? 
+            iupac = 'W';
+            break;
+         case (0x4 + 0x8 + 0x2): // B [GTC] ? 
+            iupac = 'B';
+            break;
+         case (0x4 + 0x1 + 0x8): // D [GAT] ? 
+            iupac = 'D';
+            break;
+         case (0x1 + 0x2 + 0x8): // H [ACT] ? 
+            iupac = 'H';
+            break;
+         case (0x4 + 0x2 + 0x1): // V [GCA] ? 
+            iupac = 'V';
+            break;
+         default:
+            debug_mustfail ();
+            iupac = '!';
+            break;
+      };
+
+      writer << iupac;
+/*
       Assignment::PositionIterator it (pos);
       writer << '{';
       for (; it.hasNext () ; it.next ())
          writer << ACGT [it.get ()];
 
       writer << '}';
+      */
    }
 }
 
@@ -94,6 +173,9 @@ KBestFeatures::KBestFeatures (int k, int maxRedundancyOffset)
 
 KBestFeatures::~KBestFeatures ()
 {
+   for (int i=0 ; i<_size ; i++)
+      _features [i].dispose ();
+
    delete [] _features;
 }
 
@@ -158,10 +240,7 @@ static bool checkRedundancy (int maxOffset, const Assignment& a, const Assignmen
 
 //
 // takes ownership of Assignment & Cluster
-bool KBestFeatures::add (
-                  AutoPtr <Assignment> assg,
-                  AutoPtr <SequenceDB::Cluster> cluster,
-                  double score)
+bool KBestFeatures::add (SeedSearcher::Feature_var daFeature)
 {
    _sorted = false;
 
@@ -173,15 +252,13 @@ bool KBestFeatures::add (
    for (int i=0 ; i < _size ; i++) {
       //
       // the smaller the score, the better.
-      if (_features [i]._score > score) {
+      if (_features [i]._score > daFeature->_score) {
          if (checkRedundancy (_maxRedundancyOffset,
                               *_features [i]._assg, 
-                              *assg)               ) {
+                              *daFeature->_assg)               ) {
             //
             // replace this similar feature with a better one
-            _features [i] = SeedSearcher::Feature (assg.release (), 
-                                   cluster.release (),
-                                   score);
+            _features [i] = *(daFeature.release ());
             return true;
          }
       }
@@ -197,19 +274,15 @@ bool KBestFeatures::add (
    if (_size < _k) {
       //
       // there is room in the array, so just stick it somewhere
-      _features [_size++] = SeedSearcher::Feature (assg.release (), 
-                                   cluster.release (),
-                                   score);
+      _features [_size++] = *(daFeature.release ());
       return true;
    }
-   else if (worstScore > score) {
+   else if (worstScore > daFeature->_score) {
       debug_mustbe (_size == _k);
       //
       // we have no room in the array, so we have to replace
       // the worst feature
-      _features [worst] = SeedSearcher::Feature (assg.release (), 
-                                   cluster.release (),
-                                   score);
+      _features [worst] = *(daFeature.release ());
       return true;
    }
 
@@ -285,25 +358,22 @@ GoodFeatures::GoodFeatures (SeedSearcher::BestFeatures* next,
 
 //
 // takes ownership of Assignment & Cluster
-bool GoodFeatures::add (
-                  AutoPtr <Assignment> assg,
-                  AutoPtr <SequenceDB::Cluster> cluster,
-                  double score)
+bool GoodFeatures::add (SeedSearcher::Feature_var daFeature)
 {
-   if (score > _minScore)
+   if (daFeature->_score > _minScore)
       return false;
 
    if (_minPositiveSeqs > 0) {
       //
       // TODO: is this taking a lot of time???
       SequenceDB::Cluster posContainingCluster;
-      SequenceDB::Cluster::intersect (*cluster, _posSeqs, posContainingCluster);
+      SequenceDB::Cluster::intersect (*daFeature->_cluster, _posSeqs, posContainingCluster);
 
       if (posContainingCluster.size () < _minPositiveSeqs)
          return false;
    }
 
-   return _next->add (assg, cluster, score);
+   return _next->add (daFeature);
 }
 
 
@@ -373,4 +443,11 @@ int StatFix::bonferroni (SeedSearcher::BestFeatures& features, int N, double P)
    debug_mustfail ();
    return 0;
 }
+
+
+
+
+
+
+
 

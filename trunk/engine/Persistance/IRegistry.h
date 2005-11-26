@@ -54,3 +54,10 @@ private:
 };
 
 #endif // _Persistance_IRegistry_h
+
+
+
+
+
+
+

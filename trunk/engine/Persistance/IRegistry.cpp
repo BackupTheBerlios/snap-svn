@@ -234,3 +234,10 @@ void IRegistry::link ()
    // All references successfuly linked, Clear lists
    clear();
 }
+
+
+
+
+
+
+

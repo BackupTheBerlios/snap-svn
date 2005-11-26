@@ -125,8 +125,16 @@ void TextWriter::write(const char* in, size_t inSize) {
 }
 
 void TextWriter::write(const void* inPtr) {
-	char buffer[16];
-	size_t printSize= ::sprintf(buffer, "0x%08x", inPtr);
-	stream->write(buffer, printSize);
+  char buffer[16];
+  unsigned int ptr_val = (unsigned int) inPtr;
+  size_t printSize= ::sprintf(buffer, "0x%08x", ptr_val);
+  stream->write(buffer, printSize);
 }
+
+
+
+
+
+
+
 

@@ -65,6 +65,8 @@ CLEAN :
 	-@erase "$(INTDIR)\HyperGeoCache.sbr"
 	-@erase "$(INTDIR)\HyperGeoScore.obj"
 	-@erase "$(INTDIR)\HyperGeoScore.sbr"
+	-@erase "$(INTDIR)\LeafPreprocessor.obj"
+	-@erase "$(INTDIR)\LeafPreprocessor.sbr"
 	-@erase "$(INTDIR)\main.obj"
 	-@erase "$(INTDIR)\main.sbr"
 	-@erase "$(INTDIR)\Multinomial.obj"
@@ -73,10 +75,16 @@ CLEAN :
 	-@erase "$(INTDIR)\PrefixTreePreprocessor.sbr"
 	-@erase "$(INTDIR)\PrefixTreeWalker.obj"
 	-@erase "$(INTDIR)\PrefixTreeWalker.sbr"
+	-@erase "$(INTDIR)\Preprocessor.obj"
+	-@erase "$(INTDIR)\Preprocessor.sbr"
+	-@erase "$(INTDIR)\PSSM.OBJ"
+	-@erase "$(INTDIR)\PSSM.SBR"
 	-@erase "$(INTDIR)\RandomGenerator.obj"
 	-@erase "$(INTDIR)\RandomGenerator.sbr"
 	-@erase "$(INTDIR)\RandomProjections.obj"
 	-@erase "$(INTDIR)\RandomProjections.sbr"
+	-@erase "$(INTDIR)\SeedHash.obj"
+	-@erase "$(INTDIR)\SeedHash.sbr"
 	-@erase "$(INTDIR)\SeedSearcher.obj"
 	-@erase "$(INTDIR)\SeedSearcher.sbr"
 	-@erase "$(INTDIR)\Sequence.obj"
@@ -103,9 +111,14 @@ BSC32_SBRS= \
 	"$(INTDIR)\Cluster.sbr" \
 	"$(INTDIR)\DebugLog.sbr" \
 	"$(INTDIR)\HyperGeoScore.sbr" \
+	"$(INTDIR)\LeafPreprocessor.sbr" \
+	"$(INTDIR)\main.sbr" \
 	"$(INTDIR)\PrefixTreePreprocessor.sbr" \
 	"$(INTDIR)\PrefixTreeWalker.sbr" \
+	"$(INTDIR)\Preprocessor.sbr" \
+	"$(INTDIR)\PSSM.SBR" \
 	"$(INTDIR)\RandomProjections.sbr" \
+	"$(INTDIR)\SeedHash.sbr" \
 	"$(INTDIR)\SeedSearcher.sbr" \
 	"$(INTDIR)\Sequence.sbr" \
 	"$(INTDIR)\SequenceDB.sbr" \
@@ -113,8 +126,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\getopt.sbr" \
 	"$(INTDIR)\Multinomial.sbr" \
 	"$(INTDIR)\RandomGenerator.sbr" \
-	"$(INTDIR)\HyperGeoCache.sbr" \
-	"$(INTDIR)\main.sbr"
+	"$(INTDIR)\HyperGeoCache.sbr"
 
 "$(OUTDIR)\SeedSearcher.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -129,9 +141,14 @@ LINK32_OBJS= \
 	"$(INTDIR)\Cluster.obj" \
 	"$(INTDIR)\DebugLog.obj" \
 	"$(INTDIR)\HyperGeoScore.obj" \
+	"$(INTDIR)\LeafPreprocessor.obj" \
+	"$(INTDIR)\main.obj" \
 	"$(INTDIR)\PrefixTreePreprocessor.obj" \
 	"$(INTDIR)\PrefixTreeWalker.obj" \
+	"$(INTDIR)\Preprocessor.obj" \
+	"$(INTDIR)\PSSM.OBJ" \
 	"$(INTDIR)\RandomProjections.obj" \
+	"$(INTDIR)\SeedHash.obj" \
 	"$(INTDIR)\SeedSearcher.obj" \
 	"$(INTDIR)\Sequence.obj" \
 	"$(INTDIR)\SequenceDB.obj" \
@@ -140,7 +157,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\Multinomial.obj" \
 	"$(INTDIR)\RandomGenerator.obj" \
 	"$(INTDIR)\HyperGeoCache.obj" \
-	"$(INTDIR)\main.obj" \
 	".\Core\Release\Core.lib" \
 	".\Persistance\Release\Persistance.lib"
 
@@ -186,6 +202,8 @@ CLEAN :
 	-@erase "$(INTDIR)\HyperGeoCache.sbr"
 	-@erase "$(INTDIR)\HyperGeoScore.obj"
 	-@erase "$(INTDIR)\HyperGeoScore.sbr"
+	-@erase "$(INTDIR)\LeafPreprocessor.obj"
+	-@erase "$(INTDIR)\LeafPreprocessor.sbr"
 	-@erase "$(INTDIR)\main.obj"
 	-@erase "$(INTDIR)\main.sbr"
 	-@erase "$(INTDIR)\Multinomial.obj"
@@ -194,10 +212,16 @@ CLEAN :
 	-@erase "$(INTDIR)\PrefixTreePreprocessor.sbr"
 	-@erase "$(INTDIR)\PrefixTreeWalker.obj"
 	-@erase "$(INTDIR)\PrefixTreeWalker.sbr"
+	-@erase "$(INTDIR)\Preprocessor.obj"
+	-@erase "$(INTDIR)\Preprocessor.sbr"
+	-@erase "$(INTDIR)\PSSM.OBJ"
+	-@erase "$(INTDIR)\PSSM.SBR"
 	-@erase "$(INTDIR)\RandomGenerator.obj"
 	-@erase "$(INTDIR)\RandomGenerator.sbr"
 	-@erase "$(INTDIR)\RandomProjections.obj"
 	-@erase "$(INTDIR)\RandomProjections.sbr"
+	-@erase "$(INTDIR)\SeedHash.obj"
+	-@erase "$(INTDIR)\SeedHash.sbr"
 	-@erase "$(INTDIR)\SeedSearcher.obj"
 	-@erase "$(INTDIR)\SeedSearcher.sbr"
 	-@erase "$(INTDIR)\Sequence.obj"
@@ -225,9 +249,14 @@ BSC32_SBRS= \
 	"$(INTDIR)\Cluster.sbr" \
 	"$(INTDIR)\DebugLog.sbr" \
 	"$(INTDIR)\HyperGeoScore.sbr" \
+	"$(INTDIR)\LeafPreprocessor.sbr" \
+	"$(INTDIR)\main.sbr" \
 	"$(INTDIR)\PrefixTreePreprocessor.sbr" \
 	"$(INTDIR)\PrefixTreeWalker.sbr" \
+	"$(INTDIR)\Preprocessor.sbr" \
+	"$(INTDIR)\PSSM.SBR" \
 	"$(INTDIR)\RandomProjections.sbr" \
+	"$(INTDIR)\SeedHash.sbr" \
 	"$(INTDIR)\SeedSearcher.sbr" \
 	"$(INTDIR)\Sequence.sbr" \
 	"$(INTDIR)\SequenceDB.sbr" \
@@ -235,8 +264,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\getopt.sbr" \
 	"$(INTDIR)\Multinomial.sbr" \
 	"$(INTDIR)\RandomGenerator.sbr" \
-	"$(INTDIR)\HyperGeoCache.sbr" \
-	"$(INTDIR)\main.sbr"
+	"$(INTDIR)\HyperGeoCache.sbr"
 
 "$(OUTDIR)\SeedSearcher.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -251,9 +279,14 @@ LINK32_OBJS= \
 	"$(INTDIR)\Cluster.obj" \
 	"$(INTDIR)\DebugLog.obj" \
 	"$(INTDIR)\HyperGeoScore.obj" \
+	"$(INTDIR)\LeafPreprocessor.obj" \
+	"$(INTDIR)\main.obj" \
 	"$(INTDIR)\PrefixTreePreprocessor.obj" \
 	"$(INTDIR)\PrefixTreeWalker.obj" \
+	"$(INTDIR)\Preprocessor.obj" \
+	"$(INTDIR)\PSSM.OBJ" \
 	"$(INTDIR)\RandomProjections.obj" \
+	"$(INTDIR)\SeedHash.obj" \
 	"$(INTDIR)\SeedSearcher.obj" \
 	"$(INTDIR)\Sequence.obj" \
 	"$(INTDIR)\SequenceDB.obj" \
@@ -262,7 +295,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\Multinomial.obj" \
 	"$(INTDIR)\RandomGenerator.obj" \
 	"$(INTDIR)\HyperGeoCache.obj" \
-	"$(INTDIR)\main.obj" \
 	".\Core\Debug\Core.lib" \
 	".\Persistance\Debug\Persistance.lib"
 
@@ -316,68 +348,411 @@ LINK32_OBJS= \
 !IF "$(CFG)" == "SeedSearcher - Win32 Release" || "$(CFG)" == "SeedSearcher - Win32 Debug"
 SOURCE=.\Alphabet.cpp
 
-"$(INTDIR)\Alphabet.obj"	"$(INTDIR)\Alphabet.sbr" : $(SOURCE) "$(INTDIR)"
+!IF  "$(CFG)" == "SeedSearcher - Win32 Release"
 
+CPP_SWITCHES=/nologo /ML /W3 /GR /GX /Zi /O2 /Op /Oy- /Ob1 /I "." /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+"$(INTDIR)\Alphabet.obj"	"$(INTDIR)\Alphabet.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ELSEIF  "$(CFG)" == "SeedSearcher - Win32 Debug"
+
+CPP_SWITCHES=/nologo /MLd /W3 /Gm /GR /GX /ZI /Od /I "." /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+
+"$(INTDIR)\Alphabet.obj"	"$(INTDIR)\Alphabet.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ENDIF 
 
 SOURCE=.\Assignment.cpp
 
-"$(INTDIR)\Assignment.obj"	"$(INTDIR)\Assignment.sbr" : $(SOURCE) "$(INTDIR)"
+!IF  "$(CFG)" == "SeedSearcher - Win32 Release"
 
+CPP_SWITCHES=/nologo /ML /W3 /GR /GX /Zi /O2 /Op /Oy- /Ob1 /I "." /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+"$(INTDIR)\Assignment.obj"	"$(INTDIR)\Assignment.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ELSEIF  "$(CFG)" == "SeedSearcher - Win32 Debug"
+
+CPP_SWITCHES=/nologo /MLd /W3 /Gm /GR /GX /ZI /Od /I "." /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+
+"$(INTDIR)\Assignment.obj"	"$(INTDIR)\Assignment.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ENDIF 
 
 SOURCE=.\Cluster.cpp
 
-"$(INTDIR)\Cluster.obj"	"$(INTDIR)\Cluster.sbr" : $(SOURCE) "$(INTDIR)"
+!IF  "$(CFG)" == "SeedSearcher - Win32 Release"
 
+CPP_SWITCHES=/nologo /ML /W3 /GR /GX /Zi /O2 /Op /Oy- /Ob1 /I "." /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+"$(INTDIR)\Cluster.obj"	"$(INTDIR)\Cluster.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ELSEIF  "$(CFG)" == "SeedSearcher - Win32 Debug"
+
+CPP_SWITCHES=/nologo /MLd /W3 /Gm /GR /GX /ZI /Od /I "." /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+
+"$(INTDIR)\Cluster.obj"	"$(INTDIR)\Cluster.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ENDIF 
 
 SOURCE=.\DebugLog.cpp
 
-"$(INTDIR)\DebugLog.obj"	"$(INTDIR)\DebugLog.sbr" : $(SOURCE) "$(INTDIR)"
+!IF  "$(CFG)" == "SeedSearcher - Win32 Release"
 
+CPP_SWITCHES=/nologo /ML /W3 /GR /GX /Zi /O2 /Op /Oy- /Ob1 /I "." /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+"$(INTDIR)\DebugLog.obj"	"$(INTDIR)\DebugLog.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ELSEIF  "$(CFG)" == "SeedSearcher - Win32 Debug"
+
+CPP_SWITCHES=/nologo /MLd /W3 /Gm /GR /GX /ZI /Od /I "." /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+
+"$(INTDIR)\DebugLog.obj"	"$(INTDIR)\DebugLog.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ENDIF 
 
 SOURCE=.\HyperGeoScore.cpp
 
-"$(INTDIR)\HyperGeoScore.obj"	"$(INTDIR)\HyperGeoScore.sbr" : $(SOURCE) "$(INTDIR)"
+!IF  "$(CFG)" == "SeedSearcher - Win32 Release"
 
+CPP_SWITCHES=/nologo /ML /W3 /GR /GX /Zi /O2 /Op /Oy- /Ob1 /I "." /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+"$(INTDIR)\HyperGeoScore.obj"	"$(INTDIR)\HyperGeoScore.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ELSEIF  "$(CFG)" == "SeedSearcher - Win32 Debug"
+
+CPP_SWITCHES=/nologo /MLd /W3 /Gm /GR /GX /ZI /Od /I "." /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+
+"$(INTDIR)\HyperGeoScore.obj"	"$(INTDIR)\HyperGeoScore.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ENDIF 
+
+SOURCE=.\LeafPreprocessor.cpp
+
+!IF  "$(CFG)" == "SeedSearcher - Win32 Release"
+
+CPP_SWITCHES=/nologo /ML /W3 /GR /GX /Zi /O2 /Op /Oy- /Ob1 /I "." /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+"$(INTDIR)\LeafPreprocessor.obj"	"$(INTDIR)\LeafPreprocessor.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ELSEIF  "$(CFG)" == "SeedSearcher - Win32 Debug"
+
+CPP_SWITCHES=/nologo /MLd /W3 /Gm /GR /GX /ZI /Od /I "." /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+
+"$(INTDIR)\LeafPreprocessor.obj"	"$(INTDIR)\LeafPreprocessor.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ENDIF 
 
 SOURCE=.\main.cpp
 
-"$(INTDIR)\main.obj"	"$(INTDIR)\main.sbr" : $(SOURCE) "$(INTDIR)"
+!IF  "$(CFG)" == "SeedSearcher - Win32 Release"
 
+CPP_SWITCHES=/nologo /ML /W3 /GR /GX /Zi /O2 /Op /Oy- /Ob1 /I "." /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+"$(INTDIR)\main.obj"	"$(INTDIR)\main.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ELSEIF  "$(CFG)" == "SeedSearcher - Win32 Debug"
+
+CPP_SWITCHES=/nologo /MLd /W3 /Gm /GR /GX /ZI /Od /I "." /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+
+"$(INTDIR)\main.obj"	"$(INTDIR)\main.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ENDIF 
 
 SOURCE=.\PrefixTreePreprocessor.cpp
 
-"$(INTDIR)\PrefixTreePreprocessor.obj"	"$(INTDIR)\PrefixTreePreprocessor.sbr" : $(SOURCE) "$(INTDIR)"
+!IF  "$(CFG)" == "SeedSearcher - Win32 Release"
 
+CPP_SWITCHES=/nologo /ML /W3 /GR /GX /Zi /O2 /Op /Oy- /Ob1 /I "." /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+"$(INTDIR)\PrefixTreePreprocessor.obj"	"$(INTDIR)\PrefixTreePreprocessor.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ELSEIF  "$(CFG)" == "SeedSearcher - Win32 Debug"
+
+CPP_SWITCHES=/nologo /MLd /W3 /Gm /GR /GX /ZI /Od /I "." /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+
+"$(INTDIR)\PrefixTreePreprocessor.obj"	"$(INTDIR)\PrefixTreePreprocessor.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ENDIF 
 
 SOURCE=.\PrefixTreeWalker.cpp
 
-"$(INTDIR)\PrefixTreeWalker.obj"	"$(INTDIR)\PrefixTreeWalker.sbr" : $(SOURCE) "$(INTDIR)"
+!IF  "$(CFG)" == "SeedSearcher - Win32 Release"
 
+CPP_SWITCHES=/nologo /ML /W3 /GR /GX /Zi /O2 /Op /Oy- /Ob1 /I "." /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+"$(INTDIR)\PrefixTreeWalker.obj"	"$(INTDIR)\PrefixTreeWalker.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ELSEIF  "$(CFG)" == "SeedSearcher - Win32 Debug"
+
+CPP_SWITCHES=/nologo /MLd /W3 /Gm /GR /GX /ZI /Od /I "." /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+
+"$(INTDIR)\PrefixTreeWalker.obj"	"$(INTDIR)\PrefixTreeWalker.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ENDIF 
+
+SOURCE=.\Preprocessor.cpp
+
+!IF  "$(CFG)" == "SeedSearcher - Win32 Release"
+
+CPP_SWITCHES=/nologo /ML /W3 /GR /GX /Zi /O2 /Op /Oy- /Ob1 /I "." /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+"$(INTDIR)\Preprocessor.obj"	"$(INTDIR)\Preprocessor.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ELSEIF  "$(CFG)" == "SeedSearcher - Win32 Debug"
+
+CPP_SWITCHES=/nologo /MLd /W3 /Gm /GR /GX /ZI /Od /I "." /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+
+"$(INTDIR)\Preprocessor.obj"	"$(INTDIR)\Preprocessor.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ENDIF 
+
+SOURCE=.\PSSM.CPP
+
+!IF  "$(CFG)" == "SeedSearcher - Win32 Release"
+
+CPP_SWITCHES=/nologo /ML /W3 /GR /GX /Zi /O2 /Op /Oy- /Ob1 /I "." /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+"$(INTDIR)\PSSM.OBJ"	"$(INTDIR)\PSSM.SBR" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ELSEIF  "$(CFG)" == "SeedSearcher - Win32 Debug"
+
+CPP_SWITCHES=/nologo /MLd /W3 /Gm /GR /GX /ZI /Od /I "." /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+
+"$(INTDIR)\PSSM.OBJ"	"$(INTDIR)\PSSM.SBR" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ENDIF 
 
 SOURCE=.\RandomProjections.cpp
 
-"$(INTDIR)\RandomProjections.obj"	"$(INTDIR)\RandomProjections.sbr" : $(SOURCE) "$(INTDIR)"
+!IF  "$(CFG)" == "SeedSearcher - Win32 Release"
 
+CPP_SWITCHES=/nologo /ML /W3 /GR /GX /Zi /O2 /Op /Oy- /Ob1 /I "." /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+"$(INTDIR)\RandomProjections.obj"	"$(INTDIR)\RandomProjections.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ELSEIF  "$(CFG)" == "SeedSearcher - Win32 Debug"
+
+CPP_SWITCHES=/nologo /MLd /W3 /Gm /GR /GX /ZI /Od /I "." /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+
+"$(INTDIR)\RandomProjections.obj"	"$(INTDIR)\RandomProjections.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ENDIF 
+
+SOURCE=.\SeedHash.cpp
+
+!IF  "$(CFG)" == "SeedSearcher - Win32 Release"
+
+CPP_SWITCHES=/nologo /ML /W3 /GR /GX /Zi /O2 /Op /Oy- /Ob1 /I "." /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+"$(INTDIR)\SeedHash.obj"	"$(INTDIR)\SeedHash.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ELSEIF  "$(CFG)" == "SeedSearcher - Win32 Debug"
+
+CPP_SWITCHES=/nologo /MLd /W3 /Gm /GR /GX /ZI /Od /I "." /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+
+"$(INTDIR)\SeedHash.obj"	"$(INTDIR)\SeedHash.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ENDIF 
 
 SOURCE=.\SeedSearcher.cpp
 
-"$(INTDIR)\SeedSearcher.obj"	"$(INTDIR)\SeedSearcher.sbr" : $(SOURCE) "$(INTDIR)"
+!IF  "$(CFG)" == "SeedSearcher - Win32 Release"
 
+CPP_SWITCHES=/nologo /ML /W3 /GR /GX /Zi /O2 /Op /Oy- /Ob1 /I "." /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+"$(INTDIR)\SeedSearcher.obj"	"$(INTDIR)\SeedSearcher.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ELSEIF  "$(CFG)" == "SeedSearcher - Win32 Debug"
+
+CPP_SWITCHES=/nologo /MLd /W3 /Gm /GR /GX /ZI /Od /I "." /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+
+"$(INTDIR)\SeedSearcher.obj"	"$(INTDIR)\SeedSearcher.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ENDIF 
 
 SOURCE=.\Sequence.cpp
 
-"$(INTDIR)\Sequence.obj"	"$(INTDIR)\Sequence.sbr" : $(SOURCE) "$(INTDIR)"
+!IF  "$(CFG)" == "SeedSearcher - Win32 Release"
 
+CPP_SWITCHES=/nologo /ML /W3 /GR /GX /Zi /O2 /Op /Oy- /Ob1 /I "." /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+"$(INTDIR)\Sequence.obj"	"$(INTDIR)\Sequence.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ELSEIF  "$(CFG)" == "SeedSearcher - Win32 Debug"
+
+CPP_SWITCHES=/nologo /MLd /W3 /Gm /GR /GX /ZI /Od /I "." /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+
+"$(INTDIR)\Sequence.obj"	"$(INTDIR)\Sequence.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ENDIF 
 
 SOURCE=.\SequenceDB.cpp
 
-"$(INTDIR)\SequenceDB.obj"	"$(INTDIR)\SequenceDB.sbr" : $(SOURCE) "$(INTDIR)"
+!IF  "$(CFG)" == "SeedSearcher - Win32 Release"
 
+CPP_SWITCHES=/nologo /ML /W3 /GR /GX /Zi /O2 /Op /Oy- /Ob1 /I "." /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+"$(INTDIR)\SequenceDB.obj"	"$(INTDIR)\SequenceDB.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ELSEIF  "$(CFG)" == "SeedSearcher - Win32 Debug"
+
+CPP_SWITCHES=/nologo /MLd /W3 /Gm /GR /GX /ZI /Od /I "." /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+
+"$(INTDIR)\SequenceDB.obj"	"$(INTDIR)\SequenceDB.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ENDIF 
 
 SOURCE=.\StdOptions.cpp
 
-"$(INTDIR)\StdOptions.obj"	"$(INTDIR)\StdOptions.sbr" : $(SOURCE) "$(INTDIR)"
+!IF  "$(CFG)" == "SeedSearcher - Win32 Release"
 
+CPP_SWITCHES=/nologo /ML /W3 /GR /GX /Zi /O2 /Op /Oy- /Ob1 /I "." /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+"$(INTDIR)\StdOptions.obj"	"$(INTDIR)\StdOptions.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ELSEIF  "$(CFG)" == "SeedSearcher - Win32 Debug"
+
+CPP_SWITCHES=/nologo /MLd /W3 /Gm /GR /GX /ZI /Od /I "." /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+
+"$(INTDIR)\StdOptions.obj"	"$(INTDIR)\StdOptions.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ENDIF 
 
 SOURCE=.\Legacy\getopt.c
 

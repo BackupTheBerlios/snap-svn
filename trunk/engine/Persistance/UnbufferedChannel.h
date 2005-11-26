@@ -230,3 +230,9 @@ typedef SChannelInput <8 * 1024> SmallChannelInput;
 END_NAMESPACE (Persistance);
 
 #endif // _SeedSearcher_Persistance_UnbufferedStream
+
+
+
+
+
+

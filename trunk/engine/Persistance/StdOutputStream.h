@@ -59,3 +59,10 @@ public:
 END_NAMESPACE (Persistance);
 
 #endif // _Persistance_StdOutputStream_h
+
+
+
+
+
+
+

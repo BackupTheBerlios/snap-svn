@@ -6,6 +6,7 @@
 #include "Persistance/Defs.h"
 #include <bitset>
 
+class Str;
 class AlphabetCode;
 
 // aA - A
@@ -84,6 +85,16 @@ public:
       //
       // returns the number of set indexes
       int count () const;
+
+      //
+      //
+      unsigned long toULong () const {
+         unsigned long l = _bits.to_ulong ();
+         //
+         // remove the strategy bit
+         return (l & (~(0x1 << MAX_ALPHABET_SIZE)));
+      }
+
       //
       // returns true iff this position contains all the indexes of the paramter
       bool contains (const Position&) const;
@@ -137,10 +148,15 @@ public:
    Assignment (const Assignment& assg) : _positions (assg._positions) {
    }
    Assignment (const Position& pos, int length) {
+      _positions.reserve (length);
       for (int i=0 ; i<length ; i++) {
          addPosition (pos); 
       }
    }
+   //
+   // create assignment from a string and the alphabet that codes the string
+   Assignment::Assignment (const Str&, const AlphabetCode&);
+
    Assignment& operator = (const Assignment& o) {
       _positions = o._positions;
       return *this;
@@ -152,6 +168,14 @@ public:
    inline const Position& operator [] (int index) const {
       return _positions [index];
    }
+   inline Position& getPosition (int index) {
+      return _positions [index];
+   }
+   inline const Position& getPosition (int index) const {
+      return _positions [index];
+   }
+
+
    int length () const {
       return _positions.size ();
    }
@@ -160,6 +184,7 @@ public:
    }
    void setPosition (int, const Position& p);
    
+   bool contains (const Assignment&) const;
    int compare (const Assignment&) const;
    bool equals (const Assignment&) const;
    bool operator == (const Assignment& o) const {
@@ -173,6 +198,13 @@ private:
 };
 
 #endif // _SeedSearcher_Assignment_h
+
+
+
+
+
+
+
 
 
 

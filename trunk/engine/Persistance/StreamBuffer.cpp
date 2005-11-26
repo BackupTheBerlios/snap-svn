@@ -102,3 +102,10 @@ bool StreamBuffer::canWrite() {
 	return true;
 }
 
+
+
+
+
+
+
+

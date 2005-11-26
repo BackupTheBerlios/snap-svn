@@ -4,6 +4,8 @@
 #include <assert.h>
 #include "ExtraMath.h"
 
+#include "SeedSearcher.h"
+
 
 
 class HyperGeometric {
@@ -138,6 +140,9 @@ public:
    ~HyperGeoCache ();
 
    double logTail (int x, int k);
+   double logTail (int x, int k, SeedSearcher::ScoreParameters**);
+
+   void writeAsText (Persistance::TextWriter&, const SeedSearcher::ScoreParameters*);
 
    struct XK;
    class Score;
@@ -158,6 +163,9 @@ public:
    ~HyperGeoTotalCache ();
 
    double logTail (int x, int k, int n, int m);
+   double logTail (int x, int k, int n, int m, SeedSearcher::ScoreParameters**);
+
+   void writeAsText (Persistance::TextWriter&, const SeedSearcher::ScoreParameters*);
 
    struct XKNM;
    class Score;
@@ -167,4 +175,11 @@ public:
 };
 
 #endif
+
+
+
+
+
+
+
 

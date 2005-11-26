@@ -132,8 +132,10 @@ struct OPair : public Manipulator {
 // used for maps, keystroke saver. does the same thing as OPair,
 // but saves typing because it uses the types of a map.
 template <  class Map,             
-            class Action1 = OPair <TYPENAME Map::value_type>::Action1Type,
-            class Action2 = OPair <TYPENAME Map::value_type>::Action2Type
+	    class Action1 = 
+	       TYPENAME OPair <TYPENAME Map::value_type>::Action1Type,
+	    class Action2 = 
+	       TYPENAME OPair <TYPENAME Map::value_type>::Action2Type
          >
 struct OMapPair : public OPair <TYPENAME Map::value_type, Action1, Action2> {
    //
@@ -189,8 +191,8 @@ private:
 // by going over ALL elements, performing 'Action' on them 
 // (default = just write the elements using '<<')
 template <  class Container,
-            class Action1 = OMapPair <Container>::Action1Type,
-            class Action2 = OMapPair <Container>::Action2Type
+            class Action1 = TYPENAME OMapPair <Container>::Action1Type,
+            class Action2 = TYPENAME OMapPair <Container>::Action2Type
          >
 class OMap : public OSTL < Container, OMapPair <Container> > {
 public:
@@ -236,9 +238,9 @@ struct OSTLReg : public Manipulator {
       }
    }
 
+   Container& _container;
    bool _knownType;
    bool _type;
-   Container& _container;
 };
 
 
@@ -351,7 +353,7 @@ class ISTL : public Manipulator {
 public:
    //
    //
-   typedef typename Container ContainerType;
+   typedef Container ContainerType;
    typedef typename Container::value_type ValueType;
    typedef typename Container::iterator IteratorType;
    typedef Action ActionType;
@@ -488,3 +490,10 @@ public:
 
 
 END_NAMESPACE (Persistance);
+
+
+
+
+
+
+

@@ -11,6 +11,12 @@
 #include <ctype.h>
 #include <limits.h>
 
+#if ENV_COMPILER & ENV_MICROSOFT
+#   define ENV_STRNCMP ::_strnicmp
+#elif ENV_COMPILER & ENV_GCC
+#   define ENV_STRNCMP ::strncasecmp
+#endif
+
 static inline Str::Size strLength(const char* in) {
 	return in ? ::strlen(in) : 0;
 }
@@ -60,13 +66,13 @@ void Str::writeExternal(DataOutput& output) const {
 }
 */
 
-void Str::getChars(char* inDest, size_t inDestSize) const {
+void Str::getChars(char* inDest, Size inDestSize) const {
 	size_t lengthToWrite= tmin(inDestSize, mLength);
 	if (lengthToWrite > 0)
 		memcpy(inDest, mData, lengthToWrite);
 }
 
-void Str::getCString(char* inDest, size_t inDestSize) const {
+void Str::getCString(char* inDest, Size inDestSize) const {
 	debug_mustbe(inDest && inDestSize > 0);
 	size_t lengthToWrite= tmin(inDestSize-1, mLength);
 	if (lengthToWrite > 0)
@@ -103,7 +109,7 @@ int Str::compareIgnoreCase(const Str& in) const
 	int res = 0;
 	int len = tmin(mLength, in.mLength);
 	if (len > 0) {
-		res = ::_strnicmp(mData, in.mData, len);
+		res = ENV_STRNCMP(mData, in.mData, len);
 	}
 	if (res == 0) {
 		res = (int)mLength - (int)in.mLength;
@@ -126,7 +132,7 @@ bool Str::equalsIgnoreCase(const Str& in) const {
 	else if (mLength==0)
 		return true;
 	else
-		return ::_strnicmp(mData, in.mData, mLength)==0;
+		return ENV_STRNCMP(mData, in.mData, mLength)==0;
 }
 
 Str::Index Str::indexOf(char inChar, Index inStart) const {
@@ -204,7 +210,7 @@ bool Str::startsWith(const Str& in, const bool inIgnoreCase) const {
 	if (mLength < in.length())
 		return false;
 	if (inIgnoreCase)
-		return ::_strnicmp(in.getChars(), mData, in.length())==0;
+		return ENV_STRNCMP(in.getChars(), mData, in.length())==0;
 	else
 		return memcmp(in.getChars(), mData, in.length())==0;
 }
@@ -213,7 +219,7 @@ bool Str::endsWith(const Str& in, const bool inIgnoreCase) const {
 	if (in.length() > mLength)
 		return false;
 	if (inIgnoreCase)
-		return ::_strnicmp(&mData[mLength - in.length()], in.getChars(), in.length())==0;
+		return ENV_STRNCMP(&mData[mLength - in.length()], in.getChars(), in.length())==0;
 	else
 		return memcmp(&mData[mLength - in.length()], in.getChars(), in.length())==0;
 }
@@ -565,4 +571,5 @@ The inheritance "StrBuffer : public Str" is coincidental and should be treated a
 I will try to get rid of it in the future.
 
 */
+
 

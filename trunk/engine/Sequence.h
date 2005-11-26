@@ -3,9 +3,11 @@
 
 #include "Defs.h"
 #include "Persistance/Object.h"
+
+#include "Core/STLHelper.h"
 #include "Core/ChunkAllocator.h"
 #include "Core/Str.h"
-//#include <string>
+
 
 class Sequence : public Persistance::Object {
 public:
@@ -127,6 +129,11 @@ public:
          return 0;
       }
 
+      debug_mustbe (length > 0);
+      debug_mustbe (_position + offset >= 0);
+      debug_mustbe (_position + offset + length <= _sequence->length ());
+
+
       return Str (_sequence->data (), 
                   _position + offset, 
                   _position + offset + length);
@@ -141,7 +148,8 @@ public:
       if (startIndex < 0) {
          //
          // the string is truncated in the left, so return less bytes
-         length += startIndex;
+         length += startIndex;   // shorten length
+         offset -= startIndex;   // make offset less negative
          startIndex = 0;
       }
 
@@ -179,8 +187,52 @@ private:
    static ChunkAllocator <Position> __allocator;
 };
 
+//
+// a vector of sequences
+typedef Vec <Sequence const*> SequenceVector;
+
+//
+// a vector of positions
+class PositionVector : public Vec <Position const*> {
+public:
+   PositionVector () {
+   }
+   PositionVector (int size) : Vec <Position const*> (size) {
+   }
+   ~PositionVector () {
+   }
+
+#     if SEED_CHUNK_ALLOCATION_OPTIMIZATION
+      void* operator new (size_t size) {
+         debug_mustbe (size == sizeof (PositionVector));
+         return __allocator.newT ();
+      }
+      void operator delete(void *p)    {
+         __allocator.deleteT (reinterpret_cast <PositionVector*> (p));
+      }
+#     endif
+
+private:
+   static ChunkAllocator <PositionVector> __allocator;
+};
+
+//
+// iterators
+typedef IteratorWrapper <PositionVector> PositionIterator;
+typedef IteratorWrapper <SequenceVector> SequenceIterator;
+typedef ConstIteratorWrapper <PositionVector> CPositionIterator;
+typedef ConstIteratorWrapper <SequenceVector> CSequenceIterator;
+
+
 
 
 #endif // _SeedSearcher_Sequence_h
+
+
+
+
+
+
+
 
 

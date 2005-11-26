@@ -92,58 +92,223 @@ LINK32=link.exe
 # Begin Source File
 
 SOURCE=.\Alphabet.cpp
+
+!IF  "$(CFG)" == "SeedSearcher - Win32 Release"
+
+# ADD CPP /O2 /Ob1
+
+!ELSEIF  "$(CFG)" == "SeedSearcher - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\Assignment.cpp
+
+!IF  "$(CFG)" == "SeedSearcher - Win32 Release"
+
+# ADD CPP /O2 /Ob1
+
+!ELSEIF  "$(CFG)" == "SeedSearcher - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\Cluster.cpp
+
+!IF  "$(CFG)" == "SeedSearcher - Win32 Release"
+
+# ADD CPP /O2 /Ob1
+
+!ELSEIF  "$(CFG)" == "SeedSearcher - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\DebugLog.cpp
+
+!IF  "$(CFG)" == "SeedSearcher - Win32 Release"
+
+# ADD CPP /O2 /Ob1
+
+!ELSEIF  "$(CFG)" == "SeedSearcher - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\HyperGeoScore.cpp
+
+!IF  "$(CFG)" == "SeedSearcher - Win32 Release"
+
+# ADD CPP /O2 /Ob1
+
+!ELSEIF  "$(CFG)" == "SeedSearcher - Win32 Debug"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\LeafPreprocessor.cpp
+
+!IF  "$(CFG)" == "SeedSearcher - Win32 Release"
+
+# ADD CPP /O2 /Ob1
+
+!ELSEIF  "$(CFG)" == "SeedSearcher - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\main.cpp
+
+!IF  "$(CFG)" == "SeedSearcher - Win32 Release"
+
+# ADD CPP /O2 /Ob1
+
+!ELSEIF  "$(CFG)" == "SeedSearcher - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\PrefixTreePreprocessor.cpp
+
+!IF  "$(CFG)" == "SeedSearcher - Win32 Release"
+
+# ADD CPP /O2 /Ob1
+
+!ELSEIF  "$(CFG)" == "SeedSearcher - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\PrefixTreeWalker.cpp
+
+!IF  "$(CFG)" == "SeedSearcher - Win32 Release"
+
+# ADD CPP /O2 /Ob1
+
+!ELSEIF  "$(CFG)" == "SeedSearcher - Win32 Debug"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\Preprocessor.cpp
+
+!IF  "$(CFG)" == "SeedSearcher - Win32 Release"
+
+# ADD CPP /O2 /Ob1
+
+!ELSEIF  "$(CFG)" == "SeedSearcher - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\PSSM.CPP
+
+!IF  "$(CFG)" == "SeedSearcher - Win32 Release"
+
+# ADD CPP /O2 /Ob1
+
+!ELSEIF  "$(CFG)" == "SeedSearcher - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\RandomProjections.cpp
+
+!IF  "$(CFG)" == "SeedSearcher - Win32 Release"
+
+# ADD CPP /O2 /Ob1
+
+!ELSEIF  "$(CFG)" == "SeedSearcher - Win32 Debug"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\SeedHash.cpp
+
+!IF  "$(CFG)" == "SeedSearcher - Win32 Release"
+
+# ADD CPP /O2 /Ob1
+
+!ELSEIF  "$(CFG)" == "SeedSearcher - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\SeedSearcher.cpp
+
+!IF  "$(CFG)" == "SeedSearcher - Win32 Release"
+
+# ADD CPP /O2 /Ob1
+
+!ELSEIF  "$(CFG)" == "SeedSearcher - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\Sequence.cpp
+
+!IF  "$(CFG)" == "SeedSearcher - Win32 Release"
+
+# ADD CPP /O2 /Ob1
+
+!ELSEIF  "$(CFG)" == "SeedSearcher - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\SequenceDB.cpp
+
+!IF  "$(CFG)" == "SeedSearcher - Win32 Release"
+
+# ADD CPP /O2 /Ob1
+
+!ELSEIF  "$(CFG)" == "SeedSearcher - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\StdOptions.cpp
+
+!IF  "$(CFG)" == "SeedSearcher - Win32 Release"
+
+# ADD CPP /O2 /Ob1
+
+!ELSEIF  "$(CFG)" == "SeedSearcher - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # End Group
 # Begin Group "Header Files"
@@ -179,6 +344,10 @@ SOURCE=.\HyperGeoScore.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\LeafPreprocessor.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\PrefixTreePreprocessor.h
 # End Source File
 # Begin Source File
@@ -196,6 +365,10 @@ SOURCE=.\PSSM.h
 # Begin Source File
 
 SOURCE=.\RandomProjections.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\SeedHash.h
 # End Source File
 # Begin Source File
 

@@ -1,6 +1,9 @@
 #include "HyperGeoCache.h"
 #include "Core/HashTable.h"
+#include "Persistance/TextWriter.h"
 
+//
+//
 struct HyperGeoCache::XK {
    inline XK (int x, int k) : _x (x), _k (k) {
    }
@@ -14,8 +17,21 @@ struct HyperGeoCache::XK {
    int _k;
 };
 
-class HyperGeoCache::Score : public HashLinkEntry <Score> {
+
+
+//
+//
+class HyperGeoCache::Score : public SeedSearcher::ScoreParameters, 
+                             public HashLinkEntry <Score> 
+{
 public:
+   virtual ~Score () {
+   }
+   virtual void dispose () {
+      //
+      // memory is managed by the enclosing HyperGeoCache instance
+   }
+
    typedef HyperGeoCache::XK Key;
    
    inline Score (const XK& xk, double score) : _xk (xk), _score (score) {
@@ -29,7 +45,8 @@ public:
 	inline static HashValue hash (const Key& inKey) {
       //
       // TODO: is this good???
-		return defaultHashFunction(inKey._x) * defaultHashFunction(inKey._k);
+		return defaultHashFunction(inKey._k) * 3141592653
+           + defaultHashFunction(inKey._x) * 2718281828;
 	}
    inline double score () const {
       return _score;
@@ -40,15 +57,29 @@ private:
    double _score;
 };
 
+
+//
+//
 typedef HashTable <HyperGeoCache::Score> CacheBase;
 
-struct HyperGeoCache::Cache : public  CacheBase{
-   Cache (int m, int n) : CacheBase (8 * 256), _m(m), _n(n) {
+
+//
+//
+struct HyperGeoCache::Cache : public  CacheBase {
+   Cache (int m, int n) : CacheBase (8 * 1024 - 7), _m(m), _n(n) {
    }
 
    int _m;
    int _n;
 };
+
+
+
+
+//
+//
+//
+
 
 HyperGeoCache::HyperGeoCache (int n, int m) {
    debug_mustbe (m>=0);
@@ -64,7 +95,7 @@ HyperGeoCache::~HyperGeoCache ()
 }
 
 
-double HyperGeoCache::logTail (int x, int k)
+double HyperGeoCache::logTail (int x, int k, SeedSearcher::ScoreParameters** params)
 {
    XK xk (x, k);
    Score* cachedScore = _cache->find (xk);
@@ -77,8 +108,37 @@ double HyperGeoCache::logTail (int x, int k)
       cachedScore = new Score (xk, score); 
       _cache->add (cachedScore);
    }
+   if (params != NULL)
+      *params = cachedScore;
    
    return cachedScore->score ();
+}
+
+double HyperGeoCache::logTail (int x, int k)
+{
+   return logTail (x, k, NULL);
+}
+
+void HyperGeoCache::writeAsText (Persistance::TextWriter& writer, 
+                                 const SeedSearcher::ScoreParameters* p)
+{
+   debug_mustbe (p);
+
+   const Score* cachedScore;
+#  if BASE_DEBUG
+      cachedScore = dynamic_cast <const Score*> (p);
+#  else
+      //
+      // dont waste time on dynamic cast
+      cachedScore = reinterpret_cast <const Score*> (p);
+#  endif
+   debug_mustbe (cachedScore);
+
+
+   writer << "X="  << cachedScore->getKey ()._x
+          << ", K="<< cachedScore->getKey ()._k
+          << ", N="<< _cache->_n
+          << ", M="<< _cache->_m;
 }
 
 
@@ -89,6 +149,9 @@ double HyperGeoCache::logTail (int x, int k)
 //
 
 
+
+//
+//
 struct HyperGeoTotalCache::XKNM {
    inline XKNM (int x, int k, int n, int m) : _x (x), _k (k), _n (n), _m(m) {
    }
@@ -104,8 +167,20 @@ struct HyperGeoTotalCache::XKNM {
    int _m;
 };
 
-class HyperGeoTotalCache::Score : public HashLinkEntry <Score> {
+
+//
+//
+class HyperGeoTotalCache::Score :   public SeedSearcher::ScoreParameters,
+                                    public HashLinkEntry <Score> 
+{
 public:
+   virtual ~Score () {
+   }
+   virtual void dispose () {
+      //
+      // memory is managed by the enclosing HyperGeoTotalCache instance
+   }
+
    typedef HyperGeoTotalCache::XKNM Key;
    
    inline Score (const XKNM& xknm, double score) : _xknm (xknm), _score (score) {
@@ -133,13 +208,25 @@ private:
    double _score;
 };
 
+
+//
+//
 typedef HashTable <HyperGeoTotalCache::Score> TotalCacheBase;
 
+
+//
+//
 struct HyperGeoTotalCache::Cache : public  TotalCacheBase {
    Cache () : TotalCacheBase (16 * 256 - 7)
    {
    }
 };
+
+
+//
+//
+//
+
 
 HyperGeoTotalCache::HyperGeoTotalCache () 
 {
@@ -152,7 +239,8 @@ HyperGeoTotalCache::~HyperGeoTotalCache ()
 }
 
 
-double HyperGeoTotalCache::logTail (int x, int k, int n, int m)
+double HyperGeoTotalCache::logTail (int x, int k, int n, int m, 
+                                    SeedSearcher::ScoreParameters** p)
 {
    XKNM xknm (x, k, n, m);
    Score* cachedScore = _cache->find (xknm);
@@ -165,9 +253,43 @@ double HyperGeoTotalCache::logTail (int x, int k, int n, int m)
       cachedScore = new Score (xknm, score); 
       _cache->add (cachedScore);
    }
+
+   if (p != NULL)
+      *p = cachedScore;
    
    return cachedScore->score ();
 }
+
+double HyperGeoTotalCache::logTail (int x, int k, int n, int m)
+{
+   return logTail (x, k, n, m, NULL);
+}
+
+void HyperGeoTotalCache::writeAsText (Persistance::TextWriter& writer, 
+                                 const SeedSearcher::ScoreParameters* p)
+{
+   debug_mustbe (p);
+
+   const Score* cachedScore;
+#  if BASE_DEBUG
+      cachedScore = dynamic_cast <const Score*> (p);
+#  else
+      //
+      // dont waste time on dynamic cast
+      cachedScore = reinterpret_cast <const Score*> (p);
+#  endif
+   debug_mustbe (cachedScore);
+
+
+   writer << "X = "  << cachedScore->getKey ()._x
+          << ", K = "<< cachedScore->getKey ()._k
+          << ", N = "<< cachedScore->getKey ()._n
+          << ", M = "<< cachedScore->getKey ()._m;
+}
+
+
+
+
 
 
 

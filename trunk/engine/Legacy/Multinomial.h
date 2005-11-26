@@ -92,3 +92,10 @@ inline
 double const * tMultinomial::getParams(int & n ) const { n=_n;return _PR;}
 #endif
 
+
+
+
+
+
+
+

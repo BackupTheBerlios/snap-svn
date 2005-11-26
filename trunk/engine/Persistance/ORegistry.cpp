@@ -56,9 +56,10 @@ void ORegistry::registerObjectInstance (const Object* p_Obj, OArchive& cia)
    Object::OID id= Object::getSafeID ( p_Obj );
 
    // Register it 
-   bool isNew = _idvector.insert (id).second;
-   debug_mustbe (isNew);
+   bool isNew = 
+     _idvector.insert (id).second;
 
+   debug_mustbe (isNew);
    _registerObjectInstance (id, p_Obj, cia);
 
 
@@ -87,9 +88,6 @@ void ORegistry::registerObjectLink (const Object* p_Obj, OArchive& cia)
 ///  
 void ORegistry::registerObject(const Object * p_Obj , OArchive& cia)
 {
-   // Declare an iterator for the UID vector
-   OIDVector::iterator it;
-
    //find out the obj's UID is registered in the vector
    Object::OID id = Object::getSafeID ( p_Obj );
    bool isNew = _idvector.insert (id).second;
@@ -101,4 +99,11 @@ void ORegistry::registerObject(const Object * p_Obj , OArchive& cia)
       registerObjectLink (p_Obj, cia);
    }
 }
+
+
+
+
+
+
+
 

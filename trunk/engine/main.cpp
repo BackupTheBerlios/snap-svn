@@ -8,6 +8,7 @@
 #include "PrefixTreeWalker.h"
 #include "PSSM.h"
 
+#include "LeafPreprocessor.h"
 
 
 #include "StdOptions.h"
@@ -68,7 +69,7 @@ static int __firstFileArg;
 static int __lastFileArg;
 
 
-
+PrefixTreePreprocessor* ___kuku;
 
 //
 // Copied/Adapted from legacy SeedSearcher
@@ -389,46 +390,51 @@ static void readTreeFile (AutoPtr <SequenceDB>& db,
    // SequenceDB::TextFileStorage::assignWeights (*db, __argv [__firstFileArg], true);
 }
 
+static void setupDB (AutoPtr <SequenceDB>& db, const AlphabetCode& acgt)
+{
+   DLOG << '#' << DLOG.EOL ()
+        << "# SequenceDB: " << DLOG.EOL ();
 
+   DLOG << "Reading Sequence File: " << __argv[__firstFileArg] << DLOG.EOL ();
+   DLOG << "Reading Weights File: " << __argv[__firstFileArg+1] << DLOG.EOL ();
+   DLOG.flush ();
+
+   //
+   // load the sequence files
+   time_t start, finish;
+   time (&start);
+   db = SequenceDB::TextFileStorage::loadFastaAndWeights (acgt,
+      __argv[__firstFileArg],
+      __argv[__firstFileArg+1]);
+
+   time (&finish);
+
+   DLOG << "Loaded " << db->size () <<  " Sequences. ("
+        << (finish - start) << " seconds )." << DLOG.EOL ();
+}
 
 static void setupDBAndTree (const AlphabetCode& acgt,
                             AutoPtr <SequenceDB>& db,
                             AutoPtr <PrefixTreePreprocessor>& tree,
                             SequenceDB::Cluster& positiveSequences)
 {
-   DLOG << '#' << DLOG.EOL ()
-      << "# SequenceDB & PrefixTreePreprocessor "<< DLOG.EOL ();
-
    //
    // create the prefix tree.
    if (__readPreprocessed) {
+      DLOG << '#' << DLOG.EOL ()
+           << "# SequenceDB & PrefixTreePreprocessor "<< DLOG.EOL ();
       readTreeFile (db, tree);
       db->getSequencesAbove (__thresh, positiveSequences);
    }
    else {
-      debug_only (
-         DLOG << "Reading Sequence File: " << __argv[__firstFileArg] << DLOG.EOL ();
-      DLOG << "Reading Weights File: " << __argv[__firstFileArg+1] << DLOG.EOL ();
+      if (!db.valid ())
+         setupDB (db, acgt);
+
+      DLOG << '#' << DLOG.EOL ()
+           << "# PrefixTreePreprocessor "<< DLOG.EOL ();
+      DLOG << "Creating a new PrefixTree Preprocessor from sequence data: " << DLOG.EOL ();
       DLOG.flush ();
-      );
 
-      //
-      // load the sequence files
-      time_t start, finish;
-      time (&start);
-      db = SequenceDB::TextFileStorage::loadFastaAndWeights (acgt,
-         __argv[__firstFileArg],
-         __argv[__firstFileArg+1]);
-      time (&finish);
-      DLOG << "Loaded " << db->size () <<  " Sequences. ("
-           << (finish - start) << " seconds )." << DLOG.EOL ();
-
-      debug_only (
-         DLOG << "Creating a new PrefixTree Preprocessor from sequence data: " << DLOG.EOL ();
-         DLOG.flush ();
-      );
-
-      DLOG.flush ();
       db->getSequencesAbove (__thresh, positiveSequences);
 
       tree  = new PrefixTreePreprocessor (PrefixTreePreprocessor::build (
@@ -526,9 +532,8 @@ static void printMotif (TextWriter& writer,
 // print the positions in the positively labels set in .motif file
 // the other positions are printed in .net.motifs file  
 static void printMotifFile (bool isPositives,
-                            const PrefixTreePreprocessor& tree,
                             const SeedSearcher::Feature& feature_i,
-                            const Preprocessor::PositionVector& positions,
+                            const PositionVector& positions,
                             const std::string& allignment,
                             int index)
 {
@@ -548,7 +553,7 @@ static void printMotifFile (bool isPositives,
 
    TextWriter writer (new StdOutputStream (motifFile));
 
-   Preprocessor::CPositionIterator it (positions.begin (), positions.end ());
+   CPositionIterator it (positions.begin (), positions.end ());
    for (; it.hasNext () ; it.next ()) {
       printMotif (writer, *feature_i._assg, *(*it), allignment);
    }
@@ -557,9 +562,8 @@ static void printMotifFile (bool isPositives,
 }
 
 static void printPSSMFile ( const AlphabetCode& code,
-                            const PrefixTreePreprocessor& tree,
                             const SeedSearcher::Feature& feature_i,
-                            const Preprocessor::PositionVector& positions,
+                            const PositionVector& positions,
                             int index)
                            
 {
@@ -600,9 +604,11 @@ static void printPSSMFile ( const AlphabetCode& code,
 }
 
 
-static void printSeeds (const AlphabetCode& code,
+static void printSeeds (SeqWeightFunction& wf,
+                        SeedSearcher::ScoreFunction& scoreFunc,
+                        const AlphabetCode& code,
                         const SeqCluster& postivelyLabeled,
-                        PrefixTreePreprocessor& tree,
+                        Preprocessor& preprocessor,
                         int totalNumOfSeedsFound,
                         SeedSearcher::BestFeatures& bestFeatures)
 {
@@ -635,13 +641,21 @@ static void printSeeds (const AlphabetCode& code,
 
    //
    // print (do not print less than 3)
-   lastIndexToShow = min (size, max (lastIndexToShow, 3));
-   for (int index=0 ; index<lastIndexToShow ; index++) {
+   int index;
+   lastIndexToShow = tmin (size, tmax (lastIndexToShow, 3));
+   for (index=0 ; index<lastIndexToShow ; index++) {
       const SeedSearcher::Feature& feature_i = bestFeatures [index];
-      DLOG << feature_i._score
-         << ' '
-         << Format (*feature_i._assg)
-         << DLOG.EOL ();
+      DLOG << (-feature_i._score)
+         << '\t'
+         << Format (*feature_i._assg);
+
+      if (feature_i._params) {
+         DLOG << "\t[";
+         scoreFunc.writeAsText (DLOG, feature_i._params);
+         DLOG << ']';
+      }
+
+      DLOG << DLOG.EOL ();
    }
 
    //
@@ -652,17 +666,17 @@ static void printSeeds (const AlphabetCode& code,
 
       //
       // TODO: use the positions in the cluster if they are available
-      PrefixTreeWalker::Nodes motifNodes;
-      motifNodes.addAssignmentNodes (tree, *feature_i._assg);
+      Preprocessor::NodeCluster motifNodes;
+      preprocessor.add2Cluster (motifNodes, *feature_i._assg);
+      //motifNodes.addAssignmentNodes (tree, *feature_i._assg);
 
-      Preprocessor::PositionVector posPositions;
-      Preprocessor::PositionVector negPositions;
-      motifNodes.positions (__thresh, posPositions, negPositions);
+      PositionVector posPositions;
+      PositionVector negPositions;
+      motifNodes.positions (wf, posPositions, negPositions);
 
       //
       // print motif in positive set
       printMotifFile (  true,
-                        tree, 
                         feature_i, 
                         posPositions, 
                         allignment, 
@@ -671,7 +685,6 @@ static void printSeeds (const AlphabetCode& code,
       //
       // print motif in negative set
       printMotifFile (  false,
-                        tree, 
                         feature_i, 
                         negPositions, 
                         allignment, 
@@ -680,7 +693,7 @@ static void printSeeds (const AlphabetCode& code,
       //
       // build PSSM from positive positions only
       // TODO: is this correct?
-      printPSSMFile (code, tree, feature_i, posPositions, index);
+      printPSSMFile (code, feature_i, posPositions, index);
    }
 }
 
@@ -748,9 +761,28 @@ int main(int argc, char* argv [])
       setupRandomProjections (acgt, projections);
 
       AutoPtr <SequenceDB> db;
+      AutoPtr <LeafPreprocessor> leaf;
       AutoPtr <PrefixTreePreprocessor> tree;
       SequenceDB::Cluster positiveSequences;
-      setupDBAndTree (acgt, db, tree, positiveSequences);
+      Preprocessor* preprocessor = NULL;
+
+      if (__totalCount) {
+         setupDB (db, acgt);
+         leaf =   new LeafPreprocessor (
+                     LeafPreprocessor::build (  
+                        __SeedL, 
+                        *db, 
+                        acgt, 
+                        SeedSearcherLog::assgWriter ()
+                     )
+                  );
+         preprocessor = leaf;
+      }
+      else {
+         setupDBAndTree (acgt, db, tree, positiveSequences);
+         preprocessor = tree;
+         ___kuku = tree;
+      }
 
       //
       // TODO: if we have read the tree file from archive,
@@ -760,6 +792,17 @@ int main(int argc, char* argv [])
       if (__generatePreprocessed) {
          saveTreeFile (db, tree);
       }
+
+      SimpleWeightFunction wf (__thresh);
+
+      //
+      // create the hyper-geometric scoring scheme
+      AutoPtr <SeedSearcher::ScoreFunction> score;
+      if (__totalCount)
+         score = new HyperGeoScore::FixedTotalCount (__SeedL, __weightCount, positiveSequences, *db);
+      else
+         score = new HyperGeoScore::Simple (__weightCount, wf, *db);
+         // score = new HyperGeoScore::Simple (__weightCount, positiveSequences, *db);
 
       //
       // keep only the best features
@@ -779,13 +822,7 @@ int main(int argc, char* argv [])
       else
          bestFeatures = &kbestFeatures;
 
-      //
-      // create the hyper-geometric scoring scheme
-      AutoPtr <SeedSearcher::ScoreFunction> score;
-      if (__totalCount)
-         score = new HyperGeoScore::FixedTotalCount (__SeedL, __weightCount, positiveSequences, *db);
-      else
-         score = new HyperGeoScore::Simple (__weightCount, positiveSequences, *db);
+      SimpleWeightFunction weightFunc (__thresh);
 
       //
       // now run over all projections, searching for seeds.
@@ -810,11 +847,23 @@ int main(int argc, char* argv [])
                SeedSearcher::prefixTreeSearch (
                *tree,
                assg,
-               positiveSequences,
+               weightFunc,
                *score,
                *bestFeatures);
          }
          else {
+            totalNumOfSeedsFound +=
+               SeedSearcher::totalCountSearch (
+               *preprocessor,
+               assg,
+               assgWriter,
+               positiveSequences,
+               *score,
+               *bestFeatures);
+
+
+
+/*
             totalNumOfSeedsFound +=
                SeedSearcher::totalCountSearch (
                *tree,
@@ -823,6 +872,7 @@ int main(int argc, char* argv [])
                positiveSequences,
                *score,
                *bestFeatures);
+*/
          }
 
          time (&finish);
@@ -835,9 +885,11 @@ int main(int argc, char* argv [])
       kbestFeatures.sort ();
       //
       // do not include N when printing PSSMs
-      printSeeds (ACGTAlphabet::get (/*include N */ false),
+      printSeeds (wf,
+                  *score,
+                  ACGTAlphabet::get (/*include N */ false),
                   positiveSequences,
-                  *tree, 
+                  *preprocessor, 
                   totalNumOfSeedsFound, 
                   *bestFeatures);
 
@@ -867,6 +919,7 @@ int main(int argc, char* argv [])
 
 
 #if SEED_DL_MALLOC_OPTIMIZATION
+
 #include "Core/dlmalloc.h"
 
 void * operator new (size_t size)
@@ -881,38 +934,3 @@ void operator delete (void* p)
 
 #endif
 
-//
-// for each seed - we need to go over all positions - 
-
-
-/*
-typedef 
-
-static void computePSSM (const SeedSearcher::Feature& feature, 
-
-void 
-
-void
-computePSSM(map<codeVec,Vec<tMultinomial> > & motifsPSSM ,map<codeVec,Vec<pair<codeVec,Location> > > const & motifSamples)
-{
-   for (map<codeVec,Vec<pair<codeVec,Location> > >::const_iterator p = motifSamples.begin();
-   p!= motifSamples.end();p++) {
-      
-      codeVec const & code = p->first;
-      Vec<pair<codeVec,Location> >  const & currMotifSamples = p->second;
-      for (int index = 0;index<PSSML;index++) {
-         vector<double> counts(4,0.0);      
-         
-         Vec<pair<codeVec,Location> >::const_iterator sit = currMotifSamples.begin()
-         for (;sit != currMotifSamples.end();sit++) {
-            codeVec const & sample = (*sit).first;
-            int val = (int) (sample[index]);
-            if (  val < 4) 
-               counts[val]++;
-         }// over all samples in this position
-
-         motifsPSSM[code].push_back(tMultinomial(counts,false));	  
-      } // over all positions
-   } // over all motifs
-}
-*/

@@ -216,9 +216,21 @@ class HashTable {
 	}
 	
 	Entry* find(const Key& inKey, HashValue inHash) const {
-		for(Entry* entry= _table[hash2Index(inHash)]; entry; entry= entry->next()) {
+      //
+      // this is used to make sure the hash function performs
+      // somewhat adequately
+      debug_only (
+         int index=0;
+         int reasonableChainLength = 
+            4 * tmax (2.0, ((double) _count + 1) / (_size));
+      );
+      
+      Entry* entry= _table[hash2Index(inHash)];
+		for(; entry; entry= entry->next()) {
 			if (entry->fitsKey(inKey))
 				return entry;
+
+         debug_mustbe (++index <= reasonableChainLength);
 		}
 		return 0;
 	}
@@ -226,8 +238,8 @@ class HashTable {
 	void resize(size_t inNewSize) {
 		TableItem* oldTable= _table;
 		size_t oldSize= _size;
-		table= makeTable(inNewSize);
-		size= inNewSize;
+		_table= makeTable(inNewSize);
+		_size= inNewSize;
 
 		TableIter tabI(oldTable, oldTable+oldSize);
 		while(tabI.next()) {
@@ -364,3 +376,9 @@ inline HashValue defaultHashFunction(const void* inValue) {
 HashValue defaultHashFunction(const char* inStr, size_t inSize);
 
 #endif
+
+
+
+
+
+

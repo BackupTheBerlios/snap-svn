@@ -52,9 +52,30 @@ public:
 
 
 
+//
+//
+class SimpleWeightFunction : public SeqWeightFunction {
+public:
+   SimpleWeightFunction (double inThreshold) : _threshold (inThreshold) {
+   }
+   virtual ~SimpleWeightFunction () {
+   }
+   //
+   // returns true iff the weight belongs to the positive or negative set.
+   // if so, 'outIsPositive' is set to true iff the weight belongs to the
+   // positive set.
+   virtual bool isRelevantImpl (double weight, bool& outIsPositive) const {
+      outIsPositive = weight >= _threshold;
+      return true;
+   }
+
+protected:
+   double _threshold;
+};
 
 
-
+//
+//
 class BestFeaturesLink : public SeedSearcher::BestFeatures {
    //
    // this class is the base class of all BestFeatures classes
@@ -63,10 +84,8 @@ class BestFeaturesLink : public SeedSearcher::BestFeatures {
 public:
    BestFeaturesLink (SeedSearcher::BestFeatures* next) : _next (next) {
    }
-   virtual bool add (AutoPtr <Assignment> assg,
-                     AutoPtr <SequenceDB::Cluster> cluster,
-                     double score) {
-      return _next->add (assg, cluster, score);
+   virtual bool add (SeedSearcher::Feature_var feature) {
+      return _next->add (feature);
    }
 
    virtual int size () const {
@@ -98,9 +117,7 @@ public:
 
    //
    // takes ownership of Assignment & Cluster
-   virtual bool add (AutoPtr <Assignment>,
-                     AutoPtr <SequenceDB::Cluster>,
-                     double score);
+   virtual bool add (SeedSearcher::Feature_var feature);
 
    virtual int size () const {
       return _size;
@@ -148,9 +165,7 @@ public:
 
    //
    // takes ownership of Assignment & Cluster
-   virtual bool add (AutoPtr <Assignment>,
-                     AutoPtr <SequenceDB::Cluster>,
-                     double score);
+   virtual bool add (SeedSearcher::Feature_var feature);
 
    //
    // returns the minimum positive sequences that should contain a feature
@@ -188,4 +203,11 @@ struct StatFix {
 };
 
 #endif // _SeedSearcher_StdOption_h
+
+
+
+
+
+
+
 

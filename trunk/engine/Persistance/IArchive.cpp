@@ -9,15 +9,18 @@
 
 using namespace Persistance;
 
-static void throwTypeNotMatchedException (bool strict, int expected, int inArchive)
+static void throwTypeNotMatchedException (bool strict, 
+					  int expected, 
+					  int inArchive)
 {
    if (strict) {
       RaisePersistanceError3 (
-         "code %d expected, code %d in archive", expected , inArchive);         
+         "code %d expected, code %d in archive", expected , inArchive);
    }
    else {
       RaisePersistanceError3 (
-         "expected %d bytes, %d bytes actually in archive", expected , inArchive);         
+         "expected %d bytes, %d bytes actually in archive", 
+	 expected , inArchive);         
    }
 }
 
@@ -36,7 +39,7 @@ void IArchive ::throwTypeNotMatchedException(int expected, int inArchive)
 /// default constructor
 ///
 IArchive::IArchive(InputStream* in, TFactoryList* factories) 
-:  _text (false), _factories (factories), _reader (in)
+  :  _text (false),  _reader (in), _factories (factories)
 {
    //
    // read option flags from stream
@@ -244,7 +247,7 @@ static void readPrimitive(IArchive& in, unsigned char& param) {
 // optionally, n could be NULL
 template <typename PrimType>
 static void readPrimitiveArray (IArchive& in, PrimType*& params, int* n) {
-   static_cast <double> (*params);
+  USELESS (static_cast <double> (*params); );
    int len = readPrimArrayHelper (in, sizeof (PrimType), n);
    if (in.text ()) {
       for (int i=0 ; i<len ; i++) 
@@ -257,8 +260,11 @@ static void readPrimitiveArray (IArchive& in, PrimType*& params, int* n) {
 }
 
 template <typename PrimType>
-static void readPrimitiveBuffer (IArchive& in, PrimType* params, int size, int* n) {
-   static_cast <double> (*params);
+static void readPrimitiveBuffer (IArchive& in, 
+				 PrimType* params, 
+				 int size, int* n) 
+{
+  USELESS (static_cast <double> (*params); );
    int len = readPrimArrayHelper (in, sizeof (PrimType), n);
    if (size < len) {
       RaisePersistanceError2 ("Buffer size too small %d", size);
@@ -501,3 +507,10 @@ void IArchive::readDoubleBuffer (double b [], int s, int* l)
 {
    readPrimitiveBuffer (*this, b, s, l);
 }
+
+
+
+
+
+
+

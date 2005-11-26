@@ -12,36 +12,40 @@ public:
 
    //
 	// smallest/largest searchable assignments
-   virtual int minAssignmentSize ();
-   virtual int maxAssignmentSize ();
+   virtual int minAssignmentSize () const;
+   virtual int maxAssignmentSize () const;
 
    //
 	// iterate over all positions that correspond to an assignment on a given sequence
-	virtual PositionVector* getPositions (SequenceDB::ID, const Assignment&);
+	virtual AutoPtr <PositionVector> getPositions ( SequenceDB::ID, 
+                                                   const Assignment&)  const;
 
 	//
 	// returns true iff the sequence has at least one position which corresponds
 	// to the given assignment
-	virtual bool hasAssignment (SequenceDB::ID, const Assignment&);
+	virtual bool hasAssignment (SequenceDB::ID, const Assignment&)  const;
 
 	//
 	// iterate over all sequences
-    virtual SequenceVector* getSequences ();
+   virtual AutoPtr <SequenceVector> getSequences ()  const;
 
 	//
 	// iterate over all sequences that have at least one position which corresponds 
 	// to the given assignment
-    virtual SequenceVector* getSequences (const Assignment&);
+   virtual AutoPtr <SequenceVector> getSequences (const Assignment&) const;
+
+   virtual void add2Cluster (NodeCluster&, const Assignment&) const;
 
 
     //
     //  inner classes
 public:
-   class Node;
-   class NodeRep;
+   class TreeNode;
+   class TreeNodeRep;
    class TreeRep;
    class SeqPositions;
 
+   
    //
    // class that represents a vector of positions of a single sequence
    class SeqPositions : public Persistance::Object {
@@ -53,6 +57,7 @@ public:
       SeqPositions& operator = (const SeqPositions&);
 
       PositionIterator iterator ();
+      CPositionIterator iterator () const;
       const Sequence* sequence () const;
       const PositionVector* positions () const;
       bool empty () const;
@@ -67,20 +72,21 @@ public:
       PositionVector* _positions;
    };
 
+
 	//
 	// contains all positions for a given sequence
    typedef Vec <SeqPositions> SeqPositionVector; 
    typedef IteratorWrapper <SeqPositionVector> SeqPositionIterator;
+   typedef ConstIteratorWrapper <SeqPositionVector> CSeqPositionIterator;
     // consider only non empty genes, search using binary-search
 
     //
     // every node has at least one position
-    class Node {
+   class TreeNode : public Preprocessor::Node {
     public:
-      Node (NodeRep* in) : _rep (in) {
-      }
-      ~Node () { //
-         // just a wrapper for NodeRep...
+      TreeNode (TreeNodeRep* in);
+      ~TreeNode () { //
+         // just a wrapper for TreeNodeRep...
       }
         
       //
@@ -89,10 +95,10 @@ public:
 
       //
       // get a child of this node of the half-open range [0..cardinality)
-      NodeRep* getChild (int);
+      TreeNodeRep* getChild (int);
       //
       // get parent of this node
-      NodeRep* getParent ();
+      TreeNodeRep* getParent ();
       //
       // return the depth of this node
       int depth ();
@@ -104,7 +110,7 @@ public:
 
       //
       // ownership belongs to the caller
-      PositionVector* getPositions (SequenceDB::ID);
+      AutoPtr <PositionVector> getPositions (SequenceDB::ID);
 
       //
       // iterate over all positions of a particular sequence in this node
@@ -114,13 +120,9 @@ public:
       // check if node has any positions for a particular sequence
       bool hasPositions (SequenceDB::ID) const; 
       bool hasPositions (const SequenceDB::Cluster&) const;
-
-      //
-      // returns all the sequences in this node
-      void getCluster (SequenceDB::Cluster& outSeqInNode) const;
         
     private:
-      NodeRep* _rep;
+      TreeNodeRep* _rep;
     };
 
    //
@@ -128,7 +130,7 @@ public:
 public:
    PrefixTreePreprocessor (TreeRep*, bool owner = true);
 
-   NodeRep* getRoot () const;
+   TreeNodeRep* getRoot () const;
    const SequenceDB* getSequenceDB () const;
    int getDepth () const;
 
@@ -156,6 +158,13 @@ private:
 };
 
 #endif // _SeedSearcher_PrefixTreePreprocessor_h
+
+
+
+
+
+
+
 
 
 

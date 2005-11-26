@@ -21,7 +21,8 @@
 #define END_NAMESPACE(name) };
 
 //
-// definitions for 'typename' keyword. some compilers (VC 6.0) dont support it properly
+// definitions for 'typename' keyword. 
+// some compilers (VC 6.0) dont support it properly
 // while others (gcc) enforce it rather strictly.
 #if ENV_C_SUPPORTS & ENV_TYPENAME_KEYWORD
 #  define TYPENAME typename
@@ -98,38 +99,37 @@
 
 class BaseException  {
 public:
-	BaseException();
-	virtual ~BaseException();
+  BaseException();
+  virtual ~BaseException();
 
-	virtual bool bypassStackTrace () const;
+  virtual bool bypassStackTrace () const;
+  //  Write short explanation message to the 'out'. The message should be
+  //  applicable in the context "The operation failed because of <message>"
+  //  Example: "system error 25"
+  virtual void explain (std::ostream&);
 
-	//	Write short explanation message to the 'out'. The message should be
-	//  applicable in the context "The operation failed because of <message>"
-	//  Example: "system error 25"
-   virtual void explain (std::ostream&);
-
-	//	Gets called right before throw usually
-	//	to gather exception information
-	void willThrow() const;
+  //	Gets called right before throw usually
+  //	to gather exception information
+  void willThrow() const;
+  
+  class	Support {
+  public:
+    virtual ~Support();
+    virtual void willThrow(const BaseException& inExcp, void* inContext)= 0;
+  };
 	
-	class	Support {
-	 public:
-		virtual ~Support();
-	 	virtual void willThrow(const BaseException& inExcp, void* inContext)= 0;
-	};
-	
-	static void setSupport(Support* in);
-	static Support* getSupport();
-	
-    //
-    // break when BaseException constructor is called
-    static void breakOnException (bool);
-    static bool breakOnException ();
-
-    //
-    // break when throwx is called
-    static void breakOnThrow (bool);
-    static bool breakOnThrow ();
+  static void setSupport(Support* in);
+  static Support* getSupport();
+  
+  //
+  // break when BaseException constructor is called
+  static void breakOnException (bool);
+  static bool breakOnException ();
+  
+  //
+  // break when throwx is called
+  static void breakOnThrow (bool);
+  static bool breakOnThrow ();
 };
 
 
@@ -147,32 +147,41 @@ inline void throwx(const Exception& in) {
 //	It is recommended to use mustbe(expr) unless it's called too often (100,000 times or more)
 //	Then, use debug_mustbe(expr)
 
-class	ProgramException : public BaseException {
+class ProgramException : public BaseException {
 public:
-	ProgramException(int inCode, const char* inFileName= 0, const char* inError=0);
-
+  ProgramException(int inCode, 
+		   const char* inFileName=0, const char* inError=0);
    virtual void explain (std::ostream&);
-	static void raise(int lineNo, const char* fileName=0, const char* inError=0);
+   static void raise(int lineNo, 
+		     const char* fileName=0, const char* inError=0);
 
-	int getCode() const { return code; }
+   int getCode() const { return code; }
 	
 protected:
-	int code;
-	const char* fileName;
+   int code;
+   const char* fileName;
    std::string error;
 };
 
 
 #if	BASE_DEBUG
-	void exception_action(BaseException &inException, const char* file, int line);
-	void signal_assertion(const char* msg, const char* file, int line);	
-	inline void signal_assert(bool cond, const char* msg, const char* file, int line) {
-		if (!cond) signal_assertion(msg, file, line);
-	}
+   void exception_action(BaseException &inException, 
+			 const char* file, int line);
+
+   void signal_assertion(const char* msg, const char* file, int line);	
+
+   inline void signal_assert(bool cond, 
+			     const char* msg, 
+			     const char* file, 
+			     int line) 
+{
+  if (!cond) signal_assertion(msg, file, line);
+}
+
 #else
-	#define	exception_action(exc, file, line)	
-	#define signal_assertion(msg, file, line)
-	#define	signal_assert(cond, msg, file, line)
+#   define exception_action(exc, file, line)	
+#   define signal_assertion(msg, file, line)
+#   define signal_assert(cond, msg, file, line)
 #endif
 
 //
@@ -188,16 +197,21 @@ protected:
 		if (!cond) ProgramException::raise(lineNo);
 	}
 	
-	#define mustbe(cond)			   pexifnot_((cond), __LINE__)
-	#define mustnot(cond)			pexifnot_(!(cond), __LINE__)
-	#define mustfail()				pexifnot_(bool(false), __LINE__)
+	#define mustbe(cond)		pexifnot_((cond), __LINE__)
+	#define mustnot(cond)		pexifnot_(!(cond), __LINE__)
+	#define mustfail()		pexifnot_(bool(false), __LINE__)
 
-	#define	debug_assert(cond)		debug_only(signal_assert((cond), #cond, __FILE__, __LINE__))
-	#define debug_mustbe(cond)		   debug_assert((cond)!=0)
-	#define debug_mustnot(cond)		debug_assert((cond)==0)
+	#define	debug_assert(cond)	\
+debug_only(signal_assert((cond), #cond, __FILE__, __LINE__))
+	#define debug_mustbe(cond)	debug_assert((cond)!=0)
+	#define debug_mustnot(cond)	debug_assert((cond)==0)
 
-	#define debug_mustfail()		debug_only(signal_assertion("Failure", __FILE__, __LINE__))
-	#define	debug_signal(msg)		debug_only(signal_assertion(msg, __FILE__, __LINE__))		
+	#define debug_mustfail()	\
+debug_only(signal_assertion("Failure", __FILE__, __LINE__))
+
+	#define	debug_signal(msg)	\
+debug_only(signal_assertion(msg, __FILE__, __LINE__))		
+
 #endif
 
 
@@ -222,11 +236,6 @@ inline const T& tmax(const T& a, const T& b) {
 }
 
    
-struct SystemInfo {
-   static size_t getPageSize ();
-};
-
-
 //
 // optimizations: should use Doug Lee's malloc? 
 #define CORE_DL_MALLOC_OPTIMIZATION 1
@@ -234,4 +243,10 @@ struct SystemInfo {
 
 
 #endif // _SeedSearcher_Core_Defs_h
+
+
+
+
+
+
 
