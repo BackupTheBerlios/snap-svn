@@ -1,4 +1,39 @@
-12/9/04 Requirements
+12/4/05 requirements
+----------------------
+
+YTD from last time:
+
+1) create regression test suite:
+	b)	test for correct results for hand-crafted examples
+	c)	test for match with old seed-searcher
+	
+3)	multiple wgt files: (requires further defintions by yoseph)
+	ability to select per conf-run the wgt file.
+	limitation:	only the sequences that are specified by the first wgt file 
+				are loaded and preprocessed.
+	question:	should we mix seeds from different .wgt files?
+				is there a reason to do this except for 
+				- lowering time to build preprocessor (insignificant)
+				- it is easier to combine seeds from different runs	
+				
+
+new stuff:
+
+1) move positional data outside .wgt files
+
+ 
+	
+	
+
+also accomplished
+---------------------
+
+* SeedSearcher documentation
+* fixes to FDR and exploss function - via new score architecture
+* added N to wildcards
+
+	
+12/9/04 Requirements - completed
 ---------------------
 
 1) create regression test suite:
@@ -42,8 +77,6 @@
 		perform redundancy checks at the end.
 	b)	print positional data correctly - according to positive strand
 
-
-
 6)	run-time performance optimization:
 	a)	optimize feature-array code and redundancy checking
 		it takes too much time for a large number of seeds
@@ -54,7 +87,8 @@
 	c)	tree-search is slower than table search,
 		but it has potentiall for searching for shorter seeds at the same time.
 		this could be an interesting algorithm.
-		
+
+Accom		
 	
 Additional requirements (complete)
 ------------------------

@@ -125,6 +125,8 @@ public:
    const char* end () const {
       return mData + mLength;
    }
+
+	Str trimmedSubstring () const;
    
 protected:
    char* mData;
@@ -264,9 +266,9 @@ inline bool operator >= (const Str& a, const Str& b) {
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Str.h $
-// Version     : $Revision: 13 $ 
+// Version     : $Revision: 14 $ 
 //               $Author: Aviad $
-//               $Date: 30/01/05 2:48 $ 
+//               $Date: 13/05/05 11:14 $ 
 // Description :
 //	The Core library contains contains basic definitions and classes
 // which are useful to any highly-portable applications

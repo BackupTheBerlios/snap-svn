@@ -16,8 +16,8 @@ struct main_definitions {
       _stable_version_,
 
       __versionMajor = 2,
-      __versionMinor = 3321,
-      __stability = _alpha_version_
+      __versionMinor = 4,
+      __stability = _beta_version_
    };
 
    //
@@ -95,7 +95,7 @@ struct main_definitions {
    static const char SAMPLE_FILE_STUB[];  // = "sample";
    static const char SEEDS_FILE_STUB[];   // = "seeds";
    static const char MATRIX_FILE_STUB[];  // = "matrix";
-   
+
 
    //
    //

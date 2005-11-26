@@ -4,7 +4,7 @@
 	Version="7.10"
 	Name="SeedSearcherCore"
 	ProjectGUID="{80D22A42-7429-4BA2-8136-0AF6FADBEB11}"
-	SccProjectName="&quot;$/SeedSearcher&quot;, ECAAAAAA"
+	SccProjectName="&quot;$/SeedSearcher.2332&quot;, RLDAAAAA"
 	SccAuxPath=""
 	SccLocalPath=".."
 	SccProvider="MSSCCI:Microsoft Visual SourceSafe"
@@ -146,12 +146,6 @@
 				RelativePath="..\FeatureSet.cpp">
 			</File>
 			<File
-				RelativePath="..\HyperGeoCache.cpp">
-			</File>
-			<File
-				RelativePath="..\HyperGeoScore.cpp">
-			</File>
-			<File
 				RelativePath="..\LeafPreprocessor.cpp">
 			</File>
 			<File
@@ -174,6 +168,9 @@
 			</File>
 			<File
 				RelativePath="..\RandomProjections.cpp">
+			</File>
+			<File
+				RelativePath="..\Score.cpp">
 			</File>
 			<File
 				RelativePath="..\SeedConf.cpp">
@@ -233,9 +230,6 @@
 				RelativePath="..\HyperGeoCache.h">
 			</File>
 			<File
-				RelativePath="..\HyperGeoScore.h">
-			</File>
-			<File
 				RelativePath="..\LeafPreprocessor.h">
 			</File>
 			<File
@@ -252,6 +246,12 @@
 			</File>
 			<File
 				RelativePath="..\RandomProjections.h">
+			</File>
+			<File
+				RelativePath="..\Score.h">
+			</File>
+			<File
+				RelativePath="..\ScoreFunction.h">
 			</File>
 			<File
 				RelativePath="..\SeedConf.h">
@@ -316,7 +316,19 @@
 			Name="boost"
 			Filter="">
 			<File
+				RelativePath="..\boost\regex\c_regex_traits.cpp">
+			</File>
+			<File
+				RelativePath="..\boost\regex\c_regex_traits_common.cpp">
+			</File>
+			<File
 				RelativePath="..\boost\filesystem\convenience.cpp">
+			</File>
+			<File
+				RelativePath="..\boost\regex\cpp_regex_traits.cpp">
+			</File>
+			<File
+				RelativePath="..\boost\regex\cregex.cpp">
 			</File>
 			<File
 				RelativePath="..\boost\filesystem\exception.cpp">
@@ -325,10 +337,37 @@
 				RelativePath="..\boost\test\execution_monitor.cpp">
 			</File>
 			<File
+				RelativePath="..\boost\regex\fileiter.cpp">
+			</File>
+			<File
+				RelativePath="..\boost\regex\instances.cpp">
+			</File>
+			<File
 				RelativePath="..\boost\filesystem\operations_posix_windows.cpp">
 			</File>
 			<File
 				RelativePath="..\boost\filesystem\path_posix_windows.cpp">
+			</File>
+			<File
+				RelativePath="..\boost\regex\posix_api.cpp">
+			</File>
+			<File
+				RelativePath="..\boost\regex\regex.cpp">
+			</File>
+			<File
+				RelativePath="..\boost\regex\regex_debug.cpp">
+			</File>
+			<File
+				RelativePath="..\boost\regex\regex_synch.cpp">
+			</File>
+			<File
+				RelativePath="..\boost\regex\w32_regex_traits.cpp">
+			</File>
+			<File
+				RelativePath="..\boost\regex\wide_posix_api.cpp">
+			</File>
+			<File
+				RelativePath="..\boost\regex\winstances.cpp">
 			</File>
 		</Filter>
 	</Files>

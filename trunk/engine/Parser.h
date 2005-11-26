@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Parser.h $
-// Version     : $Revision: 32 $ 
+// Version     : $Revision: 36 $ 
 //               $Author: Aviad $
-//               $Date: 1/03/05 22:22 $ 
+//               $Date: 13/05/05 11:10 $ 
 // Description :
 //    Concrete Parser for seed-searcher options
 //
@@ -87,7 +87,7 @@ public:
    int __proj_mid;
    //
    // specialize projection 
-   // (expret optimization, may lead to incorrect results)
+   // (expert optimization, may lead to incorrect results)
    bool __proj_spec;
    //
    // seed for random projections 
@@ -95,6 +95,9 @@ public:
    //
    // ask for a specific projection (not random)
    StrBuffer __proj_base;
+	//
+	// allow outer wildcards in projection (in the first and last positions)
+	bool __proj_outer;
    //
    // no of seeds to output
    int __seed_n;
@@ -126,15 +129,12 @@ public:
    //
    //
    bool __count_reverse;
-   //
-   // use FDR statistical fix
-   bool __score_fdr;
-   //
-   // use Bonferroni statistical fix
-   bool __score_bonf;
+
+	StatFixType __statfix_t;
+
    //
    // worst score to allow
-   double __score_min;
+   double __minusLog10score_min;
    //
    // minimal number to positive sequences for a seed
    int __score_min_seq;
@@ -147,9 +147,6 @@ public:
    //
    // threshold for counting a sequence as positive
    float __weight_t;
-   bool __weight_invert;
-   WeightType __weightType;
-   float __weight_lowt;
 
    //
    // which type of search to perform: tree search or table search
@@ -179,38 +176,8 @@ public:
    //
    // flag that determines if seeds should be outputed to the log
    OutputType __generateSeedlog;
-#if 0
-   //
-   // (in seed performance test)
-   // the number of BestPositions used for each sequence evaluation
-   // during seed performance testing
-   int __perf_m;
-   //
-   // performance length compensation
-   enum PerfLenComp{
-      _perflencomp_none_,
-      _perflencomp_linear_,
-      _perflencomp_log_
-   };
-   //
-   // (in seed performance test)
-   // how to compensate for sequence length 
-   PerfLenComp __perf_comp_l;
-   //
-   // (in seed performance test)
-   // 
-   enum NormType {
-      _norm_none_,
-//    _norm_linear_,
-      _norm_linear_background_,
-//      _norm_log_linear_,
-//      _norm_exp_linear_,
-      _norm_logit_,
-   };
-   NormType __score_norm;
-#endif
 
-   //
+	//
    //
    StrBuffer __conf;
 

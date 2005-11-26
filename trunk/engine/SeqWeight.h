@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $
 //               $Workfile: SeqWeight.h $
-// Version     : $Revision: 1 $
+// Version     : $Revision: 3 $
 //               $Author: Aviad $
-//               $Date: 10/01/05 1:53 $
+//               $Date: 10/05/05 12:12 $
 // Description :
 //    Concrete classes for sequences, sequence positions
 //
@@ -93,7 +93,7 @@ struct SeqWeightDB {
       inline double getWeight () const {
          return _weight;
       }
-
+/*
       //
       // 
       void initExpectedWeight (int seqLength) {
@@ -109,7 +109,7 @@ struct SeqWeightDB {
          expectedWeight = expectedWeight / seqLength;
          _weight = expectedWeight;
       }
-
+*/
    private:
       double _weight;
       Positions _positions;

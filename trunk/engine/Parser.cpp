@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Parser.cpp $
-// Version     : $Revision: 42 $ 
+// Version     : $Revision: 46 $ 
 //               $Author: Aviad $
-//               $Date: 3/03/05 21:34 $ 
+//               $Date: 13/05/05 11:10 $ 
 // Description :
 //    Concrete Parser for seed-searcher options
 //
@@ -29,6 +29,8 @@
 #include <iostream>
 #include <math.h>
 
+#include <boost/regex.hpp>
+
 #include "core/GetOptParser.h"
 #include "DebugLog.h"
 using namespace std;
@@ -46,7 +48,28 @@ struct ParserError : public BaseException {
 
 
 
-
+//
+// removes \" and \' from a string
+static void removeStringSymbols (StrBuffer& buffer)
+{
+	//
+	// we remove the first and last characters if they are \" or \'
+	const boost::regex e(
+		"([^'\"]*)"
+		"(['\"])"
+		"(.*)"
+		"\\2"
+		"([^'\"]*)"
+		);
+	do {
+		boost::cmatch what;
+		if (boost::regex_match(buffer.getCString(), what, e)) {
+			buffer.set (Str (what[1])); buffer.append(Str (what [3])); buffer.append(Str (what[4]));
+		}
+		else break;
+	}
+	while (1);
+}
 
 
 bool Parser::getOptBoolean (const char* in, bool* optUnknown)
@@ -196,6 +219,18 @@ DEFINE_INT_SEED_PARSER_OPTION(proj_mid,
    __proj_mid
 );
 
+DEFINE_BOOL_SEED_PARSER_OPTION(proj_outer,
+	"Sproj-outer", 
+	"[=on | =off] Allow/disallow wildcards in the outermost projection positions. "
+		"Allowing outer wildcards is useful for known motif search (the --Sproj-base option) "
+		"Where a user enters a known motif and would like to search for similar motifs"
+		"(e.g. use wildcards). In this setting the outermost positions should not get special "
+		"treatment as it not necessary for them to be conserved.",
+	"off", 
+	GetOptWrapper::_optional_argument_,
+	__proj_outer
+);
+
 DEFINE_BOOL_SEED_PARSER_OPTION(proj_spec,
    "Sproj-spec", 
    "[=on | =off] use projection-specialization (experts use only)",
@@ -213,23 +248,26 @@ DEFINE_INT_SEED_PARSER_OPTION(proj_i,
    __proj_i
 );
 
-DEFINE_STRING_SEED_PARSER_OPTION(proj_base,
-      "Sproj-base", 
-      "<assignment> the basic assignment on which to project.\n"
-         "not specifying this option is exactly the same as "
-         "specifying this option with an assignment of '*' of the "
-         "same length as specified in the --Sseed-l option."
-         "examples:\n"
-         "(1) --Sproj-base ACG*?GG --Sproj-e"
-         "this will generate all possible projections on ACG*?GG"
-         "which means that the '?' will always remain while the '*'"
-         "is substituted for A, C, G, T in turn.\n"
-         "examples:\n"
-         "(2) \"--Sproj-base *****\" is equivalent to \"--Sseed-l 5\"",
-      "",
-      GetOptWrapper::_required_argument_,
-      __proj_base 
+DEFINE_SEED_PARSER_OPTION(proj_base,
+	"Sproj-base", 
+	"<assignment> the basic assignment on which to project.\n"
+      "not specifying this option is exactly the same as "
+      "specifying this option with an assignment of '*' of the "
+      "same length as specified in the --Sseed-l option."
+      "examples:\n"
+      "(1) --Sproj-base ACG*?GG --Sproj-e"
+      "this will generate all possible projections on ACG*?GG"
+      "which means that the '?' will always remain while the '*'"
+      "is substituted for A, C, G, T in turn.\n"
+      "examples:\n"
+      "(2) \"--Sproj-base *****\" is equivalent to \"--Sseed-l 5\"",
+   "",
+   GetOptWrapper::_required_argument_,
+	{ parser->__proj_base = optarg; removeStringSymbols (parser->__proj_base); },
+	{ out = parser->__proj_base;	}
 );
+
+
 
 DEFINE_INT_SEED_PARSER_OPTION(seed_n,
    "Sseed-n",
@@ -296,6 +334,7 @@ DEFINE_SEED_PARSER_OPTION(prep,
       }
    }
 );
+
 
 DEFINE_INT_SEED_PARSER_OPTION(
    prep_l,
@@ -418,33 +457,39 @@ DEFINE_SEED_PARSER_OPTION(
    }
 );
 
-DEFINE_BOOL_SEED_PARSER_OPTION(
-   score_fdr,
-   "Sscore-fdr",
-   "[=on | =off] apply FDR statistical fix",
-   "off",
-   GetOptWrapper::_optional_argument_,
-   __score_fdr
-);
 
-DEFINE_BOOL_SEED_PARSER_OPTION(
-   score_bonf,
-   "Sscore-bonf",
-   "[=on | =off] apply Bonferroni statistical fix",
-   "on",
-   GetOptWrapper::_optional_argument_,
-   __score_bonf
+DEFINE_SEED_PARSER_OPTION(
+   score_statfix,
+   "Sscore-statfix",
+   "< none | bonf | fdr > choose statistical fix method",
+   "bonf",
+   GetOptWrapper::_required_argument_,
+	{  
+		Str opt (optarg);
+		if (opt.equalsIgnoreCase ("none")) parser->__statfix_t = _statfix_none_;
+		else if (opt.equalsIgnoreCase ("bonf")) parser->__statfix_t =_statfix_bonf_;
+		else if (opt.equalsIgnoreCase ("fdr")) parser->__statfix_t = _statfix_fdr_;
+		else parser->usage (StrBuffer ("bad statistical fix parameter: ", optarg));
+	},
+	{
+		switch (parser->__statfix_t) {
+			case _statfix_none_: out = "none"; break;
+			case _statfix_bonf_: out = "bonf"; break;
+			case _statfix_fdr_: out = "fdr"; break;
+			default: mustfail ();
+		}
+	}
 );
 
 
 DEFINE_SEED_PARSER_OPTION(
    score_min,
    "Sscore-min",
-   "<min-score> for seed",
+   "<min-score> for seed (in -log10 scale)",
    "0.5",
    GetOptWrapper::_required_argument_,
-   {  parser->__score_min = atof (optarg); },
-   {  out = FixedStrBuffer <128> ("%f", (double) parser->__score_min).getStr (); }
+   {  parser->__minusLog10score_min = atof (optarg); },
+   {  out = FixedStrBuffer <128> ("%f", (double) parser->__minusLog10score_min).getStr (); }
 );
 
 DEFINE_INT_SEED_PARSER_OPTION(
@@ -468,69 +513,12 @@ DEFINE_INT_SEED_PARSER_OPTION(
 DEFINE_SEED_PARSER_OPTION(
    weight_t,
    "Sweight-t",
-   "< <threshold-value>       | \n"
-   "  interval:<low>:<high>   | \n"
-   "  border:<low>:<high>     > type of weight function.\n"
-      " => 'threshold': neg=[0, thrshd], pos=[thrshd, 1]\n"
-      " => 'interval':  neg=[0,low] U [hi, 1], pos=[low, hi]\n"
-      " => 'border':    neg=[0,low], irrelevant=[low, hi], pos=[hi, 1]",
+   "<threshold-value>",
    "0.5",
    GetOptWrapper::_required_argument_,
-   {
-      Str opt (optarg);
-      if (opt.equalsIgnoreCase ("interval")) {
-         parser->__weightType = _weight_interval_;
-         int result = sscanf (optarg, "interval:%f:%f", 
-            &parser->__weight_lowt, &parser->__weight_t);
-         
-         if (result != 2) 
-            parser->usage (StrBuffer ("Bad interval weight format: ", opt));
-      }
-      else if (opt.startsWith ("border", true)) {
-         parser->__weightType = _weight_border_;
-         int result = sscanf (optarg, "border:%f:%f", 
-            &parser->__weight_lowt, &parser->__weight_t);
-
-         if (result != 2) 
-            parser->usage (StrBuffer ("Bad border weight format: ", opt));
-      }
-      else if (sscanf (optarg, "%f", &parser->__weight_t) == 1) {
-         parser->__weightType = _weight_simple_;
-      }
-      else {
-         parser->usage (StrBuffer ("Unknown weight function type: ", opt));
-      }
-   },
-   {
-      switch (parser->__weightType){
-         case _weight_simple_: 
-            out = FixedStrBuffer <128> ("%f", (double) parser->__weight_t).getStr ();
-            break;
-         case _weight_interval_:
-            out = FixedStrBuffer<128> ("interval:%f:%f", 
-                                       (double) parser->__weight_lowt, 
-                                       (double) parser->__weight_t).getStr ();
-            break;
-         case _weight_border_:
-            out = FixedStrBuffer<128> ("border:%f:%f", 
-                                       (double) parser->__weight_lowt, 
-                                       (double) parser->__weight_t).getStr ();
-            break;
-         default: mustfail ();
-      }
-   }
+	{  parser->__weight_t = static_cast <float> (atof (optarg)); },
+	{  out = FixedStrBuffer <128> ("%f", (double) parser->__weight_t).getStr (); }
 );
-
-
-DEFINE_BOOL_SEED_PARSER_OPTION(
-   weight_invert,
-   "Sweight-invert",
-   "[=on | =off] weight function inversion",
-   "off",
-   GetOptWrapper::_optional_argument_,
-   __weight_invert
-);      
-
 
 DEFINE_SEED_PARSER_OPTION(
    search_t,
@@ -600,10 +588,11 @@ DEFINE_OUTPUT_SEED_PARSER_OPTION(
 DEFINE_OUTPUT_SEED_PARSER_OPTION(
    seedlog,
    "Sseedlog",
-   "<exhaustive | on | off> enable/supress logging of the seed featureset"
-		"\non => output **each and every seen seed** to a .exhaustive file, and also log the featureset after every search"
-      "\npos => log the featureset after every search"
-      "\noff => no gratuitous logging",
+   "<on | pos | off> enable/supress logging of the seed featureset\n"
+      "on => log the featureset after every search\n"
+      "        and output all the seeds discovered on the search to a .exaustive file.\n"
+      "pos => only log the featureset after every search\n"
+      "off => no gratuitous logging",
    "off",
    GetOptWrapper::_required_argument_,
    __generateSeedlog
@@ -619,83 +608,15 @@ DEFINE_SEED_PARSER_OPTION(
    {                                                             }
 );
 
-
-
-
-      
-
-
-
-/* seed performance checking flags,
-
-{  "Sscore-norm",
-{"<none | linear-bg | logit> type of normalization to perform",
-"linear-bg - divides each score by the score-sum of all features found",
-"logit - score = 1 - (e^score / (1 + e^score) )",
-NULL
-},
-"none",
-GetOptWrapper::_required_argument_
-},
-
-
-{  "Sperf_m",
-{  "<number> determine the number of 'best-positions' to consider",
-"when evaluating a sequence, during seed-performance check",
-NULL
-},
-"5",
-GetOptWrapper::_required_argument_
-},
-
-{  "Sperf-comp-l",
-{  "<none | log | linear> type of compensation for sequence length",
-"used in seed performance evaluation",
-NULL
-},
-"none",
-GetOptWrapper::_required_argument_
-},
-case __SCORE_NORM: {
-Str opt (optarg);
-if (opt.equalsIgnoreCase ("none"))
-__score_norm = _norm_none_;
-else if (opt.equalsIgnoreCase ("linear-bg"))
-__score_norm = _norm_linear_background_;
-else if (opt.equalsIgnoreCase ("logit"))
-__score_norm = _norm_logit_;
-else
-usage (StrBuffer ("bad score-norm: ", optarg));
-break;
-};
-
-
-case __PERF_M:
-__perf_m = parser->getInt (optarg, this->_name);
-break;
-
-case __PERF_COMP_L: {
-Str opt (optarg);
-if (opt.equalsIgnoreCase ("none"))
-__perf_comp_l = _perflencomp_none_;
-else if (opt.equalsIgnoreCase ("log"))
-__perf_comp_l = _perflencomp_log_;
-else if (opt.equalsIgnoreCase ("linear"))
-__perf_comp_l = _perflencomp_linear_;
-else
-usage (StrBuffer ("bad perf-comp-l: ", optarg));
-break;
-};
-
-*/
-
 struct MyOptions {
    MyOptions () {
       REGISTER_SEED_PARSER_OPTION_CLASS (conf, _list);
       REGISTER_SEED_PARSER_OPTION_CLASS (proj_e, _list);
+
       REGISTER_SEED_PARSER_OPTION_CLASS (proj_n, _list);
       REGISTER_SEED_PARSER_OPTION_CLASS (proj_d, _list);
       REGISTER_SEED_PARSER_OPTION_CLASS (proj_mid, _list);
+		REGISTER_SEED_PARSER_OPTION_CLASS (proj_outer, _list);
       REGISTER_SEED_PARSER_OPTION_CLASS (proj_spec, _list);
       REGISTER_SEED_PARSER_OPTION_CLASS (proj_i, _list);
       REGISTER_SEED_PARSER_OPTION_CLASS (proj_base, _list);
@@ -711,13 +632,11 @@ struct MyOptions {
       REGISTER_SEED_PARSER_OPTION_CLASS (count_reverse, _list);
       REGISTER_SEED_PARSER_OPTION_CLASS (score_partial, _list);
       REGISTER_SEED_PARSER_OPTION_CLASS (score_t, _list);
-      REGISTER_SEED_PARSER_OPTION_CLASS (score_fdr, _list);
-      REGISTER_SEED_PARSER_OPTION_CLASS (score_bonf, _list);
+      REGISTER_SEED_PARSER_OPTION_CLASS (score_statfix, _list);
       REGISTER_SEED_PARSER_OPTION_CLASS (score_min, _list);
       REGISTER_SEED_PARSER_OPTION_CLASS (score_min_seq, _list);
       REGISTER_SEED_PARSER_OPTION_CLASS (score_min_seq_per, _list);
       REGISTER_SEED_PARSER_OPTION_CLASS (weight_t, _list);
-      REGISTER_SEED_PARSER_OPTION_CLASS (weight_invert, _list);
       REGISTER_SEED_PARSER_OPTION_CLASS (search_t, _list);
       REGISTER_SEED_PARSER_OPTION_CLASS (pssm, _list);
       REGISTER_SEED_PARSER_OPTION_CLASS (motif, _list);
@@ -795,13 +714,13 @@ void Parser::internalParse ()
       }
    }
    if (!__proj_base.empty()) {
-      if (__proj_mid > 0) {
-         usage ("Cannot use --Sproj-mid option --Sproj-base option");
-      }
+		if (__proj_mid > 0) {
+			usage ("Cannot use --Sproj-mid option with --Sproj-base option");
+		}
 
-      if (__seed_l != __proj_base.length()) {
-         usage ("The seed length --Sseed-l parameter must match the length of the assignment specified by --Sproj-base");
-      }
+		if (__seed_l != __proj_base.length()) {
+			usage ("The seed length --Sseed-l parameter must match the length of the assignment specified by --Sproj-base");
+		}
    }
 
    if (__prep_l < 0)
@@ -875,8 +794,9 @@ void Parser::checkCompatibility (const Parser& in)
    if (__prep == _prep_leaf_) {
       //
       // leaf preprocessor only supports seeds of constant length
-      if (in.__seed_l < __prep_l)
+/*      if (in.__seed_l < __prep_l)
 			throw BaseException (Str ("leaf preprocessor only supports seeds that are equal or longer in length to its depth."));
+*/
    }
    else {
       mustbe (__prep == _prep_tree_);

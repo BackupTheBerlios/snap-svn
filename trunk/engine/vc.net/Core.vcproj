@@ -158,16 +158,13 @@
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl;inc">
 			<File
-				RelativePath="..\CORE\Argv.h">
+				RelativePath="..\core\Argv.h">
 			</File>
 			<File
 				RelativePath="..\core\AutoPtr.h">
 			</File>
 			<File
 				RelativePath="..\core\Bitset.h">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\Core\Bitset.h">
 			</File>
 			<File
 				RelativePath="..\core\Compiler.h">
@@ -191,7 +188,7 @@
 				RelativePath="..\core\HashTable.h">
 			</File>
 			<File
-				RelativePath="..\CORE\ImplList.h">
+				RelativePath="..\core\ImplList.h">
 			</File>
 			<File
 				RelativePath="..\core\STLHelper.h">

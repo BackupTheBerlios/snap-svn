@@ -74,7 +74,7 @@ public:
 
         //
         // 
-        void addField (const Str& name, int length, int width);
+        void addField (const Str& name, int length, int width, bool useNewline = true);
         void addField (const Str& name, int length) {
            addField (name, length, length);
         }
@@ -148,9 +148,9 @@ END_NAMESPACE (Persistance);
 //
 // File        : $RCSfile: $ 
 //               $Workfile: TextTableReport.h $
-// Version     : $Revision: 6 $ 
+// Version     : $Revision: 8 $ 
 //               $Author: Aviad $
-//               $Date: 16/12/04 6:08 $ 
+//               $Date: 13/05/05 11:33 $ 
 // Description :
 //	The Persistence library contains both high & low level IO classes
 //	and is high-performance, highly reusable framework 

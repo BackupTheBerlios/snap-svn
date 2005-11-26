@@ -1,11 +1,11 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: StdOptions.cpp $
-// Version     : $Revision: 35 $ 
+// Version     : $Revision: 37 $ 
 //               $Author: Aviad $
-//               $Date: 3/03/05 21:34 $ 
+//               $Date: 12/04/05 0:54 $ 
 // Description :
-//    Concrete implmentations for Langauge, ScoreFunction, WeightFunction etc
+//    Concrete implmentations for Langauge, Scores::Function, WeightFunction etc
 //
 // Author: 
 //    Aviad Rozenhek (mailto:aviadr@cs.huji.ac.il) 2003-2004
@@ -29,6 +29,7 @@
 #ifndef ROUND
 #define ROUND(x) ((x) >= 0 ? (int) ((x) + .5) : -((int) (.5 - (x))))
 #endif
+
 
 #define DEBUG_FILTERS 0 
 
@@ -147,8 +148,10 @@ static void writeACGTLangaugeCode (unsigned long code,
          iupac = 'V';
          break;
       case (ACGTLangauge::GCode | ACGTLangauge::CCode | ACGTLangauge::ACode | ACGTLangauge::TCode): // N [GCTA]  
-         if (strategy == assg_together)
-            iupac = '?';
+			if (strategy == assg_together) {
+            writer << "[ACGT]";
+				return;
+			}
          else
             iupac = '*';
          break;
@@ -171,14 +174,23 @@ static void writeACGTLangaugeCode (unsigned long code,
       case (ACGTLangauge::NCode | ACGTLangauge::GCode | ACGTLangauge::CCode | ACGTLangauge::ACode):
       case (ACGTLangauge::NCode | ACGTLangauge::TCode | ACGTLangauge::CCode | ACGTLangauge::ACode):
       case (ACGTLangauge::NCode | ACGTLangauge::TCode | ACGTLangauge::GCode | ACGTLangauge::ACode):
-      case (ACGTLangauge::NCode | ACGTLangauge::TCode | ACGTLangauge::GCode | ACGTLangauge::CCode):
-      case (ACGTLangauge::NCode | ACGTLangauge::TCode | ACGTLangauge::GCode | ACGTLangauge::CCode | ACGTLangauge::ACode):   {
+      case (ACGTLangauge::NCode | ACGTLangauge::TCode | ACGTLangauge::GCode | ACGTLangauge::CCode): {
             writer << "[N";
             writeACGTLangaugeCode (code  - ACGTLangauge::NCode, strategy, writer);
             writer << ']';
             return;
          }
          break;
+		
+		case (ACGTLangauge::NCode | ACGTLangauge::TCode | ACGTLangauge::GCode | ACGTLangauge::CCode | ACGTLangauge::ACode):   
+			if (strategy == assg_together)
+            iupac = '?';
+			else {
+            writer << "[*ACGTN]";
+				return;
+			}
+         break;
+
 
       default:
          debug_mustfail ();
@@ -208,17 +220,20 @@ void ACGTLangauge::complement (const Assignment& in , Assignment& out) const
    out = Assignment ();
    for (int i=in.length () - 1; i>=0 ; i--) {
       const Assignment::Position& p = in.getPosition (i);
-      Assignment::Position r (p.strategy ());
+		if (p.equals (wildcard (p.strategy ()))) 
+			out.addPosition (p);
+		else {
+			Assignment::Position r (p.strategy ());
+			Assignment::PositionIterator it (p);
+			for (; it.hasNext () ; it.next ()) {
+				//
+				// A <--> T, C <--> G
+				// 0      3  1      2
+				r.index (3 - (it.get ()), true);
+			}
 
-      Assignment::PositionIterator it (p);
-      for (; it.hasNext () ; it.next ()) {
-         //
-         // A <--> T, C <--> G
-         // 0      3  1      2
-         r.index (3 - (it.get ()), true);
-      }
-
-      out.addPosition (r);
+			out.addPosition (r);
+		}
    }
 }
 
@@ -290,6 +305,7 @@ void ACGTLangauge::complement (const Str& in, StrBuffer& out) const
          case '?':
          case '*':
             reverse = code;
+				break;
 
          default:
             debug_mustfail ();
@@ -321,18 +337,16 @@ KBestFilter::~KBestFilter ()
 }
 
 //
-// GoodFeaturesFilter
+// FertileFeaturesFilter
 //
 
-GoodFeaturesFilter::GoodFeaturesFilter (
+FertileFeaturesFilter::FertileFeaturesFilter (
 								 boost::shared_ptr <SeedSearcher::FeatureFilter>& next, 
                            const SeqCluster& db          ,
                            const SeqWeightFunction& wf   ,
-                           double minScore               , 
                            int minPos                    , 
                            int minPosPercent             )
 :  FeatureFilterLink (next),
-   _minScore (minScore),
    _wf (wf)
 {
    debug_mustbe (minPos >= 0);
@@ -352,12 +366,8 @@ GoodFeaturesFilter::GoodFeaturesFilter (
 
 //
 // takes ownership of Assignment & Cluster
-bool GoodFeaturesFilter::add (Feature_var daFeature)
+bool FertileFeaturesFilter::add (Feature_var daFeature)
 {
-   if (_minScore > 0)
-      if (daFeature->log2score () > -_minScore)
-         return false;
-
    if (_minPositiveSeqs > 0) {
       SeqCluster::CountSequences count;
       daFeature->cluster().performOnPositives (_wf, count);
@@ -369,82 +379,8 @@ bool GoodFeaturesFilter::add (Feature_var daFeature)
    return _next->add (daFeature);
 }
 
-
-int StatFix::FDR (SeedSearcher::FeatureFilter& features, int N, double P) 
-{
-   if (features->size () <= 0)
-      return 0;
-
-   //
-   // because we use scores after 'log2', we have to also 'log' N, P & K
-   int K = 1;
-   double LOG_P_div_N = log2 (P) - log2 ((double)N);
-   //
-   // first, check that the best feature is good enough, other-wise
-   // there is no point in searching at all
-   if (features->bestFeature ()->log2score ()> LOG_P_div_N + ::log ((double)K)) {
-      //
-      // no feature is actually good enough
-      return 0;
-   }
-
-   //
-   // now seek backwards the last element (with lowest score)
-   // that is still good enough to face the requirements
-   K = features->size ();
-   FeatureSet::RIterator it = features->getRIterator ();
-   for (; it.hasNext() ; --K, it.next()) {
-      double featureScore = (*it)->log2score ();
-      double LOG_P_div_N_MUL_K = LOG_P_div_N + log2((double)K);
-      if (featureScore <= LOG_P_div_N_MUL_K) {
-         return K;
-      }
-   }
-
-   //
-   // 
-   debug_mustfail ();
-   return 0;
-}
-
-int StatFix::bonferroni (SeedSearcher::FeatureFilter& features, int N, double P) 
-{
-   if (features->size () <= 0)
-      return 0;
-
-   //
-   // because we use scores after 'log', we have to also 'log' N, P & K
-
-   int K= 1;
-   double LOG_P_div_N = log2 (P) - log2 ((double)N);
-   //
-   // first, check that the best feature is good enough, other-wise
-   // there is no point in searching at all
-   if (features->bestFeature()->log2score ()> LOG_P_div_N) {
-      //
-      // no feature is actually good enough
-      return 0;
-   }
-
-   //
-   // now seek backwards the last element (with lowest score)
-   // that is still good enough to face the requirements
-   K = features->size ();
-   FeatureSet::RIterator it = features->getRIterator ();
-   for (; it.hasNext() ; --K, it.next()) {
-      if ((*it)->log2score () <= LOG_P_div_N) {
-         return K;
-      }
-   }
-
-   //
-   // 
-   debug_mustfail ();
-   return 0;
-}
-
 #include <fstream>
-#include "Persistance/StdOutputStream.h"
+#include "persistance/StdOutputStream.h"
 #include "core/Str.h"
 
 FeaturePrintFilter::FeaturePrintFilter (	
@@ -464,16 +400,22 @@ FeaturePrintFilter::FeaturePrintFilter (
 	}
 
 	_writer.setStream (new Persistance::StdOutputStream (file.release(), true));
+
+	//
+	// add a header
+	_writer << "Score (-log10)\tMotif" << _writer.EOL();
 }
 
 //
 // takes ownership of Assignment & Cluster
 bool FeaturePrintFilter::add (Feature_var feature)
 {
+	static const double LOG10_2 = log10 (static_cast <double> (2));
 	//
 	// the purpose here is to get a summary of all scores 
 	// for generating statistics 
-	_writer << feature->log2score ();
+	// but we print in -log10 format
+	_writer << (0 - feature->log2score ()) * LOG10_2;
 
 #if 1 
 	//
@@ -488,6 +430,31 @@ bool FeaturePrintFilter::add (Feature_var feature)
 	return _next->add (feature);
 }
 
+void FDRCorrectionFilter::finalizeSetting (int numSeedsSearched, int numProjections)
+{
+	Scores::FDRCorrectedPValue* fdr = NULL;
+   FeatureSet::RIterator it = getArray ()->getRIterator ();
+   for (int k = getArray ()->size () ; it.hasNext () ; ++k, it.next()) {
+      Feature_var feature = (*it);
+		fdr = new Scores::FDRCorrectedPValue (feature->score (), numSeedsSearched, k, fdr);
+		feature->score (Scores::Score_ptr (fdr));
+   }
+
+	FeatureFilterLink::finalizeSetting (numSeedsSearched, numProjections);
+}
+
+void BonfCorrectionFilter::finalizeSetting (int numSeedsSearched, int numProjections)
+{
+	Scores::BonfCorrectedPvalue* bonf = NULL;
+   FeatureSet::RIterator it = getArray ()->getRIterator ();
+   for (int k = getArray ()->size () ; it.hasNext () ; ++k, it.next()) {
+      Feature_var feature = (*it);
+		bonf = new Scores::BonfCorrectedPvalue (feature->score (), numSeedsSearched);
+		feature->score (Scores::Score_ptr (bonf));
+   }
+
+	FeatureFilterLink::finalizeSetting (numSeedsSearched, numProjections);
+}
 
 
 

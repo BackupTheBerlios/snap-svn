@@ -1,8 +1,11 @@
+#include "StatusReporter.hpp"
+#include "DebugLog.h"
+
 #include <iostream>
 
 using namespace std;
 
-#include "StatusReporter.hpp"
+
 
 StatusReporter::StatusReporter( const char * inHost, 
 		const char *  inDBName, 

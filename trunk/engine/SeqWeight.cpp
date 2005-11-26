@@ -134,8 +134,6 @@ AutoPtr <SeqWeightDB::ID2Weight>
    return id2weight;
 }
 
-#include<boost/tokenizer.hpp>
-
 //
 // Positional weights:
 //
@@ -161,33 +159,32 @@ struct PosWeightsReader : public WeightsReader
       double seqWeight;
       sin>>seqWeight;
 
-      char buffer [4 * 1024];
-      sin.getline(buffer, sizeof (buffer));
-      readValue (Str (buffer), name, seqWeight);
+		std::string buffer;
+		std::getline (sin, buffer);
+      readValue (buffer, name, seqWeight);
    }
 
-   void readValue (const Str& lineBuffer, const Str& name, double seqWeight) {
-      typedef boost::tokenizer < boost::char_separator <char> > Tok;
-      Tok tok (lineBuffer, boost::char_separator <char> (" \t"));
+	void readValue (const std::string& lineBuffer, const Str& name, double seqWeight) {
+		Str buffer = Str (lineBuffer).trimmedSubstring();
 
       _entries.clear ();
-      Tok::iterator beg;
-      for (beg=tok.begin(); beg!=tok.end();++beg) {
+		while (!buffer.empty ()) {
          double w;
          int i1, i2;
-         _temp = (Str (*beg));
-         _temp.trim ();
-         while (!_temp.empty()) {
-            int count = sscanf (_temp, "%lf = [%d, %d]", &w, &i1, &i2);
-				if (!(count == 3) && (i1 <= i2) && (w>=0) && (i1 >= 0)) {
-					throw BaseException (StrBuffer (Str ("bad positional-weight format: "), _temp));
-				}
-               
-            _entries.push_back(new SeqWeightDB::PositionalWeight::Entry (i1, i2-i1, seqWeight * w));
-
-            _temp.set (_temp.substring(_temp.indexOf(']') + 1));
-            _temp.trim ();
-         }
+         int count = sscanf (buffer.getChars (), "%lf = [%d, %d]", &w, &i1, &i2);
+			Str::Index next = buffer.indexOf(']');
+			if ((next == Str::badIndex) || (count != 3) || (!(i1 <= i2) && (w>=0) && (w<=1) && (i1 >= 0))){
+				throw BaseException (
+					StrBuffer (
+						Str ("bad positional-weight format in "), name, 
+						Str (":\nUnexpected "), buffer
+					)
+				);
+			}
+              
+         _entries.push_back(new SeqWeightDB::PositionalWeight::Entry (i1, i2-i1, seqWeight * w));
+			buffer = buffer.substring (next + 1);
+			buffer = buffer.trimmedSubstring();
       }
 
       _temp = name;

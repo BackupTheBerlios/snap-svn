@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Defs.h $
-// Version     : $Revision: 18 $ 
+// Version     : $Revision: 21 $ 
 //               $Author: Aviad $
-//               $Date: 3/03/05 21:34 $ 
+//               $Date: 13/05/05 11:07 $ 
 // Description :
 //    Forward definitions and global definitions for the 
 //    seed-searcher application
@@ -60,17 +60,9 @@ enum PrepType {
 };
 
 enum SearchType {
-   _search_default_,
-   _search_table_,
-   _search_tree_, // works only with _prep_tree_ 
-};
-
-//
-//
-enum WeightType {
-   _weight_simple_,
-   _weight_border_,
-   _weight_interval_
+   _search_default_ = - 1,
+   _search_table_ = _prep_leaf_,
+   _search_tree_ = _prep_tree_ // works only with _prep_tree_ 
 };
 
 //
@@ -101,7 +93,11 @@ enum PositionWeightType {
    _position_weight_hotspots_,   
 };
 
-
+enum StatFixType {
+	_statfix_none_,
+	_statfix_bonf_,// use Bonferroni statistical fix
+	_statfix_fdr_	// use FDR statistical fix
+};
 
 
 //

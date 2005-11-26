@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: SequenceDB.cpp $
-// Version     : $Revision: 24 $ 
+// Version     : $Revision: 25 $ 
 //               $Author: Aviad $
-//               $Date: 3/03/05 21:34 $ 
+//               $Date: 13/05/05 11:12 $ 
 // Description :
 //    Concrete repository for sequences
 //
@@ -161,7 +161,18 @@ SequenceDB*
    ifstream in(seqFileName);
    if (! in.is_open())
       Err(string("unable to open SeqData file ")+ seqFileName);
-   
+
+	AutoPtr <SequenceDB> db = loadFastaAndWeights(langauge, in, weights);
+	checkup (*db, seqFileName);
+	return db.release();
+}
+
+SequenceDB* 
+	SequenceDB::TextFileStorage::loadFastaAndWeights (
+	const Langauge& langauge   ,
+	std::istream& in,
+	SeqWeightDB::Name2Weight& weights)
+{
    auto_ptr <SequenceDB> db (new SequenceDB);
    
    string name,seq,s;
@@ -223,8 +234,7 @@ SequenceDB*
                            langauge);
       }
    }
-   
-   checkup (*db, seqFileName);
+
    return db.release ();
 }
 

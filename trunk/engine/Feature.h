@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Feature.h $
-// Version     : $Revision: 20 $ 
+// Version     : $Revision: 22 $ 
 //               $Author: Aviad $
-//               $Date: 3/03/05 21:34 $ 
+//               $Date: 13/05/05 11:08 $ 
 // Description :
 //    Concrete cache for Hyper-Geometric distribution values
 //
@@ -33,51 +33,12 @@
 #include "DebugLog.h"
 #include "Preprocessor.h"
 
+#include "Score.h"
 #include "persistance/Defs.h"
 #include "persistance/TextTableReport.h"
 #include "core/AutoPtr.h"
 
 #include "boost/shared_ptr.hpp"
-
-
-
-//
-// this class is used to test the correctness of SeedSearcher.
-// the score function, by recording the score parameters
-// for a feature, used for later printing.
-struct ScoreParameters {
-   virtual ~ScoreParameters () {
-   }
-   virtual void dispose () {
-      delete this;
-   }
-};
-
-//
-// this class represents a scoring scheme for features
-//
-// IMPORTANT:
-// the smaller (more negative) the score, the better.
-// score MUST be in log2 format.
-class ScoreFunction {
-public:
-   virtual ~ScoreFunction () {
-   }
-
-   //
-   // if 'parameters' is NULL, do not return ScoreParameters.
-   virtual double log2score (  const Assignment& feature,
-                           const Assignment& projection,
-                           const SeqCluster& containingFeature, // k
-                           ScoreParameters** parameters
-                           ) const = 0;
-
-   //
-   // print the score parameters 
-   virtual void writeAsText ( Persistance::TextWriter&, 
-                              const ScoreParameters*  ) const = 0;
-};
-
 
 
 //
@@ -90,37 +51,27 @@ public:
    Feature (Assignment* assg, 
             SeqCluster* cluster,
             const Assignment* projection,
-            ScoreParameters* params,
-            double score,
-            int numSeedsSearched,
-            boost::shared_ptr <ScoreFunction> sf) {
-      set (assg, cluster, projection, params, score, numSeedsSearched, sf);
+				boost::shared_ptr <Scores::Score> score) {
+      set (assg, cluster, projection, score);
    }
    ~Feature () {
       dispose ();
    }
    void dispose ();
    void set (  Assignment* assg, 
-               SeqCluster* cluster,
-               const Assignment* projection,
-               ScoreParameters* params,
-               double score,
-               int numSeedsSearched,
-               boost::shared_ptr <ScoreFunction> sf);
+					SeqCluster* cluster,
+					const Assignment* projection,
+					Scores::Score_ptr score);
 
-   inline double log2score () const {
+	inline double log2score () const {
+		return _score->log2Score ();
+	}
+	inline Scores::Score_ptr score () const {
 	   return _score;
    }
-   void log2score (double in) {
-      _score = in;
+	inline void score (Scores::Score_ptr score) {
+	   _score = score;
    }
-   inline double log2bonfScore () const {
-      return _bonfScore;
-   }
-   inline int numSeedsSearched () const {
-      return _numSeedSearched;
-   }
-   void numSeedsSearched (int in); // also sets the bonf score
    inline const Assignment& assignment () const {
 	   return *_assg;
    }
@@ -131,12 +82,6 @@ public:
    inline const SeqCluster& cluster () const {
       debug_mustbe (_cluster);
 	   return *_cluster;
-   }
-   inline const ScoreParameters* scoreParameters () const {
-	   return _params;
-   }
-   const ScoreFunction& scoreFunction () const {
-      return *_sf; 
    }
    inline const Assignment* projection () const {
 	   return _projection;
@@ -166,12 +111,8 @@ protected:
    Assignment* _assg;
    Assignment* _complement;
    const Assignment* _projection;
-   ScoreParameters* _params;
    SeqCluster* _cluster;
-   double _score;
-   double _bonfScore;
-   int _numSeedSearched;
-   boost::shared_ptr <ScoreFunction> _sf;
+   boost::shared_ptr <Scores::Score> _score;
 };
 //
 // CORBA notation used here... :-)
@@ -202,35 +143,32 @@ public:
 
    //
    // which sequences are positively labeled
-   void wf (SeqWeightFunction* wf) {
-      _wf.reset (wf);
+   void wf (boost::shared_ptr <SeqWeightFunction>& wf) {
+      _wf = wf;
    }
    const SeqWeightFunction& wf () const {
       return *_wf;
    }
    //
    // preprocessed data to search over
-   void preprocessor (Preprocessor* prep) {
-      _preprocessor.reset (prep);
+   void preprocessor (boost::shared_ptr <Preprocessor>& prep) {
+      _preprocessor = prep;
    }
    const Preprocessor& preprocessor () const {
       return *_preprocessor;
    }
    //
    // how to score features
-   void score (ScoreFunction* score) {
-      _score.reset (score);
+	void score (Scores::Function_ptr score) {
+      _score = score;
    }
-   const ScoreFunction& score () const {
-      return *_score;
-   }
-   boost::shared_ptr <ScoreFunction> getScore () {
+   const Scores::Function_ptr score () const {
       return _score;
    }
    //
    // returns the langauge to work with
-   void langauge (Langauge* lang) {
-      _langauge.reset (lang);
+	void langauge (boost::shared_ptr <Langauge>& lang) {
+      _langauge = lang;
    }
    const Langauge& langauge () const {
       return *_langauge;
@@ -241,13 +179,11 @@ public:
                            const Assignment* projection,
                            int numSeedsSearched = 0)
    {
-      ScoreParameters* scoreParams = NULL;
-      double score = 
-         _score->log2score (
+		Scores::Score_ptr score = 
+         _score->score (
                      *assg,         // the assignment
                      *projection,    // the projection,
-                     *cluster,      // sequences containing the feature
-                     &scoreParams
+                     *cluster      // sequences containing the feature
                   );
 
       out.set( // the feature's assignment 
@@ -255,10 +191,8 @@ public:
                // sequences containing the feature  
                cluster,
                projection,
-               scoreParams,
-               score,
-               numSeedsSearched,
-               _score);
+               score);
+
       return out;
    }
 
@@ -291,7 +225,7 @@ public:
 protected:
    boost::shared_ptr <SeqWeightFunction> _wf;
    boost::shared_ptr <Preprocessor> _preprocessor;
-   boost::shared_ptr <ScoreFunction> _score;
+   Scores::Function_ptr _score;
    boost::shared_ptr <Langauge> _langauge;
 };
 
@@ -300,13 +234,8 @@ class FeatureInvestigator {
    //
 public:
    FeatureInvestigator (const FeatureParameters&, 
+								StatFixType statfixType,
                         int outputLength);
-   //
-   // use to enable bonferroni
-   FeatureInvestigator (const FeatureParameters&, 
-                        int outputLength,
-                        int numSeedsSearched,
-                        int numProjections);
    virtual ~FeatureInvestigator () {
    }
 
@@ -365,8 +294,6 @@ protected:
    int _outputLength;
    std::string _allignment;
    const FeatureParameters& _parameters;
-   int _numSeedsSearched;
-   int _numProjections;
 
    Persistance::TextTableReport::Format _motifPositionFormat;
    Persistance::TextTableReport::Format _seedFormat;

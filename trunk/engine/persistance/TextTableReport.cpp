@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: TextTableReport.cpp $
-// Version     : $Revision: 4 $ 
+// Version     : $Revision: 6 $ 
 //               $Author: Aviad $
-//               $Date: 16/12/04 6:08 $ 
+//               $Date: 13/05/05 11:33 $ 
 // Description :
 //	The Persistence library contains both high & low level IO classes
 //	and is high-performance, highly reusable framework 
@@ -90,7 +90,7 @@ class TextTableReport::Field   {
     //
     //
 public:
-    Field (const Str& name, int length, int width, int offset);
+    Field (const Str& name, int length, int width, int offset, bool useNewline);
     ~Field ();
 
     //
@@ -109,7 +109,17 @@ public:
     // returns the name of the field
     const Str& name () const;
 
+	 //
+	 // if returns true, than the user wants to use newlines
+	 // to maintain alignment of fields (default)
+	 // if returns false, than fields should lose alignment
+	 // when the data is too long
+	 bool useNewlineToMaintainAlignment () const {
+		 return _useNewline;
+	 }
+
 private:
+	bool _useNewline;
     int _width;
     int _length;
     int _offset;
@@ -307,8 +317,10 @@ bool TextTableReport::Data::Iterator::atEnd () const
 TextTableReport::Field::Field (const Str& inName, 
                             int inLength, 
                             int inWidth,
-                            int inOffset)
-:  _width (inWidth),
+                            int inOffset,
+									 bool useNewline)
+:  _useNewline (useNewline),
+	_width (inWidth),
    _length (inLength),
     _offset (inOffset),
    _name (inName)
@@ -370,7 +382,10 @@ TextTableReport::Format::~Format ()
 }
 
 
-void TextTableReport::Format::addField (const Str& fieldName, int fieldLength, int fieldWidth)
+void TextTableReport::Format::addField (const Str& fieldName, 
+													 int fieldLength, 
+													 int fieldWidth, 
+													 bool useNewline)
 {
     debug_mustbe (fieldLength > 0);
     debug_mustbe (fieldLength >= fieldWidth);
@@ -390,7 +405,8 @@ void TextTableReport::Format::addField (const Str& fieldName, int fieldLength, i
        new Field (fieldName, 
                   fieldLength,
                   fieldWidth,
-                  _length)
+                  _length,
+						useNewline)
     );
 
     //
@@ -634,13 +650,15 @@ void TextTableReport::Data::writeInto (OutputStream& outputBuffer) const
     // format the buffer, line-by-line to another buffer
     bool hasMore = writeLineInto (outputBuffer, iterators, fields, _format.fieldSeparator ());
     while (hasMore) {
-        //
-        // add a newline to terminate the line
-        append (outputBuffer, newline);
+		 if (field->useNewlineToMaintainAlignment ()) {
+			//
+			// add a newline to terminate the line
+			append (outputBuffer, newline);
+		}
 
-        //
-        // write the line into the buffer
-        hasMore = writeLineInto (outputBuffer, iterators, fields, _format.fieldSeparator ());
+		//
+		// write the line into the buffer
+		hasMore = writeLineInto (outputBuffer, iterators, fields, _format.fieldSeparator ());
     }
 }
 

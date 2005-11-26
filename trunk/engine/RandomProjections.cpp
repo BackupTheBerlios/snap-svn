@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: RandomProjections.cpp $
-// Version     : $Revision: 20 $ 
+// Version     : $Revision: 22 $ 
 //               $Author: Aviad $
-//               $Date: 13/10/04 3:33 $ 
+//               $Date: 13/05/05 11:10 $ 
 // Description :
 //    Concrete classes for creating and retrieving random projections
 //    from given <l,d> parameters
@@ -102,22 +102,24 @@ static int createAllProjections (
 
 //
 // Copied/Adapted from legacy SeedSearcher.cpp
-static int verifyProjectionNumber( int motifLength,
-					 int& inoutDist
-                )
+static int verifyProjectionNumber(	int motifLength,
+												int& inoutDist,
+												bool allowOuterWildcards)
 {
-   if (motifLength <= 2)
-      return 1;
+	if (!allowOuterWildcards) {
+		if (motifLength <= 2)
+			return 1;
 
-   //make sure we are not asked to many projections:
-   // NIR: last position must always be present...
-   motifLength--;
+		//make sure we are not asked to many projections:
+		// NIR: last position must always be present...
+		motifLength--;
 
-   //
-   // Aviad: the first position should also never be random...
-   // dont allow random positions at the first or last positions in the assignment
-   // because it is the same as having a shorter assignment
-   motifLength--;
+		//
+		// Aviad: the first position should also never be random...
+		// dont allow random positions at the first or last positions in the assignment
+		// because it is the same as having a shorter assignment
+		motifLength--;
+	}
 
    if (  motifLength < inoutDist) {
       DLOG << "too many wildcards asked, number of wildcards will be only " 
@@ -143,6 +145,7 @@ RandomProjections::RandomProjections (
    All,              // create all possible projections
    int length,          // length of the assignment to create
    int nPositions,   // number of positions to select in each assignment
+	bool allowOuterWildcards,
    boost::shared_ptr <Langauge> lang
    )
 :  _length (length),
@@ -153,11 +156,13 @@ RandomProjections::RandomProjections (
    // first compute how many projections are possible:
    // I am using a function adapted from legacy SeedSearcher here...
    _maxPossibleProjections = 
-      verifyProjectionNumber (length, _numOfPositions);
+      verifyProjectionNumber (length, _numOfPositions, allowOuterWildcards);
 
    RandomPositions chosenPositions;
    createAllProjections (  _vector, chosenPositions, 
-                           1, length -1, _numOfPositions);
+									allowOuterWildcards? 0 : 1, 
+									allowOuterWildcards? length : length - 1, 
+									_numOfPositions);
 
    debug_mustbe (_vector.size () == _maxPossibleProjections);
 
@@ -187,28 +192,34 @@ void RandomProjections::srand (unsigned int seed)
 static void chooseProjections (
                size_t motifLength,
                size_t dist,
-               size_t projNum ,
+               size_t projNum,
+					bool allowOuterWildcards,
                RandomProjections::RandomPositionsVector& projectionsSites)
 {
    projectionsSites.resize(projNum);
 
    for( size_t i=0; i<projNum; i++)   {
       // this do - while section is used to make sure
-      // we dont randomly select the same to projections...
+      // we don`t randomly select the same to projections...
       bool found;
       do {
          found = false;
-         // NIR: wlog we don't need to project the last position...
+         // NIR: w.l.o.g. we don't need to project the last position...
          // Vec<int> val = rand1.sampleGroup( motifLength - 1, dist );
-         // Aviad: dont allow projection in the first position either
+         // Aviad: don`t allow projection in the first position either
+			// unless we really need to - for instance when projecting
+			// on a known concensus (known motif)
          RandomProjections::RandomPositions val = 
-            rand1.sampleGroup( motifLength - 2, dist );
+				rand1.sampleGroup( allowOuterWildcards? motifLength : motifLength - 2, dist );
 
          debug_mustbe (val.size () == dist);
-         for (size_t pos=0 ; pos<dist ; pos++)
-            val [pos]++; 
-
-
+			if (!allowOuterWildcards) {
+				//
+				// move all positions one index forward
+				// this causes no wildcards in the first position
+				for (size_t pos=0 ; pos<dist ; pos++)
+	            val [pos]++; 
+			}
          projectionsSites[i] =  val;
 /*
          debug_only (
@@ -246,6 +257,7 @@ RandomProjections::RandomProjections (
    int numOfProjections,  // create all possible projections
    int length,          // length of the assignment to create
    int nPositions,   // number of positions to select in each assignment
+	bool allowOuterWildcards,
    boost::shared_ptr <Langauge> lang
    )
 :  _length (length),
@@ -257,7 +269,7 @@ RandomProjections::RandomProjections (
    //
    // first compute how many projections are possible:   ( length          )
    _maxPossibleProjections = 
-      verifyProjectionNumber (length, _numOfPositions);
+      verifyProjectionNumber (length, _numOfPositions, allowOuterWildcards);
 
    if (  _maxPossibleProjections < numOfProjections) {
       DLOG << "too many projections asked, number of projections will be only " 
@@ -269,7 +281,9 @@ RandomProjections::RandomProjections (
       // just create all the projections possible
       RandomPositions chosenPositions;
       createAllProjections (  _vector, chosenPositions, 
-                              1, length -1, _numOfPositions);
+										allowOuterWildcards? 0 : 1, 
+										allowOuterWildcards? length : length -1, 
+										_numOfPositions);
 
       debug_mustbe (_vector.size () == _maxPossibleProjections);
    }
@@ -279,7 +293,7 @@ RandomProjections::RandomProjections (
       //
       // the function allowed random in the first position. 
       // fixed it.
-      chooseProjections (length, _numOfPositions, numOfProjections, _vector);
+      chooseProjections (length, _numOfPositions, numOfProjections, allowOuterWildcards, _vector);
    }
 
    //
@@ -314,12 +328,13 @@ const Assignment& RandomProjections::getAssignment (int index) const
 int RandomProjections::numOfProjections (bool exhaustive, 
                                           int requestedProjections,
                                           int length, 
-                                          int numOfPositions)
+                                          int numOfPositions,
+														bool allowOuterPositions)
 {
    //
    // first compute how many projections are possible:   ( length          )
    int maxPossibleProjections = 
-      verifyProjectionNumber (length, numOfPositions);
+      verifyProjectionNumber (length, numOfPositions, allowOuterPositions);
 
    if (exhaustive)
       return maxPossibleProjections;

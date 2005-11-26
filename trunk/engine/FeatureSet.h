@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: FeatureSet.h $
-// Version     : $Revision: 5 $ 
+// Version     : $Revision: 6 $ 
 //               $Author: Aviad $
-//               $Date: 3/03/05 21:34 $ 
+//               $Date: 12/04/05 0:41 $ 
 // Description :
 //    Concrete class describing a set of features.
 //    contains algorithms for replacing redundant features
@@ -156,8 +156,8 @@ public:
          if (Comparator::a_better_than_b (*f, **best_scoring_redundant)) {
             //
             // f is better than its redundant
-            debug_mustbe ( f->log2bonfScore() <= 
-               (*best_scoring_redundant)->log2bonfScore ());
+            debug_mustbe ( f->log2score() <= 
+               (*best_scoring_redundant)->log2score ());
             //
             // f is better than the best-scoring seeds which it is redundant with.
             // so we should insert f into the set.
@@ -208,7 +208,7 @@ public:
       if (Comparator::a_better_than_b(wfeature, *f)) {
          //
          // this seed is worse than the worst seed in the set
-         debug_mustbe (f->log2bonfScore() >= wfeature.log2bonfScore());
+         debug_mustbe (f->log2score() >= wfeature.log2score());
          return false;
       }
 
@@ -312,6 +312,7 @@ public:
          return check (_maxoffset, a,b);
       }
       static bool check (int offset, const AssignmentBase& a, const AssignmentBase& b);
+
    };
 
    template <class _BinFunc>

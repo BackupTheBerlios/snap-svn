@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $
 //               $Workfile: SeedSearcherMain.cpp $
-// Version     : $Revision: 32 $
+// Version     : $Revision: 35 $
 //               $Author: Aviad $
-//               $Date: 3/03/05 21:34 $
+//               $Date: 13/05/05 11:12 $
 // Description :
 //    Concrete and interface classes for seting-up
 //    a seed-searching environment or program
@@ -27,7 +27,9 @@
 #include "StdOptions.h"
 
 #include "LeafPreprocessor.h"
-#include "HyperGeoScore.h"
+//#include "HyperGeoScore.h"
+#include "ExtraMath.h"
+#include "Score.h"
 
 #include "status_reporter/BaseStatusReporter.hpp"
 #include <time.h>
@@ -127,25 +129,28 @@ SeedSearcherMain::search (boost::shared_ptr <CmdLineParameters> inParams)
 
       //
       // perform the actual search
+		int currentSeedsFound;
       if (currentPameters.searchType () == _search_tree_) {
-         totalNumOfSeedsFound +=
+         currentSeedsFound = 
             SeedSearcher::prefixTreeSearch (
                currentPameters,
                assg
             );
       }
       else {
-         totalNumOfSeedsFound +=
+         currentSeedsFound = 
             SeedSearcher::tableSearch (
                currentPameters,
                assg
             );
       }
+		totalNumOfSeedsFound += currentSeedsFound; 
       //
       // call virtual 'afterProjection' handler
       afterProjection (i, totalNumOfSeedsFound, assg);
+		currentPameters.bestFeatures ().finalizeProjection (currentSeedsFound); 
    }
-
+/*
    //
    // now we bonferroni-correct all the scores of the seeds found
    // and insert the new seeds to the original feature array
@@ -156,7 +161,16 @@ SeedSearcherMain::search (boost::shared_ptr <CmdLineParameters> inParams)
       inParams->bestFeatures ().add (*it);
    }
 	inParams->bestFeatures ().finalize ();
+*/
 
+	//
+	// run finalizing scripts, like statistical corrections.
+	currentPameters.bestFeatures ().finalizeSetting (totalNumOfSeedsFound, numOfProjections);
+
+   FeatureSet::Iterator it = currentPameters.bestFeatures()->getIterator();
+   for (; it.hasNext () ; it.next()) {
+		inParams->bestFeatures ().add (*it);
+	}
 
    //
    // now output all the seeds
@@ -298,6 +312,7 @@ void SeedSearcherMain::CmdLineParameters::setupProjections ()
                RandomProjections::all,
                _parser.__proj_base,
                _parser.__proj_d,
+					_parser.__proj_outer,
                _langauge
                ));
       }
@@ -307,6 +322,7 @@ void SeedSearcherMain::CmdLineParameters::setupProjections ()
             _parser.__proj_n,
             _parser.__proj_base,
             _parser.__proj_d,
+				_parser.__proj_outer,
             _langauge)
             );
       }
@@ -319,6 +335,7 @@ void SeedSearcherMain::CmdLineParameters::setupProjections ()
                   _parser.__seed_l,
                   _parser.__proj_d,
                   _parser.__proj_mid,
+						_parser.__proj_outer,
                   _langauge)
             );
       }
@@ -329,6 +346,7 @@ void SeedSearcherMain::CmdLineParameters::setupProjections ()
                   _parser.__seed_l,
                   _parser.__proj_d,
                   _parser.__proj_mid,
+						_parser.__proj_outer,
                   _langauge)
                );
       }
@@ -375,26 +393,7 @@ void SeedSearcherMain::CmdLineParameters::setupDB ()
 
 void SeedSearcherMain::CmdLineParameters::setupWeightFunction ()
 {
-   switch (_parser.__weightType) {
-   case _weight_simple_:
-      _wf.reset (new SimpleWeightFunction (_seqWeights, _parser.__weight_t));
-      break;
-/*
-   case _weight_border_:
-      _wf.reset (new BorderWeightFunction (_parser.__weight_lowt, _parser.__weight_t));
-      break;
-   case _weight_interval_:
-      _wf.reset (new IntervalWeightFunction (_parser.__weight_lowt, _parser.__weight_t));
-      break;
-*/
-
-   default:
-      mustfail ();
-      break;
-   };
-
-   if (_parser.__weight_invert)
-      _wf->invert ();
+   _wf.reset (new SimpleWeightFunction (_seqWeights, _parser.__weight_t));
 }
 
 void SeedSearcherMain::CmdLineParameters::setupPreprocessor ()
@@ -414,29 +413,32 @@ void SeedSearcherMain::CmdLineParameters::setupPreprocessor ()
 
 void SeedSearcherMain::CmdLineParameters::setupScoreFunc ()
 {
-   if (_parser.__scoreType == _score_hypegeo_) {
-      if (_parser.__count == _count_total_) {
-         _score.reset (
-            new HyperGeoScore::FixedTotalCount (_parser.__seed_l,
-                                                _parser.__score_partial,
-                                                *_wf,
-                                                *_db)
-         );
-      }
-      else {
-         _score.reset (
-            new HyperGeoScore::Simple (_parser.__score_partial,
-                                       *_wf,
-                                       *_db)
-          );
-      }
-   }
-   else {
-      mustbe (_parser.__scoreType == _score_exp_);
-      _score.reset (
-         new ExpScore (_parser.__expLossPos, _parser.__expLossNeg, *_wf)
-      );
-   }
+	//
+	// create the score factory
+	boost::shared_ptr <Scores::Factory> factory;
+	switch (_parser.__scoreType) {
+		case _score_hypegeo_:
+			factory.reset (new Scores::HyperGeometricPvalueFactory);
+			break;
+
+		case _score_exp_: {
+				boost::shared_ptr <Scores::ExplossWeights> weights (
+					new Scores::ExplossWeights (_parser.__expLossPos, _parser.__expLossNeg)
+				);
+
+				factory.reset (new Scores::ExplossScoreFactory (weights));
+			}
+			break;
+	}
+
+	//
+	//
+	_score = Scores::makeFunction (
+		_parser.__count, 
+		_parser.__score_partial, 
+		_db, _wf, 
+		factory, 
+		_parser.__seed_l);
 }
 
 void SeedSearcherMain::CmdLineParameters::setupFeatureContainer ()
@@ -601,7 +603,8 @@ void ConfParameterIterator::setup (const Str& seqFilename,
          progPoints +=
             RandomProjections::numOfProjections (
                it.get ()->_parser.__proj_e, it.get ()->_parser.__proj_n,
-               it.get ()->_parser.__seed_l, it.get ()->_parser.__proj_d);
+               it.get ()->_parser.__seed_l, it.get ()->_parser.__proj_d,
+					it.get ()->_parser.__proj_outer);
       }
       StatusReportManager::setMaxProgress(progPoints);
    }
@@ -696,6 +699,7 @@ SeedSearcher::FeatureFilter_ptr
 	//
 	// the temporary FeatureSet may include additional filters, like
 	// the logging filter and the good-features filter
+	// as well as the statistical correction filters
 	//
 	// also, the FeatureSet is built twice, so that after removing redundancies
 	// enough features will remain
@@ -721,20 +725,49 @@ SeedSearcher::FeatureFilter_ptr
 	
 	if (temporary) {
 		//
-		// use GoodFeaturesFilter to allow only features above a threshold
+		// install statistical correction filters
+		switch (parser.__statfix_t) {
+			default:
+				mustfail ();
+				break;
+
+			case _statfix_bonf_:
+				filter.reset(new BonfCorrectionFilter (filter));
+				break;
+
+			case _statfix_fdr_:
+				filter.reset(new FDRCorrectionFilter (filter));
+				break;
+				
+			case _statfix_none_:
+				;
+		}
+		
+		//
+		// use FertileFeaturesFilter to allow only features that contain
+		// enough positive promoters
 		filter.reset (
-			new GoodFeaturesFilter (
+			new FertileFeaturesFilter (
 				filter,			
 				SeqCluster (params.db ()),
 				params.wf (),
-				parser.__score_min,
 				parser.__score_min_seq,
 				parser.__score_min_seq_per 
 			)
 		);
+	}
 
-		//
-		//
+	//
+	// quickly discard irrelevant features - by looking at their score
+	filter.reset(
+		new ScoreFeaturesFilter (
+			filter, 
+			// convert to log2 format
+			(0 - parser.__minusLog10score_min) * log2 (10)
+		)
+	);
+
+	if (temporary) {
 		if (parser.__generateSeedlog == Parser::_out_all_) {
 			//
 			// we insert a filter which prints to file all given seeds

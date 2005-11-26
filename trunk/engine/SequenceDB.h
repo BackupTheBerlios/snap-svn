@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: SequenceDB.h $
-// Version     : $Revision: 22 $ 
+// Version     : $Revision: 24 $ 
 //               $Author: Aviad $
-//               $Date: 10/01/05 1:52 $ 
+//               $Date: 13/05/05 11:13 $ 
 // Description :
 //    Concrete repository for sequences
 //
@@ -79,6 +79,12 @@ public:
       static SequenceDB* loadFastaAndWeights (const Langauge&,
                                               const char* seqFileName,
                                               SeqWeightDB::Name2Weight&);
+
+		//
+		// for loading a fasta file and a corresponding weight file
+		static SequenceDB* loadFastaAndWeights (const Langauge&,
+			std::istream& seqFile,
+			SeqWeightDB::Name2Weight&);
    };
 
 private:

@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: LeafPreprocessor.cpp $
-// Version     : $Revision: 25 $ 
+// Version     : $Revision: 26 $ 
 //               $Author: Aviad $
-//               $Date: 3/03/05 21:34 $ 
+//               $Date: 13/05/05 11:09 $ 
 // Description :
 //    Concrete preprocessor class - based on a hash table
 //
@@ -53,10 +53,17 @@ struct LeafPreprocessor::Rep : public SeedHash::Table <LeafNode>
    }
 
    NodeType& addPosition ( const Str& seedData, 
-			   AutoPtr <SeqPosition> position) {
+	   AutoPtr <SeqPosition> position) {
       //
       //
-      SeedHash::AssgKey key (seedData, _langauge);
+		Assignment assg (seedData, _langauge.code());
+		/*
+		for (int i=0 ; i < _seedLength - seedData.length () ; ++i) {
+			AssgPosition emptyPosition;
+			assg.addPosition(emptyPosition);
+		}*/
+
+      SeedHash::AssgKey key (assg, _langauge);
       NodeType* seed = this->find (key);
       if (seed == NULL) {
          //
@@ -99,6 +106,44 @@ int LeafPreprocessor::maxAssignmentSize () const
 }
 
 void LeafPreprocessor::add2Cluster (NodeCluster& nodes, 
+												const AssignmentBase& inAssg)  const
+{
+	int assgLength = inAssg.length ();
+	debug_mustbe (assgLength <= _rep->_seedLength);
+
+	Assignment assgTemplate (inAssg);
+	Rep::Iterator nodeIt (*_rep);
+	for (; nodeIt.hasNext () ; nodeIt.next ()) {
+		LeafNode* seed = nodeIt.get ();
+		if (seed->assignment().length () < assgLength)
+			continue;
+
+		const SubAssignment seedAssg (seed->assignment (), 0, assgLength);
+
+		//
+		//
+		debug_mustbe (seed);
+		debug_mustbe (assgLength == seedAssg.length ());
+
+		if (inAssg.contains (seedAssg)) {
+			//
+			// make the template specific to the assignment of the seed
+			for (int i=0 ; i<assgLength ; ++i) {
+				debug_mustbe (seedAssg.getPosition (i).strategy () == assg_discrete);
+
+
+				if (assgTemplate [i].strategy () == assg_discrete)
+					assgTemplate.setPosition (i, seedAssg.getPosition (i));
+			}
+
+			AssgNodePair pair (seed, assgTemplate);
+			nodes.addNode (pair);
+			assgTemplate = inAssg;
+		}
+	}
+}
+
+/*
                                      const AssignmentBase& assg)  const
 {
    int assgLength = assg.length ();
@@ -111,7 +156,7 @@ void LeafPreprocessor::add2Cluster (NodeCluster& nodes,
       //
       //
       debug_mustbe (seed);
-      debug_mustbe (assg.length () == seedAssg.length ());
+      //debug_mustbe (assg.length () == seedAssg.length ());
 
       if (assg.contains (seed->assignment ())) {
          //
@@ -129,6 +174,7 @@ void LeafPreprocessor::add2Cluster (NodeCluster& nodes,
       }
    }
 }
+*/
 
 //
 // iterate over all sequences
@@ -217,9 +263,10 @@ static int buildReverse (
       // 
       //
       // stuff every position in this sequence to table
-      // except those that dont have enough lookahead
+      // even those that don`t have enough lookahead!
       int seqLength = seq->length ();
-      int lastPosition =  seqLength - seedLength;
+      // int lastPosition =  seqLength - seedLength;
+		int lastPosition =  seqLength - 1;
       numberOfPositions += (lastPosition + 1);
 
       //
@@ -233,8 +280,11 @@ static int buildReverse (
          
          Str data = posPosition->getSeedString (seedLength);
          Str rev_data = negPosition->getSeedString (seedLength);
-         debug_mustbe (data.length () == seedLength);
-         debug_mustbe (rev_data.length () == seedLength);
+			
+         debug_mustbe (data.length () <= seedLength);
+			debug_mustbe (0 < data.length ());
+         debug_mustbe (rev_data.length () <= seedLength);
+			debug_mustbe (0 < rev_data.length ());
 
          rep->addPosition (data, posPosition);
          rep->addPosition (rev_data, negPosition);
@@ -317,15 +367,17 @@ LeafPreprocessor::Rep* LeafPreprocessor::build (
    const int totalBytes =  numberOfPositions * sizeof (SeqPosition) + 
                            rep->getSize () * sizeof (LeafNode);
 
-   DLOG << "LeafPreprocessor created: (" << (finish - start) 
-	<< " seconds)" << DLOG.EOL ()
-	<< numberOfPositions << " SeqPosition objects each of " 
-	<< sizeof (SeqPosition) << " Bytes." << DLOG.EOL ()
-	<< rep->getSize () << " Node objects each of " 
-	<< sizeof (LeafNode) << " Bytes." << DLOG.EOL ()
-	<< (totalBytes / 1024) 
-	<< " KBytes (loose) lower bound to preprocessor size." << DLOG.EOL ()
-	<< DLOG.EOL ();
+	DLOG	<< "LeafPreprocessor (Depth == " 
+			<< seedLength
+			<< ") created: (" << (finish - start) 
+			<< " seconds)" << DLOG.EOL ()
+			<< numberOfPositions << " SeqPosition objects each of " 
+			<< sizeof (SeqPosition) << " Bytes." << DLOG.EOL ()
+			<< rep->getSize () << " Node objects each of " 
+			<< sizeof (LeafNode) << " Bytes." << DLOG.EOL ()
+			<< (totalBytes / 1024) 
+			<< " KBytes (loose) lower bound to preprocessor size." << DLOG.EOL ()
+			<< DLOG.EOL ();
    DLOG.flush ();
 
    return rep;

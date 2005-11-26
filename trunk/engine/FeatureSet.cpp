@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: FeatureSet.cpp $
-// Version     : $Revision: 1 $ 
+// Version     : $Revision: 3 $ 
 //               $Author: Aviad $
-//               $Date: 10/12/04 21:07 $ 
+//               $Date: 12/04/05 0:40 $ 
 // Description :
 //    Concrete class describing a set of features.
 //    contains algorithms for replacing redundant features
@@ -105,16 +105,7 @@ bool FeatureSet::SymmetricMaxOffsetRedundancyCheck::
 //
 // returns true if a is better than b
 bool FeatureSet::Comparator::a_better_than_b(const Feature& a, const Feature& b) {
-   double ascore = a.log2bonfScore ();
-   double bscore = b.log2bonfScore ();
-   if (ascore == bscore) {
-      ascore = a.log2score ();
-      bscore = b.log2score ();
-      if (ascore == bscore) 
-         return (a.assignment ().compare (b.assignment()) < 0);
-   }
-
-   //
-   // lower scores are better
-   return ascore < bscore;
+	int compare = a.score ()->compare (*b.score ().get ());
+	if (compare != 0) return (compare < 0);	// lower scores are better
+	else return (a.assignment ().compare (b.assignment()) < 0); // lexicogrphically lower 
 }

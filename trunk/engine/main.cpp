@@ -1,20 +1,20 @@
 //
-// File        : $RCSfile: $ 
+// File        : $RCSfile: $
 //               $Workfile: main.cpp $
-// Version     : $Revision: 68 $ 
+// Version     : $Revision: 71 $
 //               $Author: Aviad $
-//               $Date: 3/03/05 21:34 $ 
+//               $Date: 10/05/05 12:12 $
 // Description :
 //    main routine for the seed-searcher program
 //
-// Author: 
+// Author:
 //    Aviad Rozenhek (mailto:aviadr@cs.huji.ac.il) 2003-2004
 //
-// written for the SeedSearcher program. 
-// for details see www.huji.ac.il/~hoan 
+// written for the SeedSearcher program.
+// for details see www.huji.ac.il/~hoan
 // and also http://www.cs.huji.ac.il/~nirf/Abstracts/BGF1.html
 //
-// this file and as well as its library are released for academic research 
+// this file and as well as its library are released for academic research
 // only. the LESSER GENERAL PUBLIC LICENSE (LPGL) license
 // as well as any other restrictions as posed by the computational biology lab
 // and the library authors appliy.
@@ -28,7 +28,6 @@
 #include "Sequence.h"
 #include "RandomProjections.h"
 #include "SeedSearcher.h"
-#include "HyperGeoScore.h"
 #include "PSSM.h"
 #include "SeedSearcherMain.h"
 
@@ -52,11 +51,10 @@ using namespace std;
 using namespace Persistance;
 
 
-static const char buildComment [] = 
+static const char buildComment [] =
 	"Release notes: \n"
-	"1) Michal - more strict bonferroni correction\n"
-	"2) Tommy - special option shows seeds in .log\n"
-	"3) Yoseph - special option shows all scores received in a setting\n"
+	"Build was not regression tested\n"
+	"Major fix: wildcards contain N, FDR enabled, hotspots counting"
 	"\n";
 
 
@@ -96,8 +94,8 @@ static void welcomeMessage ()
 {
    //
    // (1) write header, and execution time
-   DLOG  << "SeedSearcher v" 
-         << main_definitions::__versionMajor << '.' 
+   DLOG  << "SeedSearcher v"
+         << main_definitions::__versionMajor << '.'
          << main_definitions:: __versionMinor;
 
    switch (main_definitions::__stability) {
@@ -132,7 +130,7 @@ static void welcomeMessage (const Parser& parser)
         << "Execution started on " << ctime( &ltime ) << DLOG.EOL ();
    //
    // (2) write execution line
-   DLOG  << '#' << DLOG.EOL () 
+   DLOG  << '#' << DLOG.EOL ()
          << "# command line" << DLOG.EOL ();
 
    for (int i=0 ;i<parser.__argv.argc (); i++)
@@ -140,7 +138,7 @@ static void welcomeMessage (const Parser& parser)
    DLOG << DLOG.EOL ();
 
    DLOG  << DLOG.EOL ();
-   DLOG  << '#' << DLOG.EOL () 
+   DLOG  << '#' << DLOG.EOL ()
          << "# execution parameters " << DLOG.EOL ();
    parser.logParams (DLOG);
 }
@@ -151,7 +149,7 @@ static void welcomeMessage (const Parser& parser)
 static time_t cleanupStart = 0, cleanupFinish;
 static time_t start = time (NULL), finish;
 
-static void mainRoutine (int argc, 
+static void mainRoutine (int argc,
                         char* argv []);
 
 //
@@ -162,7 +160,7 @@ int exit_value = 0;
    try {
 	   Argv anArgv;
       StatusReportManager::Sentry report( argc, argv, anArgv );
-   
+
       //
       // setup basic logging
       SeedSearcherLog::setupConsoleLogging ( /* dont supress */ false);
@@ -179,7 +177,7 @@ int exit_value = 0;
    catch (const BaseStatusReporter::CancelledException&) {
 		try {
 			//
-			// aborted by user, 
+			// aborted by user,
 			StatusReportManager::setJobCancelled ();
 		}
 		catch (...) {
@@ -229,14 +227,14 @@ static void printSeedFile (TextTableReport::TextOutput& seedsFile,
 {
    printer.printSeed (seedsFile, feature, pos);
    Parser::OutputType outputs [3] = { gMotif, gPSSM, gSample };
-   const char* names [] = { main_definitions::MOTIF_FILE_STUB, 
-                            main_definitions::PSSM_FILE_STUB, 
+   const char* names [] = { main_definitions::MOTIF_FILE_STUB,
+                            main_definitions::PSSM_FILE_STUB,
                             main_definitions::SAMPLE_FILE_STUB };
 
    for (int i=0 ; i<3; i++) {
       if (outputs[i] != Parser::_out_none_)  {
          char buffer [8096];
-         main_definitions::getOutputFileName(buffer, true, 
+         main_definitions::getOutputFileName(buffer, true,
 					     index, fileStub, names [i]);
          boost::filesystem::path leaf (buffer);
          seedsFile << Str (leaf.leaf ()) << '\t';
@@ -254,8 +252,8 @@ static void printSeqMatrix (FeatureSet& bestFeatures,
                             SeedSearcherMain::Parameters& parameters)
 {
    TextTableReport::TextOutput matrixFile (
-      main_definitions::openFile (true, -1, 
-                                 StrBuffer (parameters.name ()), 
+      main_definitions::openFile (true, -1,
+                                 StrBuffer (parameters.name ()),
                                  main_definitions::MATRIX_FILE_STUB));
    //
    // create the format of the table
@@ -297,7 +295,7 @@ static void printSeqMatrix (FeatureSet& bestFeatures,
          debug_mustbe (feature.cluster ().hasPositions ());
          PosCluster* posCluster = feature.cluster ().getPositions(*it);
          //
-         // 
+         //
          if (posCluster != NULL) {
             int numPositions = posCluster->size ();
             data.writeField (FixedStrBuffer <128> ("%d", numPositions));
@@ -330,7 +328,7 @@ protected:
    virtual void afterSearch (Results& results) {
       SeedSearcherMain::afterSearch (results);
 
-      SeedSearcherMain::CmdLineParameters& params = 
+      SeedSearcherMain::CmdLineParameters& params =
          *safe_cast (CmdLineParameters*, &results.getParameters ());
 
       Parser::OutputType gPSSM = params.parser ().__generatePSSM;
@@ -354,14 +352,11 @@ protected:
 			SeedSearcherMain::FeatureSetManager::removeRedundancies (
 				*params.bestFeatures ().getArray(), params);
 
-      int bonfN = 
-         params.parser ().__score_bonf? results.numSeedsSearched () : 0;
-      FeatureInvestigator printer ( params                     , 
-                                    params.parser ().__seed_o  ,
-                                    bonfN                      ,
-                                    results.numProjectionsSearched ()
+      FeatureInvestigator printer ( params                     ,
+                                    params.parser ().__statfix_t,
+												params.parser ().__seed_o
                                     );
-  
+
       StrBuffer fileStub (params.name ());
       TextTableReport::TextOutput seedsFile (
          main_definitions::openFile (true, -1, fileStub, main_definitions::SEEDS_FILE_STUB)
@@ -389,24 +384,24 @@ protected:
 
          main_definitions::printMotif (
                   params.parser ().__score_partial,
-                  dlog, printer, 
-                  gPSSM, gMotif, gBayesian, 
-                  pos, neg, 
+                  dlog, printer,
+                  gPSSM, gMotif, gBayesian,
+                  pos, neg,
                   fileStub, feature, i
          );
          dlog.writeln ();
          printSeedFile (seedsFile, printer,
 			   gPSSM, gMotif, gBayesian,
-			   pos, neg, 
+			   pos, neg,
 			   fileStub, feature, i
 			);
       }
 
       printSeqMatrix (*bestFeatures, results.getParameters ());
    }
-}; 
+};
 
-static void mainRoutine (int argc, 
+static void mainRoutine (int argc,
                         char* argv [])
 {
    welcomeMessage ();
@@ -449,45 +444,45 @@ static void mainRoutine (int argc,
 
 #include "core/dlmalloc.h"
 
-void* operator new (size_t inSize) 
+void* operator new (size_t inSize)
 {
 	void* ptr = dlmalloc (inSize);
 	debug_mustbe (ptr);
 	return ptr;
 }
 
-void* operator new (size_t inSize, const std::nothrow_t&) 
+void* operator new (size_t inSize, const std::nothrow_t&)
 {
 	void* ptr = dlmalloc (inSize);
 	debug_mustbe (ptr);
 	return ptr;
 }
 
-void operator delete (void* inPtr) 
+void operator delete (void* inPtr)
 {
    if (inPtr)
 	   dlfree (inPtr);
 }
 
-void* operator new[] (size_t inSize) 
+void* operator new[] (size_t inSize)
 {
 	void* ptr = dlmalloc (inSize);
 	debug_mustbe (ptr);
 	return ptr;
 }
 
-void* operator new[] (size_t inSize, const std::nothrow_t& nothrow) 
+void* operator new[] (size_t inSize, const std::nothrow_t& nothrow)
 {
 	void* ptr = dlmalloc (inSize);
 	debug_mustbe (ptr);
 	return ptr;
 }
 
-void operator delete[] (void* inPtr) 
+void operator delete[] (void* inPtr)
 {
    if (inPtr)
 	   dlfree (inPtr);
 }
 
 #endif
-#endif  
+#endif

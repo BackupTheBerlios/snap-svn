@@ -483,6 +483,21 @@ void StrBuffer::trim() {
 	setLength(newLength);
 }
 
+Str Str::trimmedSubstring () const
+{
+	int newBeg, newEnd;
+	for(newBeg= 0; newBeg < mLength; newBeg++) {
+		if (mData[newBeg] > 0x20)
+			break;
+	}
+	for(newEnd= mLength-1; newEnd >= newBeg; newEnd--) {
+		if (mData[newEnd] > 0x20)
+			break;
+	}
+
+	return substring(newBeg, newEnd + 1);
+}
+
 char* StrBuffer::willWrite(Size inSize) {
 	ensureCapacity(inSize);
 	mLength= inSize;
@@ -584,9 +599,9 @@ I will try to get rid of it in the future.
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Str.cpp $
-// Version     : $Revision: 7 $ 
+// Version     : $Revision: 8 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:45 $ 
+//               $Date: 13/05/05 11:14 $ 
 // Description :
 //	The Core library contains contains basic definitions and classes
 // which are useful to any highly-portable applications

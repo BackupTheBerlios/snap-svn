@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $
 //               $Workfile: Sequence.h $
-// Version     : $Revision: 33 $
+// Version     : $Revision: 34 $
 //               $Author: Aviad $
-//               $Date: 3/03/05 21:34 $
+//               $Date: 13/05/05 11:12 $
 // Description :
 //    Concrete classes for sequences, sequence positions
 //
@@ -113,15 +113,23 @@ public:
       return _strand;
    }
    //
-   // returns the offsets from the 'positive' strand
-   // of a seed of length 'seedLength' that begins in this position
+   // returns the offset from the end of the sequence.
+	// the last character of the sequence is assumed to be -1 upstream
+	// from the TSS of the gene
    int tssPosition (int seedLength) const {
-      if (_strand == _strand_pos_)
-         return position ();
-      else
-         return maxLookahead () - seedLength;
-   }
-   //
+		// ---> strand with gene   TSS 
+		//							 *		|	the motif AACCG lies -5 to 0 upstream
+		//		TGAA...		 ...AACCG| --> the gene
+		//		ACTT...		 ...TTGGC|		the gene complement	<--
+		//								  *|  the motif CGGTT lies 0 to -5 upstream
+		//										<--- reverse of the strand with the gene
+		if (_strand == _strand_pos_)
+			return (- maxLookahead());
+		else
+			return - position ();
+	}
+
+	//
    // returns the sequence string starting at this position,
    // modified by 'offset'with length 'length'.
    // if offset is too big or too small (negative)

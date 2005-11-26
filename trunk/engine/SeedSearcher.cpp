@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: SeedSearcher.cpp $
-// Version     : $Revision: 35 $ 
+// Version     : $Revision: 39 $ 
 //               $Author: Aviad $
-//               $Date: 3/03/05 21:34 $ 
+//               $Date: 13/05/05 11:11 $ 
 // Description :
 //    Concrete class for seed-searching in a preprocessor
 //
@@ -34,7 +34,6 @@
 #include "persistance/StrOutputStream.h"
 
 #include <boost/timer.hpp>
-#include <boost/cast.hpp>
 
 #include <iostream>
 #include <time.h>
@@ -347,7 +346,7 @@ int SeedSearcher::prefixTreeSearch (
          )
 {
    const PrefixTreePreprocessor& tree = 
-      *boost::polymorphic_downcast <const PrefixTreePreprocessor*> (&params.preprocessor ());
+		*safe_cast (const PrefixTreePreprocessor*, &params.preprocessor ());
 
    debug_mustbe (projection.length () > 0);
    debug_mustbe (projection.length () <= tree.getDepth ());
@@ -468,6 +467,13 @@ struct TableSearcher {
       }
    };
 
+	struct SeedComparator {
+		inline bool operator ()(	const TableSearcher::AbstractSeed* a, 
+													const TableSearcher::AbstractSeed* b) {
+			return (a->assignment().compare (b->assignment()) < 0);
+		}
+	};
+
    class SpecializedSeed : public AbstractSeed
    {
    public:
@@ -564,13 +570,25 @@ struct TableSearcher {
       bool _totalCount;
       bool _specialize;
    };
+
+	struct SeedVector : public Vec <AbstractSeed*> {
+		~SeedVector () {
+			for (iterator i = begin () ; i!= end () ; ++i) {
+				delete *i;
+			}
+		}
+	};
 };
+
+
 
 static const int DEFAULT_SEED_HASH_TABLE_SIZE = 7 * 1023 * 1024 - 1;
 
-static void createFeatureTable (TableSearcher::Table& hashTable,
-                                SeedSearcher::SearchParameters& params,
-                                const Assignment& projection)
+static void
+createFeatureTable (	TableSearcher::SeedVector& outVector,
+						   TableSearcher::Table& hashTable,
+							SeedSearcher::SearchParameters& params,
+                     const Assignment& projection)
 {
    //
    // collect features assg_together, (with optional total counts)
@@ -586,6 +604,26 @@ static void createFeatureTable (TableSearcher::Table& hashTable,
 
       hashTable.addSeed (nodeWithPath.path (), node);
    }
+
+	//
+	// sort the features into a vector of features
+	// this is in order to have consistent results across search algorithms
+	// and across preprocessors
+	reserveClear(outVector, 
+		hashTable.TableSearcher::Table::HashTableBase::getSize ());
+	TableSearcher::SeedHashTableBase::Iterator featureIt (hashTable);
+	for (; featureIt.hasNext () ; featureIt.next ()) {
+		//
+		// put the feature in the vector
+		outVector.push_back (safe_cast (TableSearcher::AbstractSeed*, featureIt.get ()));
+	}
+	std::sort (outVector.begin (), outVector.end (), 
+					TableSearcher::SeedComparator ());
+
+	//
+	// we don't want the table to delete our features
+	// so we clear it
+	hashTable.clear(/* do not delete elements */ false);
 }
 
 static int extendedTableSearch (
@@ -608,21 +646,22 @@ static int extendedTableSearch (
    debug_mustbe (
       projectionPrefix.length () + projectionPostfix.length () == projection.length ());
 
-   //
-   // now we want to create a unified view of preprocessor-nodes 
-   // according to the projection's prefix
-   TableSearcher::Table shortHashTable ( 
-      /* use total count because we neeed the positions */ true,
-      /* don't use specialization */ false,
-      DEFAULT_SEED_HASH_TABLE_SIZE,
-      params.langauge ());
+	TableSearcher::SeedVector seeds;
+	{
+		//
+		// now we want to create a unified view of preprocessor-nodes 
+		// according to the projection's prefix
+		TableSearcher::Table shortHashTable ( 
+			/* use total count because we need the positions */ true,
+			/* don't use specialization */ false,
+			DEFAULT_SEED_HASH_TABLE_SIZE,
+			params.langauge ());
 
-   {
       //
       // get all the nodes of the preprocessor up to maximum length
       Preprocessor::NodeCluster nodes;
       params.preprocessor ().add2Cluster (nodes, projectionPrefix);
-      createFeatureTable (shortHashTable, params, projectionPrefix);
+      createFeatureTable (seeds, shortHashTable, params, projectionPrefix);
    }
 
    //
@@ -642,10 +681,9 @@ static int extendedTableSearch (
 
    //
    // go over all unified nodes
-   TableSearcher::SeedHashTableBase::Iterator featureIt (shortHashTable);
+	IteratorWrapper < TableSearcher::SeedVector > featureIt (seeds.begin (), seeds.end ());
    for (; featureIt.hasNext () ; featureIt.next ()) {
-      TableSearcher::Seed* feature = 
-         boost::polymorphic_downcast <TableSearcher::Seed*> (featureIt.get ());
+      TableSearcher::AbstractSeed* feature = featureIt.get ();
 
       //
       // get the node's assignment and positions
@@ -778,16 +816,17 @@ int SeedSearcher::tableSearch (  SearchParameters& params,
 {
    debug_mustbe (projection.length () > 0);
    if (projection.length () <= params.preprocessor ().maxAssignmentSize ()) {
-      
-      TableSearcher::Table hashTable ( 
-         params.useTotalCount (),
-         params.useSpecialization (),
-         DEFAULT_SEED_HASH_TABLE_SIZE,
-         params.langauge ());
 
-      createFeatureTable(hashTable, params, projection);
+		TableSearcher::SeedVector seeds;
+		{
+			TableSearcher::Table hashTable ( 
+				params.useTotalCount (),
+				params.useSpecialization (),
+				DEFAULT_SEED_HASH_TABLE_SIZE,
+				params.langauge ());
 
-
+			createFeatureTable(seeds, hashTable, params, projection);
+		}
 
       time_t start = time (NULL), finish;
       DLOG << "[Evaluating seeds: ";
@@ -795,10 +834,9 @@ int SeedSearcher::tableSearch (  SearchParameters& params,
 
       //
       // now spit out all the features...
-      TableSearcher::SeedHashTableBase::Iterator featureIt (hashTable);
+		IteratorWrapper < TableSearcher::SeedVector > featureIt (seeds.begin (), seeds.end ());
       for (; featureIt.hasNext () ; featureIt.next ()) {
-         TableSearcher::Seed* feature = 
-            boost::polymorphic_downcast <TableSearcher::Seed*> (featureIt.get ());
+         TableSearcher::AbstractSeed* feature = featureIt.get ();
 
          //
          // overlaps are not counted when using total-counts
@@ -827,7 +865,7 @@ int SeedSearcher::tableSearch (  SearchParameters& params,
       finish = time (NULL);
       DLOG << (finish - start) << " seconds.] ";
 
-      return hashTable.getSize ();
+      return seeds.size ();
    }
    else {
       return extendedTableSearch (params, projection);

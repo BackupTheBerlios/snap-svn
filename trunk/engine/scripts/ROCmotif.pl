@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w -IF:\perl\lib\bioskills
+#!/usr/bin/perl -w -I/cs/course/2002/bioskill/perllib/lib/perl5/site_perl
 use strict;
 use Getopt::Long;
 use Math::SpecFun::Gamma qw(gammaln);
@@ -37,6 +37,7 @@ $motif =~ tr/acgt/ACGT/;
 $motif =~ s/S/[CG]/gi;
 $motif =~ s/W/[AT]/gi;
 $motif =~ s/R/[AG]/gi;
+
 $motif =~ s/Y/[CT]/gi;
 $motif =~ s/K/[GT]/gi;
 $motif =~ s/M/[AC]/gi;
@@ -55,14 +56,26 @@ if ($nonrev==0) {
 my ($seqTP, $seqFP, $seqTN) = (0, 0, 0);
 my (%d, %wgt);
 
+my $miew = 1;
 $d{TP} = $d{TN} = $d{FP} = $d{FN} = 0;
 open (W, "$wgtfile") or die "$seqfile can't be opened\n";
 while (<W>) {
     chomp;
     my ($name, $reg) = split(/\t/, $_);
+
+    # remove trailiing whitspace
+    $name =~ s/^\s*//g;
+    $name =~ s/\s*$//g;
+#   print "$name$name\n";
     $wgt{$name}=$reg;
 }
 close (W);
+
+if ($debug) {
+  my $nwgt = keys(%wgt);
+  print "Read $nwgt weights\n";
+  # print keys (%wgt);
+}
 
 open (D, "$seqfile") or die "$seqfile can't be opened\n";
 my $i = 0;
@@ -70,8 +83,19 @@ while (<D>) {
     chomp;
     my ($name, $seq) = split(/\t/, $_);
     next unless (defined $name and defined $seq);
-    my $reg = $wgt{$name};
-    next unless (defined $reg);
+
+    # remove trailiing whitspace
+    $name =~ s/^\s*//g;
+    $name =~ s/\s*$//g;
+#   print "$name$name\n";
+
+    my $reg;
+    $reg = $wgt{$name};
+    #print $reg;
+    unless (defined $reg) {
+      #print "Skipping $name\n" if ($debug);
+      next;
+    }
 
     my $match = 0;
 #     my @matches = ($seq =~ m/$motif/xgi);

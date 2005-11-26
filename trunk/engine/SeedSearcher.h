@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: SeedSearcher.h $
-// Version     : $Revision: 28 $ 
+// Version     : $Revision: 30 $ 
 //               $Author: Aviad $
-//               $Date: 3/03/05 21:34 $ 
+//               $Date: 13/05/05 11:11 $ 
 // Description :
 //    Concrete class for seed-searching in a preprocessor
 //
@@ -57,7 +57,8 @@ public:
       virtual const FeatureSet_ptr getArray () const = 0;
       virtual FeatureSet_ptr getArray () = 0;
 
-		virtual void finalize () = 0;
+		virtual void finalizeProjection (int /* numSeedsSearched */) { }
+		virtual void finalizeSetting (int /* numSeedsSearched */, int /* numProjections */) { }
 
       virtual FeatureFilter* clone () = 0;
    };
@@ -65,7 +66,7 @@ public:
 
    class SearchParameters : public FeatureParameters {
    public:
-      SearchParameters () {
+		SearchParameters () : _useSpecialization (false), _useTotalCount (false) {
       }
       virtual ~SearchParameters () {
       }
@@ -140,6 +141,30 @@ public:
       SearchParameters& params,
       const Assignment& projection // how to climb down the tree
          );
+
+	static int search (
+		SearchType type,
+		SearchParameters& params,
+		const Assignment& projection // how to climb down the tree
+		)
+	{
+		int currentSeedsFound;
+		if (type == _search_tree_) {
+			currentSeedsFound = 
+				prefixTreeSearch (
+					params,
+					projection
+				);
+		}
+		else {
+			currentSeedsFound = 
+				tableSearch (
+					params,
+					projection
+				);
+		}
+		return currentSeedsFound;
+	}
 };
 
 #endif // _SeedSearcher_SeedSeacher_h

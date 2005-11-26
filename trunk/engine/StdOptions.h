@@ -2,22 +2,22 @@
 #define _SeedSearcher_StdOption_h
 
 //
-// File        : $RCSfile: $ 
+// File        : $RCSfile: $
 //               $Workfile: StdOptions.h $
-// Version     : $Revision: 34 $ 
+// Version     : $Revision: 38 $
 //               $Author: Aviad $
-//               $Date: 1/03/05 22:24 $ 
+//               $Date: 10/05/05 12:12 $
 // Description :
-//    Concrete implmentations for Langauge, ScoreFunction, WeightFunction etc
+//    Concrete implmentations for Langauge, Scores::Function, WeightFunction etc
 //
-// Author: 
+// Author:
 //    Aviad Rozenhek (mailto:aviadr@cs.huji.ac.il) 2003-2004
 //
-// written for the SeedSearcher program. 
-// for details see www.huji.ac.il/~hoan 
+// written for the SeedSearcher program.
+// for details see www.huji.ac.il/~hoan
 // and also http://www.cs.huji.ac.il/~nirf/Abstracts/BGF1.html
 //
-// this file and as well as its library are released for academic research 
+// this file and as well as its library are released for academic research
 // only. the LESSER GENERAL PUBLIC LICENSE (LPGL) license
 // as well as any other restrictions as posed by the computational biology lab
 // and the library authors appliy.
@@ -29,7 +29,6 @@
 #include "SeedSearcher.h"
 #include "AssignmentFormat.h"
 
-#include "HyperGeoCache.h"
 #include "core/AutoPtr.h"
 
 #include "persistance/Defs.h"
@@ -40,20 +39,20 @@
 //
 // this header contains the standard definitions used for SeedSearcher
 //
-
-class ExpScore : public ScoreFunction {
+/*
+class ExpScore : public Scores::Function {
 public:
    virtual ~ExpScore () {
-   }    
-   ExpScore(double alpha, double beta, const SeqWeightFunction& wf) 
+   }
+   ExpScore(double alpha, double beta, const SeqWeightFunction& wf)
       :  _log2alpha(log2(alpha)),
          _log2beta(log2(beta)),
-         _wf(wf) 
+         _wf(wf)
    {
    }
 
     struct ExpParameters : public ScoreParameters {
-       ExpParameters (int pos, int neg) 
+       ExpParameters (int pos, int neg)
           : _pos (pos), _neg (neg) {
        }
        virtual ~ExpParameters () {
@@ -69,7 +68,7 @@ public:
                            const Assignment& projection,
                            const SeqCluster& containingFeature, // k
                            ScoreParameters** parameters
-                           ) const 
+                           ) const
    {
        SeqCluster::CountSequences pos_cs,neg_cs;
        containingFeature.performDivided(_wf,pos_cs,neg_cs);
@@ -79,9 +78,9 @@ public:
    }
 
    //
-   // print the score parameters 
-   virtual void writeAsText ( Persistance::TextWriter& writer, 
-                              const ScoreParameters* params) const 
+   // print the score parameters
+   virtual void writeAsText ( Persistance::TextWriter& writer,
+                              const ScoreParameters* params) const
    {
       const ExpParameters* p = boost::polymorphic_downcast<const ExpParameters*> (params);
       writer << "beta^" << p->_neg << "/alpha^" << p->_pos;
@@ -89,8 +88,9 @@ public:
 
 private:
     double _log2alpha, _log2beta;
-    const SeqWeightFunction & _wf;   
+    const SeqWeightFunction & _wf;
 };
+*/
 
 
 class ACGTLangauge : public Langauge{
@@ -104,8 +104,8 @@ public:
       TCode = 0x8,
       NCode = 0x10, // for N in the seq file
    };
-   ACGTLangauge (bool useReverse = true, bool includeN = false) 
-   : _includeN (includeN), _useReverse (useReverse) 
+   ACGTLangauge (bool useReverse = true, bool includeN = false)
+   : _includeN (includeN), _useReverse (useReverse)
    {
    }
    virtual ~ACGTLangauge () {
@@ -117,21 +117,34 @@ public:
    virtual void write (const Assignment::Position&, Persistance::TextWriter& out) const ;
 
    //
-   // returns the complement of an assignment 
-   // (for instance the reverse assignment for ACGT langugaue)
+   // returns the complement of an assignment
+   // (for instance the reverse assignment for ACGT langauge)
    virtual void complement (const Assignment&, Assignment&) const;
    virtual void complement (const Str&, StrBuffer&) const;
 
    //
    // return a wildcard with the appropriate strategy (for searching)
    virtual Assignment::Position wildcard (Assignment::Strategy s) const {
-      //
-      // currently wildcards do not match 'N' characters.
-      // this may seem ridiculous because these are supposed to be wildcards
-      // after all, but really 'N' means I-dunno-whats-there
-      // so if you want to match dunno's you'd better ask for it
-      return Assignment::Position (Assignment::Position::all, 4, s);
-   }
+		switch (s) {
+			default:
+				mustfail ();
+
+			case assg_discrete:
+				//
+				// there is no point in trying to specialize into the N character
+				// because an N in the sequence means that the actual character is still
+				// unknown
+				return Assignment::Position (Assignment::Position::all, 4, s);
+				break;
+
+			case assg_together:
+				//
+				// a wildcard can match an N in the sequence
+				return Assignment::Position (Assignment::Position::all, 5, s);
+				break;
+		}
+	}
+
 
    //
    // return the code of the langauge
@@ -146,7 +159,7 @@ public:
    }
 
    //
-   // get the cardinality of the alphabet 
+   // get the cardinality of the alphabet
    // (depends on inclusion of 'N' in alphabet)
    virtual int cardinality () const{
       return _includeN? 5 : 4;
@@ -157,9 +170,9 @@ public:
    void includeN (bool i) {
       _includeN = i;
    }
-   
+
    //
-   // 
+   //
    static const AlphabetCode& getCode (bool cardinalityIncludesN);
 
    virtual Assignment& stringToAssignment (Assignment& motif, const Str& motif_str) const {
@@ -179,7 +192,7 @@ public:
             }
 
             //
-            // create a position for each char in the string, 
+            // create a position for each char in the string,
             // using assg_discrete strategy
             motif.addPosition (AssgPosition (cc, assg_discrete));
          }
@@ -201,7 +214,7 @@ protected:
 class SimpleWeightFunction : public SeqWeightFunction {
 public:
    SimpleWeightFunction (boost::shared_ptr <SeqWeightDB::ID2Weight> weights,
-                        double inThreshold) 
+                        double inThreshold)
    : SeqWeightFunction (weights), _threshold (inThreshold) {
    }
    virtual ~SimpleWeightFunction () {
@@ -219,61 +232,6 @@ protected:
    double _threshold;
 };
 
-/*
-//
-//
-class IntervalWeightFunction : public SeqWeightFunction {
-public:
-   IntervalWeightFunction (double lo, double hi) : _hi (hi), _lo (lo) {
-   }
-   virtual ~IntervalWeightFunction () {
-   }
-   //
-   // returns true iff the weight belongs to the positive or negative set.
-   // if so, 'outIsPositive' is set to true iff the weight belongs to the
-   // positive set.
-   virtual bool isRelevantImpl (double weight, bool& outIsPositive) const {
-      outIsPositive = (weight >= _lo) && (weight <= _hi);
-      return true;
-   }
-
-protected:
-   double _hi;
-   double _lo;
-};
-
-
-//
-//
-class BorderWeightFunction : public SeqWeightFunction {
-public:
-   BorderWeightFunction (double lo, double hi) : _hi (hi), _lo (lo) {
-   }
-   virtual ~BorderWeightFunction () {
-   }
-   //
-   // returns true iff the weight belongs to the positive or negative set.
-   // if so, 'outIsPositive' is set to true iff the weight belongs to the
-   // positive set.
-   virtual bool isRelevantImpl (double weight, bool& outIsPositive) const {
-      if (weight >= _hi) {
-         outIsPositive = true;
-         return true;
-      }
-      else if (weight <= _lo) {
-         outIsPositive = false;
-         return true;
-      }
-
-      return false;
-   }
-
-protected:
-   double _hi;
-   double _lo;
-};
-*/
-
 //
 //
 class FeatureFilterLink : public SeedSearcher::FeatureFilter {
@@ -282,7 +240,7 @@ class FeatureFilterLink : public SeedSearcher::FeatureFilter {
    // that do only partial processing of a feature, before passing
    // the feature along to the next FeatureFilter link
 public:
-	FeatureFilterLink (boost::shared_ptr <SeedSearcher::FeatureFilter>& next) 
+	FeatureFilterLink (boost::shared_ptr <SeedSearcher::FeatureFilter>& next)
    : _next (next) {
    }
    FeatureFilterLink (const FeatureFilterLink& in)
@@ -302,73 +260,18 @@ public:
    virtual FeatureSet_ptr getArray () {
       return _next->getArray ();
    }
-	virtual void finalize () {
-		_next->finalize ();
+	virtual void finalizeProjection (int numSeedsSearched) {
+		_next->finalizeProjection (numSeedsSearched);
+	}
+	virtual void finalizeSetting (int numSeedsSearched, int numProjections) {
+		_next->finalizeSetting (numSeedsSearched, numProjections);
 	}
 
 protected:
 	boost::shared_ptr <SeedSearcher::FeatureFilter> _next;
 };
 
-/*
-class BookkeeperFilter : public FeatureFilterLink {
-   //
-   // this class maintains information about the candidate features
-public:
-   BookkeeperFilter (SeedSearcher::FeatureFilter* next, bool owner) 
-      :  FeatureFilterLink (next, owner), 
-         _dirty (false), 
-         _log2Sum (-HUGE_VAL), 
-         _log2InverseSum (-HUGE_VAL), 
-         _noFeatures (0)
-   {
-   }
 
-   //
-   // takes ownership of Assignment & Cluster
-   virtual bool add (Feature_var feature) {
-     _noFeatures++;
-     _log2Sum = AddLog2 (_log2Sum, feature->log2score ());
-     _log2InverseSum = AddLog2 (_log2InverseSum, -feature->log2score ());
-
-      return FeatureFilterLink::add (feature);
-   }
-
-   //
-   // returns the number of candidates seen
-   int noFeaturesSeen () const {
-      return _noFeatures;
-   }
-
-   //
-   // we return the sum over each candidate i:
-   // log2 (sum (2^score(i)))
-   double log2SumScoresSeen () const {
-      return _log2Sum;
-   }
-
-   double log2InverseSumScoresSeen () const {
-      return _log2InverseSum;
-   }
-
-   //
-   // for each 'best' feature i we perform
-   // log2(score (i)) = log2(score(i)) - log2SumScoresSeen ()
-   //                 = log2( score(i) / sumScoresSeen () )
-   void normalizeBackgroundScoresLinear () {
-      SeedSearcher::FeatureArray& arr = getArray ();
-      for (int i=0 ; i < arr.size () ; i++) {
-         arr[i].log2score (-arr[i].log2score () - log2InverseSumScoresSeen ());
-      }
-   }
-
-protected:
-   bool _dirty;
-   double _log2Sum;
-   double _log2InverseSum;
-   int _noFeatures;
-};
-*/
 #include "FeatureSet.h"
 
 class KBestFilter : public SeedSearcher::FeatureFilter {
@@ -378,7 +281,7 @@ class KBestFilter : public SeedSearcher::FeatureFilter {
 public:
    //KBestFilter (int k, int maxRedundancyOffset);
 	KBestFilter (int k, int maxRedundancyOffset, FeatureSet_ptr = FeatureSet_ptr ());
-   KBestFilter (const KBestFilter& in) 
+   KBestFilter (const KBestFilter& in)
    :  _maxElements (in._maxElements),
       _maxRedundancyOffset (in._maxRedundancyOffset),
 		_features (new FeatureSet)
@@ -392,13 +295,13 @@ public:
    // takes ownership of Assignment & Cluster
    virtual bool add (Feature_var feature) {
       return _features->insertOrReplace1 (
-         feature, 
+         feature,
          FeatureSet::featureRedundancyCheck (
             FeatureSet::SymmetricMaxOffsetRedundancyCheck (
                _maxRedundancyOffset
             )
          ),
-         _maxElements 
+         _maxElements
       );
    }
 
@@ -426,7 +329,7 @@ protected:
 //
 class KBestComplementFilter : public KBestFilter {
 public:
-   KBestComplementFilter (	int k, int maxRedundancyOffset, 
+   KBestComplementFilter (	int k, int maxRedundancyOffset,
 									const Langauge& langauge,
 									FeatureSet_ptr features = FeatureSet_ptr ())
    :  KBestFilter (k, maxRedundancyOffset, features), _langauge (langauge)
@@ -441,14 +344,14 @@ public:
 
    virtual bool add (Feature_var feature) {
       return _features->insertOrReplace1 (
-         feature, 
+         feature,
          FeatureSet::featureReverseRedundancyCheck (
             FeatureSet::SymmetricMaxOffsetRedundancyCheck (
                _maxRedundancyOffset
             ),
             _langauge
-         ),
-         _maxElements 
+        ),
+         _maxElements
       );
    }
 
@@ -457,28 +360,61 @@ public:
    }
 
 protected:
-   const Langauge& _langauge; 
+   const Langauge& _langauge;
 };
 
 
 
-class GoodFeaturesFilter : public FeatureFilterLink {
+class ScoreFeaturesFilter : public FeatureFilterLink {
    //
    // this class is intended to allow only features that
-   // are good enough - (1) have a score high enough
-   //                   (2) are present in at least k positive sequences
-   //                   (3) are presnt in at least n percent of positive sequences
+   // are good enough - have a score high enough
 public:
-	GoodFeaturesFilter (boost::shared_ptr <SeedSearcher::FeatureFilter>& next,
+	ScoreFeaturesFilter (boost::shared_ptr <SeedSearcher::FeatureFilter>& next	,
+		                  double minLog2Score												)
+	:  FeatureFilterLink (next), _minLog2Score (minLog2Score)
+	{
+	}
+
+	ScoreFeaturesFilter (const ScoreFeaturesFilter& in)
+		:  FeatureFilterLink (in),
+		_minLog2Score (in._minLog2Score)
+	{
+	}
+	//
+	// takes ownership of Assignment & Cluster
+	virtual bool add (Feature_var feature) {
+		//
+		// the corrected score should be used to find
+		// good scoring features
+		if (feature->log2score () > _minLog2Score)
+			return false;
+
+		return _next->add (feature);
+	}
+
+	virtual FeatureFilter* clone () {
+		return new ScoreFeaturesFilter (*this);
+	}
+
+private:
+	double _minLog2Score;
+};
+
+class FertileFeaturesFilter : public FeatureFilterLink {
+	//
+	// this class is intended to allow only features that
+	// are good enough - (1) are present in at least k positive sequences
+	//                   (2) are present in at least n percent of positive sequences
+public:
+	FertileFeaturesFilter (boost::shared_ptr <SeedSearcher::FeatureFilter>& next,
                   const SeqCluster& db,
                   const SeqWeightFunction& wf,
-                  double minScore, 
                   int minPos,
                   int minPosPercent);
 
-   GoodFeaturesFilter (const GoodFeaturesFilter& in)
+   FertileFeaturesFilter (const FertileFeaturesFilter& in)
       :  FeatureFilterLink (in),
-         _minScore (in._minScore), 
          _minPositiveSeqs (in._minPositiveSeqs),
          _wf (in._wf)
    {
@@ -495,21 +431,17 @@ public:
    }
 
    virtual FeatureFilter* clone () {
-      return new GoodFeaturesFilter (*this);
+      return new FertileFeaturesFilter (*this);
    }
 
 private:
-   double _minScore;
    int _minPositiveSeqs;
    const SeqWeightFunction& _wf;
 };
 
 class FeaturePrintFilter : public FeatureFilterLink {
    //
-   // this class is intended to allow only features that
-   // are good enough - (1) have a score high enough
-   //                   (2) are present in at least k positive sequences
-   //                   (3) are presnt in at least n percent of positive sequences
+   // this class is intended to print to file all seen features
 public:
 	FeaturePrintFilter (	boost::shared_ptr <SeedSearcher::FeatureFilter>& next,
 								const Str& name);
@@ -532,10 +464,44 @@ protected:
 };
 
 
+class FDRCorrectionFilter : public FeatureFilterLink {
+   //
+   // this class is intended to print to file all seen features
+public:
+	FDRCorrectionFilter (boost::shared_ptr <SeedSearcher::FeatureFilter>& next)
+		: FeatureFilterLink (next)
+	{
+	}
+
+	virtual FeatureFilter* clone () {
+		mustfail ();
+		return NULL;
+	}
+
+	virtual void finalizeSetting (int numSeedsSearched, int numProjections);
+};
+
+class BonfCorrectionFilter : public FeatureFilterLink {
+   //
+   // this class is intended to print to file all seen features
+public:
+	BonfCorrectionFilter (	boost::shared_ptr <SeedSearcher::FeatureFilter>& next)
+		: FeatureFilterLink (next)
+	{
+	}
+	virtual FeatureFilter* clone () {
+		mustfail ();
+		return NULL;
+	}
+
+	virtual void finalizeSetting (int numSeedsSearched, int numProjections);
+};
+
+
 struct StatFix {
    //
    // given a list of features with decreasing scores (best ones first)
-   // and a significant cut-off P (all bigger than P are siginificant)
+   // and a significant cut-off P (all bigger than P are significant)
    // returns the largest index K (1 based), whose value is still bigger than P*K/N.
    //
    // if no feature fits, returns 0
@@ -544,7 +510,7 @@ struct StatFix {
 
    //
    // given a list of features with decreasing scores (best ones first)
-   // and a significant cut-off P (all bigger than P are siginificant)
+   // and a significant cut-off P (all bigger than P are significant)
    // returns the largest index K (1 based), whose value is still bigger than P/N.
    //
    // if no feature fits, returns 0

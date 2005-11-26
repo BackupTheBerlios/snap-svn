@@ -32,7 +32,8 @@ void Argv::set (const Str& prefix, const Str& in)
 
    int index = 1;
    for (beg=tok.begin(); beg!=tok.end();++beg) {
-      _argv [index] = dup (*beg);
+		debug_mustbe (index < _argc);
+		_argv [index] = dup (*beg);
       index++;
    }
 }
@@ -65,9 +66,9 @@ void Argv::set (const Str& in)
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Argv.cpp $
-// Version     : $Revision: 4 $ 
+// Version     : $Revision: 5 $ 
 //               $Author: Aviad $
-//               $Date: 10/01/05 1:38 $ 
+//               $Date: 12/04/05 0:31 $ 
 // Description :
 //	The Core library contains contains basic definitions and classes
 // which are useful to any highly-portable applications
