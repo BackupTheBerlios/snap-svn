@@ -92,7 +92,7 @@ public:
       parse (argv.argc (), argv.argv ());
    }
    void parse (int argc, char* argv[]);
-   static void usage (const char*);
+   void usage (const char*);
 
    //
    //
@@ -226,6 +226,9 @@ public:
    //
    int __firstFileArg;
    int __lastFileArg;
+
+ private:
+   bool Parser::getOptBoolean (char* in, bool* optUnknown = NULL);
 };
 
 #endif

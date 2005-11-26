@@ -16,22 +16,23 @@ public:
    virtual int maxAssignmentSize () const;
 
    //
-	// iterate over all positions that correspond to an assignment on a given sequence
-	virtual AutoPtr <PositionVector> getPositions ( SequenceDB::ID, 
+   // iterate over all positions that correspond 
+   // to an assignment on a given sequence
+   virtual AutoPtr <PositionVector> getPositions ( SequenceDB::ID, 
                                                    const Assignment&)  const;
+   
+   //
+   // returns true iff the sequence has at least one position which corresponds
+   // to the given assignment
+   virtual bool hasAssignment (SequenceDB::ID, const Assignment&)  const;
 
-	//
-	// returns true iff the sequence has at least one position which corresponds
-	// to the given assignment
-	virtual bool hasAssignment (SequenceDB::ID, const Assignment&)  const;
-
-	//
-	// iterate over all sequences
+   //
+   // iterate over all sequences
    virtual AutoPtr <SequenceVector> getSequences ()  const;
 
-	//
-	// iterate over all sequences that have at least one position which corresponds 
-	// to the given assignment
+   //
+   // iterate over all sequences that have at 
+   // least one position which corresponds to the given assignment
    virtual AutoPtr <SequenceVector> getSequences (const Assignment&) const;
 
    virtual void add2Cluster (NodeCluster&, const Assignment&) const;
@@ -110,9 +111,6 @@ public:
       //
       // get a child of this node of the half-open range [0..cardinality)
       TreeNodeRep* getChild (int);
-      //
-      // get parent of this node
-      TreeNodeRep* getParent ();
       //
       // return the depth of this node
       int depth ();

@@ -13,28 +13,28 @@ SeedHash::AssgKey::AssgKey (const Str& data,
                             const Langauge& langauge)
 : _assg (data, langauge.code ())
 {
-   std::string hashString;
-   {  Persistance::TextWriter textWriter (
-         new Persistance::StrOutputStream (hashString));
-
+   char buffer [8096];
+   Persistance::FixedBufferOutputStream output (buffer, sizeof (buffer));
+   {  Persistance::TextWriter textWriter (&output, false);
       textWriter << AssignmentFormat (_assg, langauge);
    }
 
-   _hash = defaultHashFunction (hashString.c_str (), hashString.length ());
+   _hash = defaultHashFunction ( buffer, output.getSize ());
 }
 
 SeedHash::AssgKey::AssgKey (const Assignment& assg, 
                             const Langauge& langauge)
 : _assg (assg)
 {
-   std::string hashString;
-   {  Persistance::TextWriter textWriter (
-         new Persistance::StrOutputStream (hashString));
+   char buffer [8096];
+   Persistance::FixedBufferOutputStream output (buffer, sizeof (buffer));
+   {  Persistance::TextWriter textWriter (&output, false);
 
       textWriter << AssignmentFormat (_assg, langauge);
    }
 
-   _hash = defaultHashFunction (hashString.c_str (), hashString.length ());
+   _hash = defaultHashFunction ( buffer, output.getSize ());
+                               
 }
 
 

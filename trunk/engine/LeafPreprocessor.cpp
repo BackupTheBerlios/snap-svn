@@ -3,34 +3,45 @@
 #include "DebugLog.h"
 #include <time.h>
 
-/*
-ChunkAllocator <LeafPreprocessor::LeafNode> 
-   LeafPreprocessor::LeafNode::__allocator (4);
-   */
 
 USING_TYPE (LeafPreprocessor, LeafNode);
 USING_TYPE (LeafPreprocessor, Rep);
 
 
-struct LeafPreprocessor::Rep : public SeedHash::Table <LeafNode> {
+struct LeafPreprocessor::Rep : public SeedHash::Table <LeafNode, LeafNode::TAllocator>
+{
+   //
+   typedef LeafNode NodeType;
+   typedef NodeType::TAllocator TAllocator;
+   typedef SeedHash::Table <NodeType, TAllocator> SuperClass;
+
+   //
+   //
    Rep ( int seedLength, int tableSize, const Langauge& langauge)   
-   : SeedHash::Table <LeafNode> (tableSize, langauge), _seedLength (seedLength)
+   : SuperClass (tableSize, langauge), _seedLength (seedLength)
    {
    }
-
-   virtual LeafNode* createCluster (const SeedHash::AssgKey& key) {
-      return new LeafNode (key);
+   ~Rep () {
+      bool personallyKillNode = _allocator.cleanupMemory ();
+      clear (personallyKillNode);
    }
 
-   LeafNode& addPosition ( const Str& seedData, AutoPtr <SeqPosition> position) {
+   virtual NodeType* createCluster (const SeedHash::AssgKey& key) {
+      NodeType* temp = new (_allocator) NodeType (key);
+      temp->setupMemory (_allocator);
+      return temp;
+   }
+
+   NodeType& addPosition ( const Str& seedData, 
+			   AutoPtr <SeqPosition> position) {
       //
       //
       SeedHash::AssgKey key (seedData, _langauge);
-      LeafNode* seed = this->find (key);
+      NodeType* seed = this->find (key);
       if (seed == NULL) {
          //
          // this is a new seed
-         seed = createCluster (key);
+         seed = safe_cast (NodeType*, createCluster (key));
          this->add (seed);
       }
 
@@ -40,18 +51,18 @@ struct LeafPreprocessor::Rep : public SeedHash::Table <LeafNode> {
       return *seed;
    }
 
+   TAllocator _allocator;
    int _seedLength;
 };
+
+
+
 
 LeafPreprocessor::LeafPreprocessor (Rep* rep) : _rep (rep) {
 }
 
 LeafPreprocessor::~LeafPreprocessor () {
-   //
-   // turn this off if cleanup is a problem
-#  if 1
-      delete _rep;
-#  endif
+   delete _rep;
 }
 
 
@@ -87,7 +98,9 @@ void LeafPreprocessor::add2Cluster (NodeCluster& nodes,
          //
          // make the template specific to the assignment of the seed
          for (int i=0 ; i<assgLength ; ++i) {
-            debug_mustbe (seedAssg.getPosition (i).strategy () == assg_discrete);
+	   debug_mustbe (seedAssg.getPosition (i).strategy () == 
+			 assg_discrete);
+
             if (assgTemplate [i].strategy () == assg_discrete)
                assgTemplate.setPosition (i, seedAssg.getPosition (i));
          }
@@ -164,7 +177,7 @@ LeafPreprocessor::Rep* LeafPreprocessor::buildNoNegatives (
       NegativeNodeRemover (const SeqWeightFunction& wf) : _wf (wf) {
       }
 
-      virtual bool call (LeafNode* inParm) {
+      virtual bool call (LeafPreprocessor::Rep::NodeType* inParm) {
          if (!inParm->hasSequence (_wf)) {
             //
             // this is a totally negative node
@@ -175,7 +188,9 @@ LeafPreprocessor::Rep* LeafPreprocessor::buildNoNegatives (
                DLOG.flush ();
 #           endif
 
-            delete inParm;
+            //
+            // hack, we use the alloc polict TBase interface here
+            inParm->cleanupMemory ();
             return false;
          }
 
@@ -256,7 +271,7 @@ static int buildReverse (
          else {
             Str first = (result < 0)? data : rev_data;
 
-            LeafPreprocessor::LeafNode& posCluster = 
+            LeafNode& posCluster = 
                rep->addPosition (first, posPosition);
 
             posCluster.addPosition (negPosition);
@@ -340,11 +355,15 @@ LeafPreprocessor::Rep* LeafPreprocessor::build (
    const int totalBytes =  numberOfPositions * sizeof (SeqPosition) + 
                            rep->getSize () * sizeof (LeafNode);
 
-   DLOG << "LeafPreprocessor created: (" << (finish - start) << " seconds)" << DLOG.EOL ()
-          << numberOfPositions << " SeqPosition objects each of " << sizeof (SeqPosition) << " Bytes." << DLOG.EOL ()
-          << rep->getSize () << " Node objects each of " << sizeof (LeafNode) << " Bytes." << DLOG.EOL ()
-          << (totalBytes / 1024) << " KBytes (loose) lower bound to preprocessor size." << DLOG.EOL ()
-          << DLOG.EOL ();
+   DLOG << "LeafPreprocessor created: (" << (finish - start) 
+	<< " seconds)" << DLOG.EOL ()
+	<< numberOfPositions << " SeqPosition objects each of " 
+	<< sizeof (SeqPosition) << " Bytes." << DLOG.EOL ()
+	<< rep->getSize () << " Node objects each of " 
+	<< sizeof (LeafNode) << " Bytes." << DLOG.EOL ()
+	<< (totalBytes / 1024) 
+	<< " KBytes (loose) lower bound to preprocessor size." << DLOG.EOL ()
+	<< DLOG.EOL ();
    DLOG.flush ();
 
    return rep;
@@ -362,30 +381,37 @@ bool LeafPreprocessor::LeafNode::hasPositions (SequenceDB::ID id) const
 {
    return _cluster->hasPositions (id);
 }
-bool LeafPreprocessor::LeafNode::hasPositions (const SeqWeightFunction& wf) const
+
+
+bool 
+   LeafPreprocessor::LeafNode::
+      hasPositions (const SeqWeightFunction& wf) const
 {
-
-
    //
    // TODO
+   mustfail ();
    return false;
 }
 
 //
 // returns all the sequences in this node
-void LeafPreprocessor::LeafNode::add2SeqCluster (SequenceDB::Cluster& outSeqInNode) const
+
+void LeafPreprocessor::LeafNode::
+      add2SeqCluster (SequenceDB::Cluster& outSeqInNode) const
 {
    outSeqInNode.unify (*_cluster);
 }
 
-void LeafPreprocessor::LeafNode::
-   add2SeqClusterPositions (SequenceDB::Cluster& outSeqInNode) const
+
+void LeafPreprocessor::LeafNode ::
+      add2SeqClusterPositions (SequenceDB::Cluster& outSeqInNode) const
 {
    outSeqInNode.unifyPositions (*_cluster);
 }
 
+
 void LeafPreprocessor::LeafNode::
-   add2PosCluster (PosCluster& out, Sequence::ID id)  const
+      add2PosCluster (PosCluster& out, Sequence::ID id)  const
 {
    const PosCluster* pos = _cluster->getPositions (id);
    if (pos) {
@@ -394,8 +420,10 @@ void LeafPreprocessor::LeafNode::
 
 }
 
+
 void LeafPreprocessor::LeafNode::
-   add2Assignment (Assignment& assg) const{
+      add2Assignment (Assignment& assg) const
+{
    assg.unify (assignment ());
 }
 

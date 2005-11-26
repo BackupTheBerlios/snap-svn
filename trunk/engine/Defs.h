@@ -71,7 +71,7 @@ enum Strand {
 
 //
 // allocate objects in pools (reduces calls to new/delete)
-#define SEED_POOL_ALLOCATION_OPTIMIZATION 1
+#define SEED_POOL_ALLOCATION_OPTIMIZATION 0
 
 #if SEED_POOL_ALLOCATION_OPTIMIZATION
    //
@@ -80,7 +80,7 @@ enum Strand {
 #else
    //
    // dummy class
-   class TStdAllocation {
+   class TStdAllocated {
    };
    
    //

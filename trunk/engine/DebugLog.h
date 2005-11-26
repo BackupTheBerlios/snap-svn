@@ -54,19 +54,6 @@ public:
    static void setupFileLogging (
       const StrBuffer& filename, bool supressConsole);
 
-   class Sentry {
-   public:
-      Sentry (bool suppressConsole = false) {
-         SeedSearcherLog::setupConsoleLogging (suppressConsole);
-      }
-      ~Sentry () {
-         SeedSearcherLog::setup (boost::shared_ptr <Persistance::TextWriter> ());
-      }
-      void setupFileLogging (const StrBuffer& filename, bool suppressConsole = false) {
-         SeedSearcherLog::setupFileLogging (filename, suppressConsole);
-      }
-   };
-
 private:
    static boost::shared_ptr <Persistance::TextWriter> __textWriter;
    static boost::shared_ptr <Langauge> __langauge;

@@ -3,53 +3,52 @@
 
 #include "Preprocessor.h"
 #include "SeedHash.h"
+#include "Core/AllocPolicy.h"
 
 class LeafPreprocessor : public Preprocessor {
 public:
    struct Rep;
-   class Table;
 
-   //
-   //
+   typedef PrivatePoolPolicy AllocPolicy;
+
    class LeafNode :  
       public Preprocessor::NodeRep, 
       public SeedHash::Cluster <LeafNode>,
-      public POOL_ALLOCATED(LeafNode) 
+      public AllocPolicy::Traits <LeafNode>::TBase
    {
    public:
-      LeafNode (const SeedHash::AssgKey& key) 
+   LeafNode (const SeedHash::AssgKey& key) 
       : SeedHash::Cluster <LeafNode> (key) 
-      {
-      }
-      virtual ~LeafNode () {
-      }
-
-      //
-      // check if node has any positions for a particular sequence
-      virtual bool hasPositions (SequenceDB::ID) const; 
-      virtual bool hasPositions (const SeqWeightFunction&) const;
-
-      //
-      // returns all the sequences in this node
-      virtual void add2SeqCluster (SequenceDB::Cluster& outSeqInNode) const;
-      virtual void add2SeqClusterPositions (SequenceDB::Cluster& outSeqInNode) const;
-      virtual void add2PosCluster (PosCluster&, Sequence::ID) const;
-
-      virtual void add2Assignment (Assignment&) const;
-
-      //
-      //
-      void addPosition (AutoPtr <SeqPosition> pos) {
-         PosCluster& posCluster = 
-            _cluster->getCreatePositions (pos->sequence ());
-
-         USELESS (bool result = )
-            posCluster.addPosition (pos.release ());
-
-	      USELESS (debug_mustbe (result));
-      }
+   {
+   }
+   virtual ~LeafNode () {
+   }
+     
+   //
+   // check if node has any positions for a particular sequence
+   virtual bool hasPositions (SequenceDB::ID) const; 
+   virtual bool hasPositions (const SeqWeightFunction&) const;
+     
+   //
+   // returns all the sequences in this node
+   virtual void add2SeqCluster (SequenceDB::Cluster& outSeqInNode) const;
+   virtual void add2SeqClusterPositions (SequenceDB::Cluster&) const;
+   virtual void add2PosCluster (PosCluster&, Sequence::ID) const;
+     
+   virtual void add2Assignment (Assignment&) const;
+     
+   //
+   //
+   void addPosition (AutoPtr <SeqPosition> pos) {
+      PosCluster& posCluster = 
+         _cluster->getCreatePositions (pos->sequence ());
+       
+      USELESS (bool result = )
+         posCluster.addPosition (pos.release ());
+       
+      USELESS (debug_mustbe (result));
+   }
    };
-
 
 
 public:
@@ -69,28 +68,29 @@ public:
                      const Langauge&      ,
                      const SeqWeightFunction&);
 
-	//
-	// smallest/largest searchable assignments
+   //
+   // smallest/largest searchable assignments
    virtual int minAssignmentSize () const;
    virtual int maxAssignmentSize () const;
 
    //
-	// iterate over all positions that correspond to an assignment on a given sequence
-	virtual AutoPtr <PositionVector> getPositions ( SequenceDB::ID, 
+   // iterate over all positions that correspond to an 
+   // assignment on a given sequence
+   virtual AutoPtr <PositionVector> getPositions ( SequenceDB::ID, 
                                                    const Assignment&)  const;
 
-	//
-	// returns true iff the sequence has at least one position which corresponds
-	// to the given assignment
-	virtual bool hasAssignment (SequenceDB::ID, const Assignment&) const;
+   //
+   // returns true iff the sequence has at least one position which corresponds
+   // to the given assignment
+   virtual bool hasAssignment (SequenceDB::ID, const Assignment&) const;
 
-	//
-	// iterate over all sequences
+   //
+   // iterate over all sequences
    virtual AutoPtr <SequenceVector> getSequences () const;
-
-	//
-	// iterate over all sequences that have at least one position which corresponds 
-	// to the given assignment
+   
+   //
+   // iterate over all sequences that have at least 
+   // one position which corresponds to the given assignment
    virtual AutoPtr <SequenceVector> getSequences (const Assignment&) const;
 
    //

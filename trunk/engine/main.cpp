@@ -153,6 +153,7 @@ static void welcomeMessage ()
    DLOG << DLOG.EOL ();
    DLOG << "by Yoseph Barash (hoan@cs.huji.ac.il)" << DLOG.EOL ();
    DLOG << "and Aviad Rozenhek (aviadr@cs.huji.ac.il) " << DLOG.EOL ();
+   DLOG.flush ();
 }
 
 static void welcomeMessage (const Parser& parser)
@@ -437,8 +438,7 @@ static time_t cleanupStart = 0, cleanupFinish;
 static time_t start = time (NULL), finish;
 
 static void mainRoutine (int argc, 
-                        char* argv [], 
-                        SeedSearcherLog::Sentry& logging);
+                        char* argv []);
 
 //
 // Copied/Adapted from legacy SeedSearcher
@@ -449,8 +449,8 @@ int cpp_main(int argc, char* argv [])
    try {
       //
       // setup basic logging
-      SeedSearcherLog::Sentry logging;
-      mainRoutine (argc, argv, logging);
+      SeedSearcherLog::setupConsoleLogging ( /* dont supress */ false);
+      mainRoutine (argc, argv);
 
       if (cleanupStart) {
          cleanupFinish = time(NULL);
@@ -691,13 +691,13 @@ static void checkConf (int argc, char* argv [], Argv& outInitArgs)
          if (runs.get (it + "Args", args))
             parser.parse (args);
       }
+
+      DLOG << "Configuration file is valid." << DLOG.EOL () << DLOG.EOL ();
    }
-   DLOG << "OK!" << DLOG.EOL () << DLOG.EOL ();
 }
 
 static void mainRoutine (int argc, 
-                        char* argv [], 
-                        SeedSearcherLog::Sentry& logging)
+                        char* argv [])
 {
    welcomeMessage ();
 
@@ -726,12 +726,13 @@ static void mainRoutine (int argc,
    if(numOfFileArgs < RequiredParams)
       params.parser ().usage ("Missing arguments");
 
-   //
-   // now setup file logging
    const char* fileStub = 
       argv [params.parser ().__firstFileArg + StubFileIndex];
 
-   logging.setupFileLogging (StrBuffer (fileStub, ".log"));
+   //
+   // now setup file logging 
+   // 21.7.04 operation logging is disabled.
+   // logging.setupFileLogging (StrBuffer (fileStub, ".log"));
 
    //
    // write welcome message
@@ -781,7 +782,7 @@ static void mainRoutine (int argc,
    time (&cleanupStart);
 }
 
-/*
+
 #if SEED_DL_MALLOC_OPTIMIZATION
 
 #include "Core/dlmalloc.h"
@@ -828,4 +829,4 @@ void operator delete[] (void* inPtr)
 
 #endif
 
-*/
+

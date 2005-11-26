@@ -675,57 +675,33 @@ tRandomGenerator::sampleMulti( tMultinomial const & m ) {
 std::vector<int>
 
 tRandomGenerator::sampleGroup(int size,int groupSize)
-
 {
-
   assert(groupSize<=size);
-
-
-
   std::vector<int> group;
 
-
-
   if (groupSize==size) {
-
-    for( int i=0; i<groupSize; i++ )
-
+   group.reserve (size);
+   for( int i=0; i<groupSize; i++ )
       group.push_back(i);
 
     return group;
-
   }
 
-  
-
-  std::vector<int> v;
-
+  std::vector<int> v; 
+  v.reserve (size);
   for( int i=0; i<size; i++)
-
     v.push_back(i);
 
-  
-
   for( int count = 0; count<groupSize; count++)
-
   {
-
     double val = SampleUniform();
-
     int chosenPos = (int)( val*(size-count) );
-
     group.push_back( v[chosenPos] );
-
     v[chosenPos] = v[size-1-count];
-
   }
 
   std::sort(group.begin(),group.end());
-
-
-
   return group;
-
 }
 
 

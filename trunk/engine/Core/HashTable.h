@@ -37,11 +37,20 @@ class RangeForwardIter {
 
 typedef unsigned int HashValue;
 
-template<class Entry>
+template <class Entry>
+struct DefaultDeallocator {
+   static void dispose (Entry* entry) {
+      delete entry;
+   }
+};
+
+template<class Entry, class D = DefaultDeallocator <Entry> >
 class HashTable {
 	typedef Entry* TableItem;
 	typedef typename Entry::Key Key;
 	typedef RangeForwardIter<TableItem> TableIter;
+   
+   //
 	//
 	void constraints(Entry* entry) {
 		Key key= entry->getKey();
@@ -54,6 +63,7 @@ class HashTable {
  public:
 	typedef Entry Node;
 	typedef Functor1R<Entry*,bool> Visitor;
+   typedef D Deallocator;
 
 	HashTable(size_t inSize): _table(0), _size(0), _count(0)  
 	{
@@ -76,18 +86,28 @@ class HashTable {
 		_count++;
 	}
 
-	void clear ()
+	void clear (bool iterateElements = true)
 	{
-		TableIter tabI(_table, _table+_size);
-		while(tabI.next ()) {
-			for(Entry* entry= *tabI; entry; ) {
-				Entry* nextOne= entry->next();
-				delete entry;
-				*tabI= nextOne;
-				_count--;
-				entry= nextOne;
-			}
-		}
+      if (iterateElements) {
+		   TableIter tabI(_table, _table+_size);
+		   while(tabI.next ()) {
+			   for(Entry* entry= *tabI; entry; ) {
+				   Entry* nextOne= entry->next();
+               Deallocator::dispose (entry);
+				   *tabI= nextOne;
+				   _count--;
+				   entry= nextOne;
+			   }
+		   }
+      }
+      else {
+         //
+         // just zero out the table without calling dtors
+         TableIter tabI(_table, _table+_size);
+		   while(tabI.next ()) {
+            *tabI = NULL;
+         }
+      }
 	}
 
 	//	Compatibility name
@@ -105,7 +125,7 @@ class HashTable {
 					prev->setNext(nextEntry);
 				else
 					root= entry->next();
-				delete entry;
+            Deallocator::dispose (entry);
 				_count--;
 				return;
 			}

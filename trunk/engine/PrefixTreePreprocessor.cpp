@@ -8,6 +8,8 @@
 #include "Persistance/OArchive.h"
 #include "DebugLog.h"
 
+#include "Core/AllocPolicy.h"
+
 #include <algorithm>
 #include <time.h>
 
@@ -17,6 +19,7 @@ USING_TYPE (PrefixTreePreprocessor, TreeNode);
 USING_TYPE (PrefixTreePreprocessor, TreeNodeRep);
 USING_TYPE (PrefixTreePreprocessor, SeqPositions);
 
+typedef PrivatePoolPolicy CurrentAllocPolicy;
 
 
 /*****************************
@@ -25,23 +28,23 @@ USING_TYPE (PrefixTreePreprocessor, SeqPositions);
 
 
 
-class PrefixTreePreprocessor::TreeNodeRep :  
-   public Preprocessor::NodeRep, 
-   public POOL_ALLOCATED(PrefixTreePreprocessor::TreeNodeRep)
+class PrefixTreePreprocessor::TreeNodeRep :
+  public Preprocessor::NodeRep,
+  public CurrentAllocPolicy::Traits<TreeNodeRep>::TBase
 {
    //
    // tree-building interface
-public:
-   //
-   // used for serialization
-   inline TreeNodeRep (); 
+private:
    inline TreeNodeRep (TreeNodeRep* parent);
-   inline TreeNodeRep (const AlphabetCode&);
-   virtual ~TreeNodeRep ();
+   inline TreeNodeRep (TreeRep* host);
+  friend class PrefixTreePreprocessor::TreeRep;
+
+public:
+  virtual ~TreeNodeRep ();
 
    //
    //
-   void setup ();
+   void setup (TreeNodeRep* parent);
    inline void dispose (bool isRoot);
 
    //
@@ -65,9 +68,7 @@ public:
    //
    // get a child of this node of the half-open range [0..cardinality)
    inline TreeNodeRep* getChild (int) const;
-   //
-   // get parent of this node
-   inline TreeNodeRep* getParent () const;
+
    //
    // return the depth of this node
    inline int depth () const;
@@ -97,19 +98,18 @@ public:
    //
    // returns all the sequences in this node
    virtual void add2SeqCluster (SequenceDB::Cluster& outSeqInNode) const;
-   virtual void add2SeqClusterPositions (SequenceDB::Cluster& outSeqInNode) const;
+   virtual void add2SeqClusterPositions (SequenceDB::Cluster&) const;
    virtual void add2PosCluster (PosCluster&, Sequence::ID) const;
 
    virtual void add2Assignment (Assignment&) const;
 
+  const AlphabetCode& getCode () const;
+
 protected:
-   // TODO:
-   // maybe save space in the tree by storing the cardinality only in one place
-   int _depth;
-   const AlphabetCode* _code; 
-   SeqPositionVector _positions;
-   TreeNodeRep ** _children;
-   TreeNodeRep* _parent;
+  int _depth;
+  SeqPositionVector _positions;
+  TreeNodeRep ** _children;
+  TreeRep* _host;
 };
 
 
@@ -125,18 +125,43 @@ protected:
 
 class PrefixTreePreprocessor::TreeRep {
 public:
-   TreeRep (const SequenceDB* inDb, TreeNodeRep* inRoot, int inDepth)
-      : _depth (inDepth), _root (inRoot), _db (inDb)
+   TreeRep (const SequenceDB* inDb, 
+	    const AlphabetCode& code,
+	    int inDepth)
+     : _depth (inDepth), 
+       _db (inDb),
+       _code (code)
    {
+     _root = new (_allocator) TreeNodeRep (this);
+     _root->setupMemory (_allocator);
    }
 
    ~TreeRep () {
-      delete _root;
+     bool shouldCleanup = _allocator.cleanupMemory ();
+     if (shouldCleanup)
+       delete _root;
    }
+
+  TreeNodeRep* createNode (TreeNodeRep* parent) {
+    TreeNodeRep* result = new (_allocator) TreeNodeRep (parent);
+    result->setupMemory (_allocator);
+    return result;
+  }
+  void destroyNode (TreeNodeRep* node) {
+    _allocator.cleanupMemory (node);
+  }
+  TreeNodeRep* getRoot () {
+    return _root;
+  }
+  const AlphabetCode& getCode () const {
+    return _code;
+  }
 
    int _depth;
    TreeNodeRep* _root;
    const SequenceDB* _db;
+   const AlphabetCode& _code;
+   TreeNodeRep::TAllocator _allocator;
 };
 
 
@@ -151,7 +176,9 @@ public:
 class PositionsBuilder {
 public:
    PositionsBuilder (int cardinality) 
-   : _cardinality (cardinality), _numOfVectors(0), _numOfNodes (0), _sizeInVectors(0), _spaceLostInVectors (0)
+     : _cardinality (cardinality), 
+       _numOfVectors(0), _numOfNodes (0), 
+       _sizeInVectors(0), _spaceLostInVectors (0)
    {
       _positions = new PositionVector* [cardinality];
       for (int i=0 ; i < cardinality ; i++) {
@@ -314,11 +341,13 @@ static void buildTree (PositionsBuilder& builder,
             if (c == AlphabetCode::notInCode) {
                //
                // the character is not in the known alphabet
-               throwx (AlphabetCode::UnknownCodeError ((*it)->getData (currentDepth)));
+               throwx (AlphabetCode::
+		       UnknownCodeError ((*it)->getData (currentDepth)));
             }
             else if (c == AlphabetCode::dunnoCode) {
                //
-               // the user does not know which character lies in the sequence here.
+               // the user does not know which character lies in 
+	      // the sequence here.
                //
                // TODO: handle this. I should (1) put it in all the children?
                // (2) count how many like this are in a sequence and get rid
@@ -375,8 +404,10 @@ static TreeRep* build(bool optimize,
    const AlphabetCode& code = langauge.code ();
    int cardinality = code.cardinality ();
 
+   AutoPtr <TreeRep> tree (new TreeRep (&db, code, maxDepth));
+
    int numberOfPositions = 0;
-   TreeNodeRep* root = new TreeNodeRep (code);
+   TreeNodeRep* root = tree->getRoot ();
    SequenceDB::SequenceIterator it = db.sequenceIterator ();
    for (;it.hasNext () ; it.next ()) {
       //
@@ -409,23 +440,37 @@ static TreeRep* build(bool optimize,
    buildTree (builder, optimize, wf, code, root, 0, maxDepth);
 
    time (&finish);
-   int totalBytes =  numberOfPositions * sizeof (SeqPosition) +
-                     builder.numOfNodes () * sizeof (TreeNodeRep) +
-                     cardinality * sizeof (TreeNodeRep*) * builder.numOfNodes () + // child arrays
-                     builder.numOfVectors () * sizeof (PositionVector) + 
-                     builder.sizeInVectors () * sizeof (SeqPosition*) + 
-                     builder.spaceLostInVectors () * sizeof (SeqPosition*);
+   int totalBytes =  
+     numberOfPositions * sizeof (SeqPosition) +
+     builder.numOfNodes () * sizeof (TreeNodeRep) +
+     cardinality * sizeof (TreeNodeRep*) * 
+     builder.numOfNodes () + // child arrays
+     builder.numOfVectors () * sizeof (PositionVector) + 
+     builder.sizeInVectors () * sizeof (SeqPosition*) + 
+     builder.spaceLostInVectors () * sizeof (SeqPosition*);
                      
-   DLOG << "PrefixTreePreprocessor created: (" << (finish - start) << " seconds)" << DLOG.EOL ()
-          << numberOfPositions << " SeqPosition objects each of " << sizeof (SeqPosition) << " Bytes." << DLOG.EOL ()
-          << builder.numOfNodes () << " Node objects each of " << sizeof (TreeNodeRep) << " Bytes." << DLOG.EOL ()
-          << builder.numOfVectors () << " PositionVector objects each of " << sizeof (PositionVector) << " Bytes." << DLOG.EOL ()
-          << builder.sizeInVectors () << " total positions in PositionVectors" << DLOG.EOL ()
-          << builder.spaceLostInVectors () << " positions lost in PositionVectors capacity" << DLOG.EOL ()
-          << (totalBytes / 1024) << " KBytes approximated tree size." << DLOG.EOL ()
-          << DLOG.EOL ();
+   DLOG << "PrefixTreePreprocessor created: (" 
+	<< (finish - start) << " seconds)" 
+	<< DLOG.EOL ()
+	<< numberOfPositions << " SeqPosition objects each of " 
+	<< sizeof (SeqPosition) << " Bytes." 
+	<< DLOG.EOL ()
+	<< builder.numOfNodes () << " Node objects each of " 
+	<< sizeof (TreeNodeRep) << " Bytes." 
+	<< DLOG.EOL ()
+	<< builder.numOfVectors () << " PositionVector objects each of " 
+	<< sizeof (PositionVector) << " Bytes." 
+	<< DLOG.EOL ()
+	<< builder.sizeInVectors () << " total positions in PositionVectors" 
+	<< DLOG.EOL ()
+	<< builder.spaceLostInVectors () 
+	<< " positions lost in PositionVectors capacity" 
+	<< DLOG.EOL ()
+	<< (totalBytes / 1024) << " KBytes approximated tree size." 
+	<< DLOG.EOL ()
+	<< DLOG.EOL ();
 
-   return new TreeRep (&db, root, maxDepth);
+   return tree.release ();
 }
 
 
@@ -700,24 +745,17 @@ SeqPositions TreeNodeRep::getSeqPositions (SequenceDB::ID id) const
 
 
 
-TreeNodeRep::TreeNodeRep (const AlphabetCode& code)
-: _depth (0), _code (&code), _parent (NULL) 
+TreeNodeRep::TreeNodeRep (TreeRep* host)
+: _depth (0), _host (host)  
 {
-   setup ();
+   setup (NULL);
 }
 
 
 TreeNodeRep::TreeNodeRep (TreeNodeRep* parent)
-: _depth (parent->_depth +1), _code (parent->_code), _parent (parent) 
+: _depth (parent->_depth +1), _host (parent->_host) 
 {
-   setup ();
-}
-
-//
-// used for serialization
-TreeNodeRep::TreeNodeRep () 
-: _code (0), _children (NULL), _parent (NULL)   
-{
+   setup (parent);
 }
 
 TreeNodeRep::~TreeNodeRep () 
@@ -725,9 +763,9 @@ TreeNodeRep::~TreeNodeRep ()
    dispose (false);
 }
 
-void TreeNodeRep::setup ()
+void TreeNodeRep::setup (TreeNodeRep* parent)
 {
-   int cardinality = _code->cardinality ();
+   int cardinality = getCode ().cardinality ();
    _children = new TreeNodeRep* [cardinality];
    for (int i=0 ; i<cardinality ; i++) {
       _children [i] = NULL;
@@ -737,27 +775,14 @@ void TreeNodeRep::setup ()
          //
          // optimization (?) we use the size of the parent's _position vector
          // to hint at our _position vector's approximated size
-         if (_parent)
-            _positions.reserve (_parent->_positions.size () / cardinality);
+         if (parent)
+            _positions.reserve (parent->_positions.size () / cardinality);
 #     endif
 }
 
 
 inline void TreeNodeRep::dispose (bool isRoot) 
 {
-   int cardinality = _code->cardinality ();
-   if (_children) {
-      for (int i=0 ; i<cardinality ; i++) {
-         if (_children [i]) {
-            delete _children [i];
-            _children [i] = NULL;
-         }
-      }
-
-      delete [] _children;
-      _children = NULL;
-   }
-
    //
    // free memory of all SeqPositions
    int n = _positions.size ();
@@ -767,6 +792,20 @@ inline void TreeNodeRep::dispose (bool isRoot)
       }
       _positions.clear ();
    }
+
+   int cardinality = getCode ().cardinality ();
+   if (_children) {
+      for (int i=0 ; i<cardinality ; i++) {
+         if (_children [i]) {
+            _host->destroyNode (_children [i]);
+            _children [i] = NULL;
+         }
+      }
+
+      delete [] _children;
+      _children = NULL;
+   }
+
 }
 
 void TreeNodeRep::addSequencePositions (PositionVector* pos) 
@@ -818,7 +857,7 @@ TreeNodeRep* TreeNodeRep::getCreateChild (int index, bool&wasCreated)
 
    wasCreated = false;
    if (_children [index] == NULL) {
-      _children [index] = new TreeNodeRep (this);
+      _children [index] = _host->createNode (this);
       wasCreated = true;
    }
 
@@ -899,7 +938,7 @@ void TreeNodeRep::add2Assignment (Assignment& outAssg) const
    debug_mustbe (samplePosition != NULL);
 
    //
-   Assignment assg (samplePosition->getSeedString (_depth), *_code);
+   Assignment assg (samplePosition->getSeedString (_depth), getCode ());
    outAssg.unify (assg);
 }
 
@@ -907,13 +946,9 @@ void TreeNodeRep::add2Assignment (Assignment& outAssg) const
 
 int TreeNodeRep::getCardinality () const
 {
-   return _code->cardinality ();
+   return getCode().cardinality ();
 }
 
-TreeNodeRep* TreeNodeRep::getParent () const
-{
-   return _parent;
-}
 
 int TreeNodeRep::depth () const
 {
@@ -937,6 +972,10 @@ PrefixTreePreprocessor::TreeNodeRep::positionIterator (SequenceDB::ID id)
    return getSeqPositions (id).iterator ();
 }
 
+const AlphabetCode& TreeNodeRep::getCode () const {
+  return _host->getCode ();
+} 
+
 
 
 
@@ -955,11 +994,6 @@ int PrefixTreePreprocessor::TreeNode::getCardinality ()
 TreeNodeRep* PrefixTreePreprocessor::TreeNode::getChild (int index)
 {
    return _rep->getChild (index);
-}
-
-TreeNodeRep* PrefixTreePreprocessor::TreeNode::getParent ()
-{
-   return _rep->getParent ();
 }
 
 int PrefixTreePreprocessor::TreeNode::depth ()

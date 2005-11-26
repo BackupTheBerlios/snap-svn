@@ -8,6 +8,8 @@
 #include "Core/AutoPtr.h"
 #include "Core/STLHelper.h"
 
+#include <list>
+
 class Preprocessor {
 public:
    //
@@ -101,8 +103,10 @@ public:
    };
 
    //
-   //
-   typedef Vec <AssgNodePair> NodeVector;
+   // optimization: nodes are never used in random access
+   // so a list is a better choice 
+   // typedef Vec <AssgNodePair> NodeVector;
+   typedef std::list <AssgNodePair> NodeVector;
    typedef IteratorWrapper <NodeVector> NodeIterator;
    typedef CIteratorWrapper <NodeVector> CNodeIterator;
 

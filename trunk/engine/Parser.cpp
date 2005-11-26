@@ -412,7 +412,8 @@ void Parser::usage (const char* error)
    cout << endl;
    cout << endl;
 
-   cerr << "Usage: seedSearch [options] <SeqFile> <RegFile> <output stub> " 
+   cerr << "Usage: " << __argv [0] 
+	<< " [options] <SeqFile> <RegFile> <output stub> " 
 	<< endl;
    cerr << "  " << endl;
 
@@ -439,7 +440,7 @@ void Parser::usage (const char* error)
 
 
 
-static bool getOptBoolean (char* in, bool* optUnknown = NULL)
+bool Parser::getOptBoolean (char* in, bool* optUnknown)
 {
    if (in == NULL)
       return true;

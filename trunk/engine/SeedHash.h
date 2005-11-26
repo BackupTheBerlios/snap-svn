@@ -76,10 +76,13 @@ public:
 
    //
    //
-   template <class UserCluster>
-   class Table : public HashTable <UserCluster> {
+   template <class C, class D = typename HashTable <C>::Deallocator>
+   class Table : public HashTable <C, D> {
    public:
-      typedef HashTable <UserCluster> HashTableBase;
+      typedef C UserCluster;
+      typedef D Deallocator;
+
+      typedef HashTable <UserCluster, Deallocator> HashTableBase;
 
       Table (int tableSize, const Langauge& langauge) 
       : HashTableBase (tableSize), _langauge (langauge)
