@@ -141,6 +141,9 @@
 				RelativePath="..\Feature.cpp">
 			</File>
 			<File
+				RelativePath="..\FeatureSet.cpp">
+			</File>
+			<File
 				RelativePath="..\HyperGeoCache.cpp">
 			</File>
 			<File
@@ -217,6 +220,9 @@
 			</File>
 			<File
 				RelativePath="..\Feature.h">
+			</File>
+			<File
+				RelativePath="..\FeatureSet.h">
 			</File>
 			<File
 				RelativePath="..\HyperGeoCache.h">
@@ -298,9 +304,6 @@
 				RelativePath="..\status_reporter\DummyStatusReporter.hpp">
 			</File>
 		</Filter>
-		<File
-			RelativePath="..\UnboundedPreprocessor.h">
-		</File>
 	</Files>
 	<Globals>
 	</Globals>

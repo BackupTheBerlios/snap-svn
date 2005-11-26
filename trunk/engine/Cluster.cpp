@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Cluster.cpp $
-// Version     : $Revision: 20 $ 
+// Version     : $Revision: 21 $ 
 //               $Author: Aviad $
-//               $Date: 27/08/04 2:08 $ 
+//               $Date: 9/12/04 3:05 $ 
 // Description :
 //    Concrete class for sets of sequences, sets of sequence positions
 //
@@ -170,6 +170,11 @@ PosCluster& SeqCluster::getCreatePositions (Iterator& in)
 }
 
 const PosCluster* SeqCluster::getPositions (const Sequence* seq) const
+{
+   SequenceSet::const_iterator it = _set.find (seq);
+   return (it != _set.end ())? it->second: NULL;
+}
+PosCluster* SeqCluster::getPositions (const Sequence* seq) 
 {
    SequenceSet::const_iterator it = _set.find (seq);
    return (it != _set.end ())? it->second: NULL;

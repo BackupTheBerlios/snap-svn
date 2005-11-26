@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $
 //               $Workfile: SeedSearcherMain.cpp $
-// Version     : $Revision: 26 $
+// Version     : $Revision: 28 $
 //               $Author: Aviad $
-//               $Date: 22/11/04 9:14 $
+//               $Date: 10/12/04 21:08 $
 // Description :
 //    Concrete and interface classes for seting-up
 //    a seed-searching environment or program
@@ -44,6 +44,13 @@ USING_TYPE (SeedSearcherMain, CmdLineParameters);
 
 struct CancelledByUserException : public BaseException {
 };
+
+SeedSearcherMain::SeedSearcherMain ()
+{
+   //
+   // initialize the random seed
+   RandomProjections::srand (time (NULL));
+}
 
 void SeedSearcherMain::beforeProjection (int /* search handle */,
                               int totalNumOfSeedsFound,
@@ -94,16 +101,29 @@ void SeedSearcherMain::afterProjection (int /* search handle */,
 AutoPtr <SeedSearcherMain::Results>
 SeedSearcherMain::search (boost::shared_ptr <Parameters> inParams)
 {
+   /*
    mustbe (inParams.get ());
    _params = inParams;
+   */
+
+   //
+   // copy the params, create a fresh feature vector
+   // no copying of previous seeds is done here
+   Parameters currentPameters = *inParams;
+   currentPameters.bestFeatures (
+      boost::shared_ptr <SeedSearcher::FeatureFilter> (
+         inParams->bestFeatures ().clone()
+      )
+   );
+   debug_mustbe (currentPameters.bestFeatures ().getArray().size () == 0);
 
    int totalNumOfSeedsFound = 0;
-   int numOfProjections = _params->projections ().numOfProjections ();
+   int numOfProjections = currentPameters.projections ().numOfProjections ();
    for (int i=0 ; i<numOfProjections ; i++) {
       //
       // create
       const Assignment& assg =
-         _params->projections ().getAssignment (i);
+         currentPameters.projections ().getAssignment (i);
 
 
       //
@@ -112,17 +132,17 @@ SeedSearcherMain::search (boost::shared_ptr <Parameters> inParams)
 
       //
       // perform the actual search
-      if (_params->searchType () == _search_tree_) {
+      if (currentPameters.searchType () == _search_tree_) {
          totalNumOfSeedsFound +=
             SeedSearcher::prefixTreeSearch (
-               *_params,
+               currentPameters,
                assg
             );
       }
       else {
          totalNumOfSeedsFound +=
             SeedSearcher::tableSearch (
-               *_params,
+               currentPameters,
                assg
             );
       }
@@ -132,10 +152,17 @@ SeedSearcherMain::search (boost::shared_ptr <Parameters> inParams)
    }
 
    //
-   // now output all the seeds
-   _params->bestFeatures()->sort ();
+   // now we bonferroni-correct all the scores of the seeds found
+   // and insert the new seeds to the original feature array
+   FeatureSet::Iterator it = currentPameters.bestFeatures()->getIterator();
+   for (; it.hasNext () ; it.next()) {
+      (*it)->numSeedsSearched(totalNumOfSeedsFound / numOfProjections);
+      inParams->bestFeatures ().add (*it);
+   }
 
-   return new Results (_params, totalNumOfSeedsFound);
+   //
+   // now output all the seeds
+   return new Results (inParams, totalNumOfSeedsFound);
 }
 
 void SeedSearcherMain::search (ParameterIterator& it)
@@ -253,6 +280,12 @@ void SeedSearcherMain::CmdLineParameters::setupParameters ()
 
 void SeedSearcherMain::CmdLineParameters::setupProjections ()
 {
+   if (_parser.__proj_i)   {
+      //
+      // initialize the random seed with a specific seed
+      RandomProjections::srand (_parser.__proj_i);
+   }
+
    //
    // check if a specific projection was asked for
    if (!_parser.__proj_base.empty()) {
@@ -276,9 +309,6 @@ void SeedSearcherMain::CmdLineParameters::setupProjections ()
       }
    }
    else {
-      //
-      // initialize the random seed
-      RandomProjections::srand (_parser.__proj_i);
       if (_parser.__proj_e) {
          _projections.reset (
                new MidsectionRandomProjections (
@@ -418,7 +448,7 @@ void SeedSearcherMain::CmdLineParameters::setupFeatureContainer ()
 
    //
    // use GoodFeaturesFilter to allow only features above a threshold
-   _bestFeatures.reset (new BookkeeperFilter (
+   _bestFeatures.reset (
          new GoodFeaturesFilter (
             container,
             true,
@@ -427,9 +457,8 @@ void SeedSearcherMain::CmdLineParameters::setupFeatureContainer ()
             _parser.__score_min,
             _parser.__score_min_seq,
             _parser.__score_min_seq_per
-         ),
-         true
-      ));
+         )
+      );
 }
 
 void SeedSearcherMain::CmdLineParameters::setupLangauge ()
@@ -458,7 +487,7 @@ void SeedSearcherMain::CmdLineParameters::setupLangauge ()
 
 
 SeedSearcherMain::Results::Results (boost::shared_ptr <Parameters> params, int n)
-: _index (0), _numSearched (n),
+: _numSearched (n),
   _params (params)
 {
    _numFound = _params->bestFeatures ()->size ();

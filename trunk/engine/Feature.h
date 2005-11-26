@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Feature.h $
-// Version     : $Revision: 14 $ 
+// Version     : $Revision: 17 $ 
 //               $Author: Aviad $
-//               $Date: 4/11/04 17:51 $ 
+//               $Date: 10/12/04 21:04 $ 
 // Description :
 //    Concrete cache for Hyper-Geometric distribution values
 //
@@ -34,6 +34,7 @@
 #include "Preprocessor.h"
 
 #include "persistance/Defs.h"
+#include "persistance/TextTableReport.h"
 #include "core/AutoPtr.h"
 
 #include "boost/shared_ptr.hpp"
@@ -91,10 +92,21 @@ public:
             const Assignment* projection,
             ScoreParameters* params,
             double score,
-            boost::shared_ptr <ScoreFunction> sf);
-   inline ~Feature () {
+            int numSeedsSearched,
+            boost::shared_ptr <ScoreFunction> sf) {
+      set (assg, cluster, projection, params, score, numSeedsSearched, sf);
+   }
+   ~Feature () {
+      dispose ();
    }
    void dispose ();
+   void set (  Assignment* assg, 
+               SeqCluster* cluster,
+               const Assignment* projection,
+               ScoreParameters* params,
+               double score,
+               int numSeedsSearched,
+               boost::shared_ptr <ScoreFunction> sf);
 
    inline double log2score () const {
 	   return _score;
@@ -102,8 +114,19 @@ public:
    void log2score (double in) {
       _score = in;
    }
+   inline double log2bonfScore () const {
+      return _bonfScore;
+   }
+   inline int numSeedsSearched () const {
+      return _numSeedSearched;
+   }
+   void numSeedsSearched (int in); // also sets the bonf score
    inline const Assignment& assignment () const {
 	   return *_assg;
+   }
+   inline SeqCluster& cluster () {
+      debug_mustbe (_cluster);
+      return *_cluster;
    }
    inline const SeqCluster& cluster () const {
       debug_mustbe (_cluster);
@@ -123,29 +146,21 @@ public:
    }
 
    const Assignment& complement (const Langauge& langauge) {
-      if (_complement)
-         return *_complement;
-
-      debug_mustbe (_assg);
-      _complement = new Assignment ();
-      langauge.complement (*_assg, *_complement);
+      if (!_complement) {
+         debug_mustbe (_assg);
+         _complement = new Assignment ();
+         langauge.complement (*_assg, *_complement);
+      }
 
 #     if 0
          DLOG << "Reverse of "   << Format (*_assg) 
               << " is "          << Format (*_complement)
               << DLOG.EOL ();
+         DLOG.flush();
 #     endif
 
       return *_complement;
    }
-
-   struct Owner {
-	   inline static void acquire(Feature*) {
-	   }
- 	   inline static void release(Feature* ptr) {
- 		   if (ptr) ptr->dispose ();
- 	   }
-   };
 
 protected:
    Assignment* _assg;
@@ -154,17 +169,14 @@ protected:
    ScoreParameters* _params;
    SeqCluster* _cluster;
    double _score;
+   double _bonfScore;
+   int _numSeedSearched;
    boost::shared_ptr <ScoreFunction> _sf;
 };
 //
 // CORBA notation used here... :-)
 typedef Feature* Feature_ptr;
-typedef AutoPtr <Feature, Feature::Owner> Feature_var;
-
-//
-//
-
-
+typedef boost::shared_ptr <Feature> Feature_var;
 
 //
 //
@@ -226,7 +238,8 @@ public:
    Feature& createFeature (Feature& out,
                            Assignment* assg, 
                            SeqCluster* cluster,
-                           const Assignment* projection)
+                           const Assignment* projection,
+                           int numSeedsSearched = 0)
    {
       ScoreParameters* scoreParams = NULL;
       double score = 
@@ -237,16 +250,16 @@ public:
                      &scoreParams
                   );
 
-      return out = Feature (
-                        // the feature's assignment 
-                        assg,
-                        // sequences containing the feature  
-                        cluster,
-                        projection,
-                        scoreParams,
-                        score,
-                        _score
-                     );
+      out.set( // the feature's assignment 
+               assg,
+               // sequences containing the feature  
+               cluster,
+               projection,
+               scoreParams,
+               score,
+               numSeedsSearched,
+               _score);
+      return out;
    }
 
 
@@ -310,30 +323,18 @@ public:
 
    //
    // prints a single position 
-   virtual void printMotifPosition (   Persistance::TextWriter&      , 
+   virtual void printMotifPosition (   Persistance::TextTableReport::Output&      , 
                                        Feature&                      ,
                                        const SeqPosition& position   );
    //
    // prints all positions of a feature
-   virtual void printMotif (  Persistance::TextWriter&   ,
+   virtual void printMotif (  Persistance::TextTableReport::Output&   ,
                               Feature&                   , 
                               const PositionVector&      );
 
-   //
-   // prints a result line for a feature
-   virtual void printSeedScore ( Persistance::TextWriter&, 
-                                 Feature&                , 
-                                 const PositionVector&   );
-   virtual void printSeed (   Persistance::TextWriter&, 
+   virtual void printSeed (   Persistance::TextTableReport::Output&, 
                               Feature&                , 
                               const PositionVector&   );
-   
-   virtual void printSeedHeader (Persistance::TextWriter& out) {
-      if (_numSeedsSearched) {
-         out << "Bonf(-log10)\t";
-      }
-      out << "Score(-log10)\tSeed\t\tParameters\t\t\tProjection" << out.EOL ();
-   }
 
    //
    // creates a PSSM from a feature
@@ -365,6 +366,9 @@ protected:
    int _numSeedsSearched;
    int _numProjections;
    double _log10_seedsSearched;
+
+   Persistance::TextTableReport::Format _motifPositionFormat;
+   Persistance::TextTableReport::Format _seedFormat;
 };
 
 

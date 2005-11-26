@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Feature.cpp $
-// Version     : $Revision: 19 $ 
+// Version     : $Revision: 22 $ 
 //               $Author: Aviad $
-//               $Date: 4/11/04 17:51 $ 
+//               $Date: 10/12/04 21:04 $ 
 // Description :
 //    Concrete cache for Hyper-Geometric distribution values
 //
@@ -61,6 +61,26 @@ FeatureInvestigator::FeatureInvestigator (const FeatureParameters& in,
       _log10_seedsSearched = 
          ::log10 (static_cast <double> (_numSeedsSearched / _numProjections));
    }
+
+   //
+   // motif position format
+   _motifPositionFormat.addField("Actual-Data", outputLength + 4);
+   _motifPositionFormat.addField("Seq-ID", 7);
+   _motifPositionFormat.addField("Seq-Name", 13);
+   _motifPositionFormat.addField("Seq-Weight", 15);
+   _motifPositionFormat.addField("Pos", 5);
+   _motifPositionFormat.addField("Strand");
+
+   //
+   // seed format
+   if (_numSeedsSearched > 0) {
+      _seedFormat.addField ("Bonf(-log10)", 14);
+   }
+   _seedFormat.addField ("Score(-log10)", 14);
+   _seedFormat.addField ("Seed", outputLength);
+   _seedFormat.addField ("Parameters", 30);
+   _seedFormat.addField ("Projection", outputLength);
+   _seedFormat.addField ("Bonf-corrected for");
 }
 
 inline static int getMotifLeftOffset (int motifLen, int seedLen)
@@ -80,27 +100,24 @@ void FeatureInvestigator::addPositions (
 {
    //
    // use the positions in the cluster if they are available
-   if (feature.cluster ().hasPositions ()) {
+   if (!feature.cluster ().hasPositions ()) {
       //
       // it is assumed that if it has any positions, then
       // it contains all relevant positions
-      SeqCluster::AddPositions pos(outPositives);
-      SeqCluster::AddPositions neg(outNegatives);
-      feature.cluster ().performDivided(_parameters.wf (), pos, neg);
-   }
-   else {
       Preprocessor::NodeCluster motifNodes;
       _parameters.preprocessor ().add2Cluster ( motifNodes, 
                                                 feature.assignment ());
-      
-      motifNodes.positions (  _parameters.wf (), 
-                              outPositives, 
-                              outNegatives);
+
+      motifNodes.add2SeqClusterPositions (feature.cluster ());
    }
+
+   SeqCluster::AddPositions pos(outPositives);
+   SeqCluster::AddPositions neg(outNegatives);
+   feature.cluster ().performDivided(_parameters.wf (), pos, neg);
 }
 
 void FeatureInvestigator::printMotif (  
-                           TextWriter& writer,
+                           Persistance::TextTableReport::Output& writer,
                            Feature& feature, 
                            const PositionVector& positions)
 {
@@ -111,10 +128,12 @@ void FeatureInvestigator::printMotif (
 }
 
 void FeatureInvestigator::printMotifPosition (    
-                     Persistance::TextWriter& writer,
+                     Persistance::TextTableReport::Output& out,
                      Feature& feature, 
                      const SeqPosition& position)
 {
+   Persistance::TextTableReport::Data data (_motifPositionFormat);
+
    int motifLength = feature.assignment ().length ();
    StrBuffer buf(_outputLength);
    int middleSection = 
@@ -124,79 +143,96 @@ void FeatureInvestigator::printMotifPosition (
                            _outputLength
                            );
 
+   int fieldIndex = Persistance::TextTableReport::firstFieldIndex;
+   Persistance::TextWriter writer (data.getOutputStream (fieldIndex++));
    writer << buf.substring (0, middleSection) << ' '
           << buf.substring (middleSection, middleSection + motifLength) << ' '
           << buf.substring (middleSection + motifLength);
  
    //
-   // write seq id and name
-   writer << '\t' << position.sequence ()->id () 
-          << '\t' << position.sequence ()->name ();
-   
+   // write seq id 
+   writer.setStream(data.getOutputStream(fieldIndex++));
+   writer << position.sequence ()->id (); 
+
    //
-   // TODO: what does [iYML101C 13 70088 70624 TSL1] [0.0000] mean?
+   // write seq name
+   writer.setStream(data.getOutputStream(fieldIndex++));
+   writer << position.sequence ()->name ();
    
    //
    // output sequence weight 
-   writer << "\t[" << position.sequence ()->weight () << ']';
+   writer.setStream(data.getOutputStream(fieldIndex++));
+   writer << '[' << position.sequence ()->weight () << ']';
    
    //
    // output the position index
-   writer << '\t' << position.position ();
+   writer.setStream(data.getOutputStream(fieldIndex++));
+   writer << position.position ();
    
    //
    // print +/- if it is on normal/reverse strand
-   writer << '\t' << (position.strand ()? '+' : '-');
-   writer.writeln ();
+   writer.setStream(data.getOutputStream(fieldIndex++));
+   writer << (position.strand ()? '+' : '-');
+   writer.setStream(NULL);
+
+   data.writeInto(out);
 }
 
 
-void FeatureInvestigator::printSeedScore (
-                                 TextWriter& writer, 
-                                 Feature& feature, 
-                                 const PositionVector& 
-                                 )
-{
-  static const double LOG2_10 = log2 (static_cast <double> (10));
-   double log10_of_score = (feature.log2score ()) / LOG2_10;
-
-   //
-   // print bonf correction
-   if (_numSeedsSearched > 0) {
-      //
-      // log10 (score * K) = log10 (score) + log10 (K)
-      double bonfScore = log10_of_score + _log10_seedsSearched;
-      writer   << (- bonfScore)
-               << '\t';
-   }
-  
-   writer << (- log10_of_score);
-}
-
-void FeatureInvestigator::printSeed (Persistance::TextWriter& writer, 
+void FeatureInvestigator::printSeed (Persistance::TextTableReport::Output& out, 
                                      Feature& feature, 
                                      const PositionVector& positions)
 {
-   printSeedScore (writer, feature, positions);
+   int currentField = Persistance::TextTableReport::firstFieldIndex;
+   Persistance::TextTableReport::Data data (_seedFormat);
+
+
+   static const double LOG2_10 = log2 (static_cast <double> (10));
+
+   //
+   // print bonfferoni correction
+   TextWriter writer (NULL);
+   if (_numSeedsSearched > 0) {
+      writer.setStream (data.getOutputStream(currentField++));
+      //
+      // 
+      double log10_of_bonfScore = feature.log2bonfScore () / LOG2_10;
+      writer << (- log10_of_bonfScore);
+   }
+   double log10_of_score = (feature.log2score ()) / LOG2_10;
+   writer.setStream (data.getOutputStream(currentField++));
+   writer << (- log10_of_score);
 
    //
    // print the assignment
-   writer   << '\t'
-            << _parameters.langauge ().format (feature.assignment ());
+   writer.setStream (data.getOutputStream(currentField++));
+   writer << _parameters.langauge ().format (feature.assignment ());
 
    //
    // print score params if available
+   writer.setStream (data.getOutputStream(currentField++));
    if (feature.scoreParameters ()) {
-      writer << "\t[";
+      writer << '[';
       feature.scoreFunction ().writeAsText (writer, feature.scoreParameters ());
       writer << ']';
    }
 
    //
    // print projection details if available
+   writer.setStream (data.getOutputStream(currentField++));
    if (feature.projection ()) {
-      writer << '\t' << _parameters.langauge ().format (*feature.projection ());
+      writer << _parameters.langauge ().format (*feature.projection ());
    }
+
+   //
+   // print how many seeds counted for bonf correction, if available
+   writer.setStream (data.getOutputStream(currentField++));
+   if (feature.numSeedsSearched () > 0) {
+      writer << feature.numSeedsSearched();
+   }
+
+   writer.setStream (NULL);
+   data.writeInto(out);
 }
 
 void FeatureInvestigator::createPSSM (Feature& feature_i, 
@@ -218,6 +254,8 @@ void FeatureInvestigator::printPSSM (  Persistance::TextWriter& writer,
                                        Feature& feature_i, 
                                        const PSSM& pssm)
 {
+   int prevWidth = writer.width ();
+   writer.width(writer.precision() + 3);
    int size = pssm.length ();          
    int cardinality = _parameters.langauge ().cardinality ();    
    debug_mustbe (cardinality > 0);
@@ -229,7 +267,7 @@ void FeatureInvestigator::printPSSM (  Persistance::TextWriter& writer,
       //
       // write all other positions with a prepending '\t'
       for (int i=1 ; i<size ; i++) {
-         writer << "\t\t\t" << pssm [i][j];
+         writer << "\t" << pssm [i][j];
       }
 
       //
@@ -238,6 +276,7 @@ void FeatureInvestigator::printPSSM (  Persistance::TextWriter& writer,
    }
 
    writer.flush ();
+   writer.width(prevWidth);
 }
 
 void FeatureInvestigator::printBayesian (
@@ -273,21 +312,47 @@ void FeatureInvestigator::printBayesian (
 //
 // Feature
 Feature::Feature () 
-  :  _assg (NULL), _projection (0), 
-   _params (0), _cluster (NULL), _score (0) 
+  :  _assg (NULL), _complement (NULL), _projection (0), 
+   _params (0), _cluster (NULL), _score (0), _bonfScore (0), _numSeedSearched (0) 
 {
 }
 
-Feature::Feature (Assignment* assg, 
+void Feature::set (Assignment* assg, 
          SequenceDB::Cluster* cluster,
          const Assignment* projection,
          ScoreParameters* params,
          double score,
+         int seedsSearched,
          boost::shared_ptr <ScoreFunction> sf)
-:  _assg(assg), _complement (NULL), _projection (projection),
-   _params (params), _cluster (cluster), _score (score),
-   _sf (sf)
 {
+   _assg = assg;
+   _complement = NULL;
+   _projection = projection;
+   _params = params;
+   _cluster = cluster;
+   _score = score;
+   _sf = sf;
+
+   numSeedsSearched (seedsSearched);
+}
+
+//
+// also sets the bonf score
+void Feature::numSeedsSearched (int in)
+{
+   _numSeedSearched = in;
+
+   //
+   // compute bonferroni corrected scores:
+   if (_numSeedSearched > 0)  {
+      //
+      // log2 (score * K) = log2 (score) + log2 (K)
+      _bonfScore = _score + log2 (_numSeedSearched);
+   }
+   else {
+      _bonfScore = _score;
+   }
+
 }
 
 void Feature::dispose () {

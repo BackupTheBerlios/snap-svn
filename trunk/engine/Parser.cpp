@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Parser.cpp $
-// Version     : $Revision: 36 $ 
+// Version     : $Revision: 38 $ 
 //               $Author: Aviad $
-//               $Date: 22/11/04 9:14 $ 
+//               $Date: 9/12/04 3:05 $ 
 // Description :
 //    Concrete Parser for seed-searcher options
 //
@@ -109,105 +109,116 @@ int Parser::getInt (const char* in, const char* option_name)
 #define REGISTER_SEED_PARSER_OPTION_CLASS(name, list) \
    list.add (new GET_SEED_PARSER_OPTION_CLASS(name));
 
-#define DEFINE_SEED_PARSER_OPTION(name, NAME, DESC, DEF, ARG, CODE)        \
-struct Option_##name : public GetOptParser::Option {                  \
-   Option_##name () : GetOptParser::Option (NAME, DESC, DEF, ARG) {   \
+#define DEFINE_SEED_PARSER_OPTION(name, NAME, DESC, DEF, ARG, EXEC_CODE, P_CODE) \
+struct Option_##name : public GetOptParser::Option {                 \
+   Option_##name () : GetOptParser::Option (NAME, DESC, DEF, ARG) {  \
    }                                                                 \
                                                                      \
    virtual void execute (const char* optarg, void* ctx) {            \
-      CODE;                                                          \
+      execute (optarg, reinterpret_cast <Parser*> (ctx));            \
+   }                                                                 \
+   void execute (const char* optarg, Parser* parser) {               \
+      EXEC_CODE;                                                     \
+   }                                                                 \
+   virtual void param (StrBuffer& out, void* ctx) {                  \
+      param (out, reinterpret_cast <Parser*> (ctx));                 \
+   }                                                                 \
+   void param (StrBuffer& out, Parser* parser) {                     \
+      P_CODE;                                                        \
    }                                                                 \
 };
 
+static inline void bool_set_option (Parser* parser, const char* name, const char* optarg, bool& value)
+{  value = parser->getOptBoolean (optarg);   }
 
-DEFINE_SEED_PARSER_OPTION(
+static inline void bool_get_option (const char* name, bool value, StrBuffer& out)
+{  out = (value? "on" : "off");  }
+
+#define DEFINE_BOOL_SEED_PARSER_OPTION(name, NAME, DESC, DEF, ARG, OPT) \
+   DEFINE_SEED_PARSER_OPTION(name, NAME, DESC, DEF, ARG, { bool_set_option (parser, _name, optarg, parser-> OPT);}, { bool_get_option (_name, parser-> OPT, out); } )
+
+#define DEFINE_INT_SEED_PARSER_OPTION(name, NAME, DESC, DEF, ARG, OPT) \
+   DEFINE_SEED_PARSER_OPTION(name, NAME, DESC, DEF, ARG, { parser-> OPT = parser->getInt (optarg, _name); }, { out = FixedStrBuffer <128>("%d", (int) parser-> OPT).getStr (); } )
+
+#define DEFINE_STRING_SEED_PARSER_OPTION(name, NAME, DESC, DEF, ARG, OPT) \
+   DEFINE_SEED_PARSER_OPTION(name, NAME, DESC, DEF, ARG, { parser-> OPT = optarg; }, { out = parser-> OPT; } )
+
+#define DEFINE_OUTPUT_SEED_PARSER_OPTION(name, NAME, DESC, DEF, ARG, OPT) \
+   DEFINE_SEED_PARSER_OPTION(name, NAME, DESC, DEF, ARG,    \
+   { parser-> OPT = parser->getOptOutputType (optarg); },  \
+   {  switch (parser-> OPT) {                              \
+         case Parser::_out_all_: out = "on";  break;                \
+         case Parser::_out_pos_: out = "pos"; break;                \
+         case Parser::_out_none_: out = "off"; break;                \
+         default: mustfail ();                              \
+      }                                                     \
+   })
+
+
+
+DEFINE_STRING_SEED_PARSER_OPTION(
    conf,
    "Sconf",
    "<filename> name of configuration file",
    "",
    GetOptWrapper::_required_argument_,
-   {
-      Parser* parser = reinterpret_cast <Parser*> (ctx);
-      parser->__conf = optarg;
-   }
+   __conf
 );      
 
 
-DEFINE_SEED_PARSER_OPTION(
+DEFINE_BOOL_SEED_PARSER_OPTION (
    proj_e,
    "Sproj-e", 
-      "[=on | =off] use exhaustive random projections",
-      "off", 
-      GetOptWrapper::_optional_argument_, 
-   {  
-      Parser* parser = reinterpret_cast <Parser*> (ctx);
-      parser->__proj_e = parser->getOptBoolean (optarg);
-   }
+   "[=on | =off] use exhaustive random projections",
+   "off", 
+   GetOptWrapper::_optional_argument_,
+   __proj_e
 );
 
 
-DEFINE_SEED_PARSER_OPTION(proj_n,
+DEFINE_INT_SEED_PARSER_OPTION(
+   proj_n,
    "Sproj-n", 
    "<number> of random projections",
    "3", 
    GetOptWrapper::_required_argument_,
-   {
-      Parser* parser = reinterpret_cast <Parser*> (ctx);
-      parser->__proj_n = parser->getInt (optarg, this->_name);
-   }
+   __proj_n
 );
 
-DEFINE_SEED_PARSER_OPTION(proj_d,
+DEFINE_INT_SEED_PARSER_OPTION(proj_d,
    "Sproj-d", 
    "<number> of wildcards (projection distance)",
    "4", 
    GetOptWrapper::_required_argument_,
-   {
-      Parser* parser = reinterpret_cast <Parser*> (ctx);
-      parser->__proj_d = parser->getInt (optarg, this->_name);
-   }
+   __proj_d
 );
 
-DEFINE_SEED_PARSER_OPTION(proj_mid,
+DEFINE_INT_SEED_PARSER_OPTION(proj_mid,
    "Sproj-mid", 
    "<number> of wildcards enforced in middle section",
    "0", 
    GetOptWrapper::_required_argument_,
-   {
-      Parser* parser = reinterpret_cast <Parser*> (ctx);
-      parser->__proj_mid = parser->getInt (optarg, this->_name);
-   }
+   __proj_mid
 );
 
-DEFINE_SEED_PARSER_OPTION(proj_spec,
+DEFINE_BOOL_SEED_PARSER_OPTION(proj_spec,
    "Sproj-spec", 
    "[=on | =off] use projection-specialization (experts use only)",
    "off", 
    GetOptWrapper::_optional_argument_,
-   {
-      Parser* parser = reinterpret_cast <Parser*> (ctx);
-      parser->__proj_spec = parser->getOptBoolean (optarg);
-   }
+   __proj_spec
 );
 
-DEFINE_SEED_PARSER_OPTION(proj_i,
+DEFINE_INT_SEED_PARSER_OPTION(proj_i,
    "Sproj-i", 
-   "<seed-number> for random projection generator",   
-   "",
+   "<seed-number> for random projection generator (expert use only)\n"
+      "if set to non-zero value it forces Random-Projections to behave predictably",
+   "0",
    GetOptWrapper::_required_argument_,
-   {
-      Parser* parser = reinterpret_cast <Parser*> (ctx);
-      Str sarg (optarg);
-      if (sarg.empty () || sarg.equalsIgnoreCase ("time"))  {
-         parser->__proj_i = time (NULL);
-      }
-      else {
-         parser->__proj_i = parser->getInt (optarg, this->_name);
-      }
-   }
+   __proj_i
 );
 
-DEFINE_SEED_PARSER_OPTION(proj_base,
+DEFINE_STRING_SEED_PARSER_OPTION(proj_base,
       "Sproj-base", 
       "<assignment> the basic assignment on which to project.\n"
          "not specifying this option is exactly the same as "
@@ -222,66 +233,49 @@ DEFINE_SEED_PARSER_OPTION(proj_base,
          "(2) \"--Sproj-base *****\" is equivalent to \"--Sseed-l 5\"",
       "",
       GetOptWrapper::_required_argument_,
-   {
-      Parser* parser = reinterpret_cast <Parser*> (ctx);
-      parser->__proj_base = optarg;
-   }
+      __proj_base 
 );
 
-DEFINE_SEED_PARSER_OPTION(seed_n,
+DEFINE_INT_SEED_PARSER_OPTION(seed_n,
    "Sseed-n",
    "<number> of seeds to output",
    "5",
    GetOptWrapper::_required_argument_,
-   {        
-      Parser* parser = reinterpret_cast <Parser*> (ctx);
-      parser->__seed_n = parser->getInt (optarg, this->_name); 
-   }
+   __seed_n
 );
 
 
-DEFINE_SEED_PARSER_OPTION(seed_l,
+DEFINE_INT_SEED_PARSER_OPTION(seed_l,
    "Sseed-l",
    "<length> of seeds to search",
    "9",
    GetOptWrapper::_required_argument_,
-   {  
-      Parser* parser = reinterpret_cast <Parser*> (ctx);
-      parser->__seed_l = parser->getInt (optarg, this->_name); 
-   }
+   __seed_l
 );
 
-DEFINE_SEED_PARSER_OPTION(seed_r,
+DEFINE_INT_SEED_PARSER_OPTION(seed_r,
    "Sseed-r",
    "<offset> to check for redundancy in seeds",
    "2",
    GetOptWrapper::_required_argument_,
-   {   
-      Parser* parser = reinterpret_cast <Parser*> (ctx);
-      parser->__seed_r = parser->getInt (optarg, this->_name); 
-   }
+   __seed_r
 );
 
 
-DEFINE_SEED_PARSER_OPTION(seed_rr,
+DEFINE_BOOL_SEED_PARSER_OPTION(seed_rr,
    "Sseed-rr",
    "[=on | =off] should check for reverse-redundancy in seeds",
    "on",
    GetOptWrapper::_optional_argument_,
-   {
-      Parser* parser = reinterpret_cast <Parser*> (ctx);
-      parser->__seed_rr = parser->getOptBoolean (optarg);
-   }
+   __seed_rr
 );
 
-DEFINE_SEED_PARSER_OPTION(seed_o,
+DEFINE_INT_SEED_PARSER_OPTION(seed_o,
    "Sseed-o",
    "<length> of seeds to output",
    "20",
    GetOptWrapper::_required_argument_,
-   {  Parser* parser = reinterpret_cast <Parser*> (ctx);
-      parser->__seed_o = parser->getInt (optarg, this->_name);   
-   }
+   __seed_o
 );
 
 
@@ -291,7 +285,6 @@ DEFINE_SEED_PARSER_OPTION(prep,
    "leaf",
    GetOptWrapper::_required_argument_,
    {
-      Parser* parser = reinterpret_cast <Parser*> (ctx);
       Str opt (optarg);
       if (opt.equalsIgnoreCase ("leaf"))
          parser->__prep = _prep_leaf_;
@@ -299,37 +292,35 @@ DEFINE_SEED_PARSER_OPTION(prep,
          parser->__prep = _prep_tree_;
       else
          parser->usage (StrBuffer ("unknown preprocessor type ", optarg));
-   }
-);
-
-DEFINE_SEED_PARSER_OPTION(prep_l,
-                          "Sprep-l",
-                          "<maximum-length> of preprocessed seeds.\n"
-                           "if this option is not set, it defaults to "
-                           "the length set in --Sseed-l. "
-                           "this feature is useful to limiting memory consumption.",
-                          "",
-                          GetOptWrapper::_required_argument_,
+   },
    {
-      Parser* parser = reinterpret_cast <Parser*> (ctx);
-      Str sarg (optarg);
-      if (!sarg.empty ())
-         parser->__prep_l = parser->getInt (optarg, this->_name);   
-      else
-         parser->__prep_l = -1;
+      switch (parser->__prep) {
+         case _prep_leaf_: out = "leaf"; break;
+         case _prep_tree_: out = "tree"; break;
+         default: mustfail ();
+      }
    }
 );
 
-DEFINE_SEED_PARSER_OPTION(
+DEFINE_INT_SEED_PARSER_OPTION(
+   prep_l,
+   "Sprep-l",
+   "<maximum-length> of preprocessed seeds.\n"
+      "if this option is set to -1, it defaults to "
+      "the length set in --Sseed-l. "
+      "this feature is useful to limiting memory consumption.",
+   "-1",
+   GetOptWrapper::_required_argument_,
+   __prep_l
+);
+
+DEFINE_BOOL_SEED_PARSER_OPTION(
    prep_noneg,
    "Sprep-noneg",
    "[=on | =off] removes features with no positive positions (experts use only)",
    "off",
    GetOptWrapper::_optional_argument_,
-   {       
-      Parser* parser = reinterpret_cast <Parser*> (ctx);
-      parser->__prep_noneg = parser->getOptBoolean (optarg);   
-   }
+   __prep_noneg
 );
 
 DEFINE_SEED_PARSER_OPTION(
@@ -339,7 +330,6 @@ DEFINE_SEED_PARSER_OPTION(
    "gene",
    GetOptWrapper::_required_argument_,
    {
-      Parser* parser = reinterpret_cast <Parser*> (ctx);
       Str opt (optarg);
       if (opt.equalsIgnoreCase ("gene"))
          parser->__count = _count_gene_;
@@ -347,35 +337,33 @@ DEFINE_SEED_PARSER_OPTION(
          parser->__count = _count_total_;
       else
          parser->usage (StrBuffer ("Unknown counting type: ", opt));
+   },
+   {
+      switch (parser->__count) {
+         case _count_gene_: out = "gene"; break;
+         case _count_total_: out = "total"; break;
+         default: mustfail ();
+      }
    }
 );
 
 
-DEFINE_SEED_PARSER_OPTION(
+DEFINE_BOOL_SEED_PARSER_OPTION(
    count_reverse,
    "Scount-reverse",
-   "[=on | =off] use reverse strand"
-      " (enables the reverse-feature-redundancy removal."
-      " but currently the feature is" 
-      " available only on leaf preprocessor)",
+   "[=on | =off] use reverse strand",
    "off",
    GetOptWrapper::_optional_argument_,
-   {
-      Parser* parser = reinterpret_cast <Parser*> (ctx);
-      parser->__count_reverse = parser->getOptBoolean (optarg);
-   }
+   __count_reverse
 );
 
-DEFINE_SEED_PARSER_OPTION(
+DEFINE_BOOL_SEED_PARSER_OPTION(
    score_partial,
    "Sscore-partial",
    "[=on | =off] use partial counts for scores",
    "off",
    GetOptWrapper::_optional_argument_,
-   {
-      Parser* parser = reinterpret_cast <Parser*> (ctx);
-      parser->__score_partial = parser->getOptBoolean (optarg);
-   }
+   __score_partial
 );
 
 DEFINE_SEED_PARSER_OPTION(
@@ -386,7 +374,6 @@ DEFINE_SEED_PARSER_OPTION(
    "hypegeo",
    GetOptWrapper::_required_argument_,
    {
-      Parser* parser = reinterpret_cast <Parser*> (ctx);
       Str opt (optarg);
       if (opt.equalsIgnoreCase ("hypegeo"))
          parser->__scoreType = _score_hypegeo_;
@@ -399,80 +386,65 @@ DEFINE_SEED_PARSER_OPTION(
       }
       else
          parser->usage (StrBuffer ("Unknown counting type: ", opt));
+   },
+   {
+      switch (parser->__scoreType) {
+         case _score_hypegeo_:   out = "hypegeo"; break;
+         case _score_exp_:       
+            out = FixedStrBuffer <128> ("exp:%f:%f", 
+                                        (double) parser->__expLossPos, 
+                                        (double) parser->__expLossNeg).getStr ();
+            break;
+         default: mustfail ();
+      }
    }
 );
 
-DEFINE_SEED_PARSER_OPTION(
+DEFINE_BOOL_SEED_PARSER_OPTION(
    score_fdr,
    "Sscore-fdr",
    "[=on | =off] apply FDR statistical fix",
    "off",
    GetOptWrapper::_optional_argument_,
-   { 
-      Parser* parser = reinterpret_cast <Parser*> (ctx);
-      parser->__score_fdr = parser->getOptBoolean (optarg);   
-   }
+   __score_fdr
 );
 
-DEFINE_SEED_PARSER_OPTION(
+DEFINE_BOOL_SEED_PARSER_OPTION(
    score_bonf,
    "Sscore-bonf",
    "[=on | =off] apply Bonferroni statistical fix",
    "on",
    GetOptWrapper::_optional_argument_,
-   { 
-      Parser* parser = reinterpret_cast <Parser*> (ctx);
-      parser->__score_bonf = parser->getOptBoolean (optarg);  
-   }
+   __score_bonf
 );
 
 
 DEFINE_SEED_PARSER_OPTION(
    score_min,
    "Sscore-min",
-   "<min-score or off> for seed",
+   "<min-score> for seed",
    "0.5",
    GetOptWrapper::_required_argument_,
-   {
-      Parser* parser = reinterpret_cast <Parser*> (ctx);
-
-      bool notBoolean = false;
-      bool result = parser->getOptBoolean (optarg, &notBoolean);
-      if (notBoolean) {
-         parser->__score_min = atof (optarg);
-      }
-      else {
-         if (result == true)
-            parser->usage (StrBuffer ("bad minimum score: ", optarg));
-         else
-            parser->__score_min = -1;
-      }
-   }
+   {  parser->__score_min = atof (optarg); },
+   {  out = FixedStrBuffer <128> ("%f", (double) parser->__score_min).getStr (); }
 );
 
-DEFINE_SEED_PARSER_OPTION(
+DEFINE_INT_SEED_PARSER_OPTION(
    score_min_seq,
    "Sscore-min-seq",
    "<min-positive> sequences for seed",
    "1",
    GetOptWrapper::_required_argument_,
-   { 
-      Parser* parser = reinterpret_cast <Parser*> (ctx);
-      parser->__score_min_seq = parser->getInt (optarg, this->_name);  
-   }
+   __score_min_seq
 );
 
-
-DEFINE_SEED_PARSER_OPTION(
+DEFINE_INT_SEED_PARSER_OPTION(
    score_min_seq_per,
    "Sscore-min-seq-per",
    "<min-positive> percent of sequences for seed",
    "10",
    GetOptWrapper::_required_argument_,
-   {
-      Parser* parser = reinterpret_cast <Parser*> (ctx);
-      parser->__score_min_seq_per = parser->getInt (optarg, this->_name);
-   }
+   __score_min_seq_per
 );
 
 DEFINE_SEED_PARSER_OPTION(
@@ -487,7 +459,6 @@ DEFINE_SEED_PARSER_OPTION(
    "0.5",
    GetOptWrapper::_required_argument_,
    {
-      Parser* parser = reinterpret_cast <Parser*> (ctx);
       Str opt (optarg);
       if (opt.equalsIgnoreCase ("interval")) {
          parser->__weightType = _weight_interval_;
@@ -511,20 +482,35 @@ DEFINE_SEED_PARSER_OPTION(
       else {
          parser->usage (StrBuffer ("Unknown weight function type: ", opt));
       }
+   },
+   {
+      switch (parser->__weightType){
+         case _weight_simple_: 
+            out = FixedStrBuffer <128> ("%f", (double) parser->__weight_t).getStr ();
+            break;
+         case _weight_interval_:
+            out = FixedStrBuffer<128> ("interval:%f:%f", 
+                                       (double) parser->__weight_lowt, 
+                                       (double) parser->__weight_t).getStr ();
+            break;
+         case _weight_border_:
+            out = FixedStrBuffer<128> ("border:%f:%f", 
+                                       (double) parser->__weight_lowt, 
+                                       (double) parser->__weight_t).getStr ();
+            break;
+         default: mustfail ();
+      }
    }
 );
 
 
-DEFINE_SEED_PARSER_OPTION(
+DEFINE_BOOL_SEED_PARSER_OPTION(
    weight_invert,
    "Sweight-invert",
    "[=on | =off] weight function inversion",
    "off",
    GetOptWrapper::_optional_argument_,
-   { 
-      Parser* parser = reinterpret_cast <Parser*> (ctx);
-      parser->__weight_invert = parser->getOptBoolean (optarg);
-   }
+   __weight_invert
 );      
 
 
@@ -536,8 +522,6 @@ DEFINE_SEED_PARSER_OPTION(
    "default",
    GetOptWrapper::_required_argument_,
    {
-      Parser* parser = reinterpret_cast <Parser*> (ctx);
-
       Str opt (optarg);
       if (opt.equalsIgnoreCase ("default"))
          parser->__searchType = _search_default_;
@@ -547,11 +531,19 @@ DEFINE_SEED_PARSER_OPTION(
          parser->__searchType = _search_tree_;
       else
          parser->usage (StrBuffer ("Unknown counting type: ", opt));
+   },
+   {
+      switch (parser->__searchType) {
+         case _search_default_:  out = "default"; break;
+         case _search_table_:    out = "table"; break;
+         case _search_tree_:     out = "tree"; break;
+         default: mustfail ();
+      }
    }
 );      
 
 
-DEFINE_SEED_PARSER_OPTION(
+DEFINE_OUTPUT_SEED_PARSER_OPTION(
    pssm,
    "Spssm",
    "<on | pos | off> enable/supress generation of .PSSM files:"
@@ -560,13 +552,10 @@ DEFINE_SEED_PARSER_OPTION(
       "\noff => suppress genration of all PSSM files.",
    "pos",
    GetOptWrapper::_required_argument_,
-   { 
-      Parser* parser = reinterpret_cast <Parser*> (ctx);
-      parser->__generatePSSM = parser->getOptOutputType (optarg);
-   }
+   __generatePSSM
 );      
 
-DEFINE_SEED_PARSER_OPTION(
+DEFINE_OUTPUT_SEED_PARSER_OPTION(
    motif,
    "Smotif",
    "<on | pos | off> enable/supress generation of .motif files"
@@ -575,13 +564,10 @@ DEFINE_SEED_PARSER_OPTION(
       "\noff => suppress genration of all motif files.",
    "on",
    GetOptWrapper::_required_argument_,
-   { 
-      Parser* parser = reinterpret_cast <Parser*> (ctx);
-      parser->__generateMotif = parser->getOptOutputType (optarg);
-   }
+   __generateMotif 
 );      
 
-DEFINE_SEED_PARSER_OPTION(
+DEFINE_OUTPUT_SEED_PARSER_OPTION(
    sample,
    "Ssample",
    "<on | pos | off> enable/supress generation of .sample files"
@@ -590,10 +576,7 @@ DEFINE_SEED_PARSER_OPTION(
       "\noff => suppress genration of all sample files.",
    "off",
    GetOptWrapper::_required_argument_,
-   { 
-      Parser* parser = reinterpret_cast <Parser*> (ctx);
-      parser->__generateBayesian  = parser->getOptOutputType (optarg);
-   }
+   __generateBayesian
 );
 
 DEFINE_SEED_PARSER_OPTION(
@@ -602,10 +585,8 @@ DEFINE_SEED_PARSER_OPTION(
    "displays usage information",
    "",
    GetOptWrapper::_no_argument_,
-   {
-      Parser* parser = reinterpret_cast <Parser*> (ctx);
-      parser->usage(StrBuffer ("unknown argument: ", optarg));
-   }
+   {  parser->usage(StrBuffer ("unknown argument: ", optarg));   },
+   {                                                             }
 );
 
 
@@ -828,27 +809,31 @@ static const char* outputTypeName (Parser::OutputType t) {
 
 void Parser::logParams (Persistance::TextWriter& out) const
 {
-   char** params;
-   int l = _impl.getCompleteParams (params, __argv.argc (), __argv.argv (), __options._list);
+   Argv params;
+   int l = _impl.getCompleteParams (   
+                  params, 
+                  reinterpret_cast <void*> (const_cast <Parser*>(this)), 
+                  __options._list);
    out << __argv.argv () [0] << ' ';
    for (int i=0 ; i<l ; i++) {
+      Str name_i (__options._list [i]->name ());
+      Str param_i (params.argv () [i]);
       int arg_type = __options._list [i]->argument ();
       if (arg_type == GetOptWrapper::_no_argument_) {
-         out << "  --" << __options._list [i]->name ();
+         out << "  --" << name_i;
       }
       else if (arg_type == GetOptWrapper::_optional_argument_) {
-         out << "  --" << __options._list [i]->name ();
-         if (Str (params [i]).empty ()) continue;
-         out << '=' << params [i];
+         out << "  --" << name_i;
+         if (param_i.empty ()) continue;
+         out << '=' << param_i;
       }
-      else if (!Str (params [i]).empty ())   {
-         out   << "  --" << __options._list [i]->name ()
-               << ' ' << params [i];
+      else if (!param_i.empty ())   {
+         out   << "  --" << name_i
+               << ' '    << param_i;
       }
    }
    out.writeln();
    out.flush ();
-   delete [] params;
 }
 
 void Parser::checkCompatibility (const Parser& in)

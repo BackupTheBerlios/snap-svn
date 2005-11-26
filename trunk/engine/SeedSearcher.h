@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: SeedSearcher.h $
-// Version     : $Revision: 22 $ 
+// Version     : $Revision: 24 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:44 $ 
+//               $Date: 10/12/04 21:15 $ 
 // Description :
 //    Concrete class for seed-searching in a preprocessor
 //
@@ -29,6 +29,9 @@
 #include "AssignmentFormat.h"
 #include "PrefixTreePreprocessor.h"
 
+//
+// fwd declaration
+class FeatureSet;
 
 class SeedSearcher {
 public:
@@ -38,65 +41,7 @@ public:
    typedef SeqWeightFunction WeightFunction;
 
 public:
-
-   class FeatureArray {
-   public:
-      FeatureArray (int k);
-      ~FeatureArray ();
-
-      int maxSize () const {
-         return _k;
-      }
-      int size () const {
-         return _size;
-      }
-      void increaseSize () {
-         debug_mustbe (_size < _k);
-         _size++;
-      }
-      const Feature& get (int i) const {
-         debug_mustbe (i<_size);
-         return _features [i];
-      }
-      Feature& get (int i) {
-         debug_mustbe (i<_size);
-         return _features [i];
-      }
-      const Feature& operator [] (int index) const {
-         return get (index);
-      };
-      Feature& operator [] (int index) {
-         return get (index);
-      };
-      void isSorted (bool in) {
-         _sorted = in;
-      }
-      bool isSorted () const {
-         return _sorted;
-      }
-      void sort ();
-
-      //
-      // score = 1 - e^score / 1 + e^score
-      void normalizeScoresSigmoid ();
-
-      //
-      // if highest score is negative multiply all scores by -1
-      // t = 1 - lowest_score
-      // for each i score(i) += t
-      // SIGMA = sum (score(i))
-      // for each i score(i) = score(i) / 
-      void normalizeScoresLinear ();
-
-   protected:
-      int _k;
-      int _size;
-      Feature* _features;
-      bool _sorted;
-   };
-
-
-
+   typedef FeatureSet FeatureArray;
    class FeatureFilter {
       //
       // this is an interface for a container of features
@@ -115,6 +60,8 @@ public:
 
       virtual const FeatureArray& getArray () const = 0;
       virtual FeatureArray& getArray () = 0;
+
+      virtual FeatureFilter* clone () = 0;
    };
 
    class SearchParameters : public FeatureParameters {
@@ -145,6 +92,9 @@ public:
       }
       FeatureFilter& bestFeatures () {
          return *_bestFeatures;
+      }
+      void bestFeatures (boost::shared_ptr <FeatureFilter> in) {
+         _bestFeatures = in;
       }
       //
 		// should keep track of all positions

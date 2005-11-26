@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: SeedSearcher.cpp $
-// Version     : $Revision: 29 $ 
+// Version     : $Revision: 31 $ 
 //               $Author: Aviad $
-//               $Date: 22/11/04 9:14 $ 
+//               $Date: 10/12/04 21:06 $ 
 // Description :
 //    Concrete class for seed-searching in a preprocessor
 //
@@ -401,9 +401,9 @@ int SeedSearcher::prefixTreeSearch (
                               );
 #        endif
 
-         Feature seed_feature;
+         Feature_var seed_feature (new Feature);
          params.createFeature (
-            seed_feature,
+            *seed_feature,
             // the feature's assignment 
             feature.first,
             // sequences containing the feature  
@@ -413,7 +413,7 @@ int SeedSearcher::prefixTreeSearch (
 
          //
          // this also cleans up memory, if necessary
-         params.bestFeatures ().add (&seed_feature);
+         params.bestFeatures ().add (seed_feature);
       }
       //
       // accumolate times
@@ -769,14 +769,14 @@ static int extendedTableSearch (
             // right here. this design is due to memory limitations.
             // remember, if we had more memory, we could just have created
             // a deeper preprocessor, right?
-            Feature seed_feature;
+            Feature_var seed_feature (new Feature);
             params.createFeature(
-               seed_feature,
+               *seed_feature,
                completeAssignment,
                currentSeqCluster.release(),
                &projection);
 
-            params.bestFeatures ().add (&seed_feature);
+            params.bestFeatures ().add (seed_feature);
             currentSeqCluster = new SeqCluster;
 
             seedsFound++;
@@ -844,14 +844,14 @@ int SeedSearcher::tableSearch (  SearchParameters& params,
             featureAssg = new Assignment (feature->assignment ());
          }
 
-         Feature seed_feature;
+         Feature_var seed_feature (new Feature);
          params.createFeature(
-            seed_feature,
+            *seed_feature,
             featureAssg,
             feature->releaseCluster (),
             &projection);
 
-         params.bestFeatures ().add (&seed_feature);
+         params.bestFeatures ().add (seed_feature);
       }
 
       finish = time (NULL);
@@ -898,46 +898,3 @@ static void compareSeedResult (const PrefixTreePreprocessor& tree,
 }
 
 #endif
-
-
-
-
-void SeedSearcher::FeatureArray::normalizeScoresSigmoid ()
-{
-   for (int i=0 ; i<_size;i++) {
-      Feature& feature = get (i);
-      double score = feature.log2score ();
-      double P = pow (M_E, score);
-      feature.log2score (1 - (P / (1+P)));
-   }
-}
-
-struct SortComparator{
-   //
-   // put the best scores first
-   bool operator () (const Feature& a, const Feature& b) {
-      return a.log2score () < b.log2score ();
-   }
-};
-
-void SeedSearcher::FeatureArray::sort ()
-{
-   std::sort (_features, _features + _size, SortComparator ());
-   _sorted = true;
-}
-
-SeedSearcher::FeatureArray::FeatureArray (int k)
-: _k (k), _size (0)
-{
-   debug_mustbe (_k > 0);
-   _features = new Feature [_k];
-}
-
-SeedSearcher::FeatureArray::~FeatureArray ()
-{
-   for (int i=0 ; i<_size ; i++)
-      _features [i].dispose ();
-
-   delete [] _features;
-}
-

@@ -50,7 +50,13 @@ public:
     }
 
     Str::Size length () const;
-    
+    Str::Size capacity () const {
+       return _capacity;
+    }
+    void setLength (Str::Size in) {
+       _length = in;
+    }
+
     char getCharAt (Str::Index) const;
     char& getCharAt (Str::Index);
     void setCharAt (Str::Index, char);
@@ -64,21 +70,34 @@ public:
     FixedStr& operator = (const Str&);
 
     static const char suffix []; // = "...";
+    static void onOverflow (FixedStr&);
 
 private:
     void setEOS ();
-    void setTrailingEOS ();
+    
 
     Str::Size _length;
     Str::Size _capacity;
-    bool _overflow;
     char* _buffer;
+    void (* _onOverflow) (FixedStr&);
 };
 
 template <int n>
 class FixedStrBuffer : public FixedStr  {
 public:
     FixedStrBuffer () : FixedStr (nbuffer, n)   {
+    }
+    FixedStrBuffer (const Str& in) : FixedStr (nbuffer, n) {
+       set (in);
+    }
+    FixedStrBuffer (const char* format, ...) : FixedStr (nbuffer, n) {
+       va_list marker;
+       va_start (marker, format);
+       set_va (VAList (marker), format);
+       va_end (marker);
+    }
+    FixedStrBuffer (VAList marker, const char* format) : FixedStr (nbuffer, n) {
+       set_va (VAList (marker), format);
     }
     
 private:
@@ -90,9 +109,9 @@ private:
 //
 // File        : $RCSfile: $ 
 //               $Workfile: FixedStr.h $
-// Version     : $Revision: 2 $ 
+// Version     : $Revision: 3 $ 
 //               $Author: Aviad $
-//               $Date: 1/09/04 1:43 $ 
+//               $Date: 2/12/04 7:54 $ 
 // Description :
 //	The Core library contains contains basic definitions and classes
 // which are useful to any highly-portable applications

@@ -1,3 +1,83 @@
+12/9/04 Requirements
+---------------------
+
+1) create regression test suite:
+	a)	test for exact same results from both preprocessors
+		when using different paramters:
+		L D prep-L gene/total partial/discrete hypego/exp parameters
+	b)	test for correct results for hand-crafted examples
+	c)	test for match with old seed-searcher
+	d)	test for match for older newseed version
+	
+2)	for regression tests:
+	a)	ability to remove the lowest scoring seeds
+		this is necessary in order to compare feature lists
+		(which will only differ on the least scoring seeds)
+	b)	prefer seeds of lower lexical order
+		to facilitate deterministic selection of seeds
+
+3)	multiple wgt files: (requires further defintions by yoseph)
+	ability to select per conf-run the wgt file.
+	limitation:	only the sequences that are specified by the first wgt file 
+				are loaded and preprocessed.
+	question:	should we mix seeds from different .wgt files?
+				is there a reason to do this except for 
+				- lowering time to build preprocessor (insignificant)
+				- it is easier to combine seeds from different runs
+				
+4)	positional wgts:
+	ability to specify a file of positional weights for certain sequences.
+	this is only relevant in a partial-counts setting.
+	the weight of every appearance of a seed is
+	(the weight of the seq) * (the weight of the position)
+	format of the .poswgt file:
+	seq-name  start/end pos		wgt		start/end pos	wgt
+	>GENE1		1	10			1		11-20			0.5...
+	question: are the weights necessarility between 0 and 1?
+	
+
+5)	Open issues:
+	a)	at the end of runs, no redundant seeds should be printed
+		solution: keep more seeds than the user asked for
+		perform redundancy checks at the end.
+	b)	print positional data correctly - according to positive strand
+
+
+
+6)	run-time performance optimization:
+	a)	optimize feature-array code and redundancy checking
+		it takes too much time for a large number of seeds
+		
+	b)	several places could benefit from using hash-tables
+		instead of sets. investigate.
+		
+	c)	tree-search is slower than table search,
+		but it has potentiall for searching for shorter seeds at the same time.
+		this could be an interesting algorithm.
+		
+	
+Additional requirements (complete)
+------------------------
+
+* .matrix file used in web 
+* .seeds file summarizes output for a run
+* .sample for libE compatible data
+* contol of preprocessor depth
+* oldseed-style search for seeds longer than the preprocessor
+* db integration for web project
+* --Sproj-mid	middle section wildcards
+* --Sproj-base	allows to make projections on given assignments
+* different configurations with a single preprocessor - conf files
+* exp score
+* projection specialization
+* table-preprocessor achieves better performance than original tree-preprocessor
+* table-search achieves better performance than original tree-search
+
+
+
+Original requirements (complete)
+-----------------------
+
 (Yoseph) - reverse sequence 
 - random projections :
 	input: weights & sequences
@@ -43,7 +123,6 @@ strategy:  K best / score less than: (both)
 stat fix:
 Bonneferoni
 FDR
-
 
 
  

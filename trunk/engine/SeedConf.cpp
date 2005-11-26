@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: SeedConf.cpp $
-// Version     : $Revision: 4 $ 
+// Version     : $Revision: 7 $ 
 //               $Author: Aviad $
-//               $Date: 22/11/04 9:14 $ 
+//               $Date: 9/12/04 3:05 $ 
 // Description :
 //    implementation classes for reading SeedSearcher's conf files.
 //
@@ -65,7 +65,7 @@ static void disallowFileArgs (Parser& parser)
 
       {  Persistance::TextWriter writer (new Persistance::StrOutputStream (buffer));
          writer << "File arguments are not allowed in conf. Offending arguments are:";
-         for (int i=0 ; i<=parser.getNumFileArgs () ; i++)  {
+         for (int i=0 ; i<parser.getNumFileArgs () ; i++)  {
             const char* arg = parser.__argv.argv () [parser.__firstFileArg + i];
             writer   << writer.EOL () 
                      << '(' 
@@ -92,8 +92,9 @@ void SeedConfList::init (ConfReader& conf) {
 }
 
 void SeedConfList::initArgs (const Str& args) {
-   DLOG  << "Validating initial arguments..."
+   DLOG  << "Validating initial arguments... \t("
          << args
+         << ')'
          << DLOG.EOL ();
    DLOG.flush ();
 
@@ -115,7 +116,9 @@ void SeedConfList::initArgs (const Str& args) {
 void SeedConfList::runArgs (bool resetArgs, bool resetSeeds,
                         const Str& runName, const Str& args)
 {
-   DLOG << "Validating  " << runName << DLOG.EOL ();
+   DLOG << "Validating " << runName 
+        << " \t( " << args << ')'
+        << DLOG.EOL ();
 
    AutoPtr <Options> options;
    if (resetArgs) {

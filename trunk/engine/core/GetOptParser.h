@@ -3,6 +3,7 @@
 
 #include "core/Defs.h"
 #include "core/STLHelper.h"
+#include "core/Argv.h"
 #include "persistance/TextTableReport.h"
 
 class GetOptWrapper {
@@ -132,6 +133,7 @@ public:
       virtual const char* def ()    { return NULL; }
       virtual int argument ()       { return GetOptWrapper::_no_argument_;   }
 
+      virtual void param (StrBuffer&, void* ctx) = 0;
       virtual void execute (const char* optarg, void* ctx) = 0;
    };
 
@@ -169,6 +171,7 @@ public:
          return _options [index];
       }
       void execute (int index, const char* optarg, void* ctx) {
+         USELESS (debug_only (const char* name = _options [index]->name ()));
          _options [index]->execute (optarg, ctx);
       }
       GetOptWrapper::option* getInternal () {
@@ -258,7 +261,22 @@ public:
       }
    }
 
-   int getCompleteParams (char**& outOptions,
+   //
+   // completes parameters from the user-defined ctx
+   int getCompleteParams (Argv& outOptions, void* ctx, OptionList& opt){
+      StrBuffer buffer (32);
+      int numOfOptions = opt.length ();
+      outOptions = Argv (numOfOptions);
+      for (int i=0 ; i<numOfOptions ; i++) {
+         opt[i]->param (buffer, ctx);
+         outOptions.argv ()[i] = outOptions.dup (buffer);
+      }
+      return numOfOptions;
+   }
+
+   //
+   // completes parameters from an argv
+   int getCompleteParams (Argv& outOptions,
                            int argc, char* argv [], OptionList& opt) 
    {
       GetOptWrapper::option* internal = opt.getInternal();
@@ -270,16 +288,18 @@ public:
       _getopt.optind = 0;
 
       int numOfOptions = opt.length ();
-      outOptions = new char* [numOfOptions];
+      
+      outOptions = Argv (numOfOptions);
       for (int i=0 ; i<numOfOptions ; i++) {
-         outOptions[i] = const_cast <char*> (opt[i]->def ());
+         Str str (opt[i]->def ());
+         outOptions.argv () [i] = outOptions.dup (str);
       }
 
       char c;
       int opt_ind;
       while ((c = _getopt.getopt_long (argc, argv, "", internal, &opt_ind))!=EOF) {
          if ((opt_ind >= 0) && (opt_ind < numOfOptions)) {
-            outOptions[opt_ind ] = const_cast <char*> (_getopt.optarg);
+            outOptions.argv () [opt_ind] = outOptions.dup (_getopt.optarg);
          }
       }
 
@@ -289,7 +309,14 @@ public:
    void restoreDefaults (OptionList& options, void* ctx) {
       int length = options.length ();
       for (int i=0 ; i<length ; i++) {
-         options [i]->execute (options [i]->def (), ctx);
+         USELESS (
+            const char* option_name = NULL;
+            debug_only (
+               option_name = options [i]->name ();
+            );
+         );
+         const char* def = options [i]->def ();
+         options [i]->execute (def, ctx);
       }
    }
 
@@ -301,9 +328,9 @@ public:
 //
 // File        : $RCSfile: $ 
 //               $Workfile: GetOptParser.h $
-// Version     : $Revision: 4 $ 
+// Version     : $Revision: 6 $ 
 //               $Author: Aviad $
-//               $Date: 4/11/04 18:00 $ 
+//               $Date: 9/12/04 3:06 $ 
 // Description :
 //	The Core library contains contains basic definitions and classes
 // which are useful to any highly-portable applications

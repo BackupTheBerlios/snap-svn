@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Parser.h $
-// Version     : $Revision: 28 $ 
+// Version     : $Revision: 29 $ 
 //               $Author: Aviad $
-//               $Date: 22/11/04 9:36 $ 
+//               $Date: 2/12/04 7:51 $ 
 // Description :
 //    Concrete Parser for seed-searcher options
 //
@@ -176,6 +176,7 @@ public:
    //
    // flag that determines if .sample file should be created
    OutputType __generateBayesian;
+#if 0
    //
    // (in seed performance test)
    // the number of BestPositions used for each sequence evaluation
@@ -204,6 +205,7 @@ public:
       _norm_logit_,
    };
    NormType __score_norm;
+#endif
 
    //
    //

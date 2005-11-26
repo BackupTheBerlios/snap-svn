@@ -35,13 +35,22 @@ size_t Environment::endOfLineLength() {
 
 
 TextWriter::TextWriter(OutputStream* inStream, bool inOwner) : 
-	stream(inStream), owner(inOwner) {
+	stream(inStream), owner(inOwner), _precision (6), _width (0) {
 }
 
 TextWriter::~TextWriter() {
-    stream->flush ();
-    if (owner)
-		stream->dispose();
+   setStream (0);
+}
+
+void TextWriter::setStream(OutputStream* inStream, bool inOwner) {
+   if (stream) {
+      stream->flush ();
+      if (owner)
+         stream->dispose();
+   }
+
+   stream = inStream;
+   owner = inOwner;
 }
 
 void TextWriter::flush() {
@@ -91,14 +100,16 @@ void TextWriter::write(unsigned int in) {
 
 void TextWriter::write(float in) {
 	char buffer[128];
-	  sprintf (buffer, "%.8f",(double) in);
+	  sprintf (buffer, "%*.*g",
+        (int) _width, (int) _precision, (double) in);
 	  //_gcvt(in, 8, buffer);
 	write(buffer);
 }
 
 void TextWriter::write(double in) {
 	char buffer[128];
-	  sprintf (buffer, "%.12g",(double) in);
+	  sprintf (buffer, "%*.*g",
+        (int) _width, (int) _precision, (double) in);
 	  //	_gcvt(in, 12, buffer);
 	write(buffer);
 }
@@ -134,9 +145,9 @@ void TextWriter::write(const void* inPtr) {
 //
 // File        : $RCSfile: $ 
 //               $Workfile: TextWriter.cpp $
-// Version     : $Revision: 10 $ 
+// Version     : $Revision: 11 $ 
 //               $Author: Aviad $
-//               $Date: 27/08/04 2:09 $ 
+//               $Date: 2/12/04 7:56 $ 
 // Description :
 //	The Persistence library contains both high & low level IO classes
 //	and is high-performance, highly reusable framework 

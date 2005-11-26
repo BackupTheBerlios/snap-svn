@@ -10,6 +10,11 @@ class Argv{
 public:
    Argv () : _argc (0), _argv (NULL) {
    }
+   Argv (int argc) : _argc (argc) {
+      _argv = new char*[_argc];
+      for (int i=0 ; i<_argc ; i++)
+         _argv [i] = NULL;
+   }
    Argv (int argc, char** argv) : _argc (0), _argv (NULL) {
       set (argc, argv);
    }
@@ -53,7 +58,6 @@ public:
       _argv [0] = dup (prefix);
       for (int i=0 ; i<_argc ; i++)
          _argv [i+1] = dup (argv [i]);
-
    }
 
    void clear () {
@@ -94,9 +98,9 @@ protected:
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Argv.h $
-// Version     : $Revision: 2 $ 
+// Version     : $Revision: 3 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:45 $ 
+//               $Date: 2/12/04 7:55 $ 
 // Description :
 //	The Core library contains contains basic definitions and classes
 // which are useful to any highly-portable applications

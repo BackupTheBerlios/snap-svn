@@ -148,13 +148,25 @@
 			Name="boost"
 			Filter="">
 			<File
+				RelativePath="..\boost\filesystem\convenience.cpp">
+			</File>
+			<File
 				RelativePath="..\boost\test\cpp_main.cpp">
+			</File>
+			<File
+				RelativePath="..\boost\filesystem\exception.cpp">
 			</File>
 			<File
 				RelativePath="..\boost\test\execution_monitor.cpp">
 			</File>
 			<File
 				RelativePath="..\boost\test\execution_monitor.hpp">
+			</File>
+			<File
+				RelativePath="..\boost\filesystem\operations_posix_windows.cpp">
+			</File>
+			<File
+				RelativePath="..\boost\filesystem\path_posix_windows.cpp">
 			</File>
 		</Filter>
 		<File
@@ -171,6 +183,9 @@
 		</File>
 		<File
 			RelativePath="..\SeedPerformance.cpp">
+		</File>
+		<File
+			RelativePath="..\Todo.txt">
 		</File>
 	</Files>
 	<Globals>

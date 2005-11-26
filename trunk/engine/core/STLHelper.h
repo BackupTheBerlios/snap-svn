@@ -86,13 +86,15 @@ public:
    void next (int index) {
       //
       // advance the begin iterator
-      for (; (_current!= _end) && (index > 0) ; --index, ++_current);
+      std::advance(_current, tmin (index, _end - _current));
+      //for (; (_current!= _end) && (index > 0) ; --index, ++_current);
    }
    //
-   // how many iteration steps maximally allowd
+   // how many iteration steps maximally allowed
    void allowNext (int length) {
       iterator temp = _current;
-      for (; (temp != _end) && (length > 0) ; --length, ++temp);
+      std::advance (temp, tmin (length, _end - _current));
+      // for (; (temp != _end) && (length > 0) ; --length, ++temp);
       _end = temp;
    };
 
@@ -103,7 +105,7 @@ public:
    }
    inline void next () {
       debug_mustbe (_current != _end);
-      _current++; 
+      ++_current; 
    }
    inline const value_type& get () const {
       debug_mustbe (_current != _end);
@@ -124,7 +126,8 @@ protected:
    iterator _end;
 };
 
-template <class Container> 
+template <  class Container, 
+            class Iterator = BOOST_DEDUCED_TYPENAME Container::iterator> 
 class IteratorWrapper : 
    public IteratorWrapperBase <Container, typename Container::iterator> 
 {
@@ -382,9 +385,9 @@ protected:
 //
 // File        : $RCSfile: $ 
 //               $Workfile: STLHelper.h $
-// Version     : $Revision: 23 $ 
+// Version     : $Revision: 24 $ 
 //               $Author: Aviad $
-//               $Date: 4/11/04 18:00 $ 
+//               $Date: 10/12/04 21:17 $ 
 // Description :
 //	The Core library contains contains basic definitions and classes
 // which are useful to any highly-portable applications

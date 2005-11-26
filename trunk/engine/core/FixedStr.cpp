@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: FixedStr.cpp $
-// Version     : $Revision: 2 $ 
+// Version     : $Revision: 3 $ 
 //               $Author: Aviad $
-//               $Date: 1/09/04 1:43 $ 
+//               $Date: 2/12/04 7:54 $ 
 // Description :
 //	The Core library contains contains basic definitions and classes
 // which are useful to any highly-portable applications
@@ -32,12 +32,11 @@ const char FixedStr::suffix [] = "...";
 
 FixedStr::FixedStr (char* inBuffer, Str::Size inCapacity, bool initialized)
 :  _length (0),
-   _capacity (inCapacity -1) /* take the terminating NULL into account */,
-   _overflow (false),
-   _buffer (inBuffer)
+   _capacity (inCapacity - 1), // we always end with a null
+   _buffer (inBuffer),
+   _onOverflow (FixedStr::onOverflow)
 {
     debug_mustbe (_buffer);
-    debug_mustbe (_capacity > sizeof (suffix));
     if (initialized)    {
         //
         // the string is supposed to be NULL terminated
@@ -50,35 +49,36 @@ void FixedStr::setEOS()
 {
 	debug_mustbe(_length <= _capacity);
 	_buffer [_length] = 0;
-    _overflow = false;
 }
 
-void FixedStr::setTrailingEOS ()
+void FixedStr::onOverflow(FixedStr& inStr)
 {
-    memcpy (_buffer + _capacity - sizeof (suffix), suffix, sizeof (suffix));
-    _length = _capacity;
-    _overflow = true;
+   int capacity = inStr.capacity();
+   debug_mustbe (inStr.length() == capacity);
+   if (capacity > 0) {
+      char* buffer = const_cast <char*>(inStr.getChars());
+      int suffixToCopy = tmin <int> (capacity, sizeof (suffix) - 1);
+      memcpy (buffer + capacity - suffixToCopy, suffix, suffixToCopy);
+      buffer [capacity] = 0;
+   }
 }
 
 
 void FixedStr::set (const Str& in)
 {
-    _overflow = false;
-    if (_capacity < in.length ()) {
-        //
-        // not enough place in the _buffer for the entire string
-        int toCopy = _capacity - sizeof (suffix);
-        memcpy (_buffer, in.getChars (), toCopy);
-
-        setTrailingEOS ();
-    }
-    else    {
+    if (in.length () <= _capacity) {
         //
         // the _buffer has enough space for the entire string
         _length = in.length ();
         memcpy (_buffer, in.getChars (), _length);
-
         setEOS ();
+    }
+    else {
+       //
+       // not enough place in the _buffer for the entire string
+       memcpy (_buffer, in.getChars (), _capacity);
+       _length = _capacity;
+       _onOverflow(*this);
     }
 }
 
@@ -99,12 +99,12 @@ void FixedStr::set_va (const char* format, ...)
 
 void FixedStr::set_va (VAList marker, const char* format)
 {
-    _overflow = false;
     int written = VSNPRINT (_buffer, _capacity, format, marker.get ());
     if (written == -1)  {
         //
         // not enough place in the _buffer for the entire string
-        setTrailingEOS ();
+      _length = _capacity;
+      _onOverflow(*this);
     }
     else    {
         //
@@ -116,42 +116,37 @@ void FixedStr::set_va (VAList marker, const char* format)
 
 void FixedStr::append (char c)
 {
-    if (!_overflow)  {
-        if (_length < _capacity)  {
-            _buffer [_length++] = c;
-            setEOS ();
-        }
-        else    {
-            _length = _capacity;
-            setTrailingEOS ();
-        }
-    }
+   if (_length < _capacity)  {
+      _buffer [_length++] = c;
+      setEOS ();
+   }
+   else    {
+      debug_mustbe (_length == _capacity);
+      _onOverflow(*this);
+   }
 }
 
 void FixedStr::append (const Str& in)
 {
-    debug_mustbe (_length >= 0);
-    debug_mustbe (in.length () >= 0);
+   debug_mustbe (_length >= 0);
+   debug_mustbe (in.length () >= 0);
 
-    if (!_overflow)  {
-        int in_length = in.length ();
-        if ((_length + in_length) <= _capacity)    {
-            //
-            // the _buffer has enough space for the entire string
-            memcpy (_buffer + _length, in.getChars (), in_length);
-            _length += in_length;
-            setEOS ();
-        }
-        else    {
-            //
-            // not enough place in the _buffer for the entire string
-            int toCopy = _capacity - _length;
-            
-            debug_mustbe (toCopy > 0);
-            memcpy (_buffer + _length, in.getChars (), toCopy);
-            setTrailingEOS ();
-        }
-    }
+   int in_length = in.length ();
+   if ((_length + in_length) <= _capacity)    {
+      //
+      // the _buffer has enough space for the entire string
+      memcpy (_buffer + _length, in.getChars (), in_length);
+      _length += in_length;
+      setEOS ();
+   }
+   else    {
+      //
+      // not enough place in the _buffer for the entire string
+      int toCopy = tmax (_capacity - _length, 0);
+      memcpy (_buffer + _length, in.getChars (), toCopy);
+      _length += toCopy;
+      _onOverflow (*this);
+   }
 }
 
 void FixedStr::append_va (const char* format, ...)
@@ -164,20 +159,19 @@ void FixedStr::append_va (const char* format, ...)
 
 void FixedStr::append_va (VAList marker, const char* format)
 {
-    if (!_overflow)  {
-        int written = VSNPRINT (_buffer + _length, _capacity - _length, format, marker.get ());
-        if (written == -1)  {
-            //
-            // not enough place in the _buffer for the entire string
-            setTrailingEOS ();
-        }
-        else    {
-            //
-            // the _buffer has enough space for the entire string
-            _length += written;
-            setEOS ();
-        }
-    }
+   int written = VSNPRINT (_buffer + _length, _capacity - _length, format, marker.get ());
+   if (written == -1)  {
+      //
+      // not enough place in the _buffer for the entire string
+      _length = _capacity;
+      _onOverflow(*this);
+   }
+   else    {
+      //
+      // the _buffer has enough space for the entire string
+      _length += written;
+      setEOS ();
+   }
 }
 
 Str::Size FixedStr::length () const

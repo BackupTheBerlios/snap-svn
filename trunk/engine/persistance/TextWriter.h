@@ -56,16 +56,32 @@ class	TextWriter {
 	static EndOfLine EOL() {
 		return endl;
 	};
-
 	OutputStream* getStream() const {
 		return stream;
 	}
-
+   void setStream(OutputStream* inStream, bool inOwner= true);
 	void flush();
 
- private:
-	OutputStream* stream;
-	bool owner;
+   void precision(int in){
+      _precision = in;
+   }
+   int precision () const {
+      return _precision;
+   }
+   void width (int in){
+      _width = in;
+   }
+   int width () const {
+      return _width;
+   }
+
+private:
+   TextWriter (const TextWriter&);
+
+   OutputStream* stream;
+   bool owner;
+   char _precision;
+   char _width;
 };
 
 }; // Persistance
@@ -75,9 +91,9 @@ class	TextWriter {
 //
 // File        : $RCSfile: $ 
 //               $Workfile: TextWriter.h $
-// Version     : $Revision: 9 $ 
+// Version     : $Revision: 10 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:45 $ 
+//               $Date: 2/12/04 7:56 $ 
 // Description :
 //	The Persistence library contains both high & low level IO classes
 //	and is high-performance, highly reusable framework 

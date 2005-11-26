@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: SeedSearcherMain.h $
-// Version     : $Revision: 15 $ 
+// Version     : $Revision: 17 $ 
 //               $Author: Aviad $
-//               $Date: 7/09/04 9:39 $ 
+//               $Date: 10/12/04 21:09 $ 
 // Description :
 //    Concrete and interface classes for seting-up 
 //    a seed-searching environment or program
@@ -55,8 +55,7 @@ public:
 
 
 public:
-   SeedSearcherMain () {
-   }
+   SeedSearcherMain ();
    virtual ~SeedSearcherMain () {
    }
 
@@ -90,7 +89,7 @@ public:
    void search (ParameterIterator&);
 
 protected:
-   boost::shared_ptr <Parameters> _params;
+//   boost::shared_ptr <Parameters> _params;
    int _lastTotalNumOfSeedsFound;
    time_t searchStart, searchFinish;
 };
@@ -199,41 +198,12 @@ public:
    }
 
    //
-   // returns the number of features discovered
-   int numFeatures () const {
-      return _numFound;
-   }
-
-   //
-   // feature iteration interface
-   bool hasMoreFeatures () const {
-      return _index < _numFound;
-   }
-   void nextFeature () {
-      _index++;
-   }
-   //
-   // go to the first feature (used to reset iteration)
-   void firstFeature () {
-      _index = 0;
-   }
-   void lastFeature () {
-      _index = _numFound - 1;
-   }
-
-   //
-   // return the index of the current feature
-   int featureIndex () const {
-      return _index;
-   }
-
-   //
    // get the current feature in the iteration
-   const Feature& getFeature () const {
-      return _params->bestFeatures ()->get (_index);
+   const FeatureSet& getFeatures () const {
+      return _params->bestFeatures ().getArray ();
    }
-   Feature& getFeature () {
-      return _params->bestFeatures ()->get (_index);
+   FeatureSet& getFeatures () {
+      return _params->bestFeatures ().getArray ();
    }
    //
    // returns the (optional) search name associated with this search
@@ -245,7 +215,6 @@ public:
    }
 
 protected:
-   int _index;
    int _numFound;
    int _numSearched;
    boost::shared_ptr <Parameters> _params;

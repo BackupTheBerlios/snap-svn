@@ -13,7 +13,7 @@ struct main_definitions {
 
    enum {
       __versionMajor = 2,
-      __versionMinor = 322
+      __versionMinor = 33
    };
 
    //
@@ -94,10 +94,13 @@ struct main_definitions {
    static const char PSSM_FILE_STUB[];    // = "pssm";
    static const char SAMPLE_FILE_STUB[];  // = "sample";
    static const char SEEDS_FILE_STUB[];   // = "seeds";
+   static const char MATRIX_FILE_STUB[];  // = "matrix";
+   
 
    //
    //
-   static void printMotif (FeatureInvestigator& printer,
+   static void printMotif (Persistance::TextTableReport::Output& out,
+      FeatureInvestigator& printer,
       Parser::OutputType gPSSM,
       Parser::OutputType gMotif,
       Parser::OutputType gSample,
@@ -107,11 +110,11 @@ struct main_definitions {
       Feature& feature, int featureIndex
       )
    {
+
       //
       // now we print the seed result line,
       // which includes the seed, score projection etc.
-      printer.printSeed (DLOG, feature, pos);
-      DLOG.writeln();
+      printer.printSeed (out, feature, pos);
 
       //
       // now we print pos & neg motif files
@@ -120,41 +123,41 @@ struct main_definitions {
          //
          // print neg only if Parser::_motif_all_ is specified
          if (  (gMotif!= Parser::_out_none_) &&
-            ((gMotif == Parser::_out_all_) || isPos)) {
-               //
-               // we open a file for the motif
-               Persistance::TextWriter motifFile (
-                  openFile (isPos, featureIndex, fileStub, MOTIF_FILE_STUB)
-                  );
-
-               printer.printMotif ( motifFile,
-                  feature,
-                  isPos? pos : neg);
-            }
-
+               ((gMotif == Parser::_out_all_) || isPos)) {
             //
-            // now we print the PSSM files
-            if (  (gPSSM!= Parser::_out_none_) &&
+            // we open a file for the motif
+            Persistance::TextTableReport::TextOutput motifFile (
+               openFile (isPos, featureIndex, fileStub, MOTIF_FILE_STUB)
+               );
+
+            printer.printMotif ( motifFile,
+               feature,
+               isPos? pos : neg);
+         }
+
+         //
+         // now we print the PSSM files
+         if (  (gPSSM!= Parser::_out_none_) &&
                ((gPSSM == Parser::_out_all_) || isPos)) {
-                  Persistance::TextWriter pssmFile (
-                     openFile (isPos, featureIndex, fileStub, PSSM_FILE_STUB)
-                     );
+            Persistance::TextWriter pssmFile (
+               openFile (isPos, featureIndex, fileStub, PSSM_FILE_STUB)
+               );
 
-                  printer.printPSSM (pssmFile, feature, pos);
-               }
+            printer.printPSSM (pssmFile, feature, pos);
+         }
 
-               //
-               // now we print the bayesian sample files
-               if (  (gSample!= Parser::_out_none_) &&
-                  ((gSample == Parser::_out_all_) || isPos)) {
-                     Persistance::TextWriter sampleFile (
-                        openFile (isPos, featureIndex , fileStub, SAMPLE_FILE_STUB)
-                        );
+         //
+         // now we print the bayesian sample files
+         if (  (gSample!= Parser::_out_none_) &&
+               ((gSample == Parser::_out_all_) || isPos)) {
+            Persistance::TextTableReport::TextOutput sampleFile (
+               openFile (isPos, featureIndex , fileStub, SAMPLE_FILE_STUB)
+               );
 
-                     printer.printBayesian (sampleFile, feature, pos);
-                  }
+            printer.printBayesian (sampleFile, feature, pos);
+         }
 
-                  isPos = !isPos;
+         isPos = !isPos;
       }
    }
 

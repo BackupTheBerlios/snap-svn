@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: StdOptions.h $
-// Version     : $Revision: 30 $ 
+// Version     : $Revision: 31 $ 
 //               $Author: Aviad $
-//               $Date: 22/11/04 9:14 $ 
+//               $Date: 10/12/04 21:15 $ 
 // Description :
 //    Concrete implmentations for Langauge, ScoreFunction, WeightFunction etc
 //
@@ -283,6 +283,11 @@ public:
    FeatureFilterLink (SeedSearcher::FeatureFilter* next, bool owner) 
    : _owner (owner), _next (next) {
    }
+   FeatureFilterLink (const FeatureFilterLink& in)
+   :  _owner (true), _next (in._next->clone ())
+   {
+   }
+
    virtual ~FeatureFilterLink () {
       if (_owner)
          delete _next;
@@ -303,7 +308,7 @@ protected:
    SeedSearcher::FeatureFilter* _next;
 };
 
-
+/*
 class BookkeeperFilter : public FeatureFilterLink {
    //
    // this class maintains information about the candidate features
@@ -361,6 +366,8 @@ protected:
    double _log2InverseSum;
    int _noFeatures;
 };
+*/
+#include "FeatureSet.h"
 
 class KBestFilter : public SeedSearcher::FeatureFilter {
    //
@@ -368,11 +375,27 @@ class KBestFilter : public SeedSearcher::FeatureFilter {
    // features found.
 public:
    KBestFilter (int k, int maxRedundancyOffset);
+   KBestFilter (const KBestFilter& in) 
+   :  _maxElements (in._maxElements),
+      _maxRedundancyOffset (in._maxRedundancyOffset) 
+      
+   {
+   }
    virtual ~KBestFilter ();
 
    //
    // takes ownership of Assignment & Cluster
-   virtual bool add (Feature_var feature);
+   virtual bool add (Feature_var feature) {
+      return _features.insertOrReplace1 (
+         feature, 
+         FeatureSet::featureRedundancyCheck (
+            FeatureSet::SymmetricMaxOffsetRedundancyCheck (
+               _maxRedundancyOffset
+            )
+         ),
+         _maxElements 
+      );
+   }
 
    virtual SeedSearcher::FeatureArray& getArray () {
       return _features;
@@ -381,14 +404,14 @@ public:
       return _features;
    }
 
-protected:
-   virtual bool checkRedundancy (int index, const Assignment&);
-   bool checkSimilarity (const AssignmentBase&, const AssignmentBase&);
-   static bool checkSimilarity (int, const AssignmentBase&, const AssignmentBase&);
+   virtual FeatureFilter* clone () {
+      return new KBestFilter (*this);
+   }
 
 protected:
+   int _maxElements;
    int _maxRedundancyOffset;
-   SeedSearcher::FeatureArray _features;
+   FeatureSet _features;
 };
 
 
@@ -401,19 +424,28 @@ public:
    :  KBestFilter (k, maxRedundancyOffset), _langauge (langauge)
    {
    }
+   KBestComplementFilter (const KBestComplementFilter& in)
+   :  KBestFilter (in), _langauge (in._langauge)
+   {
+   }
    virtual ~KBestComplementFilter () {
    }
 
-   virtual bool checkRedundancy (int index, const Assignment& assg) {
-      //
-      // check regular similarity
-      if (checkSimilarity (_features [index].assignment (), assg))
-         return true;
+   virtual bool add (Feature_var feature) {
+      return _features.insertOrReplace1 (
+         feature, 
+         FeatureSet::featureReverseRedundancyCheck (
+            FeatureSet::SymmetricMaxOffsetRedundancyCheck (
+               _maxRedundancyOffset
+            ),
+            _langauge
+         ),
+         _maxElements 
+      );
+   }
 
-      //
-      // check similarity with reverse
-      return checkSimilarity (
-         _features [index].complement (_langauge), assg);
+   virtual FeatureFilter* clone () {
+      return new KBestComplementFilter (*this);
    }
 
 protected:
@@ -436,6 +468,13 @@ public:
                   int minPos,
                   int minPosPercent);
 
+   GoodFeaturesFilter (const GoodFeaturesFilter& in)
+      :  FeatureFilterLink (in),
+         _minScore (in._minScore), 
+         _minPositiveSeqs (in._minPositiveSeqs),
+         _wf (in._wf)
+   {
+   }
    //
    // takes ownership of Assignment & Cluster
    virtual bool add (Feature_var feature);
@@ -445,6 +484,10 @@ public:
    // if it is to be considered 'good'
    int minPositiveSequences () const {
       return _minPositiveSeqs;
+   }
+
+   virtual FeatureFilter* clone () {
+      return new GoodFeaturesFilter (*this);
    }
 
 private:

@@ -21,10 +21,11 @@ public:
     class TextOutput;
 
     enum    {
-        maxFields = 16,
+        maxFields = 128,
         maxRecordLength = 16 * 1024,
         maxHeaderLength = maxRecordLength + 2,
-        maxFieldSepator = 64
+        maxFieldSepator = 64,
+        firstFieldIndex = 0
     };
 
 
@@ -52,6 +53,12 @@ public:
         //
         // 
         void addField (const Str& name, int length, int width);
+        void addField (const Str& name, int length) {
+           addField (name, length, length);
+        }
+        void addField (const Str& name) {
+           addField (name, name.length() + 1);
+        }
 
         //
         //
@@ -135,9 +142,16 @@ public:
     //
     // writes the contents of the field into the buffer.
     virtual void writeRecord (const Str&, const Str&);
+    void skipHeader () {
+       _first = false;
+    }
+    void noNewlineAfterRecord () {
+       _newline = false;
+    }
 
 private:
     bool _first;
+    bool _newline;
 };
 
 
@@ -148,9 +162,9 @@ END_NAMESPACE (Persistance);
 //
 // File        : $RCSfile: $ 
 //               $Workfile: TextTableReport.h $
-// Version     : $Revision: 2 $ 
+// Version     : $Revision: 5 $ 
 //               $Author: Aviad $
-//               $Date: 1/09/04 1:43 $ 
+//               $Date: 10/12/04 21:17 $ 
 // Description :
 //	The Persistence library contains both high & low level IO classes
 //	and is high-performance, highly reusable framework 

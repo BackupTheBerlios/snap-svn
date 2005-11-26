@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: main.cpp $
-// Version     : $Revision: 60 $ 
+// Version     : $Revision: 63 $ 
 //               $Author: Aviad $
-//               $Date: 22/11/04 9:14 $ 
+//               $Date: 10/12/04 21:05 $ 
 // Description :
 //    main routine for the seed-searcher program
 //
@@ -36,10 +36,8 @@
 #include "DebugLog.h"
 
 #include "core/AutoPtr.h"
-
-
-
 #include "persistance/StdInputStream.h"
+#include "persistance/StrOutputStream.h"
 
 #include "status_reporter/BaseStatusReporter.hpp"
 
@@ -48,6 +46,7 @@
 #include <sstream>
 #include <time.h>
 #include <stdio.h>
+#include <boost/filesystem/path.hpp>
 
 using namespace std;
 using namespace Persistance;
@@ -99,9 +98,10 @@ static void welcomeMessage ()
    DLOG << " Compiled on " << __TIMESTAMP__;
 #endif
 
-   DLOG << DLOG.EOL ();
-   DLOG << "by Yoseph Barash (hoan@cs.huji.ac.il)" << DLOG.EOL ();
-   DLOG << "and Aviad Rozenhek (aviadr@cs.huji.ac.il) " << DLOG.EOL ();
+   DLOG << DLOG.EOL ()
+        << "by Yoseph Barash (hoan@cs.huji.ac.il)" << DLOG.EOL ()
+        << "and Aviad Rozenhek (aviadr@cs.huji.ac.il) " << DLOG.EOL ()
+        << DLOG.EOL ();
    DLOG.flush ();
 }
 
@@ -216,11 +216,10 @@ const char main_definitions::MOTIF_FILE_STUB[] = "motifs";
 const char main_definitions::PSSM_FILE_STUB[] = "pssm";
 const char main_definitions::SAMPLE_FILE_STUB[] = "sample";
 const char main_definitions::SEEDS_FILE_STUB[] = "seeds";
+const char main_definitions::MATRIX_FILE_STUB[] = "matrix";
 
 
-
-
-static void printSeedFile (TextWriter& seedsFile,
+static void printSeedFile (TextTableReport::TextOutput& seedsFile,
                            FeatureInvestigator& printer,
                            Parser::OutputType gPSSM,
                            Parser::OutputType gMotif,
@@ -228,26 +227,87 @@ static void printSeedFile (TextWriter& seedsFile,
                            PositionVector pos,
                            PositionVector neg,
                            const char* fileStub,
-                           SeedSearcherMain::Results& results)
+                           Feature& feature,
+                           int index)
 {
-   printer.printSeed (seedsFile, results.getFeature (), pos);
+   printer.printSeed (seedsFile, feature, pos);
    Parser::OutputType outputs [3] = { gMotif, gPSSM, gSample };
    const char* names [] = { main_definitions::MOTIF_FILE_STUB, 
                             main_definitions::PSSM_FILE_STUB, 
                             main_definitions::SAMPLE_FILE_STUB };
 
-   char buffer [8096];
    for (int i=0 ; i<3; i++) {
-      if (outputs[i] != Parser::_out_none_) 
-         main_definitions::getOutputFileName(buffer, true, results.featureIndex (), fileStub, names [i]);
-      else
-         strcpy (buffer , "-----");
-
-         seedsFile << '\t'
-                   << buffer;
+      if (outputs[i] != Parser::_out_none_)  {
+         char buffer [8096];
+         main_definitions::getOutputFileName(buffer, true, index, fileStub, names [i]);
+         boost::filesystem::path leaf (buffer);
+         seedsFile << Str (leaf.leaf ()) << '\t';
+      }
+      else {
+         seedsFile << "-----" << '\t';
+      }
    }
 
    seedsFile.writeln();
+}
+
+static void printSeqMatrix (SeedSearcherMain::Results& results)
+{
+   TextTableReport::TextOutput matrixFile (
+      main_definitions::openFile (true, -1, 
+                                 StrBuffer (results.getParameters ().name ()), 
+                                 main_definitions::MATRIX_FILE_STUB));
+   //
+   // create the format of the table
+   // the first column is the name of the sequence
+   // the next columns are names of the motifs
+   Persistance::TextTableReport::Format format;
+   format.addField("Seq-Name", 13);
+   FeatureSet::Iterator feature_it = results.getFeatures ().getIterator();
+   for (; feature_it.hasNext() ; feature_it.next()) {
+      std::string feature_name;
+      {  Persistance::TextWriter writer (new Persistance::StrOutputStream (feature_name));
+         writer << Format ((*feature_it)->assignment ());
+      }
+      format.addField (Str (feature_name), feature_name.length () + 1);
+   }
+
+   //
+   // get the seq iterator and the weight function
+   SequenceDB::SequenceIterator it = 
+      results.getParameters ().db ().sequenceIterator ();
+   const SeqWeightFunction& wf = results.getParameters ().wf ();
+
+   //
+   // go over all sequences
+   for (; it.hasNext () ; it.next ()){
+      //
+      // skip non positive sequences
+      const Sequence* seq = it.get ();
+      if (!wf.isPositive (*seq))
+         continue;
+
+      Persistance::TextTableReport::Data data (format);
+      data.writeField((*it)->name ());
+
+      //
+      // go over all results
+      FeatureSet::Iterator feature_it = results.getFeatures ().getIterator ();
+      for (; feature_it.hasNext() ; feature_it.next ()) {
+         Feature& feature = *(feature_it.get ());
+         debug_mustbe (feature.cluster ().hasPositions ());
+         PosCluster* posCluster = feature.cluster ().getPositions(*it);
+         //
+         // 
+         if (posCluster != NULL) {
+            int numPositions = posCluster->size ();
+            data.writeField (FixedStrBuffer <128> ("%d", numPositions));
+         }
+         else
+            data.writeField ("0");
+      }
+      data.writeInto(matrixFile);
+   }
 }
 
 
@@ -257,8 +317,10 @@ protected:
    virtual void beforeSearch (Parameters& nextParameters) {
       DLOG << DLOG.EOL () << DLOG.EOL ();
       DLOG << "Performing search";
-      if (!nextParameters.name ().empty ())
-         DLOG << ' ' << nextParameters.name ();
+      if (!nextParameters.name ().empty ()) {
+         boost::filesystem::path leaf (nextParameters.name ().getChars ());
+         DLOG << ' ' << Str(leaf.leaf ());
+      }
 
       DLOG << ':' << DLOG.EOL();
       DLOG.flush ();
@@ -278,7 +340,6 @@ protected:
                                     bonfN                      ,
                                     results.numProjectionsSearched ()
                                     );
-      printer.printSeedHeader (DLOG);
 
       Parser::OutputType gPSSM = params.parser ().__generatePSSM;
       Parser::OutputType gMotif = params.parser ().__generateMotif;
@@ -293,40 +354,49 @@ protected:
 
       StrBuffer fileStub (params.name ());
 
-      TextWriter seedsFile (
+      TextTableReport::TextOutput seedsFile (
          gSeeds? 
          main_definitions::openFile (true, -1, fileStub, main_definitions::SEEDS_FILE_STUB) : new NullOutputStream ()
       );
+      seedsFile.skipHeader ();
+      seedsFile.noNewlineAfterRecord ();
 
       //
       // we print the results to the log
-      for (; results.hasMoreFeatures () ; results.nextFeature ()) {
+      PositionVector pos;
+      PositionVector neg;
+      Persistance::TextTableReport::TextOutput dlog (DLOG);
+      FeatureSet::Iterator feature_it = results.getFeatures ().getIterator();
+      for (int i=0; feature_it.hasNext() ; feature_it.next(), ++i) {
 
-         Feature& feature = results.getFeature ();
+         Feature& feature = *(feature_it.get ());
 
          //
          // first we find the positive and negative positions
          // of this feature
-         PositionVector pos;
-         PositionVector neg;
+         pos.clear();
+         neg.clear();
          printer.addPositions (feature, pos, neg);
 
-         main_definitions::printMotif (printer, 
+         main_definitions::printMotif (dlog, printer, 
                      gPSSM, gMotif, gBayesian, 
                      pos, neg, 
-                     fileStub, feature, results.featureIndex ()
+                     fileStub, feature, i
                      );
+         dlog.writeln ();
 
-	 if (gSeeds) {
-	   printSeedFile (seedsFile, printer,
-			  gPSSM, gMotif, gBayesian,
-			  pos, neg, 
-			  fileStub, results
-			  );
-	 }
+	      if (gSeeds) {
+	         printSeedFile (seedsFile, printer,
+			      gPSSM, gMotif, gBayesian,
+			      pos, neg, 
+			      fileStub, feature, i
+			      );
+	      }
       }
-
       seedsFile.flush ();
+      if (gSeeds) {
+         printSeqMatrix (results);
+      }
    }
 }; 
 

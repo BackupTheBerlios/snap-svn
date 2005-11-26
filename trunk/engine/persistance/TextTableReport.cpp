@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: TextTableReport.cpp $
-// Version     : $Revision: 2 $ 
+// Version     : $Revision: 3 $ 
 //               $Author: Aviad $
-//               $Date: 1/09/04 1:43 $ 
+//               $Date: 2/12/04 7:56 $ 
 // Description :
 //	The Persistence library contains both high & low level IO classes
 //	and is high-performance, highly reusable framework 
@@ -399,7 +399,7 @@ void TextTableReport::Format::addField (const Str& fieldName, int fieldLength, i
     int headerFieldWidth = headerField.length ();
 
     //
-    // remove the NULL at the end of the header, put spaces and a newline
+    // remove the NULL at the end of the header, put spaces
     memset (_header + _width + headerFieldWidth, ' ', fieldWidth - headerFieldWidth);
     _header [_width + fieldWidth + 0] = '\r';
     _header [_width + fieldWidth + 1] = '\n';
@@ -653,17 +653,16 @@ void TextTableReport::Data::writeInto (StrBuffer& outputBuffer)
 
     //
     // format the buffer, line-by-line to another buffer
-    bool hasMore;
-    do  {
-        //
-        // write the line into the buffer
-        hasMore = writeLineInto (outputBuffer, iterators, fields, _format.fieldSeparator ());
-
+    bool hasMore = writeLineInto (outputBuffer, iterators, fields, _format.fieldSeparator ());
+    while (hasMore) {
         //
         // add a newline to terminate the line
         outputBuffer.append (newline);
+
+        //
+        // write the line into the buffer
+        hasMore = writeLineInto (outputBuffer, iterators, fields, _format.fieldSeparator ());
     }
-    while (hasMore);
 }
 
 
@@ -675,7 +674,7 @@ void TextTableReport::Data::writeInto (StrBuffer& outputBuffer)
 
 TextTableReport::TextOutput::TextOutput (OutputStream* inStream, bool inOwner)
 :   Persistance::TextWriter (inStream, inOwner),
-    _first (true)
+    _first (true), _newline (true)
 {
 }
 
@@ -693,6 +692,9 @@ void TextTableReport::TextOutput::writeRecord (const Str& inHeader, const Str& i
     }
 
     this->write (inBody.getChars (), inBody.length ());
+    if (this->_newline) {
+       this->write (EOL ());
+    }
 }
 
 
