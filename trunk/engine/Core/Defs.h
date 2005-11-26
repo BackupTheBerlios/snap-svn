@@ -1,5 +1,5 @@
-#ifndef _SeedSearcher_Defs_h
-#define _SeedSearcher_Defs_h
+#ifndef _SeedSearcher_Core_Defs_h
+#define _SeedSearcher_Core_Defs_h
 
 #include "Compiler.h"
 
@@ -16,6 +16,10 @@
 
 #include <string>
 #include <ostream>
+
+#define BEGIN_NAMESPACE(name) namespace name {
+#define END_NAMESPACE(name) };
+
 
 
 //	}{ BASE_DEBUG -- debugging
@@ -198,5 +202,5 @@ protected:
 
 
 
-#endif // _SeedSearcher_Defs_h
+#endif // _SeedSearcher_Core_Defs_h
 

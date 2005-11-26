@@ -185,6 +185,9 @@ static void buildTree (const AlphabetCode& code,
                // TODO: handle this. I should (1) put it in all the children
                // (2) count how many like this are in a sequence and get rid
                // of positions with too much unknowns
+               //
+               // SOLUTION: the user of the tree can circumvent dunno's by
+               // using an assignment that does not allow this character
                debug_mustfail ();
             }
             else {
@@ -556,3 +559,4 @@ void PrefixTreePreprocessor::Node::
       outSeqInNode.add (it->sequence ()->id ());
    }
 }
+

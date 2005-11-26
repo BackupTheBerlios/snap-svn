@@ -64,6 +64,10 @@ Project: "Test1"=..\Test1\Test1.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
+    begin source code control
+    "$/SeedSearcher", ECAAAAAA
+    .
+    end source code control
 }}}
 
 Package=<4>
@@ -76,6 +80,10 @@ Project: "old"=..\old\old.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
+    begin source code control
+    "$/SeedSearcher", ECAAAAAA
+    .
+    end source code control
 }}}
 
 Package=<4>

@@ -114,6 +114,10 @@ SOURCE=.\OArchive.ii
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=.\AbstractFormat.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\InputStream.cpp
 # End Source File
 # Begin Source File

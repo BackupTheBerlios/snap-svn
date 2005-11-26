@@ -71,3 +71,4 @@ void ORegistry::registerObject( Object * p_Obj , OArchive& cia)
 	   cia << id;
    }
 }
+

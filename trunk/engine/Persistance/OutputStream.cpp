@@ -39,3 +39,4 @@ void OutputStream::write(const void* inPtr, Size inSize) {
 bool OutputStream::hasMoreBuffers() const {
 	return true;
 }
+

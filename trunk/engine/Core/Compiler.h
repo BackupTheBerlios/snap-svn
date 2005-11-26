@@ -1,5 +1,5 @@
-#ifndef _SeedSearcher_Compiler_h
-#define _SeedSearcher_Compiler_h
+#ifndef _SeedSearcher_Core_Compiler_h
+#define _SeedSearcher_Core_Compiler_h
 
 //
 // compiler type

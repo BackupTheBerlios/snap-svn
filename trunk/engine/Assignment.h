@@ -18,26 +18,31 @@ class AlphabetCode;
 // an assignment is a string of 
 class Assignment {
 public:
-
+   
 public:
    class Position;
    class PositionIterator;
-
+   class Writer;
+   
    enum Strategy {
       discrete, // consider all characters discretly (N) 
-      together, // consider all characters together (? / random-projection)
+         together, // consider all characters together (? / random-projection)
    };
-
+   
    enum {
       MAX_ALPHABET_SIZE = 7,
-      BITSET_SIZE = MAX_ALPHABET_SIZE + 1 // + 1 is for the strategy
+         BITSET_SIZE = MAX_ALPHABET_SIZE + 1 // + 1 is for the strategy
    };
    enum All{
       all
    };
-
+   
    typedef std::bitset <BITSET_SIZE> Bits;
 
+
+public:
+   //
+   //
    class Position {
       //
       // NOTE: take care to set/reset only indexes which are meaningfull
@@ -51,7 +56,7 @@ public:
          // set all bits
          for (int i=0 ; i < cardinality ; i++)
             index (i, true);
-
+         
          strategy (s);
       }
       //
@@ -82,26 +87,28 @@ public:
       int count () const;
       //
       // returns true iff this position contains all the indexes of the paramter
-      bool contains (const Position&);
-      bool equals (const Position&);
-
+      bool contains (const Position&) const;
+      bool equals (const Position&) const;
+      int compare (const Position&) const;
+      
       bool operator == (const Position& o) {
          return this->equals (o);
       }
-
-      Persistance::TextWriter& 
-         write (Persistance::TextWriter&, const AlphabetCode&) const;
-      friend std::ostream& operator << (const Assignment&, std::ostream&) ;
-
+     
       friend class PositionIterator;
-
+      
    private:
       Bits _bits;
    };
+   
 
+
+
+   //
+   //
    class PositionIterator {
    public:
-     PositionIterator (const Position& p);
+      PositionIterator (const Position& p);
       bool hasNext () {
          return _count > 0;
       }
@@ -117,20 +124,29 @@ public:
       int get () {
          return _index;
       }
-
+      
    private:
       int _count;
       int _index;
       const Position& _position;
    };
 
+   class Writer {
+   public:
+      virtual ~Writer () {
+      };
+
+      virtual void write (const Position&, Persistance::TextWriter&) = 0;
+   };
+   
+public:
    Assignment () {
    }
    Assignment (const Assignment& assg) : _positions (assg._positions) {
    }
-   Assignment (All, int length, int cardinality, Strategy s = discrete) {
+   Assignment (const Position& pos, int length) {
       for (int i=0 ; i<length ; i++) {
-         addPosition (Position (all, cardinality, s)); 
+         addPosition (pos); 
       }
    }
    Assignment& operator = (const Assignment& o) {
@@ -151,23 +167,20 @@ public:
       _positions.push_back (p);
    }
    void setPosition (int, const Position& p);
-
-   bool equals (const Assignment&);
-   bool operator == (const Assignment& o) {
+   
+   int compare (const Assignment&) const;
+   bool equals (const Assignment&) const;
+   bool operator == (const Assignment& o) const {
       return this->equals (o);
    }
-
-   Persistance::TextWriter& 
-      write (Persistance::TextWriter&, const AlphabetCode&) const;
-
-   friend std::ostream& operator << (std::ostream& out, const Assignment&);
-
+   
    typedef Vec <Position> PositionVector;
-
+      
 private:
    PositionVector _positions;
 };
 
 #endif // _SeedSearcher_Assignment_h
+
 
 

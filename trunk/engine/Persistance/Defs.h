@@ -5,7 +5,6 @@
 
 namespace Persistance {
 
-   enum Prefix; 
    class Object;
    class Archive;
    class IArchive;

@@ -1,6 +1,8 @@
 #include "SeedSearcher.h"
 #include "Assignment.h"
 
+#include "DebugLog.h"
+
 #include <iostream>
 
 using namespace std;
@@ -12,6 +14,77 @@ class FeatureVector : public Vec <FeaturePair> {
 public:
    void reverse ();
 };
+
+
+struct FeatureComparator : public std::binary_function<FeaturePair, FeaturePair, bool> {
+   //
+   // features by their assignment
+   bool operator() (const FeaturePair& x, const FeaturePair& y) const {
+      int result = x.first->compare (*y.first);
+      return result < 0;
+   }
+};
+
+static int together (
+   FeatureVector& myFeatures, // stores the features of the node
+   int fromIndex,     // from where to start the merge
+   int myDepth,   // current depth in the tree
+   const Assignment::Position& thisPosition)
+{
+   debug_mustbe (thisPosition.count () > 0);
+   debug_mustbe (thisPosition.strategy () == Assignment::together);
+
+   int size = myFeatures.size ();
+   int numFeatures = size - fromIndex;
+   if (numFeatures == 0)
+      return 0;
+   else if (numFeatures == 1) {
+      //
+      // add the position that got us here to the feature
+      myFeatures [fromIndex].first->setPosition (myDepth-1, thisPosition);
+      return 1;
+   }
+   else {
+      //
+      // all the features that have similar endings are grouped together.
+      typedef std::set <FeaturePair, FeatureComparator> FeatureSet;
+      FeatureSet features;
+      for (int i=fromIndex ; i<size ; i++) {
+         std::pair<FeatureSet::iterator, bool> result =
+            features.insert (myFeatures [i]);
+
+         if (result.second == false) {
+            //
+            // it is already in the set...
+            debug_only (
+               DLOG << "rec_prefixTreeSearch (): grouping together "
+                    << Format (*result.first->first)
+                    << " with " 
+                    << Format (*myFeatures [i].first)
+                    << DLOG.EOL ();
+            );
+
+            result.first->second->unify (*myFeatures [i].second);
+         }
+         else {
+            //
+            // add the position that got us here to the feature
+            result.first->first->setPosition (myDepth-1, thisPosition);
+         }
+      }
+
+      //
+      // resize myFeatures and copy the relevant features back from the set
+      size = fromIndex + features.size ();
+      myFeatures.resize (size);
+      IteratorWrapper <FeatureSet> it (features.begin (), features.end ());
+      for (i=fromIndex ; i<size ; it.next (), i++) {
+         myFeatures [i] = *it;
+      }
+
+      return features.size ();
+   }
+}
 
 
 //
@@ -124,6 +197,8 @@ static int rec_prefixTreeSearch (
       //
       // also, the features added are grouped together.
       int firstFeatureIndex = size - newEntries;
+      return together (myFeatures, firstFeatureIndex , myDepth, thisPosition);
+/*
       FeaturePair& firstFeature = myFeatures [firstFeatureIndex];
       
       debug_mustbe (firstFeature.first);
@@ -149,6 +224,7 @@ static int rec_prefixTreeSearch (
       }
 
       firstFeature.first->setPosition (myDepth-1, thisPosition);
+      */
    }
    else {
       debug_mustbe (thisPosition.strategy () == Assignment::discrete);
@@ -338,6 +414,7 @@ for (; posIt.hasNext () ; posIt.next () {
 }
 }
 */
+
 
 
 

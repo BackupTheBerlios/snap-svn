@@ -175,3 +175,4 @@ tMultinomial::MAP() const
 
   return M;
 }
+

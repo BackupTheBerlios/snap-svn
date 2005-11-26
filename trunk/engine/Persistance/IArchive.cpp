@@ -300,3 +300,4 @@ IArchive&  IArchive :: operator >> (double& param)
    readPrimitiveT (*this, param, double_code);
 	return *this;
 }
+

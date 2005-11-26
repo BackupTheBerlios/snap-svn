@@ -6,9 +6,16 @@
 #include "SeedSearcher.h"
 
 #include "StdOptions.h"
+#include "DebugLog.h"
 
 #include "Core/AutoPtr.h"
+
+#if ENV_COMPILER==ENV_MICROSOFT
 #include "Legacy/GetOpt.h"
+#else
+#include <getopt.h>
+#endif 
+
 
 #include "Persistance/TextWriter.h"
 #include "Persistance/StdOutputStream.h"
@@ -45,14 +52,19 @@ Usage(string err = "")
   cerr << "  <RegFile>     - file of P(Reg) per sequences in format >name <tab> PReg" << endl;
   cerr << "" << endl;
   cerr << "Options:" << endl;
-  cerr << "  -n <N>       - Number of seeds to output (default = 3)" << endl;
-  cerr << "  -l <Length>  - seed length (defualt = 10)" << endl;
-  cerr << "  -L <Length>  - motif length (default = 20)" << endl;
-  cerr << "  -m <Num>     - Number of random projections to try (default = 3)" << endl;
-  cerr << "  -M           - exhaustive random projections" << endl;
-  cerr << "  -d <Dist>    - Number of wildcard positions in seed (default = 2)" << endl;
-  cerr << "  -t <thresh>  - Threshold for hard assignment of regulation (default = 0.5)" << endl;
-  cerr << "  -r           - Use reverse strand as well" << endl;
+  cerr << "  -n <N>           - Number of seeds to output (default = 3)" << endl;
+  cerr << "  -l <Length>      - seed length (defualt = 10)" << endl;
+  cerr << "  -L <Length>      - motif length (default = 20)" << endl;
+  cerr << "  -m <Num>         - Number of random projections to try (default = 3)" << endl;
+  cerr << "  -M               - exhaustive random projections" << endl;
+  cerr << "  -o               - length of offset to compare seed redundancy (default = 2)" << endl;
+  cerr << "  -d <Dist>        - Number of wildcard positions in seed (default = 2)" << endl;
+  cerr << "  -t <thresh>      - Threshold for hard assignment of regulation (default = 0.5)" << endl;
+  cerr << "  -T <thresh>      - Threshold for minimum seed score (default = 0)" << endl;
+  cerr << "  -f <frequency>   - Minimum positivie seqs that the seed apears in (default = 1)" << endl;
+  cerr << "  -F <frequency>   - Minimum positivie seqs in percents that the seed apears in (default = 10%)" << endl;
+  cerr << "  -r           - Use reverse strand as well (default = false)" << endl;
+  cerr << "  -R           - Use weights to count sequences (default = false)" << endl;
   cerr << endl;
   if( err != "" )
     cerr << "Error: " << err << endl;
@@ -79,6 +91,11 @@ int main(int argc, char* argv [])
    int PSSML;
    int NumPSSM;
    double thresh;
+   int offsetRedundancy;
+   bool weightCount;
+   int minPosSeqs;
+   int minPosSeqsPercent;
+   int minScore;
 
   
   // init:
@@ -90,10 +107,16 @@ int main(int argc, char* argv [])
   PSSML = 20;
   NumPSSM = 3;
   thresh = 0.5;
+  offsetRedundancy = 2;
+  weightCount = false;
+  minPosSeqs = 1;
+  minPosSeqsPercent = 10;
+  minScore = 0;
+
   char c;
   
   // parse commandLine:
-  while( (c = getopt(argc,argv, "a:n:L:l:d:m:M:t:p:r")) != EOF )
+  while( (c = getopt(argc,argv, "a:n:L:l:d:m:M:o:t:T:p:r:R:f:F")) != EOF )
   {
     switch(c)
     {
@@ -114,12 +137,28 @@ int main(int argc, char* argv [])
       break;
     case 'M':
        allProjections = true;
+       break;
+    case 'o':
+      offsetRedundancy = atoi (optarg);
+      break;
     case 't':
       thresh = atof(optarg);
+      break;      
+    case 'T':
+      minScore = atof(optarg);
       break;      
     case 'r':
       UseRev = true;
       break;
+    case 'R':
+      weightCount = true;
+      break;
+    case 'f':
+       minPosSeqs = atoi (optarg);
+       break;
+    case 'F':
+       minPosSeqsPercent = atoi (optarg);
+       break;
     case 'h':
       Usage();
       break;
@@ -143,6 +182,11 @@ int main(int argc, char* argv [])
   // for now, only ACGT code is available
   // TODO: add more alphabets
   const AlphabetCode& acgt = ACGTAlphabet::get ();
+  
+  ACGTWriter assgWriter;
+  TextWriter consoleWriter (new StdOutputStream (std::cout));
+  DebugLog::setup (assgWriter);
+  DebugLog::setup (consoleWriter);
 
   //
   // load the sequence files
@@ -184,13 +228,24 @@ int main(int argc, char* argv [])
    
    //
    // keep only the best features
-   // TODO: also use GoodFeatures to allow only features above a threshold
-   KBestFeatures kbestFeatures (NumPSSM);
+   // TODO: what should we do when offsetRedundancy is too large for the length of seed?
+   SeedSearcher::BestFeatures* bestFeatures = NULL;
+   KBestFeatures kbestFeatures (NumPSSM, offsetRedundancy);
+   // use GoodFeatures to allow only features above a threshold   
+   GoodFeatures goodFeatures (&kbestFeatures, 
+                              positiveSequences,
+                              minScore, 
+                              minPosSeqs, 
+                              minPosSeqsPercent);
+   if (goodFeatures.minPositiveSequences () > 0)
+      bestFeatures = &goodFeatures;
+   else
+      bestFeatures = &kbestFeatures;
 
    //
    // create the hyper-geometric scoring scheme
    // TODO: create more scoring schemes
-   HyperGeoScore score (positiveSequences, *db);
+   HyperGeoScore score (weightCount, positiveSequences, *db);
 
    //
    // now run over all projections, searching for seeds.
@@ -199,22 +254,30 @@ int main(int argc, char* argv [])
    for (int i=0 ; i<numOfProjections ; i++) {
       SeedSearcher::prefixTreeSearch (
          tree, 
-         projections->getAssignment (i),
+         projections->getAssignment (i, 
+                                    ACGTPosition (Assignment::together),
+                                    ACGTPosition (Assignment::discrete)),
          positiveSequences, 
          score, 
-         kbestFeatures);
+         *bestFeatures);
    }
 
    //
    // TODO:now output all the seeds
-   Persistance::TextWriter writer (new StdOutputStream (std::cout));
-   kbestFeatures.write (writer, acgt);
-   writer.flush ();
-
+   int size = bestFeatures->size ();
+   for (i=0 ; i<size ; i++) {
+      const SeedSearcher::Feature& feature_i = (*bestFeatures)[i];
+      DLOG << Format (*feature_i._assg)
+           << " : " 
+           << (*bestFeatures)[i]._score 
+           << DLOG.EOL ();
+   }
+   DLOG.flush ();
 
    long finish = time(NULL);
    cerr<<"SeedSearcher finished after "<<finish - start<<" seconds"<<endl;
    return 0;
 }
+
 
 

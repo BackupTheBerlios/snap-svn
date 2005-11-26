@@ -37,11 +37,11 @@ typedef unsigned int HashValue;
 template<class Entry>
 class HashTable {
 	typedef Entry* TableItem;
-	typedef Entry::Key Key;
+	typedef typename Entry::Key Key;
 	typedef RangeForwardIter<TableItem> TableIter;
 	//
 	void constraints(Entry* entry) {
-		Entry::Key key= entry->getKey();
+		Key key= entry->getKey();
 		bool result= entry->fitsKey(key);
 		Entry* next= entry->next();
 		entry->setNext(next);
@@ -168,11 +168,11 @@ class HashTable {
 		}
 	}
 
-	Entry* find(const Entry::Key& inKey) const {
+	Entry* find(const Key& inKey) const {
 		return find(inKey, Entry::hash(inKey));
 	}
 	
-	Entry* find(const Entry::Key& inKey, HashValue inHash) const {
+	Entry* find(const Key& inKey, HashValue inHash) const {
 		for(Entry* entry= table[hash2Index(inHash)]; entry; entry= entry->next()) {
 			if (entry->fitsKey(inKey))
 				return entry;
@@ -283,11 +283,11 @@ class	HashLinkEntry {
 	Entry* hashLink;
 };
 
-template<class Key, class Value>
-class	HashTableEntry : public HashKeyEntry<Key> {
+template<class _Key, class _Value>
+class	HashTableEntry : public HashKeyEntry<_Key> {
  public:
-	typedef Key Key;
-	typedef Value Value;
+  typedef _Key Key;
+  typedef _Value Value;
 
 	HashTableEntry(Key inKey, Value inValue) : 
 		HashKeyEntry<Key>(inKey), value(inValue), link(0) {

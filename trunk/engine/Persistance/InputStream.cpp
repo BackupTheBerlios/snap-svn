@@ -94,3 +94,4 @@ void InputStream::read(void* inDest, Size inDestSize) {
 	}
 }
 
+

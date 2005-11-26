@@ -9,13 +9,13 @@ using namespace Persistance;
 
 void Assignment::setPosition (int index, const Position& p)
 {
-   if (_positions.size () <= index)
+   if (length () <= index)
       _positions.resize (index +1);
 
    _positions [index] = p;
 }
 
-bool Assignment::equals (const Assignment& o) 
+bool Assignment::equals (const Assignment& o)  const
 {
    if (length () != o.length ())
       return false;
@@ -29,21 +29,20 @@ bool Assignment::equals (const Assignment& o)
    return true;
 }
 
-Persistance::TextWriter& 
-Assignment::write (Persistance::TextWriter& writer, 
-                   const AlphabetCode& code) const
+int Assignment::compare (const Assignment& o)  const
 {
-   for (int i=0 ; i < length () ; i++)
-      this->operator [] (i).write (writer, code);
+   int length_diff = length () < o.length ();
+   if (length_diff != 0)
+      return length_diff;
 
-   return writer;
-}
-std::ostream& operator << (std::ostream& out, const Assignment& a)
-{
-   AlphabetCode code (AlphabetCode::emptyCode (), 0);
-   TextWriter writer (new StdOutputStream (out));
-   a.write (writer, code);
-   return out;
+   int l = length ();
+   for (int i=0 ; i<l ; i++) {
+      int result = _positions [i].compare (o._positions [i]);
+      if (result != 0)
+         return result;
+   }
+
+   return 0;
 }
 
 int Assignment::Position::count () const
@@ -60,9 +59,9 @@ int Assignment::Position::count () const
 
 //
 // returns true iff this position contains all the indexes of the paramter
-bool Assignment::Position::contains (const Position& p)
+bool Assignment::Position::contains (const Position& p) const
 {
-   if (p.count () < count ()) {
+   if (p.count () <= count ()) {
       PositionIterator it (p);
       for (; it.hasNext () ; it.next ()) {
          if (!index (it.get ()))
@@ -75,43 +74,16 @@ bool Assignment::Position::contains (const Position& p)
    return false;
 }
 
-bool Assignment::Position::equals (const Position& o) 
+bool Assignment::Position::equals (const Position& o) const
 {
    return _bits == o._bits;
 }
 
-Persistance::TextWriter& 
-Assignment::Position::write (Persistance::TextWriter& writer, 
-                   const AlphabetCode& code) const
+int Assignment::Position::compare (const Assignment::Position& o)  const
 {
-   //
-   // TODO: make this general
-   char ACGT [] = "ACGT";
-   
-   int c = count ();
-   if (c == 0)
-      writer << "-";
-   else if (c == 1) {
-      PositionIterator it (*this);
-      writer << ACGT [it.get ()];
-   }
-   else if (strategy ()== together)
-      writer << '?';
-   else
-      writer << 'N';
-
-   return writer;
+   return _bits.to_ulong () - o._bits.to_ulong ();
 }
 
-
-std::ostream& operator << (const Assignment::Position& p, 
-                                                 std::ostream& out) 
-{
-   AlphabetCode code (AlphabetCode::emptyCode (), 0);
-   TextWriter writer (new StdOutputStream (out));
-   p.write (writer, code);
-   return out;
-}
 
 Assignment::PositionIterator::PositionIterator (const Position& p) 
 : _index (0), _position (p) 
@@ -127,3 +99,4 @@ Assignment::PositionIterator::PositionIterator (const Position& p)
 }
 
  
+

@@ -49,7 +49,7 @@ public:
    */
   double KL(tMultinomial const & m) const ;
   
-  friend tDirichletPrior;
+  friend class tDirichletPrior;
   
  private:
   int _n; 
@@ -91,3 +91,4 @@ inline
 //void tMultinomial::getParams(int & n , double const * & p ) const { n=_n;p=_PR;}
 double const * tMultinomial::getParams(int & n ) const { n=_n;return _PR;}
 #endif
+

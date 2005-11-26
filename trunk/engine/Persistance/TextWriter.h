@@ -10,7 +10,7 @@ class	OutputStream;
 class	TextWriter {
  public:
 	TextWriter(OutputStream* inStream, bool inOwner= true);
-	~TextWriter();
+	virtual ~TextWriter();
 
 	enum EndOfLine {
 		endl
@@ -44,6 +44,9 @@ class	TextWriter {
 	void write(const char* in, size_t inSize);
 	void write(const void* inPtr);
 	virtual void write(EndOfLine);
+   void writeln() {
+      write (endl);
+   }
 
 	// Keystroke saver. Handy for out << "Hello there!" << out.EOL();
 	static EndOfLine EOL() {
@@ -64,3 +67,4 @@ class	TextWriter {
 }; // Persistance
 
 #endif // _Persistance_TextWriter_h
+

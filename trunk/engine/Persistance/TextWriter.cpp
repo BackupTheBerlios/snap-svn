@@ -62,37 +62,43 @@ void TextWriter::write(unsigned char in) {
 
 void TextWriter::write(short in) {
 	char buffer[33];
-	_itoa(in, buffer, 10);
+	sprintf (buffer, "%d", (int) in);
+	//	_itoa(in, buffer, 10);
 	write(buffer);
 }
 
 void TextWriter::write(unsigned short in) {
 	char buffer[33];
-	_ultoa(in, buffer, 10);
+	sprintf (buffer, "%d", (int) in);
+	//	_ultoa(in, buffer, 10);
 	write(buffer);
 }
 
 void TextWriter::write(int in) {
 	char buffer[33];
-	_itoa(in, buffer, 10);
+	sprintf (buffer, "%d", in);
+	  //	_itoa(in, buffer, 10);
 	write(buffer);
 }
 
 void TextWriter::write(unsigned int in) {
 	char buffer[33];
-	_ultoa(in, buffer, 10);
+	sprintf (buffer, "%u", in);
+	  //	_ultoa(in, buffer, 10);
 	write(buffer);
 }
 
 void TextWriter::write(float in) {
 	char buffer[33];
-	_gcvt(in, 8, buffer);
+	  sprintf (buffer, "%.8f",(double) in);
+	  //_gcvt(in, 8, buffer);
 	write(buffer);
 }
 
 void TextWriter::write(double in) {
 	char buffer[33];
-	_gcvt(in, 12, buffer);
+	  sprintf (buffer, "%.12f",(double) in);
+	  //	_gcvt(in, 12, buffer);
 	write(buffer);
 }
 
@@ -117,3 +123,4 @@ void TextWriter::write(const void* inPtr) {
 	size_t printSize= ::sprintf(buffer, "0x%08x", inPtr);
 	stream->write(buffer, printSize);
 }
+

@@ -72,3 +72,4 @@ private:
 
 
 #endif // _SeedSearcher_Sequence_h
+

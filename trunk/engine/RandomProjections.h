@@ -37,8 +37,13 @@ public:
       return _numOfPositions;
    }
 
-   void getAssignment (int index, Assignment&) const;
-   Assignment getAssignment (int index) const;
+   void getAssignment ( Assignment&, 
+                        int index, 
+                        const Assignment::Position& randPos,
+                        const Assignment::Position& normalPos) const;
+   Assignment getAssignment ( int index,
+                              const Assignment::Position& randPos,
+                              const Assignment::Position& normalPos) const;
 
    typedef Vec <int> RandomPositions;
    typedef Vec <RandomPositions> RandomPositionsVector;

@@ -7,6 +7,8 @@
 
 #include "Legacy/RandomGenerator.h"
 
+#include "DebugLog.h"
+
 #include <assert.h>
 #include <iostream>
 
@@ -101,9 +103,9 @@ RandomProjections::RandomProjections (
    int length,          // length of the assignment to create
    int numOfPositions   // number of positions to select in each assignment
    )
-:  _cardinality (cardinality),
-   _length (length),
-   _numOfPositions (numOfPositions)
+:_length (length),
+ _cardinality (cardinality),
+ _numOfPositions (numOfPositions)
 {
    //
    // first compute how many projections are possible:
@@ -131,14 +133,14 @@ static tRandomGenerator rand1;
 
 //
 // Copied/Adapted from legacy SeedSearcher.cpp
-static void chooseProjections (int motifLength,
-				      int dist,
-				      int projNum ,
+static void chooseProjections (size_t motifLength,
+				      size_t dist,
+				      size_t projNum ,
 				      Vec<Vec<int> >  & projectionsSites)
 {
    projectionsSites.resize(projNum);
 
-   for( int i=0; i<projNum; i++)   {
+   for( size_t i=0; i<projNum; i++)   {
       // this do - while section is used to make sure
       // we dont randomly select the same to projections...
       bool found;
@@ -149,7 +151,7 @@ static void chooseProjections (int motifLength,
          // Aviad: dont allow projection in the first position either
          Vec<int> val = rand1.sampleGroup( motifLength - 2, dist );
          debug_mustbe (val.size () == dist);
-         for (int pos=0 ; pos<dist ; pos++)
+         for (size_t pos=0 ; pos<dist ; pos++)
             val [pos]++; 
 
 
@@ -162,7 +164,7 @@ static void chooseProjections (int motifLength,
          if (dist ==0)
             continue; // if dist ==0 there are no random projections actually
 
-         for (int j=0;j<i;j++) {
+         for (size_t j=0;j<i;j++) {
             if( projectionsSites[j]==val ) {
                //cerr<<"already had that projection in place "<<j<<endl;
                found = true;
@@ -190,9 +192,9 @@ RandomProjections::RandomProjections (
    int length,          // length of the assignment to create
    int numOfPositions   // number of positions to select in each assignment
    )
-:  _cardinality (cardinality),
-   _length (length),
-   _numOfPositions (numOfPositions)
+:_length (length),
+ _cardinality (cardinality),
+ _numOfPositions (numOfPositions)
 
 {
    //
@@ -223,32 +225,45 @@ RandomProjections::RandomProjections (
    }
 }
 
-void RandomProjections::getAssignment (int index, Assignment& assg) const
+void RandomProjections::getAssignment (Assignment& assg,
+                                       int index, 
+                                       const Assignment::Position& randPos,
+                                       const Assignment::Position& normalPos) const
 {
    const RandomPositions& rand = _vector[index];
 
-   assg = Assignment (Assignment::all, _length, _cardinality, Assignment::discrete);
+   assg = Assignment (normalPos, _length);
    for (int i=0 ; i<_numOfPositions; i++){
-      assg [i].strategy (Assignment::together);
+     int pos = rand [i];
+      assg.setPosition (pos, randPos);
    }
 
    debug_only (
-      std::cerr << "RandomProjections returned: " << assg << endl;
-      )
+      DLOG  << "RandomProjections returned: "
+            << Format (assg)
+            << DLOG.EOL ()
+   );
 }
 
-Assignment RandomProjections::getAssignment (int index) const
+Assignment RandomProjections::getAssignment (int index, 
+                                             const Assignment::Position& randPos,
+                                             const Assignment::Position& normalPos) const
 {
    const RandomPositions& rand = _vector[index];
 
-   Assignment assg (Assignment::all, _length, _cardinality, Assignment::discrete);
+   Assignment assg (normalPos, _length);
+
    for (int i=0 ; i<_numOfPositions; i++){
-      assg [rand[i]].strategy (Assignment::together);
+     int pos = rand [i];
+      assg.setPosition (pos, randPos);
    }
-   
+
    debug_only (
-      std::cerr << "RandomProjections returned: " << assg << endl;
-      )
+      DLOG  << "RandomProjections returned: "
+            << Format (assg)
+            << DLOG.EOL ()
+   );
 
    return assg;
 }
+

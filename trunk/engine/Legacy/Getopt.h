@@ -114,3 +114,4 @@ extern int _getopt_internal (int argc, char *const *argv,
 #endif
 
 #endif /* _GETOPT_H */
+

@@ -101,3 +101,4 @@ bool StreamBuffer::canRead() {
 bool StreamBuffer::canWrite() {
 	return true;
 }
+

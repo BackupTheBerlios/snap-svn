@@ -95,6 +95,10 @@ SOURCE=.\Assignment.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\DebugLog.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\PrefixTreePreprocessor.cpp
 # End Source File
 # Begin Source File
@@ -128,6 +132,10 @@ SOURCE=.\Alphabet.h
 # Begin Source File
 
 SOURCE=.\Assignment.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\DebugLog.h
 # End Source File
 # Begin Source File
 

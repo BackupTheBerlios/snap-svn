@@ -450,3 +450,4 @@ InputStream::Offset TextReader::getPos ()
 {
 	return stream->getPos () - unreadBufSize;
 }
+

@@ -165,11 +165,16 @@ SequenceDB* SequenceDB::TextFileStorage::load (const AlphabetCode& code,
    }
 
    if (seq.size()) {
-      db->_name2ID [name] = id;
-      db->_id2Name.push_back(name);
-      db->_sequences.push_back( new Sequence (id, seq.c_str (), (weights.find(name))->second));
       //
-      //      map<string,codeVec>::operator [] (name) = GetCode(seq);
+      // BUG FIX: (Aviad). the last sequence (exactly like those before it)
+      // should be used only if it has an associated weight
+      if (weights.find(name) != weights.end()) {	
+         db->_name2ID [name] = id;
+         db->_id2Name.push_back(name);
+         db->_sequences.push_back( new Sequence (id, seq.c_str (), (weights.find(name))->second));
+         //
+         //      map<string,codeVec>::operator [] (name) = GetCode(seq);
+      }
    }
 
    if (!db->_sequences.size())
@@ -196,7 +201,9 @@ void SequenceDB::getSequencesAbove (double weight, Cluster& out) const
    }
 }
 
-void SequenceDB::Cluster::intersect (const Cluster& a, const Cluster& b, Cluster& o)
+void SequenceDB::Cluster::intersect (const Cluster& a, 
+				     const Cluster& b, 
+				     Cluster& o)
 {
    o.clear ();
 
@@ -220,10 +227,26 @@ void SequenceDB::Cluster::intersect (const Cluster& a, const Cluster& b, Cluster
    }
 }
 
+
 void SequenceDB::Cluster::unify (const Cluster& o)
 {
    SeqSet::const_iterator it = o._sequences.begin ();
    for (; it != o._sequences.end () ; it++)
       add (*it);
 }
+
+double SequenceDB::Cluster::sumWeights (const SequenceDB& db) const
+{
+   double result = 0;
+   SeqSet::const_iterator it =_sequences.begin ();
+   SeqSet::const_iterator end =_sequences.end ();
+
+   for (; it != end ; it++) {
+      const Sequence& seq = db.getSequence (*it);
+      result += seq.weight ();
+   }
+
+   return result;
+}
+
 

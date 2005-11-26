@@ -8,7 +8,7 @@ namespace Persistance {
 class	StreamBuffer   {
 protected:
 	StreamBuffer();
-	~StreamBuffer ();
+	virtual ~StreamBuffer ();
 
 public:
    typedef int ptrdiff_t; // also defined in <stddefs.h>

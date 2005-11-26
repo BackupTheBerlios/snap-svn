@@ -43,3 +43,4 @@ public:
 
 #endif // _SeedSearcher_PrefixTreeWalker_h
 
+

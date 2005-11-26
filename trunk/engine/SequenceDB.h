@@ -78,6 +78,9 @@ public:
       void clear () {
          _sequences.clear ();
       }
+      //
+      // TODO: maybe cluster should hold Sequence* and thus make sumWeights more efficient
+      double sumWeights (const SequenceDB&) const;
 
       //
       // 
@@ -112,3 +115,4 @@ private:
 };
 
 #endif // _SeedSearcher_SequenceDB_h
+

@@ -55,6 +55,12 @@ public:
       virtual bool add (AutoPtr <Assignment>,
                         AutoPtr <SequenceDB::Cluster>,
                         double score) =0;
+
+      virtual int size () const = 0;
+      virtual const Feature& get (int) const = 0;
+      const Feature& operator [] (int index) const {
+         return get (index);
+      };
    };
 
 

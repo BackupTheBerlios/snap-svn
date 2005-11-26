@@ -44,3 +44,4 @@ const AlphabetCode::Code_ptr AlphabetCode::emptyCode ()
    return _emptyCode;
 
 }
+
