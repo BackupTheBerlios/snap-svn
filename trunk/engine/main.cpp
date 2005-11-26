@@ -7,7 +7,6 @@
 #include "RandomProjections.h"
 #include "SeedSearcher.h"
 #include "HyperGeoScore.h"
-#include "PrefixTreeWalker.h"
 #include "PSSM.h"
 
 #include "LeafPreprocessor.h"

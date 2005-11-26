@@ -43,12 +43,12 @@ void Assignment::unify (const Assignment& o, int startIndex)
          << " with " << Format (o) << DLOG.EOL ();
 #endif
 
-   int length = o.length ();
+   size_t length = o.length ();
    if (_positions.size () < length) {
       _positions.resize (length);
    }
 
-   for (int i=startIndex ; i<length ; i++) {
+   for (size_t i=startIndex ; i<length ; i++) {
       Position& my_pos = getPosition (i);
       const Position& o_pos = o.getPosition (i);
 

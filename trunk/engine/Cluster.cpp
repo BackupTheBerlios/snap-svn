@@ -353,7 +353,7 @@ void SeqCluster::addSeq2Vector (SequenceVector& out) const
 bool SeqCluster::hasSequence (const SeqWeightFunction& wf) const
 {
    FindPositive findPositive (wf);
-   CIterator& it = performUntil (findPositive);
+   const CIterator& it = performUntil (findPositive);
    return it.hasNext ();
 }
 

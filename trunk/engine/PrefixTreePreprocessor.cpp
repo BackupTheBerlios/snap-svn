@@ -2,7 +2,6 @@
 
 #include "Assignment.h"
 #include "Sequence.h"
-#include "PrefixTreeWalker.h"
 
 #include "Core/AutoPtr.h"
 #include "Core/ChunkAllocator.h"
@@ -835,10 +834,12 @@ PrefixTreePreprocessor::SeqPositionIterator TreeNodeRep::
 
 void TreeNodeRep::removeChild (int index)
 {
+  debug_only (
    int cardinality = _code->cardinality ();
 
    debug_mustbe (index >=0);
    debug_mustbe (index < cardinality);
+   );
 
    delete _children [index];
    _children [index] = NULL;
@@ -847,10 +848,12 @@ void TreeNodeRep::removeChild (int index)
 
 TreeNodeRep* TreeNodeRep::getCreateChild (int index, bool&wasCreated) 
 {
+  debug_only (
    int cardinality = _code->cardinality ();
 
    debug_mustbe (index >=0);
    debug_mustbe (index < cardinality);
+   );
 
    wasCreated = false;
    if (_children [index] == NULL) {
@@ -864,10 +867,13 @@ TreeNodeRep* TreeNodeRep::getCreateChild (int index, bool&wasCreated)
 
 TreeNodeRep* TreeNodeRep::getChild (int index) const
 {
+  debug_only (
    int cardinality = _code->cardinality ();
 
    debug_mustbe (index >=0);
    debug_mustbe (index < cardinality);
+   );
+
    return _children [index];
 }
 

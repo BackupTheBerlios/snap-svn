@@ -156,7 +156,7 @@ public:
 
    //
    // iteration methods
-   inline bool hasNext () {
+   inline bool hasNext () const {
       return _current != _end;
    }
    inline void next () {
@@ -167,13 +167,13 @@ public:
       debug_mustbe (_current != _end);
       return *_current;
    }
-   inline value_type const* operator -> () {
+   inline value_type const* operator -> () const {
       //
       // weird syntax needed in case 'iterator' is a class/struct and 
       // not a pointer
       return &(*_current); 
    }
-   inline value_type const& operator * () {
+   inline value_type const& operator * () const {
       return *_current;
    }
    const iterator getImpl () const {

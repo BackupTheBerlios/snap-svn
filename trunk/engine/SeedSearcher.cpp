@@ -632,7 +632,6 @@ int SeedSearcher::tableSearch (
 // debug: cross-reference tree-search model with prefix-tree-walk model (safer)
 #if SEED_TREE_SEARCH_DEBUG
 
-#  include "PrefixTreeWalker.h"
 #  include "DebugLog.h"
 #  include "Persistance/TextWriter.h"
 #  include "Persistance/StrOutputStream.h"
