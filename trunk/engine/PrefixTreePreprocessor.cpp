@@ -131,7 +131,6 @@ public:
    }
 
    ~TreeRep () {
-      _root->dispose (true);
       delete _root;
    }
 
@@ -459,26 +458,6 @@ SeqPositions::SeqPositions (PositionVector* pos)
 {
 }
 
-SeqPositions::~SeqPositions ()
-{
-   //
-   // memory for positions is owned by the hosting node
-}
-
-void SeqPositions::dispose (bool disposePositions)
-{
-   if (disposePositions) {
-      PositionIterator it = iterator ();
-      for (; it.hasNext () ; it.next ()) {
-         const SeqPosition* pos = it.get ();
-         delete const_cast <SeqPosition*> (pos);
-      }
-   }
-
-   delete _positions;
-   _positions = NULL;
-}
-
 
 SeqPositions& SeqPositions::operator = (const SeqPositions& pos)
 {
@@ -571,9 +550,15 @@ PrefixTreePreprocessor::PrefixTreePreprocessor (TreeRep* rep, bool owner)
 PrefixTreePreprocessor::~PrefixTreePreprocessor ()
 {
    //
-   // TODO: delete all positions (go through all positions in the root and --kill--)
-   if (_owner)
-      delete _rep;
+   // delete all positions (go through all positions in the root and --kill--)
+
+   //
+   // for now, because cleanup takes too long for some reason,
+   // just let it leak
+#  if 0
+      if (_owner)
+         delete _rep;
+#  endif
 }
 
 
@@ -737,7 +722,6 @@ TreeNodeRep::TreeNodeRep ()
 {
 }
 
-
 TreeNodeRep::~TreeNodeRep () 
 {
    dispose (false);
@@ -767,8 +751,8 @@ inline void TreeNodeRep::dispose (bool isRoot)
    if (_children) {
       for (int i=0 ; i<cardinality ; i++) {
          if (_children [i]) {
-            _children [i]->dispose (false);
             delete _children [i];
+            _children [i] = NULL;
          }
       }
 
@@ -1038,18 +1022,18 @@ static void rec_addAssignmentNodes (int depth,
       return;
 
    const Assignment::Position& thisPosition = assg [depth -1];
-   if (thisPosition.strategy () == Assignment::together) {
+   if (thisPosition.strategy () == assg_together) {
       //
-      // this means that we got here with 'together' strategy
+      // this means that we got here with 'assg_together' strategy
       // so we keep the exact same positions in the feature
       path.setPosition (depth - 1, thisPosition);
    }
    else {
-      debug_mustbe (thisPosition.strategy () == Assignment::discrete);
+      debug_mustbe (thisPosition.strategy () == assg_discrete);
       //
       // this means that the exact code of this depth is important
       path.setPosition (depth -1, 
-         Assignment::Position (childIndex, Assignment::discrete)); 
+         Assignment::Position (childIndex, assg_discrete)); 
    }
 
    if (depth == desiredDepth) {

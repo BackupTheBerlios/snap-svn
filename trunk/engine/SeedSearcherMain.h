@@ -9,6 +9,8 @@
 #include "SeedSearcher.h"
 #include "RandomProjections.h"
 
+#include "boost/shared_ptr.hpp"
+
 
 class SeedSearcherMain {
 public:
@@ -118,6 +120,23 @@ public:
       }
       virtual ~Parameters () {
       }
+      Parameters (const Parameters& in) {
+         set (in);
+      }
+      Parameters& operator = (const Parameters& in) {
+         set (in);
+         return *this;
+      }
+      void set (const Parameters& in) {
+         SeedSearcher::SearchParameters::set (in);
+
+         _db = in._db;
+         _projections = in._projections;
+         _searchType = in._searchType;
+         _prepType = in._prepType;
+         _useReverse = in._useReverse;
+      }
+
       //
       // returns the Sequence DB
       const SequenceDB& db () const {
@@ -141,14 +160,11 @@ public:
       }
 
    protected:
-      AutoPtr <SequenceDB> _db;
-      AutoPtr <RandomProjections> _projections;
+      boost::shared_ptr <SequenceDB> _db;
+      boost::shared_ptr <RandomProjections> _projections;
       SearchType _searchType;
       PrepType _prepType;
       bool _useReverse;
-
-   private:
-      Parameters (const Parameters&);
    };
 
    class CmdLineParameters : public Parameters {
@@ -160,17 +176,36 @@ public:
       }
       ~CmdLineParameters () {
       }
-
-      //
-      //
-      void interpret (int argc, char** argv) {
-         _parser.parse (argc, argv);
+      CmdLineParameters (const CmdLineParameters& in) {
+         set (in);
       }
-      
+      CmdLineParameters& operator = (const CmdLineParameters& in) {
+         set (in);
+         return *this;
+      }
+      void set (const CmdLineParameters& in) {
+         SeedSearcherMain::Parameters::set (in);
+
+         _parser = in._parser;
+         _seqFilename = in._seqFilename;;
+         _wgtFilename = in._wgtFilename;
+      }
+
+     
       //
       // call this function to initialize the parameters, 
       // after the appropriate options have been set 
       void setup (const Str& seqFilename, const Str& wgtFilename);
+      //
+      // call this function if parameters have already been initialized
+      // and you want a second seed-searcher run with different parameters.
+      //
+      // unchanged parameters: 
+      //    Preprocessor, Langauge, FeatureContainer, DB, WeightFunction
+      //
+      // Changable parameters:
+      //    ScoreFunctions, Projections, SearchParameters
+      void secondarySetup (int argc, char** argv);
 
       virtual void setupParameters ();
       virtual void setupLangauge ();
@@ -184,14 +219,14 @@ public:
       const Parser& parser () const {
          return _parser;
       }
+      Parser& parser () {
+         return _parser;
+      }
       
    protected:
       Parser _parser;
       StrBuffer _seqFilename;
       StrBuffer _wgtFilename;
-
-   private:
-      CmdLineParameters (const CmdLineParameters&);
    };
 
    //

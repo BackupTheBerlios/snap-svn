@@ -2,6 +2,7 @@
 #define _SeedSearcher_PrefixTreePreprocessor_h
 
 #include "Preprocessor.h"
+#include "boost/checked_delete.hpp"
 
 class PrefixTreePreprocessor : public Preprocessor {
    //
@@ -51,7 +52,10 @@ public:
    public:
      SeqPositions ();
       explicit SeqPositions (PositionVector*);
-      ~SeqPositions ();
+      ~SeqPositions () {
+         //
+         // memory for positions is owned by the hosting node
+      }
 
       SeqPositions& operator = (const SeqPositions&);
 
@@ -63,7 +67,20 @@ public:
       bool empty () const;
       int size () const;
 
-      void dispose (bool disposePositions);
+      void dispose (bool disposePositions) {
+         if (disposePositions) {
+            PositionIterator it = iterator ();
+            for (; it.hasNext () ; it.next ()) {
+               const SeqPosition* pos = it.get ();
+               delete const_cast <SeqPosition*> (pos);
+            }
+         }
+
+         if (_positions) {
+            boost::checked_delete (_positions);
+            _positions = NULL;
+         }
+      }
 
    private:
       PositionVector* _positions;
@@ -74,7 +91,7 @@ public:
 	// contains all positions for a given sequence
    typedef Vec <SeqPositions> SeqPositionVector; 
    typedef IteratorWrapper <SeqPositionVector> SeqPositionIterator;
-   typedef ConstIteratorWrapper <SeqPositionVector> CSeqPositionIterator;
+   typedef CIteratorWrapper <SeqPositionVector> CSeqPositionIterator;
     // consider only non empty genes, search using binary-search
 
     //

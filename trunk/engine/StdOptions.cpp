@@ -11,7 +11,7 @@
  * from http://www.loria.fr/~kucherov/SOFTWARE/grappe-3.0/iupac.html
  * IUPAC codes
  *
- * The IUPAC Code is a set of symbols encoding each subset of the four nucleotides. Here is the complete list of these symbols together with the subsets they encode. 
+ * The IUPAC Code is a set of symbols encoding each subset of the four nucleotides. Here is the complete list of these symbols assg_together with the subsets they encode. 
  * Code Corresponding class Name 
  * A - Adenine 
  * C - Cytosine 
@@ -86,7 +86,7 @@ void ACGTLangauge::write(const Assignment::Position& pos,
       writer << ACGT [it.get ()];
    }
    else if (c == cardinality ()) {
-      if (pos.strategy ()== Assignment::together)
+      if (pos.strategy ()== assg_together)
          writer << '?';
       else
          writer << '*';
@@ -261,13 +261,10 @@ KBestFilter::~KBestFilter ()
 }
 
 bool KBestFilter::checkSimilarity (int offset,
-                             const Assignment& a, 
-                             const Assignment& b)
+                             const AssignmentBase& a, 
+                             const AssignmentBase& b)
 {
-   //
-   // TODO: what happens when assignments have different lengths?
    debug_mustbe (a.length () == b.length ());
-
    //
    // check that they share a common valid assignemnt
    int length = a.length () - offset;
@@ -280,6 +277,7 @@ bool KBestFilter::checkSimilarity (int offset,
          return false;
       }
    }
+
 #if 0
    debug_only (
       DLOG << "Assignments are redundant (offset " 
@@ -304,7 +302,7 @@ bool KBestFilter::checkRedundancy (int index, const Assignment& b)
    return checkSimilarity (a, b);
 }
 
-bool KBestFilter::checkSimilarity (const Assignment& a, const Assignment& b)
+bool KBestFilter::checkSimilarity (const AssignmentBase& a, const AssignmentBase& b)
 {
 #if 0 
    debug_only (
@@ -317,19 +315,56 @@ bool KBestFilter::checkSimilarity (const Assignment& a, const Assignment& b)
 #endif
 
    debug_mustbe (_maxRedundancyOffset >= 0);
-   debug_mustbe (_maxRedundancyOffset < a.length ());
-   debug_mustbe (a.length () == b.length ());   
+   if (a.length () == b.length ()) {
+      debug_mustbe (_maxRedundancyOffset < a.length ());
 
-   //
-   // for offset 0 checking similarity between (a,b) or (b,a) is the same
-   if (checkSimilarity (0, a, b))
-      return true;
-
-   //
-   // TODO: is there a better/faster way to do this?
-   for (int offset=1 ; offset <= _maxRedundancyOffset ; offset++) {
-      if (checkSimilarity (offset, a, b) || checkSimilarity (offset, b, a))
+      //
+      // for offset 0 checking similarity between (a,b) or (b,a) is the same
+      if (checkSimilarity (0, a, b))
          return true;
+
+      //
+      // TODO: is there a better/faster way to do this?
+      for (int offset=1 ; offset <= _maxRedundancyOffset ; offset++) {
+         if (checkSimilarity (offset, a, b) || checkSimilarity (offset, b, a))
+            return true;
+      }
+   }
+   else {
+      //
+      // find out who is longer and who is shorter
+      const AssignmentBase* longer, *shorter;
+      if (a.length () > b.length ()) { longer = &a; shorter = &b; }
+      else { longer = &b; shorter = &a; }
+      int llength = longer->length ();
+      int slength = shorter->length ();
+      int diff =  llength - slength;
+
+      //
+      // check similarity one under the other
+      for (int i=0 ; i <= diff ; i++) {
+         SubAssignment assg (const_cast <AssignmentBase&> (*longer), i, slength);
+         if (checkSimilarity (0, assg, *shorter))
+            return true;
+      }
+
+      {  //
+         // check similarity between the short one and the beginning of the long one
+         SubAssignment assg (const_cast <AssignmentBase&> (*longer), 0, slength);
+         for (int offset=1 ; offset <= _maxRedundancyOffset ; offset++) {
+            if (checkSimilarity (offset, assg, *shorter))
+               return true;
+         }
+      }
+
+      {  //
+         // check similarity between the short one and the end of the long one
+         SubAssignment assg (const_cast <AssignmentBase&> (*longer), diff, slength);
+         for (int offset=1 ; offset <= _maxRedundancyOffset ; offset++) {
+            if (checkSimilarity (offset, *shorter, assg))
+               return true;
+         }
+      }
    }
 
    return false;

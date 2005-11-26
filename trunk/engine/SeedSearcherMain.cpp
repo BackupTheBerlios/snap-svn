@@ -43,8 +43,8 @@ AutoPtr <SeedSearcherMain::Results> SeedSearcherMain::search () {
       // create 
       const Assignment& assg = 
          _params.projections ().getAssignment (  i, 
-                                    _params.langauge ().wildcard (Assignment::together),
-                                    _params.langauge ().wildcard (Assignment::discrete));
+                                    _params.langauge ().wildcard (assg_together),
+                                    _params.langauge ().wildcard (assg_discrete));
 
       //
       //
@@ -79,10 +79,31 @@ AutoPtr <SeedSearcherMain::Results> SeedSearcherMain::search () {
 
 
 
+void SeedSearcherMain::CmdLineParameters::secondarySetup (int argc, char** argv)
+{
+   _parser.parse (argc, argv);
+
+   //
+   //
+   setupParameters ();
+
+   //
+   // create random projections
+   setupProjections ();
+}
+
 void SeedSearcherMain::CmdLineParameters::setup (const Str& seq, const Str& wgt)
 {
    this->_seqFilename = seq;
    this->_wgtFilename = wgt;
+
+   //
+   //
+   _prepType = _parser.__prep;
+   _useSpecialization = _parser.__proj_spec;
+   _useReverse = _parser.__count_reverse;
+
+
    //
    //
    setupParameters ();
@@ -90,6 +111,10 @@ void SeedSearcherMain::CmdLineParameters::setup (const Str& seq, const Str& wgt)
    //
    //
    setupLangauge ();
+
+   //
+   // create random projections
+   setupProjections ();
 
    //
    // setup the db
@@ -102,10 +127,6 @@ void SeedSearcherMain::CmdLineParameters::setup (const Str& seq, const Str& wgt)
    //
    // create the preprocessor
    setupPreprocessor ();
-
-   //
-   // create random projections
-   setupProjections ();
 
    //
    // create the hyper-geometric scoring scheme
@@ -127,10 +148,7 @@ void SeedSearcherMain::CmdLineParameters::setup (const Str& seq, const Str& wgt)
 void SeedSearcherMain::CmdLineParameters::setupParameters ()
 {
    _searchType = _parser.__searchType;
-   _prepType = _parser.__prep;
    _count = _parser.__count;
-   _useSpecialization = _parser.__proj_spec;
-   _useReverse = _parser.__count_reverse;
 }
 
 
@@ -140,16 +158,20 @@ void SeedSearcherMain::CmdLineParameters::setupProjections ()
    // initialize the random seed
    RandomProjections::srand (_parser.__proj_i);
    if (_parser.__proj_e) {
-      _projections = new RandomProjections (
-         RandomProjections::all,
-         _parser.__seed_l,
-         _parser.__proj_d);
+      _projections.reset (
+            new RandomProjections (
+               RandomProjections::all,
+               _parser.__seed_l,
+               _parser.__proj_d)
+         );
    }
    else {
-      _projections = new RandomProjections (
-         _parser.__proj_n,
-         _parser.__seed_l,
-         _parser.__proj_d);
+      _projections.reset (
+            new RandomProjections (
+               _parser.__proj_n,
+               _parser.__seed_l,
+               _parser.__proj_d)
+            );
    }
 }
 
@@ -172,10 +194,10 @@ void SeedSearcherMain::CmdLineParameters::setupDB ()
    // load the sequence files
    time_t start, finish;
    time (&start);
-   _db = SequenceDB::TextFileStorage::loadFastaAndWeights (
+   _db.reset (SequenceDB::TextFileStorage::loadFastaAndWeights (
       *_langauge,
       _seqFilename, 
-      _wgtFilename);
+      _wgtFilename));
 
    time (&finish);
 
@@ -188,14 +210,14 @@ void SeedSearcherMain::CmdLineParameters::setupWeightFunction ()
 {
    switch (_parser.__weightType) {
    case _weight_simple_:
-      _wf = new SimpleWeightFunction (_parser.__weight_t);
+      _wf.reset (new SimpleWeightFunction (_parser.__weight_t));
       break;
    
    case _weight_border_:
-      _wf = new BorderWeightFunction (_parser.__weight_lowt, _parser.__weight_t);
+      _wf.reset (new BorderWeightFunction (_parser.__weight_lowt, _parser.__weight_t));
       break;
    case _weight_interval_:
-      _wf = new IntervalWeightFunction (_parser.__weight_lowt, _parser.__weight_t);
+      _wf.reset (new IntervalWeightFunction (_parser.__weight_lowt, _parser.__weight_t));
       break;
 
    default:
@@ -211,7 +233,7 @@ void SeedSearcherMain::CmdLineParameters::setupWeightFunction ()
 
 void SeedSearcherMain::CmdLineParameters::setupPreprocessor ()
 {
-   _preprocessor =
+   _preprocessor.reset (
       SeedSearcherMain::PreprocessorFactory::createPreprocessor (
          _parser.__prep,
          *_db,
@@ -220,29 +242,31 @@ void SeedSearcherMain::CmdLineParameters::setupPreprocessor ()
          _parser.__seed_l,
          useReverse (),
          _parser.__prep_noneg
-      );
+      ));
 }
 
 void SeedSearcherMain::CmdLineParameters::setupScoreFunc ()
 {
    if (_parser.__scoreType == _score_hypegeo_) {
       if (_parser.__count == _count_total_) {
-         _score = 
+         _score.reset ( 
             new HyperGeoScore::FixedTotalCount (_parser.__seed_l, 
                                                 _parser.__score_partial, 
                                                 *_wf, 
-                                                *_db);
+                                                *_db)
+         );
       }
       else {
-         _score = 
+         _score.reset (
             new HyperGeoScore::Simple (_parser.__score_partial, 
                                        *_wf, 
-                                       *_db);
+                                       *_db)
+          );
       }
    }
    else {
       mustbe (_parser.__scoreType == _score_exp_);
-      _score = new ExpScore (1.2, 1.2, *_wf);
+      _score.reset (new ExpScore (1.2, 1.2, *_wf));
    }
 }
 
@@ -262,7 +286,7 @@ void SeedSearcherMain::CmdLineParameters::setupFeatureContainer ()
 
    //
    // use GoodFeaturesFilter to allow only features above a threshold
-   _bestFeatures = new BookkeeperFilter (
+   _bestFeatures.reset (new BookkeeperFilter (
          new GoodFeaturesFilter (
             container,
             true,
@@ -273,7 +297,7 @@ void SeedSearcherMain::CmdLineParameters::setupFeatureContainer ()
             _parser.__score_min_seq_per
          ), 
          true
-      );
+      ));
 }
 
 void SeedSearcherMain::CmdLineParameters::setupLangauge ()
@@ -281,13 +305,12 @@ void SeedSearcherMain::CmdLineParameters::setupLangauge ()
    //
    // at first N is considered to be a part of the langauge
    // this is in order to allow reading of seq files with N's
-   _langauge = 
+   _langauge.reset ( 
       new ACGTLangauge (_parser.__count_reverse, // support reverse
                         true // N is considered to be part of the langauge
-                        );
+                        ));
 
-   Langauge* old = SeedSearcherLog::setup (_langauge);
-   delete old;
+   SeedSearcherLog::setup (_langauge.get ());
 }
 
 

@@ -104,7 +104,7 @@ public:
    //
    typedef Vec <AssgNodePair> NodeVector;
    typedef IteratorWrapper <NodeVector> NodeIterator;
-   typedef ConstIteratorWrapper <NodeVector> CNodeIterator;
+   typedef CIteratorWrapper <NodeVector> CNodeIterator;
 
    //
    //

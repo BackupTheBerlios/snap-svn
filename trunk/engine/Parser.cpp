@@ -34,6 +34,11 @@ Parser::Parser ()
    __firstFileArg = 0;
    __lastFileArg = 0;
 
+   restoreDefaults ();
+}
+
+void Parser::restoreDefaults ()
+{
    //
    //
    __proj_e = false;
@@ -107,7 +112,8 @@ enum {
    __PSSM,
    __MOTIF,
    __PERF_M,
-   __PERF_COMP_L
+   __PERF_COMP_L,
+   __CONF
 };
 
 
@@ -377,6 +383,14 @@ static MyOptions my_options [] = {
       "none",
       required_argument
    },
+
+   {  "Sconf",
+      {  "<filename> name of configuration file",
+         NULL
+      },
+      "empty",
+      required_argument
+   }
 };
 
 static const int numberOfOptions = sizeof (my_options) / (sizeof (MyOptions));
@@ -677,6 +691,9 @@ void Parser::parse (int argc, char* argv[])
          break;
       };
 
+      case __CONF:
+         __conf = optarg;
+         break;
 
       default:
          usage (StrBuffer ("unknown argument: ", __argv [optind]));
@@ -825,4 +842,75 @@ void Parser::logParams (Persistance::TextWriter& out) const
 
 
    out.flush ();
+}
+
+
+#include<boost/tokenizer.hpp>
+
+//
+// only whitespace is delimiter, everything else is kept
+class Separator : public boost::char_separator <char> {
+  public:
+  Separator () : boost::char_separator <char> (" \t") {
+  }
+};
+
+Argv::Argv (const Str& in) : _argc (0), _argv (NULL)
+{
+  set (in);
+}
+
+Argv::Argv (const Str& prefix, const Str& in) : _argc (0), _argv (NULL)
+{
+  set (prefix, in);
+}
+
+
+void Argv::set (const Str& prefix, const Str& in)
+{
+  clear ();
+
+   typedef boost::tokenizer <Separator> Tok;
+   Tok tok (in);
+
+   //
+   // first we count the number of tokens
+   Tok::iterator beg;
+   for (beg=tok.begin(); beg!=tok.end();++beg) {
+      ++_argc;
+   }
+
+   _argv = new char* [++_argc];
+   _argv [0] = dup (prefix);
+
+   int index = 1;
+   for (beg=tok.begin(); beg!=tok.end();++beg) {
+      _argv [index] = dup (*beg);
+      index++;
+   }
+}
+
+void Argv::set (const Str& in)
+{
+  clear ();
+
+   typedef boost::tokenizer <Separator> Tok;
+   Tok tok (in);
+
+   //
+   // first we count the number of tokens
+   Tok::iterator beg;
+   for (beg=tok.begin(); beg!=tok.end();++beg) {
+      ++_argc;
+   }
+
+   _argv = new char* [_argc];
+   int index = 0;
+   for (beg=tok.begin(); beg!=tok.end();++beg) {
+     int length = (*beg).length () ;
+      _argv [index] = new char [length + 1];
+      (*beg).copy (_argv [index], length);
+      _argv [index][length] = 0;
+      index++;
+   }
 }

@@ -56,7 +56,7 @@ public:
   
  private:
   int _n; 
-  double _PR[Assignment::MAX_ALPHABET_SIZE];
+  double _PR[ASSG_MAX_ALPHABET_SIZE];
 };
 
 
@@ -94,7 +94,7 @@ public:
       _length = length;
       //
       // TODO: support partial counts?
-      double positions [MAX_PSSM_LENGTH][Assignment::MAX_ALPHABET_SIZE];
+      double positions [MAX_PSSM_LENGTH][ASSG_MAX_ALPHABET_SIZE];
       memset (positions, 0, sizeof (positions));
 
       //

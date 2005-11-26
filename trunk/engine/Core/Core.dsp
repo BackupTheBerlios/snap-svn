@@ -142,5 +142,137 @@ SOURCE=.\STLHelper.h
 SOURCE=.\Str.h
 # End Source File
 # End Group
+# Begin Group "boost"
+
+# PROP Default_Filter ""
+# Begin Group "pool"
+
+# PROP Default_Filter ""
+# Begin Group "details"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=..\boost\pool\detail\ct_gcd_lcm.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\boost\pool\detail\gcd_lcm.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\boost\pool\detail\guard.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\boost\pool\detail\mutex.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\boost\pool\detail\pool_construct.inc
+# End Source File
+# Begin Source File
+
+SOURCE=..\boost\pool\detail\pool_construct_simple.inc
+# End Source File
+# Begin Source File
+
+SOURCE=..\boost\pool\detail\singleton.hpp
+# End Source File
+# End Group
+# Begin Source File
+
+SOURCE=..\boost\pool\object_pool.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\boost\pool\pool.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\boost\pool\pool_alloc.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\boost\pool\poolfwd.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\boost\pool\simple_segregated_storage.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\boost\pool\singleton_pool.hpp
+# End Source File
+# End Group
+# Begin Group "config"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=..\boost\config\abi_prefix.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\boost\config\abi_suffix.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\boost\config\auto_link.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\boost\config\posix_features.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\boost\config\requires_threads.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\boost\config\select_compiler_config.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\boost\config\select_platform_config.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\boost\config\select_stdlib_config.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\boost\config\suffix.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\boost\config\user.hpp
+# End Source File
+# End Group
+# Begin Source File
+
+SOURCE=..\boost\config.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\boost\limits.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\boost\non_type.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\boost\static_assert.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\boost\timer.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\boost\type.hpp
+# End Source File
+# End Group
 # End Target
 # End Project

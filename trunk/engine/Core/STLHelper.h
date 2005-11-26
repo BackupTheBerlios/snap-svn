@@ -56,103 +56,45 @@ static Vector* createNewVector (int size, const_iterator b, const_iterator e)
 #endif
 
 
-
-template <class Container> 
-class IteratorWrapper{
+template <class Container, class TIterator>
+class IteratorWrapperBase {
 public:
-   ;
    // the type of the values we are iterating over
    typedef typename Container::value_type value_type;
 
    //
    // underlining iterator
     //Container::iterator;
-   typedef typename Container::iterator iterator;
+   typedef TIterator iterator;
 
    //
    // Copy Ctor & operator =
-   inline IteratorWrapper () : _current (NULL), _end (NULL) {
+   inline IteratorWrapperBase () : _current (NULL), _end (NULL) {
    }
-   inline IteratorWrapper (iterator begin, iterator end) : _current (begin), _end (end) {
+   inline IteratorWrapperBase (iterator begin, iterator end) : _current (begin), _end (end) {
    }
-   inline IteratorWrapper (const IteratorWrapper& i) : _current (i._current), _end (i._end) {
+   inline IteratorWrapperBase (const IteratorWrapperBase& i) : _current (i._current), _end (i._end) {
    }
-   inline IteratorWrapper& operator = (const IteratorWrapper& i) {
+   inline IteratorWrapperBase& operator = (const IteratorWrapperBase& i) {
       _current = i._current;
       _end = i._end;
       return *this;
    }
 
    //
-   // iteration methods
-   bool hasNext () const {
-      return _current != _end;
-   }
-   void next () {
-      debug_mustbe (_current != _end);
-      _current++; 
-   }
-   const value_type& get () const {
-      debug_mustbe (_current != _end);
-      return *_current;
-   }
-   /*
-   value_type get () {
-      debug_mustbe (_current != _end);
-      return *_current;
-   }
-   */
-   value_type* operator -> () const {
+   // step forward a few more steps
+   void next (int index) {
       //
-      // weird syntax needed in case 'iterator' is a class/struct and 
-      // not a pointer
-      return &(*_current); 
+      // advance the begin iterator
+      for (; (_current!= _end) && (index > 0) ; --index, ++_current);
    }
-   const value_type& operator * () const {
-      return *_current;
-   }
-   /*
-   value_type operator * () {
-      return *_current;
-   }
-   */
-   iterator getImpl () {
-      return _current;
-   }
-   const iterator getImpl () const {
-      return _current;
-   }
-
-protected:
-   iterator _current;
-   iterator _end;
-};
-
-
-template <class Container>
-class ConstIteratorWrapper {
-public:
-   ;
-   // the type of the values we are iterating over
-   typedef typename Container::value_type value_type;
-
    //
-   // underlining iterator
-    //Container::iterator;
-   typedef typename Container::const_iterator iterator;
-
-   //
-   // Copy Ctor & operator =
-   inline ConstIteratorWrapper () : _current (NULL), _end (NULL) {
-   }
-   inline ConstIteratorWrapper (iterator begin, iterator end) : _current (begin), _end (end) {
-   }
-   inline ConstIteratorWrapper (const ConstIteratorWrapper& i) : _current (i._current), _end (i._end) {
-   }
-   inline ConstIteratorWrapper& operator = (const ConstIteratorWrapper& i) {
-      _current = i._current;
-      _end = i._end;
-   }
+   // how many iteration steps maximally allowd
+   void allowNext (int length) {
+      iterator temp = _current;
+      for (; (temp != _end) && (length > 0) ; --length, ++temp);
+      _end = temp;
+   };
 
    //
    // iteration methods
@@ -167,16 +109,13 @@ public:
       debug_mustbe (_current != _end);
       return *_current;
    }
-   inline value_type const* operator -> () const {
-      //
-      // weird syntax needed in case 'iterator' is a class/struct and 
-      // not a pointer
-      return &(*_current); 
-   }
    inline value_type const& operator * () const {
       return *_current;
    }
-   const iterator getImpl () const {
+   inline iterator getImpl () {
+      return _current;
+   }
+   inline const iterator getImpl () const {
       return _current;
    }
 
@@ -184,6 +123,65 @@ protected:
    iterator _current;
    iterator _end;
 };
+
+template <class Container> 
+class IteratorWrapper : 
+   public IteratorWrapperBase <Container, typename Container::iterator> 
+{
+public:
+   typedef IteratorWrapperBase <Container, typename Container::iterator> Base;
+   //
+   // needed again because gcc is complaining about typenames...
+   typedef typename Container::iterator iterator;
+   typedef typename Container::value_type value_type;
+
+   inline IteratorWrapper () {
+   }
+   inline IteratorWrapper (iterator begin, iterator end) 
+      : Base (begin, end) {
+   }
+   inline IteratorWrapper (const IteratorWrapper& i)
+      : Base (i) {
+   }
+
+   inline value_type* operator -> () const {
+      //
+      // weird syntax needed in case 'iterator' is a class/struct and 
+      // not a pointer
+      return &(*_current); 
+   }
+};
+
+template <class Container> 
+class CIteratorWrapper : 
+   public IteratorWrapperBase <Container, typename Container::const_iterator> 
+{
+public:
+   typedef IteratorWrapperBase <Container, typename Container::const_iterator> Base;
+   //
+   // needed again because gcc is complaining about typenames...
+   typedef typename Container::const_iterator iterator;
+   typedef typename Container::value_type value_type;
+
+   inline CIteratorWrapper () {
+   }
+   inline CIteratorWrapper (iterator begin, iterator end) 
+      : Base (begin, end) {
+   }
+   inline CIteratorWrapper (const CIteratorWrapper& i)
+      : Base (i) {
+   }
+
+   inline value_type const* operator -> () const {
+      //
+      // weird syntax needed in case 'iterator' is a class/struct and 
+      // not a pointer
+      return &(*_current); 
+   }
+};
+
+
+
 
 
 template <class Container>

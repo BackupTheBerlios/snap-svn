@@ -12,7 +12,9 @@
 #include "StdOptions.h"
 #include "DebugLog.h"
 
+#include "Core/ImplList.h"
 #include "Core/AutoPtr.h"
+#include "Util/ConfReader.h"
 
 #include "Persistance/TextWriter.h"
 #include "Persistance/StdOutputStream.h"
@@ -28,7 +30,7 @@ using namespace std;
 using namespace Persistance;
 
 static const int __versionMajor = 2;
-static const int __versionMinor = 1;
+static const int __versionMinor = 2;
 
 //
 //
@@ -38,7 +40,6 @@ enum {
    StubFileIndex = 2,
    RequiredParams = 3,
    TestWgtFileIndex = 3,
-   ConfFileIndex = 3,
 };
 
 
@@ -137,7 +138,7 @@ static Persistance::OutputStream* openPerfFile (
 
 
 
-static void welcomeMessage (const Parser& parser)
+static void welcomeMessage ()
 {
    //
    // (1) write header, and execution time
@@ -152,6 +153,10 @@ static void welcomeMessage (const Parser& parser)
    DLOG << DLOG.EOL ();
    DLOG << "by Yoseph Barash (hoan@cs.huji.ac.il)" << DLOG.EOL ();
    DLOG << "and Aviad Rozenhek (aviadr@cs.huji.ac.il) " << DLOG.EOL ();
+}
+
+static void welcomeMessage (const Parser& parser)
+{
    time_t ltime;
    time( &ltime );
    DLOG << DLOG.EOL ()
@@ -437,7 +442,7 @@ static void mainRoutine (int argc,
 
 //
 // Copied/Adapted from legacy SeedSearcher
-int main(int argc, char* argv [])
+int cpp_main(int argc, char* argv [])
 {
    int exit_value = 0;
 
@@ -459,14 +464,6 @@ int main(int argc, char* argv [])
       cerr << endl;
       exit_value = 1;
    }
-   catch (std::exception& x) {
-      cerr << endl << x.what () << endl ;
-      exit_value = 2;
-   }
-   catch (...) {
-      cerr << endl << "Unknown Error! aborting..." << endl;
-      exit_value = 3;
-   }
 
    return exit_value;
 }
@@ -474,13 +471,9 @@ int main(int argc, char* argv [])
 
 
 static AutoPtr <SeedSearcherMain::Results> 
-   mainSearch (SeedSearcherMain::CmdLineParameters& params)
+   mainSearch (SeedSearcherMain::CmdLineParameters& params,
+   const StrBuffer& fileStub)
 {
-   //
-   // 
-   const char* fileStub = 
-      params.parser ().__argv [params.parser ().__firstFileArg + StubFileIndex];
-
    SeedSearcherMain main (params);
    AutoPtr <SeedSearcherMain::Results> results = main.search ();
 
@@ -549,14 +542,180 @@ static AutoPtr <SeedSearcherMain::Results>
    return results;
 }
 
+
+//
+//
+typedef Impl1WayDataNode <SeedSearcherMain::CmdLineParameters> ParamNode;
+class ParamList {
+public:
+   ~ParamList () {
+      //
+      // delete the nodes
+      while (!_list.empty ())
+         delete _list.removeFirst();
+   }
+   void addLast (SeedSearcherMain::CmdLineParameters& in) {
+      _list.addLast (new ParamNode (in));
+   }
+
+   //
+   // add a new default parameters object to the list
+   // and return it
+   SeedSearcherMain::CmdLineParameters& addLast () {
+      ParamNode* newOne = new ParamNode ();
+      _list.addLast (newOne);
+      return newOne->data;
+   }
+   const SeedSearcherMain::CmdLineParameters& getLast () const {
+      return _list.getLast ()->data;
+   }
+private:
+   ImplCyclicList <ParamNode> _list;
+};
+
+
+
+static AutoPtr <SeedSearcherMain::Results> 
+   mainMultipleSearch (
+            SeedSearcherMain::CmdLineParameters& firstParams,
+            const StrBuffer& fileStub,
+            ConfReader& conf,
+            const Argv& confline,
+            const Argv& cmdline) 
+{
+   AutoPtr <SeedSearcherMain::Results> results;
+   ParamList paramList;
+   //
+   // we insert the original parameters as the first parameters in the list
+   paramList.addLast (firstParams);
+
+   StrBuffer stub;
+   StrBuffer args;
+   StrBuffer name;
+   StrBuffer test;
+   bool shouldTest;
+   bool shouldClear;
+   int runNumber = 1;
+
+   //
+   // now we read our run parameters from the conf
+   ConfReader::Package seed (conf.getPackage ("Seed"));
+   ConfReader::Package runs (seed.createSubPackage ("Runs"));
+   ConfReader::Iterator it (runs);
+   for (; !it.atEnd () ; it.next ()) {
+      DLOG << "Performing: "<< it.getName () << DLOG.EOL ();
+      
+      //
+      // get the last paramters
+      const SeedSearcherMain::CmdLineParameters& lastParams = paramList.getLast ();
+      //
+      // add a new parameter to the list
+      SeedSearcherMain::CmdLineParameters& newParams = paramList.addLast ();
+      //
+      // copy settings from the last paramters
+      newParams.set (lastParams);
+
+      shouldClear = false;
+      runs.get ("Clear", shouldClear);
+      if (shouldClear) {
+         //
+         // we first restore the defaults
+         newParams.parser ().restoreDefaults ();
+         //
+         // then re-apply the original arguments
+         newParams.parser ().parse (confline);
+         newParams.parser ().parse (cmdline);
+      }
+
+      runs.mustGet (it + "Args", args);
+      Argv params_argv (cmdline.argv ()[0], args);
+      newParams.secondarySetup ( params_argv.argc (),
+                                 params_argv.argv ());
+
+      //
+      // check for seed evaluation
+      test.set (0);
+      shouldTest = runs.get (it + "Test", test)? !test.empty () : false;
+
+      //
+      // run the search, different stub name every time
+      stub = fileStub; stub.append ('.'); stub.append (it.getName ());
+      results = mainSearch (newParams, stub);
+
+      runNumber++;
+
+      // perform seed perfomance check
+      // testSeedPerformance (argc, argv, *results, params);
+   }
+
+   return results;
+}
+
+//
+// this functin checks if a conf is specified and if it is valid
+static void checkConf (int argc, char* argv [], Argv& outInitArgs)
+{
+   Parser parser;
+   parser.parse (argc, argv);
+
+   if (!parser.__conf.empty ()) {
+      ConfReader conf (parser.__conf);
+      DLOG << "Checking correctness of " << conf.source () << ':' << DLOG.EOL ();
+      if (!conf.valid ()) {
+         mmustfail ("The file could not be found");
+      }
+      DLOG.flush ();
+
+      //
+      // now we validate the arguments in the conf
+      StrBuffer args;
+      ConfReader::Package seed (conf.getPackage ("Seed"));
+      ConfReader::Package init (seed.tryCreateSubPackage ("Init"));
+      if (init.get ("Args", args)) {
+         DLOG << "Validating initial arguments..." 
+	      << args 
+	      << DLOG.EOL ();
+         //
+         //
+	 DLOG.flush ();
+         outInitArgs.set (argv[0], args);
+         parser.parse (outInitArgs);
+      }
+
+      //
+      // now we read and validate run parameters from the conf
+      ConfReader::Package runs (seed.createSubPackage ("Runs"));
+      ConfReader::Iterator it (runs);
+      for (; !it.atEnd () ; it.next ()) {
+         DLOG << "Validating  " << it.getName () << DLOG.EOL ();
+         if (runs.get (it + "Args", args))
+            parser.parse (args);
+      }
+   }
+   DLOG << "OK!" << DLOG.EOL () << DLOG.EOL ();
+}
+
 static void mainRoutine (int argc, 
                         char* argv [], 
                         SeedSearcherLog::Sentry& logging)
 {
+   welcomeMessage ();
+
+   Argv confInit;
+   checkConf (argc, argv, confInit);
+
    //
    // initialize parameters
-   SeedSearcherMain::CmdLineParameters params (argc, argv);
-
+   SeedSearcherMain::CmdLineParameters params;
+   if (!confInit.empty ()) {
+      //
+      // initialize first with conf parameters
+     params.parser ().parse (confInit);
+   }
+   //
+   // cmdline parameters has precedence
+   Argv cmdlineInit (argc, argv);
+   params.parser ().parse (cmdlineInit);
 
    //
    // check that we have enough arguments
@@ -578,12 +737,37 @@ static void mainRoutine (int argc,
    // write welcome message
    welcomeMessage(params.parser ());
 
-   //
-   // begin 
-   params.setup ( argv [params.parser ().__firstFileArg + SeqFileIndex],
-                  argv [params.parser ().__firstFileArg + WgtFileIndex]);
+   AutoPtr <SeedSearcherMain::Results> results;
+   if (!params.parser ().__conf.empty ()) {
+      //
+      // the conf parameter for multiple runs was specified
+      // create the conf reader
+      ConfReader conf (params.parser ().__conf);
 
-   AutoPtr <SeedSearcherMain::Results> results = mainSearch (params);
+      //
+      // create the preprocessor
+      params.setup ( argv [params.parser ().__firstFileArg + SeqFileIndex],
+                     argv [params.parser ().__firstFileArg + WgtFileIndex]);
+
+      //
+      // run all the searches
+      results = mainMultipleSearch (params, 
+                                    fileStub, 
+                                    conf,
+                                    confInit,
+                                    cmdlineInit);
+   }
+   else {
+      //
+      // create the preprocessor
+      params.setup ( argv [params.parser ().__firstFileArg + SeqFileIndex],
+                     argv [params.parser ().__firstFileArg + WgtFileIndex]);
+
+      //
+      // just a single run
+      results = mainSearch (params, fileStub);
+   }
+    
    //
    //
    if (numOfFileArgs > RequiredParams) {
@@ -644,113 +828,4 @@ void operator delete[] (void* inPtr)
 
 #endif
 
-/*
-#include "Core/ConfReader.h"
 
-class StrUtil {
-public:
-   static 
-};
-
-class SeedRunner {
-public:
-   SeedRunner (int argc, char* argv);
-   
-   void setup () {
-      int numOfFileArgs = params.parser ().__lastFileArg - 
-            params.parser ().__firstFileArg +1;
-
-      //
-      // seq wgt stub conf
-      if(numOfFileArgs < 4)
-         params.parser ().usage ("Missing arguments");
-
-   //
-   // initialize parameters
-   SeedSearcherMain::CmdLineParameters params (argc, argv);
-
-
-   //
-   // check that we have enough arguments
-   // needs SeqFile RegFile and output-stub
-   int numOfFileArgs = params.parser ().__lastFileArg - 
-         params.parser ().__firstFileArg +1;
-
-   if(numOfFileArgs < RequiredParams)
-      params.parser ().usage ("Missing arguments");
-
-   //
-   // now setup file logging
-   const char* fileStub = 
-      argv [params.parser ().__firstFileArg + StubFileIndex];
-
-//   logging.setupFileLogging (StrBuffer (fileStub, ".log"));
-
-   //
-   // write welcome message
-   welcomeMessage(params.parser ());
-
-   //
-   // initialize the conf
-   ConfReader conf (argv [params.parser ().__firstFileArg + ConfFileIndex]);
-   if (!conf.valid ()) {
-      DLOG << "conf file " << conf.source () << " not found." << DLOG.EOL ();
-      mustfail ();
-   }
-
-   //
-   // begin initiale setup
-   params.setup ( argv [params.parser ().__firstFileArg + SeqFileIndex],
-                  argv [params.parser ().__firstFileArg + WgtFileIndex]);
-
-
-   StrBuffer args;
-   StrBuffer name;
-   StrBuffer test;
-   bool shouldTest;
-   int runNumber = 1;
-
-   //
-   // now we read our run parameters from the conf
-   ConfReader::Package runs (conf.getPackage ("Runs"));
-   ConfReader::Iterator it (runs);
-   for (; !it.atEnd () ; it.next ()) {
-      DLOG << "Performing: << it.get () << DLOG.EOL ();
-
-   _setargv (
-
-      runs.mustGet (it + "Args", args);
-
-      bool kkk = runs.get (it + "Test", test);
-      if (kkk) {
-         shouldTest = !test.empty ();
-      }
-
-      mainSearch (params);
-
-      runNumber++;
-   }
-
-
-
-   SeedSearcherMain main (params);
-   AutoPtr <SeedSearcherMain::Results> results = main.search ();
-
-   int bonfN = 
-      params.parser ().__score_bonf? results->numSeedsSearched () : 0;
-   FeatureInvestigator printer ( params                     , 
-                                 params.parser ().__seed_o  ,
-                                 bonfN                      );
-   printer.printSeedHeader (DLOG);
-
-   bool gPSSM = params.parser ().__generatePSSM;
-   Parser::MotifType gMotif = params.parser ().__generateMotif;
-
-
-   }
-
-
-
-   Parser _parser;
-};
-*/

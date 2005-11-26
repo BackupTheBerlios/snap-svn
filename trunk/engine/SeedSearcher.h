@@ -100,6 +100,20 @@ public:
       }
       virtual ~SearchParameters () {
       }
+      SearchParameters (const SearchParameters& in) {
+         set (in);
+      }
+      SearchParameters& operator = (const SearchParameters& in) {
+         set (in);
+         return *this;
+      }
+      void set (const SearchParameters& in) {
+         FeatureInvestigator::Parameters::set (in);
+
+         _bestFeatures = in._bestFeatures;
+         _useSpecialization = in._useSpecialization;
+         _count = in._count;
+      }
 
       //
       // stores the best features
@@ -122,7 +136,7 @@ public:
       }
 
    protected:
-      AutoPtr <FeatureFilter> _bestFeatures;
+      boost::shared_ptr <FeatureFilter> _bestFeatures;
       bool _useSpecialization;
       CountType _count;
    };

@@ -12,6 +12,8 @@
 #include "Persistance/Defs.h"
 #include "Core/AutoPtr.h"
 
+#include "boost/shared_ptr.hpp"
+
 
 
 //
@@ -144,11 +146,24 @@ public:
       }
       virtual ~Parameters () {
       }
+      Parameters (const Parameters& in) {
+         set (in);
+      }
+      Parameters& operator = (const Parameters& in) {
+         set (in);
+         return *this;
+      }
+      void set (const Parameters & in) {
+         _preprocessor = in._preprocessor;
+         _langauge =in._langauge;
+         _score = in._score;
+         _wf = in._wf;
+      }
 
       //
       // which sequences are positively labeled
       void wf (SeqWeightFunction* wf) {
-         _wf = wf;
+         _wf.reset (wf);
       }
       const SeqWeightFunction& wf () const {
          return *_wf;
@@ -156,7 +171,7 @@ public:
       //
       // preprocessed data to search over
       void preprocessor (Preprocessor* prep) {
-         _preprocessor = prep;
+         _preprocessor.reset (prep);
       }
       const Preprocessor& preprocessor () const {
          return *_preprocessor;
@@ -164,7 +179,7 @@ public:
       //
       // how to score features
       void score (ScoreFunction* score) {
-         _score = score;
+         _score.reset (score);
       }
       const ScoreFunction& score () const {
          return *_score;
@@ -172,7 +187,7 @@ public:
       //
       // returns the langauge to work with
       void langauge (Langauge* lang) {
-         _langauge = lang;
+         _langauge.reset (lang);
       }
       const Langauge& langauge () const {
          return *_langauge;
@@ -201,14 +216,10 @@ public:
 
 
    protected:
-      AutoPtr <SeqWeightFunction> _wf;
-      AutoPtr <Preprocessor> _preprocessor;
-      AutoPtr <ScoreFunction> _score;
-      AutoPtr <Langauge> _langauge;
-
-   private:
-      Parameters (const Parameters&) {
-      }
+      boost::shared_ptr <SeqWeightFunction> _wf;
+      boost::shared_ptr <Preprocessor> _preprocessor;
+      boost::shared_ptr <ScoreFunction> _score;
+      boost::shared_ptr <Langauge> _langauge;
    };
 
    //

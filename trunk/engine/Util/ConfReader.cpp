@@ -35,12 +35,12 @@ public:
 
 
 
-/*                      */
-/*
-/*  ConfReaderTree.h
-/* 
-/*
-/*                      */
+/*                      *
+ *
+ *  ConfReaderTree.h
+ * 
+ *
+ *                      */
 
 
 
@@ -63,7 +63,8 @@ public:
     public:
         Node () : ancestor(0) {
         }
-        Node (const Str& inKey, Node* inAncestor=0) : key(inKey), ancestor(inAncestor) {
+        Node (const Str& inKey, Node* inAncestor=0) 
+	  : ancestor(inAncestor), key(inKey) {
         }
         ~Node();
         
@@ -165,14 +166,15 @@ public:
 
 
 
-/*                                      */ 
-/*
-/*  ConfReaderWrapper
-/*
-/*  A copy of:
-/*  Util/StringTreeConfig.h
-/*
-/*                                      */ 
+/*                                      * 
+ *
+ *  ConfReaderWrapper
+ *
+ *  A copy of:
+ *  Util/StringTreeConfig.h
+ *
+ *                                      */ 
+
 
 class	ConfReaderWrapper    {
 public:
@@ -225,7 +227,7 @@ protected:
 // ConfReaderRep.h
 //
 //
-/**********************************************/
+ **********************************************/
 
 
 
@@ -243,7 +245,9 @@ public:
     bool isValid ();
 
     ConfReaderTree::Node* tryGetNode (const Str&);
-    ConfReader::PackageRep* tryGetPackage (const Str&, const Str&, bool searchGlobal);
+    ConfReader::PackageRep* tryGetPackage (const Str&, 
+					   const Str&, 
+					   bool searchGlobal);
     const Str& source ()   {
         return systemSpec;
     }
@@ -534,7 +538,7 @@ void ConfReaderTree::KeyIterator::next() {
 // ConfReaderTree.cpp
 //
 //
-/**********************************************/
+ **********************************************/
 
 //#include "IO/FileSpec.h"
 //#include "Util/StrUtils.h"
@@ -580,17 +584,30 @@ bool ConfReaderWrapper::get(Key inKey, int64_t& outNumber, const char* inModifie
 		return false;
 }
 */
-/*
-bool ConfReaderWrapper::get(Key inKey, int& outNumber) {
-	//int64_t result;
-   int result;
-	if (get(inKey, result)) {
-		outNumber= result;
-		return true;
-	} else
-		return false;
+
+//
+// imported from StrUtils
+static bool stringToNum(const char* inStr, int& outInt)
+{
+    debug_mustbe(inStr);
+    int result = sscanf(inStr, "%d", &outInt);
+    if (result==1)
+        return true;
+    else
+        return false;
 }
-*/
+
+bool ConfReaderWrapper::get(Key inKey, int& outNumber) 
+{
+	StrBuffer value;
+   if (get(inKey, value)) {
+        return stringToNum (value, outNumber);
+   }
+   else {
+		return false;
+   }
+}
+
 
 void ConfReaderWrapper::set(Key inKey, Str inString) {
 	if (rep) {
@@ -815,7 +832,7 @@ void ConfReaderWrapper::saveToFile(const Str& inConfigFile,
 // ConfReaderRep.cpp
 //
 //
-/**********************************************/
+ **********************************************/
 
 
 
@@ -920,7 +937,7 @@ void ConfReaderWrapper::saveToFile(const Str& inConfigFile,
 // 31/12/2001 AR.
 //
 
-
+/*
 static ConfReaderTree::Node* findNodeChild (ConfReaderTree::Node* in, 
                                             const Str& key)	
 {
@@ -929,6 +946,7 @@ static ConfReaderTree::Node* findNodeChild (ConfReaderTree::Node* in,
 
     return in;
 }
+*/
 
 
 //
@@ -1116,12 +1134,13 @@ bool ConfReader::PackageRep::get(const Str& in, int64_t& out, const char* modifi
 // ConfReader::IteratorRep implementation
 //
 
-ConfReader::IteratorRep::IteratorRep (PackageRep& inRootNode, const Str& inRelativePath) 
+ConfReader::IteratorRep::IteratorRep (PackageRep& inRootNode, 
+				      const Str& inRelativePath) 
 :   _local (false),
     _localNode (inRootNode.getLocalNode ()),
     _globalNode (inRootNode.getGlobalNode ()),
-    _localIterator (inRootNode.getLocalNode (), inRelativePath),
-    _globalIterator (inRootNode.getGlobalNode (), inRelativePath)
+    _globalIterator (inRootNode.getGlobalNode (), inRelativePath),
+    _localIterator (inRootNode.getLocalNode (), inRelativePath)
 {
     //
     // first start iterating over global nodes.
@@ -1189,7 +1208,7 @@ void ConfReader::IteratorRep::skipOverridedEntries ()
 // ConfReader.cpp
 //
 //
-/**********************************************/
+ **********************************************/
 
 
 

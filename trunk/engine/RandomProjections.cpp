@@ -83,7 +83,7 @@ static int createAllProjections (
 //
 // Copied/Adapted from legacy SeedSearcher.cpp
 static int verifyProjectionNumber( int motifLength,
-					 int dist
+					 int& inoutDist
                 )
 {
    if (motifLength <= 2)
@@ -99,8 +99,15 @@ static int verifyProjectionNumber( int motifLength,
    // because it is the same as having a shorter assignment
    motifLength--;
 
-  assert(dist<=motifLength);
-  int result = NChooseK (motifLength, dist);
+   if (  motifLength < inoutDist) {
+      DLOG << "too many wildcards asked, number of wildcards will be only " 
+            << motifLength << DLOG.EOL ();
+
+      inoutDist = motifLength;
+   }
+   
+
+  int result = NChooseK (motifLength, inoutDist);
 
   /*
    * Aviad: removed the comparison with projNum, just return the number
@@ -115,20 +122,20 @@ static int verifyProjectionNumber( int motifLength,
 RandomProjections::RandomProjections (
    All,              // create all possible projections
    int length,          // length of the assignment to create
-   int numOfPositions   // number of positions to select in each assignment
+   int nPositions   // number of positions to select in each assignment
    )
 :_length (length),
- _numOfPositions (numOfPositions)
+ _numOfPositions (nPositions)
 {
    //
    // first compute how many projections are possible:
    // I am using a function adapted from legacy SeedSearcher here...
    _maxPossibleProjections = 
-      verifyProjectionNumber (length, numOfPositions);
+      verifyProjectionNumber (length, _numOfPositions);
 
    RandomPositions chosenPositions;
    createAllProjections (  _vector, chosenPositions, 
-                           1, length -1, numOfPositions);
+                           1, length -1, _numOfPositions);
 
    debug_mustbe (_vector.size () == _maxPossibleProjections);
 
@@ -216,29 +223,28 @@ static void chooseProjections (
 RandomProjections::RandomProjections (
    int numOfProjections,  // create all possible projections
    int length,          // length of the assignment to create
-   int numOfPositions   // number of positions to select in each assignment
+   int nPositions   // number of positions to select in each assignment
    )
 :_length (length),
- _numOfPositions (numOfPositions)
+ _numOfPositions (nPositions)
 
 {
    //
    // first compute how many projections are possible:   ( length          )
    _maxPossibleProjections = 
-      verifyProjectionNumber (length, numOfPositions);
+      verifyProjectionNumber (length, _numOfPositions);
 
-   debug_only (
-      if (  _maxPossibleProjections < numOfProjections) 
-         DLOG << "too many projections asked, number of projections will be only " 
-              << _maxPossibleProjections << DLOG.EOL ();
-   );
+   if (  _maxPossibleProjections < numOfProjections) {
+      DLOG << "too many projections asked, number of projections will be only " 
+            << _maxPossibleProjections << DLOG.EOL ();
+   }
 
    if (_maxPossibleProjections <= numOfProjections) {
       //
       // just create all the projections possible
       RandomPositions chosenPositions;
       createAllProjections (  _vector, chosenPositions, 
-                              1, length -1, numOfPositions);
+                              1, length -1, _numOfPositions);
 
       debug_mustbe (_vector.size () == _maxPossibleProjections);
    }
@@ -248,7 +254,7 @@ RandomProjections::RandomProjections (
       //
       // the function allowed random in the first position. 
       // fixed it.
-      chooseProjections (length, numOfPositions, numOfProjections, _vector);
+      chooseProjections (length, _numOfPositions, numOfProjections, _vector);
    }
 
    //

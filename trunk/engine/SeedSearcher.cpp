@@ -91,7 +91,7 @@ static int together (FeatureVector& myFeatures, // stores the features of the no
    }
    else {
       //
-      // all the features that have similar endings are grouped together.
+      // all the features that have similar endings are grouped assg_together.
       typedef std::set <FeaturePair, FeatureComparator> FeatureSet;
       FeatureComparator comparator (myDepth + 1);
       FeatureSet features (comparator);
@@ -102,7 +102,7 @@ static int together (FeatureVector& myFeatures, // stores the features of the no
             Assignment::Strategy strategy = 
                myFeatures [i].first->getPosition (myDepth).strategy ();
 
-            debug_mustbe (strategy == Assignment::together);
+            debug_mustbe (strategy == assg_together);
          );
 
          //
@@ -118,7 +118,7 @@ static int together (FeatureVector& myFeatures, // stores the features of the no
             //
             // it is already in the set...
 #           if SEED_TREE_SEARCH_DEBUG
-            DLOG << "rec_prefixTreeSearch (): grouping together "
+            DLOG << "rec_prefixTreeSearch (): grouping assg_together "
                << Format (resultProjection)
                << " with " 
                << Format (*myFeatures [i].first)
@@ -171,12 +171,12 @@ static int combineChildSeeds (const Assignment& projection,
                               int myDepth,
                               bool totalCount)
 {
-   if (projection [myDepth].strategy () == Assignment::together) {
+   if (projection [myDepth].strategy () == assg_together) {
       //
-      // this means that we got here with 'together' strategy
+      // this means that we got here with 'assg_together' strategy
       // so we keep the exact same positions in the feature.
       //
-      // also, the features added are grouped together.
+      // also, the features added are grouped assg_together.
       int size = myFeatures.size ();
       int firstFeatureIndex = size - newEntries;
       return together (myFeatures, firstFeatureIndex , myDepth, totalCount);
@@ -200,7 +200,7 @@ static void addAssignmentPosition (
    Assignment::Strategy strategy = thisPosition.strategy ();
 
    int size = myFeatures.size ();  
-   if (specializeProjection || (strategy == Assignment::discrete)) {
+   if (specializeProjection || (strategy == assg_discrete)) {
       //
       // this means that the exact code of this depth is important
       for (int i= size - newEntries ; i< size ; i++) {
@@ -209,9 +209,9 @@ static void addAssignmentPosition (
       }
    }
    else {
-      debug_mustbe (strategy == Assignment::together);
+      debug_mustbe (strategy == assg_together);
       //
-      // this means that we got here with 'together' strategy
+      // this means that we got here with 'assg_together' strategy
       // without projection specialization option.
       // so we keep the exact same positions in the feature.
       for (int i= size - newEntries ; i< size ; i++) {
@@ -291,7 +291,7 @@ static int rec_prefixTreeSearch (
       return 0;
 
    //
-   // combine position for chlid if they have together strategy
+   // combine position for chlid if they have assg_together strategy
    newEntries = combineChildSeeds (projection, 
                                    myFeatures, 
                                    newEntries, 
@@ -336,7 +336,7 @@ int SeedSearcher::prefixTreeSearch (
    //
    // a projection in the first position is both meaningless
    // and is a lot of hassle to program.
-   debug_mustbe (firstPosition.strategy () == Assignment::discrete);
+   debug_mustbe (firstPosition.strategy () == assg_discrete);
 
    int totalSeedsFound = 0;
    double totalTimeEvaluatingSeeds = 0;
@@ -485,16 +485,16 @@ struct TableSearcher {
          _specialization = new Assignment (assg);
 
          //
-         // an empty together position
-         Assignment::Position together_p (Assignment::together);
+         // an empty assg_together position
+         Assignment::Position together_p (assg_together);
 
          //
          //
          int length = assg.length ();
          for (int i=0 ; i<length ; i++) {
-            if (assg [i].strategy () == Assignment::together)
+            if (assg [i].strategy () == assg_together)
                //
-               // make all together positions blank
+               // make all assg_together positions blank
                _specialization->setPosition (i, together_p);
          }
       }
@@ -589,7 +589,7 @@ int SeedSearcher::tableSearch (  SearchParameters& params,
                                     7 * 1023 * 1024 - 1,
                                     params.langauge ());
    //
-   // collect features together, (with optional total counts)
+   // collect features assg_together, (with optional total counts)
    params.preprocessor ().add2Cluster (nodes, projection);
    Preprocessor::NodeIterator it = nodes.iterator ();
    for (; it.hasNext () ; it.next ()) {

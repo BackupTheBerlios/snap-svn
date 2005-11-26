@@ -71,7 +71,7 @@ public:
 
    //
    // get/set the partialCount property.
-   // if partialCount is false, weights are discrete.
+   // if partialCount is false, weights are assg_discrete.
    // if partialCount is true, weights are real values
    bool partialCount () const {
       return _partialCount;
@@ -248,8 +248,8 @@ public:
 // iterators
 typedef IteratorWrapper <PositionVector> PositionIterator;
 typedef IteratorWrapper <SequenceVector> SequenceIterator;
-typedef ConstIteratorWrapper <PositionVector> CPositionIterator;
-typedef ConstIteratorWrapper <SequenceVector> CSequenceIterator;
+typedef CIteratorWrapper <PositionVector> CPositionIterator;
+typedef CIteratorWrapper <SequenceVector> CSequenceIterator;
 
 
 

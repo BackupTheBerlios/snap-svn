@@ -505,7 +505,7 @@ public:
 		}
 
     private:
-        List::ReadIterator list;
+        typename List::ReadIterator list;
     };
 
 	class ReadIterator_const  {
@@ -529,7 +529,7 @@ public:
 		}
 
     private:
-        List::ReadIterator_const list;
+        typename List::ReadIterator_const list;
     };
 
     List& getList ()    {

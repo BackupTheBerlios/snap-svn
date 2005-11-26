@@ -7,18 +7,17 @@
 #include "Persistance/StdOutputStream.h"
 #include <fstream>
 
-Persistance::TextWriter* SeedSearcherLog::__textWriter;
-Langauge* SeedSearcherLog::__langauge;
+boost::shared_ptr <Persistance::TextWriter> SeedSearcherLog::__textWriter;
+boost::shared_ptr <Langauge> SeedSearcherLog::__langauge;
 
 using namespace Persistance;
 using namespace std;
 
 
-TextWriter* SeedSearcherLog::setupConsoleLogging (bool supress)
+void SeedSearcherLog::setupConsoleLogging (bool supress)
 {   
-   Persistance::TextWriter* old = NULL;
    if (supress) {
-      old = setup (new TextWriter (new NullOutputStream ()));
+      setup (new TextWriter (new NullOutputStream ()));
    }
    else {
       UnbufferedOutput* console = new StdUnbufferedOutput (cout);
@@ -26,13 +25,11 @@ TextWriter* SeedSearcherLog::setupConsoleLogging (bool supress)
       Persistance::TextWriter* writer = 
          new Persistance::TextWriter (output, true); 
 
-      old = setup (writer);
+      setup (writer);
    }
-
-   return old;
 }
 
-TextWriter* SeedSearcherLog::setupFileLogging (
+void SeedSearcherLog::setupFileLogging (
    const StrBuffer& filename, bool suppressConsole)
 {
    //
@@ -48,7 +45,6 @@ TextWriter* SeedSearcherLog::setupFileLogging (
    // setup the channel to the file
    StdUnbufferedOutput* fileChannel = new StdUnbufferedOutput (logOut, true);
 
-   TextWriter* old = NULL;
    if (!suppressConsole)   {
       //
       // setup a channel for the console
@@ -72,7 +68,7 @@ TextWriter* SeedSearcherLog::setupFileLogging (
       //
       // setup the writer
       Persistance::TextWriter* textWriter = new TextWriter (output, true);
-      old = setup (textWriter);
+      setup (textWriter);
    }
    else {
       //
@@ -82,10 +78,8 @@ TextWriter* SeedSearcherLog::setupFileLogging (
       //
       // setup the writer
       TextWriter* textWriter = new TextWriter (output, true);
-      old = setup (textWriter);
+      setup (textWriter);
    }
-
-   return old;
 }
 
 

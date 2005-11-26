@@ -7,35 +7,33 @@
 
 #include "AssignmentFormat.h"
 
+#include "boost/shared_ptr.hpp"
+
 #define DLOG SeedSearcherLog::writer ()
 
 class SeedSearcherLog {
 public:
    //
    // sets the writer used for logging
-   static Persistance::TextWriter* setup (Persistance::TextWriter* in ) {
-      Persistance::TextWriter* old = __textWriter;
-      __textWriter = in;
-      return old;
+   static void setup (Persistance::TextWriter* in ) {
+      __textWriter.reset (in);
    }
    //
    // sets the 'data' langauge used for logging (for example ACGT langauge)
-   static Langauge* setup (Langauge* in) {
-      Langauge* old = __langauge;
-      __langauge = in;
-      return old;
+   static void setup (Langauge* in) {
+      __langauge.reset (in);
    }
    inline static Persistance::TextWriter& writer () {
-      debug_mustbe (__textWriter);
+      debug_mustbe (__textWriter.get ());
       return (*__textWriter);
    }
    static Langauge& assgWriter () {
-      debug_mustbe (__langauge);
+      debug_mustbe (__langauge.get ());
       return (*__langauge);
    }
 
    friend Persistance::AbstractFormat::Owner 
-      Format (const Assignment& assg) {
+      Format (const AssignmentBase& assg) {
       return new AssignmentFormat (assg, *__langauge);
    }
 
@@ -49,35 +47,29 @@ public:
    // if suppress==true the logger is null and no logging is performed
    // if suppress==false logging is performed to std output
    // the method returns the previous logger object
-   static Persistance::TextWriter* setupConsoleLogging (bool supress);
+   static void setupConsoleLogging (bool supress);
 
    //
    // this method setup up file logging
-   static Persistance::TextWriter* setupFileLogging (
+   static void setupFileLogging (
       const StrBuffer& filename, bool supressConsole);
 
    class Sentry {
    public:
       Sentry (bool suppressConsole = false) {
-         Persistance::TextWriter* old = 
-            SeedSearcherLog::setupConsoleLogging (suppressConsole);
-         delete old;
+         SeedSearcherLog::setupConsoleLogging (suppressConsole);
       }
       ~Sentry () {
-         Persistance::TextWriter* old = 
-            SeedSearcherLog::setup ((Persistance::TextWriter*) NULL);
-         delete old;
+         SeedSearcherLog::setup ((Persistance::TextWriter*) NULL);
       }
       void setupFileLogging (const StrBuffer& filename, bool suppressConsole = false) {
-         Persistance::TextWriter* old =  
-            SeedSearcherLog::setupFileLogging (filename, suppressConsole);
-         delete old;
+         SeedSearcherLog::setupFileLogging (filename, suppressConsole);
       }
    };
 
 private:
-   static Persistance::TextWriter* __textWriter;
-   static Langauge* __langauge;
+   static boost::shared_ptr <Persistance::TextWriter> __textWriter;
+   static boost::shared_ptr <Langauge> __langauge;
 };
 
 

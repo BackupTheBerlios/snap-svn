@@ -111,6 +111,13 @@ public:
    return output;
    }
    */
+   typedef const char* const_iterator;
+   const char* begin () const {
+      return mData;
+   }
+   const char* end () const {
+      return mData + mLength + 1;
+   }
    
 protected:
    char* mData;

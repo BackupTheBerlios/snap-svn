@@ -33,7 +33,7 @@ public:
 
    typedef std::set <const SeqPosition*, PositionComparator> PositionSet;
    typedef IteratorWrapper <PositionSet> Iterator;
-   typedef ConstIteratorWrapper <PositionSet> CIterator;
+   typedef CIteratorWrapper <PositionSet> CIterator;
 
 public:
    PosCluster () {
@@ -94,7 +94,7 @@ public:
 
    typedef std::map <const Sequence*, PosCluster*, SequenceComparator> SequenceSet;
    typedef IteratorWrapper < Map1stBinder <SequenceSet> > Iterator;
-   typedef ConstIteratorWrapper < Map1stBinder <SequenceSet> > CIterator;
+   typedef CIteratorWrapper < Map1stBinder <SequenceSet> > CIterator;
 
 public:
    SeqCluster () {

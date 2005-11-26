@@ -63,7 +63,7 @@ public:
 //
 class AssignmentFormat : public Persistance::AbstractFormat {
 public:
-   AssignmentFormat (const Assignment& a, const Langauge& langauge) 
+   AssignmentFormat (const AssignmentBase& a, const Langauge& langauge) 
       : _assg (a), _langauge (langauge) {
    }
    virtual void write (Persistance::TextWriter& out) const {
@@ -73,7 +73,7 @@ public:
    }
 
 private:
-   const Assignment& _assg;
+   const AssignmentBase& _assg;
    const Langauge& _langauge;
 };
 

@@ -99,7 +99,7 @@ public:
    //
    // return a wildcard with the appropriate strategy (for searching)
    virtual Assignment::Position wildcard (Assignment::Strategy s) const {
-      return Assignment::Position (Assignment::all, cardinality (), s);
+      return Assignment::Position (Assignment::Position::all, cardinality (), s);
    }
 
    //
@@ -326,8 +326,8 @@ public:
 
 protected:
    virtual bool checkRedundancy (int index, const Assignment&);
-   bool checkSimilarity (const Assignment&, const Assignment&);
-   static bool checkSimilarity (int, const Assignment&, const Assignment&);
+   bool checkSimilarity (const AssignmentBase&, const AssignmentBase&);
+   static bool checkSimilarity (int, const AssignmentBase&, const AssignmentBase&);
 
 protected:
    int _maxRedundancyOffset;

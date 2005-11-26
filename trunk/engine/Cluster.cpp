@@ -111,7 +111,6 @@ PosCluster& SeqCluster::getCreatePositions (const Sequence* seq)
    std::pair <SequenceSet::iterator, bool> result =
       _set.insert (SequenceSet::value_type (seq, NULL));
 
-   debug_mustbe (result.first);
    if (result.first->second == NULL) {
       result.first->second = new PosCluster;
       debug_mustbe (_set [result.first->first] != NULL);

@@ -158,8 +158,14 @@ public:
 
     bool atEnd ();
     void next ();
+    //
+    // returns relative path, with a '/' prefix
     const Str& get ();
-    // returns relative path
+    //
+    // returns relative path without the '/' prefix
+    Str getName () {
+       return get().substring (1);
+    }
 
     StrBuffer operator + (const Str&);
     // appends 
@@ -244,8 +250,8 @@ public:
    virtual void explain (std::ostream&);
 
 private:
-    StrBuffer value;
     StrBuffer package;
+    StrBuffer value;
 };
 
 

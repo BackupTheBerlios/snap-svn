@@ -23,7 +23,7 @@ public:
 
    typedef SeqCluster Cluster;
    typedef Vec <Sequence*> SequenceVector;
-   typedef ConstIteratorWrapper <SequenceVector> SequenceIterator;
+   typedef CIteratorWrapper <SequenceVector> SequenceIterator;
 
 public:
    SequenceDB () {

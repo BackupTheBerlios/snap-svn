@@ -25,18 +25,18 @@ static void rec_addAssignmentNodes (int depth,
       return;
 
    const Assignment::Position& thisPosition = assg [depth -1];
-   if (thisPosition.strategy () == Assignment::together) {
+   if (thisPosition.strategy () == assg_together) {
       //
-      // this means that we got here with 'together' strategy
+      // this means that we got here with 'assg_together' strategy
       // so we keep the exact same positions in the feature
       path.setPosition (depth - 1, thisPosition);
    }
    else {
-      debug_mustbe (thisPosition.strategy () == Assignment::discrete);
+      debug_mustbe (thisPosition.strategy () == assg_discrete);
       //
       // this means that the exact code of this depth is important
       path.setPosition (depth -1, 
-         Assignment::Position (childIndex, Assignment::discrete)); 
+         Assignment::Position (childIndex, assg_discrete)); 
    }
 
    if (depth == desiredDepth) {

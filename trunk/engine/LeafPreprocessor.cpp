@@ -47,7 +47,9 @@ LeafPreprocessor::LeafPreprocessor (Rep* rep) : _rep (rep) {
 }
 
 LeafPreprocessor::~LeafPreprocessor () {
-   delete _rep;
+   //
+   // currently we have cleanup issues so we dont cleanup and leak
+   // delete _rep;
 }
 
 
@@ -83,8 +85,8 @@ void LeafPreprocessor::add2Cluster (NodeCluster& nodes,
          //
          // make the template specific to the assignment of the seed
          for (int i=0 ; i<assgLength ; ++i) {
-            debug_mustbe (seedAssg.getPosition (i).strategy () == Assignment::discrete);
-            if (assgTemplate [i].strategy () == Assignment::discrete)
+            debug_mustbe (seedAssg.getPosition (i).strategy () == assg_discrete);
+            if (assgTemplate [i].strategy () == assg_discrete)
                assgTemplate.setPosition (i, seedAssg.getPosition (i));
          }
 
