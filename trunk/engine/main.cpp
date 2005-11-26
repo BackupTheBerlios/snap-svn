@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: main.cpp $
-// Version     : $Revision: 63 $ 
+// Version     : $Revision: 64 $ 
 //               $Author: Aviad $
-//               $Date: 10/12/04 21:05 $ 
+//               $Date: 16/12/04 6:18 $ 
 // Description :
 //    main routine for the seed-searcher program
 //
@@ -306,7 +306,8 @@ static void printSeqMatrix (SeedSearcherMain::Results& results)
          else
             data.writeField ("0");
       }
-      data.writeInto(matrixFile);
+
+      matrixFile << data;
    }
 }
 

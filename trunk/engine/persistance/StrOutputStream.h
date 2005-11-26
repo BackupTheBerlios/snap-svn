@@ -6,9 +6,10 @@
 
 BEGIN_NAMESPACE (Persistance);
 
-class StrOutputStream : public OutputStream {
+template <class StringT>
+class TStrOutputStream : public OutputStream {
 public:
-   StrOutputStream (std::string& out) : _out (out) {
+   TStrOutputStream (StringT& out) : _out (out) {
    }
 
 protected:
@@ -26,8 +27,9 @@ protected:
 
 private:
    char _buffer [1024];
-   std::string& _out; 
+   StringT& _out; 
 };
+typedef TStrOutputStream <std::string> StrOutputStream;
 
 
 class FixedBufferOutputStream : public OutputStream {
@@ -40,6 +42,10 @@ public:
   ~FixedBufferOutputStream ()    {
     if (bytesInBuffer () > 0)
       flush ();
+  }
+
+  int bytesWritten () const {
+     return _size;
   }
   
   class BufferOverrun: public BaseException {};
@@ -83,9 +89,9 @@ END_NAMESPACE (Persistance);
 //
 // File        : $RCSfile: $ 
 //               $Workfile: StrOutputStream.h $
-// Version     : $Revision: 6 $ 
+// Version     : $Revision: 7 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:45 $ 
+//               $Date: 16/12/04 6:07 $ 
 // Description :
 //	The Persistence library contains both high & low level IO classes
 //	and is high-performance, highly reusable framework 

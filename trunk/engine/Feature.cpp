@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Feature.cpp $
-// Version     : $Revision: 22 $ 
+// Version     : $Revision: 25 $ 
 //               $Author: Aviad $
-//               $Date: 10/12/04 21:04 $ 
+//               $Date: 16/12/04 6:12 $ 
 // Description :
 //    Concrete cache for Hyper-Geometric distribution values
 //
@@ -68,7 +68,8 @@ FeatureInvestigator::FeatureInvestigator (const FeatureParameters& in,
    _motifPositionFormat.addField("Seq-ID", 7);
    _motifPositionFormat.addField("Seq-Name", 13);
    _motifPositionFormat.addField("Seq-Weight", 15);
-   _motifPositionFormat.addField("Pos", 5);
+   _motifPositionFormat.addField("TSS-Start-Offset");
+   _motifPositionFormat.addField("TSS-End-Offset");
    _motifPositionFormat.addField("Strand");
 
    //
@@ -134,7 +135,7 @@ void FeatureInvestigator::printMotifPosition (
 {
    Persistance::TextTableReport::Data data (_motifPositionFormat);
 
-   int motifLength = feature.assignment ().length ();
+   const int motifLength = feature.assignment ().length ();
    StrBuffer buf(_outputLength);
    int middleSection = 
       position.getSeedString (
@@ -165,9 +166,32 @@ void FeatureInvestigator::printMotifPosition (
    writer << '[' << position.sequence ()->weight () << ']';
    
    //
-   // output the position index
+   // output the position information:
+   // we write the position from the TSS, that is:
+   // the offset from the POSITIVE strand,
+   // regardless to what strand the motif resides on
+   //
+   // for positions on the pos strand, it is equuiv to the position ().
+   // for positions on negative strand it is:
+   //          
+   //       98765|432|10
+   //       TTTTT|TGC|TT   <--
+   // -->   AAAAA|ACG|AA
+   //       01234|567|89
+   // 
+   // CGT-positions:       2-->5
+   // CGT-tssPositions (): 5-->8 = (10 - 2 - 3) --> (10 - 2)
    writer.setStream(data.getOutputStream(fieldIndex++));
-   writer << position.position ();
+   if (position.strand () == _strand_pos_) {
+      writer << position.position ();
+      writer.setStream(data.getOutputStream(fieldIndex++));
+      writer << position.position () + motifLength;
+   }
+   else {
+      writer << position.maxLookahead () - motifLength;
+      writer.setStream(data.getOutputStream(fieldIndex++));
+      writer << position.maxLookahead ();
+   }
    
    //
    // print +/- if it is on normal/reverse strand
@@ -175,7 +199,7 @@ void FeatureInvestigator::printMotifPosition (
    writer << (position.strand ()? '+' : '-');
    writer.setStream(NULL);
 
-   data.writeInto(out);
+   out << data;
 }
 
 
@@ -232,7 +256,7 @@ void FeatureInvestigator::printSeed (Persistance::TextTableReport::Output& out,
    }
 
    writer.setStream (NULL);
-   data.writeInto(out);
+   out << data;
 }
 
 void FeatureInvestigator::createPSSM (Feature& feature_i, 

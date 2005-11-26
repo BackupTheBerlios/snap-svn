@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: PrefixTreePreprocessor.cpp $
-// Version     : $Revision: 39 $ 
+// Version     : $Revision: 40 $ 
 //               $Author: Aviad $
-//               $Date: 13/11/04 16:36 $ 
+//               $Date: 16/12/04 6:18 $ 
 // Description :
 //    Concrete preprocessor class - based on a prefix tree
 //
@@ -475,7 +475,7 @@ static int  buildPositionsWithReverse (TreeNodeRep* root, const SequenceDB& db)
             new SeqPosition (seq, i, _strand_pos_);
 
          SeqPosition* negPosition = 
-            new SeqPosition (seq, length - i - 1, _strand_neg_);
+            new SeqPosition (seq, i, _strand_neg_);
 
          positions->push_back (posPosition);
          positions->push_back (negPosition);

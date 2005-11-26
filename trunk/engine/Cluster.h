@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Cluster.h $
-// Version     : $Revision: 21 $ 
+// Version     : $Revision: 22 $ 
 //               $Author: Aviad $
-//               $Date: 4/11/04 17:39 $ 
+//               $Date: 16/12/04 6:12 $ 
 // Description :
 //    Concrete class for sets of sequences, sets of sequence positions
 //
@@ -41,17 +41,21 @@ class SequenceDB;
 class PosCluster  {
 public:
    struct PositionComparator {
-      bool operator () (const SeqPosition* x, const SeqPosition* y) const {
+      //
+      // returns true if x comes before y
+      inline bool operator () (const SeqPosition* x, const SeqPosition* y) const {
          debug_mustbe (x->sequence () == y->sequence ());
+         return x_before_y (x, y);
+      }
+      static inline bool x_before_y (const SeqPosition* x, const SeqPosition* y) {
          return (strandPos (x) < strandPos (y));
       }
-      static inline int strandPos (const SeqPosition* x) {
-         int pos = 1 + x->position (); 
-         // + 1 is needed so that the even first position
-         // is unambigious
-         return (x->strand ()== _strand_pos_)? pos : - pos;
+      static inline int strandPos (const SeqPosition* x, int offset = 0) {
+         int pos = x->position (); 
+         // reverse strand positions should appear after positive strand ones.
+         int modifier = (x->strand ()== _strand_pos_)? 0 : (10000 + x->sequence()->length());
+         return pos + offset + modifier;
       }
-
    };
 
    typedef std::set <const SeqPosition*, PositionComparator> PositionSet;
@@ -92,6 +96,7 @@ public:
    }
 
    int removeOverlaps (int positionDistance);
+   int sizeNoOverlaps (int positionDistance) const;
 
    void add2Vector (PositionVector&) const;
 
@@ -249,25 +254,10 @@ public:
    // returns the sum of weights for all weighted sequences
    // outCount returns the number of all weighted sequences
    double sumAbsWeights () const;
-   //
-   // returns the sum of (seq-weight * seq-position-count)
-   double sumPositionAbsWeights () const;
-
-   //
-   // returns the maximum number of 
-   double maxPositionsAbsWeightsNoOverlaps (int seedLength) const;
-
-   //
-   //
-   int maxPositionsNoOverlaps (int seedLength) const;
-
-   //
-   //
-   int countPositions () const;
 
    //
    // return the size of the cluster (number of sequences)
-   int size () const {
+   inline int size () const {
       return _set.size ();
    }
 
@@ -382,12 +372,16 @@ public:
 
 
    //
-   //
-   struct SumPosWeights : public SimpleCounter <double> {
+   // 
+   struct SumPosWeightsNoOverlaps : public SimpleCounter <double> {
+      int _seedLength;
+      SumPosWeightsNoOverlaps (int seedLength) 
+      : _seedLength (seedLength) {
+      }
       inline void perform (const Sequence& seq, PosCluster* pos) {
          debug_mustbe (pos);
          double Wi = ABS (seq.weight () - 0.5) * 2;
-         _result += Wi * pos->size ();
+         _result += Wi * pos->sizeNoOverlaps(_seedLength);
       }
    };
 
@@ -412,10 +406,14 @@ public:
 
    //
    // useful for counting all positions in a cluster
-   struct CountPositions : public SimpleCounter <int> {
+   struct CountPositionsNoOverlaps : public SimpleCounter <int> {
+      int _seedLength;
+      CountPositionsNoOverlaps (int seedLength) 
+      : _seedLength (seedLength) {
+      }
       inline void perform (const Sequence&, PosCluster* pos) {
           debug_mustbe (pos);
-		  _result += pos->size ();
+		  _result += pos->sizeNoOverlaps(_seedLength);
       }
    };
 

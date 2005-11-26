@@ -5,6 +5,7 @@
 #include "core/FixedStr.h"
 #include "core/AutoPtr.h"
 #include "core/ImplList.h"
+#include "core/STLHelper.h"
 #include "persistance/TextWriter.h"
 
 
@@ -12,36 +13,57 @@ BEGIN_NAMESPACE (Persistance);
 
 class TextTableReport {
     //
-    // The purpose of this file is to provide an flexible, reuseable mechanism
+    // The purpose of this file is to provide an flexible, reusable mechanism
     // for generating reports (logs, user messages etc).
 public:
+    class Format;
+    class Data;
     class Field;
-    class Output;
-    class Writer;
-    class TextOutput;
 
     enum    {
-        maxFields = 128,
         maxRecordLength = 16 * 1024,
-        maxHeaderLength = maxRecordLength + 2,
-        maxFieldSepator = 64,
+        maxFieldSeparator = 64,
         firstFieldIndex = 0
     };
 
-
-    class Output    {
-        //
-        // This class abstracts an output mechanism for logging
+    class Data  {
+       //
+       //
     public:
-        virtual ~Output ()  {
-        }
+       Data (Format&);
+       ~Data ();
 
-        //
-        // write a formatted record, adding the header if necessary
-        virtual void writeRecord (const Str& /* header */, const Str& /* body */)=0;
+       void reset ();
+       void writeInto (StrBuffer& out) const;
+       void writeInto (OutputStream&) const;
+
+       //
+       // also returns the index of current field
+       int nextField () {
+          return _current++;
+       }
+       int currentFieldIndex () {
+          return _current;
+       }
+       FixedStr getField (int index);
+       const Format& format () const {
+          return _format;
+       }
+
+       void writeField (const Str& /* inFieldData */);
+       void writeField (const Str& /* inFieldData */, int /* inFieldIndex */);
+       OutputStream* getOutputStream (int /* inFieldIndex */);
+       OutputStream* getOutputStream ();
+
+       class Spaces;
+       class Iterator;
+       class FieldOutput;
+
+    private:
+       int _current;
+       Format& _format;
+       char _buffer [maxRecordLength];
     };
-
-
 
     class Format    {
         //
@@ -69,9 +91,6 @@ public:
         //
         Field* field (int);
 
-        //
-        // sets the separator to be a string of spaces
-        void spacesBetweenFields (int);
         Str fieldSeparator () const {
            return _fieldSeparator;
         }
@@ -80,80 +99,47 @@ public:
         //
         Str header () const;
 
+        typedef Vec <Field*> Fields;
+
     private:
         int _width;
         int _length;
-        int _nfields;
-        char _header [maxHeaderLength];
-        Field* _fields [maxFields];
-        FixedStrBuffer <maxFieldSepator> _fieldSeparator ;
+        AutoPtr <Data> _header;
+        Fields _fields;
+        FixedStrBuffer <maxFieldSeparator> _fieldSeparator;
+        mutable FixedStrBuffer <maxRecordLength> _headerData;
     };
 
 
-    class Data  {
-        //
-        //
+    class TextOutput : public TextWriter   {
+          //
+          //
     public:
-        Data (Format&);
-        ~Data ();
+       TextOutput (OutputStream*, bool /* owner */= true);
+       TextOutput (TextWriter& writer) 
+          : TextWriter (writer.getStream (), false), _first (true) {
+             writer.flush ();
+          }
+          ~TextOutput ();
 
-        void reset ();
-        void writeInto (Output&);
-        void writeInto (StrBuffer&);
-
-         void nextField () {
-           _current++;
-        }
-        int currentFieldIndex () {
-           return _current;
-        }
-        FixedStr getField (int index);
-
-        void writeField (const Str& /* inFieldData */);
-        void writeField (const Str& /* inFieldData */, int /* inFieldIndex */);
-        OutputStream* getOutputStream (int /* inFieldIndex */);
-        OutputStream* getOutputStream ();
-
-        class Spaces;
-        class Iterator;
-        class FieldOutput;
+          void writeRecord (const Data&);
+          friend TextOutput& operator << (TextOutput& out, const Data& data) {
+             out.writeRecord (data);
+             return out;
+          }
+          void skipHeader () {
+             _first = false;
+          }
+          void noNewlineAfterRecord () {
+             _newline = false;
+          }
 
     private:
-        int _current;
-        Format& _format;
-        char _buffer [maxRecordLength];
-    };
+       bool _first;
+       bool _newline;
+   };
+   typedef TextOutput Output;
 };
-
-
-
-class TextTableReport::TextOutput : 
-   public TextTableReport::Output, public TextWriter   {
-    //
-    //
-public:
-    TextOutput (OutputStream*, bool /* owner */= true);
-    TextOutput (TextWriter& writer) 
-       : TextWriter (writer.getStream (), false), _first (true) {
-          writer.flush ();
-      }
-    ~TextOutput ();
-
-    //
-    // writes the contents of the field into the buffer.
-    virtual void writeRecord (const Str&, const Str&);
-    void skipHeader () {
-       _first = false;
-    }
-    void noNewlineAfterRecord () {
-       _newline = false;
-    }
-
-private:
-    bool _first;
-    bool _newline;
-};
-
 
 END_NAMESPACE (Persistance);
 
@@ -162,9 +148,9 @@ END_NAMESPACE (Persistance);
 //
 // File        : $RCSfile: $ 
 //               $Workfile: TextTableReport.h $
-// Version     : $Revision: 5 $ 
+// Version     : $Revision: 6 $ 
 //               $Author: Aviad $
-//               $Date: 10/12/04 21:17 $ 
+//               $Date: 16/12/04 6:08 $ 
 // Description :
 //	The Persistence library contains both high & low level IO classes
 //	and is high-performance, highly reusable framework 

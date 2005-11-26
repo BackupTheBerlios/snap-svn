@@ -169,6 +169,9 @@ public:
    
    StrBuffer& append(char in);
    StrBuffer& append(char in, int repetitions);
+   StrBuffer& append(char* in, int length) {
+      return append (Str (in, length));
+   }
    StrBuffer& append(const Str& in);
    StrBuffer& operator+=(const Str& in) {
       return append(in);
@@ -254,9 +257,9 @@ inline bool operator >= (const Str& a, const Str& b) {
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Str.h $
-// Version     : $Revision: 10 $ 
+// Version     : $Revision: 11 $ 
 //               $Author: Aviad $
-//               $Date: 23/11/04 2:39 $ 
+//               $Date: 16/12/04 6:06 $ 
 // Description :
 //	The Core library contains contains basic definitions and classes
 // which are useful to any highly-portable applications

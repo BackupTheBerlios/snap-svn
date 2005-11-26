@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: LeafPreprocessor.cpp $
-// Version     : $Revision: 22 $ 
+// Version     : $Revision: 23 $ 
 //               $Author: Aviad $
-//               $Date: 13/11/04 16:35 $ 
+//               $Date: 12/12/04 12:16 $ 
 // Description :
 //    Concrete preprocessor class - based on a hash table
 //
@@ -235,7 +235,7 @@ static int buildReverse (
             new SeqPosition (seq, i, _strand_pos_);
 
          SeqPosition* negPosition = 
-            new SeqPosition (seq, seqLength - i - 1, _strand_neg_);
+            new SeqPosition (seq, i, _strand_neg_);
          
          Str data = posPosition->getSeedString (seedLength);
          Str rev_data = negPosition->getSeedString (seedLength);
@@ -243,7 +243,7 @@ static int buildReverse (
          debug_mustbe (rev_data.length () == seedLength);
 
          rep->addPosition (data, posPosition);
-         rep->addPosition (data, negPosition);
+         rep->addPosition (rev_data, negPosition);
       }
 
       rep->adjustTableSize ();

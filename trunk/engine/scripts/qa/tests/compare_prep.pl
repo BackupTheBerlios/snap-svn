@@ -5,43 +5,52 @@ my $SEQ = "data/test.seq";
 my $WGT = "data/test.wgt";
 my $OUTPUT_DIR = "output";
 my $NEWSEED = "bin/seed";
-my $EXTRA_PARAMS = "--Sseed-n 75 --Sseed-r 0";
+my $EXTRA_PARAMS = "--Sseed-n 200 --Sseed-r 0";
 my $l;
 my $d;
 my $exitcode;
-
+my $count;
+my $rev;
 
 my $current_time = time;
 my $RAND = "--Sproj-i $current_time";
 
 
 foreach $l (8 .. 12) {
-    foreach $d (0 .. 4) {
-    	my $setting = "L${l}D${d}";
-	my $tree_file = "output/tree$setting";
-	my $leaf_file = "output/leaf$setting";
+    foreach $d (0 .. 2) {
+		foreach $rev ("On", "Off") {
+			foreach $count ("Gene", "Total") {
+   				my $setting = "L${l}D${d}Rev${rev}$count";
+   				mkdir "$OUTPUT_DIR/$setting";
+  				
+				my $tree_file = "$OUTPUT_DIR/$setting/tree";
+				my $leaf_file = "$OUTPUT_DIR/$setting/leaf";
+				
+				my $run_params = "--Sseed-l $l --Sproj-d $d --Scount-reverse=$rev --Scount $count";
 
-	# run once for each preprocessor
-	run_job ($tree_file, "--Sprep tree", $l, $d);
-	run_job ($leaf_file, "--Sprep leaf", $l, $d);
+				# run once for each preprocessor
+				run_job ($tree_file, "--Sprep tree $run_params");
+				run_job ($leaf_file, "--Sprep leaf $run_params");
 
-	# check that the shortened seeds file match
-	check_diff ("output/tree", "output/leaf", "$setting.seeds.short");
-	
-	# check all the psmm and motif files
-	my $index = 0;
-	foreach $index (1 .. `cat $tree_file.seeds | wc -l`) {
-		check_diff ("output/tree", "output/leaf", "$setting.$index.motifs");
-		check_diff ("output/tree", "output/leaf", "$setting.$index.neg.motifs");
-		check_diff ("output/tree", "output/leaf", "$setting.$index.pssm");
+				# check that the shortened seeds file match
+				check_diff ($tree_file, $leaf_file, ".seeds.short");
+				
+				# check all the psmm and motif files
+				my $index = 0;
+				foreach $index (1 .. `cat $tree_file.seeds | wc -l`) {
+					check_diff ($tree_file, $leaf_file, ".$index.motifs");
+					check_diff ($tree_file, $leaf_file, ".$index.neg.motifs");
+					check_diff ($tree_file, $leaf_file, ".$index.pssm");
+				}
+			}
+		}
 	}
-    }
 }
 
 sub run_job {
-    my ($filename, $specific_params, $l, $d) = @_;
+    my ($filename, $specific_params) = @_;
     
-    $exitcode = system ("$NEWSEED $RAND $EXTRA_PARAMS $specific_params --Sseed-l $l --Sproj-d $d $SEQ $WGT $filename > $filename.log");
+    $exitcode = system ("$NEWSEED $RAND $EXTRA_PARAMS $specific_params $SEQ $WGT $filename > $filename.log");
     
     if ($exitcode != 0) {
 	printf "process failed, see $filename.log for details\n\n";
@@ -71,11 +80,12 @@ sub remove_filename_from_seedfile {
 
 sub check_diff {
     my ($first, $second, $postfix) = @_;
-    $exitcode = system ("diff $first$postfix $second$postfix > $postfix.diff");
+    $exitcode = system ("diff $first$postfix $second$postfix > $OUTPUT_DIR/last.diff");
     if ($exitcode != 0) {
-	print "Output differs, see $first.$postfix and $second.$postfix\n\n";
-	exit;
-    }    
+		print "Output differs, see $first$postfix and $second$postfix\n\n";
+		exit;
+    }
+    unlink "$OUTPUT_DIR/last.diff";
 }
 
     

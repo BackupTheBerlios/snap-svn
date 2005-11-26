@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: HyperGeoScore.cpp $
-// Version     : $Revision: 16 $ 
+// Version     : $Revision: 17 $ 
 //               $Author: Aviad $
-//               $Date: 27/08/04 2:08 $ 
+//               $Date: 16/12/04 6:18 $ 
 // Description :
 //    Concrete Score function classes - 
 //      based on Hyper-Geometric distribution
@@ -108,23 +108,24 @@ HyperGeoScore::FixedTotalCount::FixedTotalCount (int seedLength,
                               const SeqWeightFunction& wf,// n
                               const SequenceDB& allSequences // m
                )
-:  _countWeights (countWeights),
+:  _seedLength (seedLength),
+   _countWeights (countWeights),
    _allSequences (allSequences),
    _wf (wf)
 {
    int n;
    int m;
    if (_countWeights) {
-      SeqCluster::MaxPosWeightsNoOverlaps pos (seedLength);
-      SeqCluster::MaxPosWeightsNoOverlaps neg (seedLength);
+      SeqCluster::MaxPosWeightsNoOverlaps pos (_seedLength);
+      SeqCluster::MaxPosWeightsNoOverlaps neg (_seedLength);
       _allSequences.performDivided (wf, pos, neg);
 
       n = ROUND (pos.result ());
       m = ROUND (neg.result () + pos.result ());
    }
    else {
-      SeqCluster::MaxPosNoOverlaps pos (seedLength);
-      SeqCluster::MaxPosNoOverlaps neg (seedLength);
+      SeqCluster::MaxPosNoOverlaps pos (_seedLength);
+      SeqCluster::MaxPosNoOverlaps neg (_seedLength);
       _allSequences.performDivided (wf, pos, neg);
 
       n = ROUND (pos.result ());
@@ -141,22 +142,27 @@ double HyperGeoScore::FixedTotalCount::log2score (const Assignment& feature,
                      ScoreParameters** parameters
                      ) const
 {
+   debug_mustbe (feature.length () == _seedLength);
    //
    // check if we are counting the weights of all sequences
    // or just the amount of sequences
    int posCount;
    int containingCount;
    if (_countWeights) {
-      SeqCluster::SumPosWeights pos;
-      SeqCluster::SumPosWeights neg;
+      //
+      // this also removes overlaps
+      SeqCluster::SumPosWeightsNoOverlaps pos (_seedLength);
+      SeqCluster::SumPosWeightsNoOverlaps neg (_seedLength);
       containingFeature.performDivided (_wf, pos, neg);
 
       posCount = ROUND (pos.result ());
       containingCount = ROUND (pos.result () + neg.result ());
    }
    else {
-      SeqCluster::CountPositions pos;
-      SeqCluster::CountPositions neg;
+      //
+      // this also removes overlaps
+      SeqCluster::CountPositionsNoOverlaps pos (_seedLength);
+      SeqCluster::CountPositionsNoOverlaps neg (_seedLength);
       containingFeature.performDivided (_wf, pos, neg);
       
       posCount = ROUND (pos.result ());
@@ -173,96 +179,6 @@ void HyperGeoScore::FixedTotalCount::writeAsText (Persistance::TextWriter& write
 {
    _cache->writeAsText (writer, params);
 }
-
-
-//
-//
-// TotalCount
-
-HyperGeoScore::TotalCount::TotalCount (
-                             bool countWeights,
-                              const SequenceDB::Cluster& positivelyLabeled,// n
-                              const SequenceDB& allSequences // m
-               )
-:  _countWeights (countWeights),
-   _allSequences (allSequences),
-   _positivelyLabeled (positivelyLabeled)
-{
-   //
-   // 
-   _totalCache = new HyperGeoTotalCache;
-}
-
-
-double HyperGeoScore::TotalCount::log2score (const Assignment& feature,
-                     const Assignment& projection,
-                     const SequenceDB::Cluster& containingFeature,// k
-                     ScoreParameters** parameters
-                     ) const
-{
-   //
-   // TODO: mustbe some easier way...
-   SequenceDB::Cluster positiveContaining;
-   SequenceDB::Cluster::intersect ( _positivelyLabeled,
-                                    containingFeature,
-                                    positiveContaining);
-
-   //
-   // otherwise its just a waste of time...
-   debug_mustbe (positiveContaining.size () > 0);
-
-   positiveContaining.importPositions (containingFeature);
-
-   //
-   // check if we are counting the weights of all sequences
-   // or just the amount of sequences
-   int posCount;
-   int containingCount;
-   if (_countWeights) {
-      double posWeightCount = positiveContaining.sumPositionAbsWeights ();
-      posCount = ROUND (posWeightCount);
-
-      //
-      // sums the weights only of weighted sequences.
-      double containingWeightCount = containingFeature.sumPositionAbsWeights ();
-      containingCount = ROUND (containingWeightCount);
-   }
-   else {
-      //
-      // 
-      posCount = positiveContaining.countPositions ();
-      containingCount = containingFeature.countPositions ();   
-   }
-
-   int n;
-   int m;
-   if (_countWeights) {
-      n = ROUND (_positivelyLabeled.maxPositionsAbsWeightsNoOverlaps (feature.length ()));
-      m = ROUND (_allSequences.maxPositionsAbsWeightsNoOverlaps (feature.length ()));
-   }
-   else {
-      n = _positivelyLabeled.maxPositionsNoOverlaps (feature.length ());
-      m = _allSequences.maxPositionsNoOverlaps (feature.length ());
-   }
-
-   return _totalCache->log2Tail (posCount, containingCount, n, m, parameters);
-}
-
-//
-// print the score parameters 
-void HyperGeoScore::TotalCount::writeAsText (Persistance::TextWriter& writer, 
-                         const ScoreParameters* params) const
-{
-   _totalCache->writeAsText (writer, params);
-}
-
-
-
-
-
-
-
-
 
 
 

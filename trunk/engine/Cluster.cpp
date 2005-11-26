@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Cluster.cpp $
-// Version     : $Revision: 21 $ 
+// Version     : $Revision: 22 $ 
 //               $Author: Aviad $
-//               $Date: 9/12/04 3:05 $ 
+//               $Date: 16/12/04 6:12 $ 
 // Description :
 //    Concrete class for sets of sequences, sets of sequence positions
 //
@@ -296,63 +296,6 @@ double SeqCluster::sumAbsWeights () const
    return result;
 }
 
-double SeqCluster::sumPositionAbsWeights () const
-{
-   double result = 0;
-
-   CIterator it (iterator());
-   for (; it.hasNext (); it.next ()) {
-      const Sequence& seq = *(*it);
-      double Wi = ABS (seq.weight () - 0.5) * 2;
-      const PosCluster* pos = getPositions (it);
-      debug_mustbe (pos);
-      if (pos)
-         result += Wi * pos->size ();
-   }
-
-   return result;
-}
-
-double SeqCluster::maxPositionsAbsWeightsNoOverlaps (int seedLength) const
-{
-   double result = 0;
-   CIterator it (iterator());
-   for (; it.hasNext (); it.next ()) {
-      const Sequence& seq = *(*it);
-      double Wi = ABS (seq.weight () - 0.5) * 2;
-      double L_by_K = double (seq.length ()) / seedLength;
-      result += Wi * L_by_K;
-   }
-
-   return result;
-}
-
-int SeqCluster::maxPositionsNoOverlaps (int seedLength) const
-{
-   double result = 0;
-   CIterator it (iterator());
-   for (; it.hasNext (); it.next ()) {
-      const Sequence& seq = *(*it);
-      double L_by_K = double (seq.length ()) / seedLength;
-      result += L_by_K;
-   }
-
-   return ROUND (result);
-}
-
-int SeqCluster::countPositions () const
-{
-   int count = 0;
-   CIterator it (iterator ());
-   for (; it.hasNext () ; it.next ()) {
-      const PosCluster* pos = getPositions (it);
-      debug_mustbe (pos);
-      if (pos)
-         count += pos->size ();
-   }
-
-   return count;
-}
 
 void SeqCluster::addPos2Vector (PositionVector& out) const
 {
@@ -411,6 +354,61 @@ void PosCluster::removePosition (const SeqPosition* in)
    USELESS (debug_mustbe (result == 1));
 }
 
+struct NoOverlapsIterator {
+   NoOverlapsIterator (PosCluster::PositionSet& set, int positionDistance) 
+   :  _current (set.rbegin()), _end (set.rend ()), 
+      _positionDistance (positionDistance)
+   {
+      debug_mustbe (positionDistance > 0);
+   }
+
+   bool hasNext () {
+      return _current != _end;
+   }
+   void next () {
+      debug_mustbe (_current != _end);
+      debug_mustbe (_end != _current);
+      //
+      // this greedy algorithm for non-overlapping intervals
+      // is OPTIMAL. a requirement for this is that intervals are
+      // sorted by starting positions, and we go from the end
+      // to the beginning
+      const SeqPosition* lastPosition = *_current;
+      int currentFinishPosition;
+      int lastStartPosition = 
+         PosCluster::PositionComparator::strandPos (lastPosition);
+      for (++_current; _current != _end ; ++_current) {
+         const SeqPosition* currentPosition = *_current;
+         currentFinishPosition = 
+            PosCluster::PositionComparator::strandPos (  currentPosition, 
+                                                         _positionDistance);
+         //
+         // continue iterating if
+         // 1) its not the end of the road, AND
+         // 2) the current position overlaps with last position
+         if (currentFinishPosition > lastStartPosition)
+            break;
+      }
+   }
+
+   PosCluster::PositionSet::reverse_iterator _current;
+   PosCluster::PositionSet::reverse_iterator _end;
+   const int _positionDistance;
+};
+
+int PosCluster::sizeNoOverlaps (int positionDistance) const
+{
+   if (size () <= 1)
+      return size ();
+
+   int count = 0;
+   NoOverlapsIterator it (const_cast <PositionSet&>(_set), positionDistance);
+   for (; it.hasNext() ; it.next ()) {
+      ++count;
+   }
+   return count;
+}
+
 int PosCluster::removeOverlaps (int positionDistance)
 {
    debug_mustbe (positionDistance > 0);
@@ -430,11 +428,13 @@ int PosCluster::removeOverlaps (int positionDistance)
    // 
    Vec <const SeqPosition*> positions;
    PositionSet::reverse_iterator revIt = _set.rbegin();
-   for (; revIt != _set.rend () ; revIt++) {
+   for (; revIt != _set.rend () ; ++revIt) {
       //
       //
-      const int currentPosition = (*revIt)->position ();
-      const int currentFinishPosition = currentPosition + positionDistance;
+      const int currentPosition = 
+         PositionComparator::strandPos (*revIt);
+      const int currentFinishPosition = 
+         PositionComparator::strandPos (*revIt, positionDistance);
       //
       //
       if (currentFinishPosition > lastStartPosition) {

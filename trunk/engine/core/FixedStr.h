@@ -49,6 +49,9 @@ public:
        return _buffer;
     }
 
+    inline bool empty () const {
+       return length () == 0;
+    }
     Str::Size length () const;
     Str::Size capacity () const {
        return _capacity;
@@ -109,9 +112,9 @@ private:
 //
 // File        : $RCSfile: $ 
 //               $Workfile: FixedStr.h $
-// Version     : $Revision: 3 $ 
+// Version     : $Revision: 4 $ 
 //               $Author: Aviad $
-//               $Date: 2/12/04 7:54 $ 
+//               $Date: 16/12/04 6:06 $ 
 // Description :
 //	The Core library contains contains basic definitions and classes
 // which are useful to any highly-portable applications

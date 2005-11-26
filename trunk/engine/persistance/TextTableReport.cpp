@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: TextTableReport.cpp $
-// Version     : $Revision: 3 $ 
+// Version     : $Revision: 4 $ 
 //               $Author: Aviad $
-//               $Date: 2/12/04 7:56 $ 
+//               $Date: 16/12/04 6:08 $ 
 // Description :
 //	The Persistence library contains both high & low level IO classes
 //	and is high-performance, highly reusable framework 
@@ -18,13 +18,13 @@
 // this file and as well as its library are released for academic research 
 // only. the LESSER GENERAL PUBLIC LICENSE (LPGL) license
 // as well as any other restrictions as posed by the computational biology lab
-// and the library authors appliy.
+// and the library authors apply.
 //
 
 
 
 #include "TextTableReport.h"
-
+#include "persistance/StrOutputStream.h"
 #include "persistance/OutputStream.h"
 #include <memory.h>
 
@@ -349,11 +349,6 @@ int TextTableReport::Field::offset () const
 }
 
 
-
-
-
-
-
 //
 // TextTableReport::Format
 //
@@ -361,75 +356,75 @@ int TextTableReport::Field::offset () const
 
 TextTableReport::Format::Format (const char* separator) 
 :  _width (0),
-   _length (0),
-   _nfields (0)
+   _length (0)
 {
-    memset (_fields, 0, sizeof (_fields));
     _fieldSeparator.set (separator);
+   _header = new Data (*this);
 }
 
 TextTableReport::Format::~Format ()
 {
-    for (int i=0 ; i<_nfields ; i++)    {
-        Field* field = _fields [i];
-        delete field;
-    }
+   int s = _fields.size ();
+   for (int i=0 ; i<s ; ++i)
+      delete _fields [i];
 }
 
 
 void TextTableReport::Format::addField (const Str& fieldName, int fieldLength, int fieldWidth)
 {
-    debug_mustbe (_nfields < maxFields);
-
     debug_mustbe (fieldLength > 0);
     debug_mustbe (fieldLength >= fieldWidth);
-    debug_mustbe (_length + fieldLength < maxRecordLength);
+    mustbe (_length + fieldLength < maxRecordLength);
 
     //
-    // for all fields but the first, put some spaces before the beginning of the field
-    if (_nfields > 0)   {
-        strcpy (_header + _width , _fieldSeparator);
-        _width += _fieldSeparator.length ();
+    // all fields except the first one also incur an additional
+    // width and length caused by the separator
+    if (_fields.size () > 0) {
+       _width += _fieldSeparator.length();
     }
-
-    //
-    // copy the name of the field to the header
-    FixedStr headerField (_header + _width, fieldWidth);
-    headerField = fieldName;
-    int headerFieldWidth = headerField.length ();
-
-    //
-    // remove the NULL at the end of the header, put spaces
-    memset (_header + _width + headerFieldWidth, ' ', fieldWidth - headerFieldWidth);
-    _header [_width + fieldWidth + 0] = '\r';
-    _header [_width + fieldWidth + 1] = '\n';
-    _header [_width + fieldWidth + 2] = '\0';
-
+    _width += fieldWidth;
 
     //
     // create a field instance
-    AutoPtr <Field> field = new Field (fieldName, 
-                                       fieldLength,
-                                       fieldWidth,
-                                       _length);
+    _fields.push_back (
+       new Field (fieldName, 
+                  fieldLength,
+                  fieldWidth,
+                  _length)
+    );
 
     //
-    // update internal state
-    _width += fieldWidth;
+    // update length
     _length += fieldLength;
-    _fields [_nfields++] = field.release ();
+
+    //
+    // update the header
+    _header->writeField (fieldName, _header->nextField());
+    _headerData.setLength(0);
 }
 
 
 Str TextTableReport::Format::header () const   
 {
-    return Str (_header, 0, _width + 2);
+   if (_headerData.empty ()) {
+      Persistance::FixedBufferOutputStream outputStream (
+         const_cast<char*> (_headerData.getChars()), 
+         _headerData.capacity ()
+      );
+
+      _header->writeInto(outputStream);
+      outputStream.flush ();
+      _headerData.setLength(outputStream.bytesWritten ());
+   }
+
+    return _headerData;
 }
+
 
 
 int TextTableReport::Format::fields () const
 {
-    return _nfields;
+    return _fields.size ();
 }
 
 int TextTableReport::Format::length () const
@@ -445,16 +440,8 @@ int TextTableReport::Format::width () const
 TextTableReport::Field* TextTableReport::Format::field (int index)
 {
     debug_mustbe (index >= 0);
-    debug_mustbe (index < _nfields);
-
     return _fields [index];
 }
-
-void TextTableReport::Format::spacesBetweenFields (int n)
-{
-   _fieldSeparator.set(Str (spaces, 0, n));
-}
-
 
 
 
@@ -560,28 +547,19 @@ FixedStr TextTableReport::Data::getField (int index)
    return FixedStr (fieldBuffer, length);
 }
 
-
-void TextTableReport::Data::writeInto (Output& output)
-{
-    StrBuffer outputBuffer (_format.length () * 2);
-
-    //
-    // format the data into a buffer
-    writeInto (outputBuffer);
-
-    //
-    // output the buffer with the header
-	StrBuffer header = _format.header ();
-	header.trimRight ();
-	header.append (newline);
-    output.writeRecord (header, outputBuffer);
+void TextTableReport::Data::writeInto (StrBuffer& out) const{
+   TStrOutputStream <StrBuffer> outputStream (out);
+   writeInto (outputStream);
 }
 
-
+static void append (Persistance::OutputStream& stream, const Str& inStr)
+{
+   stream.write(inStr.getChars(), inStr.length ());
+}
 
 //
 // returns true if more input is available
-static bool writeLineInto (StrBuffer& outputBuffer,
+static bool writeLineInto (OutputStream& outputBuffer,
                            TextTableReport::Data::Iterator iterators [],
                            int iteratorCount,
                            const Str& fieldSeparator)
@@ -593,7 +571,7 @@ static bool writeLineInto (StrBuffer& outputBuffer,
             //
             // write the value to the outputBuffer
             Str value = iterator.get ();
-            outputBuffer.append (value);
+            append (outputBuffer, value);
 
             //
             // if this is not the last field
@@ -601,7 +579,7 @@ static bool writeLineInto (StrBuffer& outputBuffer,
                 //
                 // append spaces
                 int unusedWidth = iterator.unusedWidth ();
-                outputBuffer.append (Str (spaces, 0, unusedWidth));
+                append (outputBuffer, Str (spaces, 0, unusedWidth));
             }
 
             //
@@ -614,24 +592,25 @@ static bool writeLineInto (StrBuffer& outputBuffer,
         else    {
             //
             // there's no more input in this field, just append spaces
-            outputBuffer.append (Str (spaces, 0, iterator.width ()));
+           append (outputBuffer, Str (spaces, 0, iterator.width ()));
         }
 
         //
         // insert the separator between fields
-        outputBuffer.append (fieldSeparator);
+        append (outputBuffer, fieldSeparator);
     }
 
     return hasMore;
 }
 
-void TextTableReport::Data::writeInto (StrBuffer& outputBuffer)
+void TextTableReport::Data::writeInto (OutputStream& outputBuffer) const
 {
     int width;
     int offset;
-	int length;
+	 int length;
     Field* field;
-    Iterator iterators [maxFields];
+    ArrayAutoPtr <Iterator> pIterators = new Iterator [_format.fields()];
+    Iterator* iterators = pIterators.get ();
 
     //
     // set all the iterators
@@ -657,7 +636,7 @@ void TextTableReport::Data::writeInto (StrBuffer& outputBuffer)
     while (hasMore) {
         //
         // add a newline to terminate the line
-        outputBuffer.append (newline);
+        append (outputBuffer, newline);
 
         //
         // write the line into the buffer
@@ -684,16 +663,17 @@ TextTableReport::TextOutput::~TextOutput ()
 
 //
 // writes the contents of the field into the buffer.
-void TextTableReport::TextOutput::writeRecord (const Str& inHeader, const Str& inBody)
+void TextTableReport::TextOutput::writeRecord (const Data& data)
 {
     if (_first) {
         _first = false;
-        this->write (inHeader.getChars (), inHeader.length ());
+        this->write (data.format ().header());
+        writeln ();
     }
 
-    this->write (inBody.getChars (), inBody.length ());
+    data.writeInto(*getStream());
     if (this->_newline) {
-       this->write (EOL ());
+       writeln ();
     }
 }
 

@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: SeedSearcher.cpp $
-// Version     : $Revision: 31 $ 
+// Version     : $Revision: 32 $ 
 //               $Author: Aviad $
-//               $Date: 10/12/04 21:06 $ 
+//               $Date: 16/12/04 6:20 $ 
 // Description :
 //    Concrete class for seed-searching in a preprocessor
 //
@@ -444,25 +444,6 @@ struct TableSearcher {
 
       virtual ~AbstractSeed () {
       }
-      int removeOverlaps () {
-         //
-         // get the length of the feature, needed to compute
-         // the space required between positions, so that no overlaps occur
-         int featureLength = 
-            _key.assignment ().length ();
-
-         int removed = 0;
-         SeqCluster::Iterator it (_cluster->iterator ());
-         for (; it.hasNext () ; it.next ()) {
-            PosCluster* pos_set = _cluster->getPositions (it);
-            if (pos_set != NULL) {
-               removed += pos_set->removeOverlaps (featureLength);
-            }
-         }
-         //
-         // that's it, we have removed all overlaps!!!
-         return removed;
-      }
       virtual void addPositions (const Preprocessor::Node& node)=0;
       virtual void addSequences (const Preprocessor::Node& node)=0;
 
@@ -823,17 +804,10 @@ int SeedSearcher::tableSearch (  SearchParameters& params,
          TableSearcher::Seed* feature = 
             boost::polymorphic_downcast <TableSearcher::Seed*> (featureIt.get ());
 
-         if (params.countType () == _count_total_) {
-            //
-            // now we have to remove position overlaps, e.g. we do not count
-            // 'AAAAAA' (6 A's)  as having the feature 'AA' 5 times, but only 3 times 
-            //
-            // gcc doesnt like unused variable
-            // (Even if they are very useful for debugging!)
-            USELESS (const int overlappingPositions = )
-               feature->removeOverlaps ();
-         }
-
+         //
+         // overlaps are not counted when using total-counts
+         // this is implemented in the score-function, no need
+         // to do anything here
          Assignment* featureAssg;
          if (params.useSpecialization ()) {
             featureAssg = 

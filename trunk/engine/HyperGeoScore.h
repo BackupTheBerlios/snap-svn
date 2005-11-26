@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: HyperGeoScore.h $
-// Version     : $Revision: 11 $ 
+// Version     : $Revision: 12 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:44 $ 
+//               $Date: 16/12/04 6:18 $ 
 // Description :
 //    Concrete Score function classes - 
 //      based on Hyper-Geometric distribution
@@ -92,42 +92,11 @@ struct HyperGeoScore {
                                const ScoreParameters*) const;
 
    private:
+      int _seedLength;
       bool _countWeights;
       SeqCluster _allSequences;     // m
       const SeqWeightFunction& _wf; // n
       HyperGeoCache* _cache;
-   };
-
-
-   //
-   // 'total-count' scoring, which takes into account varying-length seeds
-   class TotalCount : public ScoreFunction {
-   public:
-      TotalCount (bool countWeights,
-                  const SequenceDB::Cluster& positivelyLabeled,   // m
-                  const SequenceDB& allSequences                  // n
-                 );
-
-      virtual ~TotalCount () {
-         delete _totalCache;
-      }
-
-      virtual double log2score (const Assignment& feature,
-                           const Assignment& projection,
-                           const SeqCluster& containingFeature, // k
-                           ScoreParameters** parameters
-                           ) const;
-
-     //
-     // print the score parameters 
-      virtual void writeAsText ( Persistance::TextWriter&, 
-                                 const ScoreParameters*) const ;
-
-   private:
-      bool _countWeights;
-      SeqCluster _allSequences;     // m
-      SeqCluster _positivelyLabeled; // n
-      HyperGeoTotalCache* _totalCache;
    };
 };
 

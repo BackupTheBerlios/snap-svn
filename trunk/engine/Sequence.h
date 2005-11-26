@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $
 //               $Workfile: Sequence.h $
-// Version     : $Revision: 29 $
+// Version     : $Revision: 30 $
 //               $Author: Aviad $
-//               $Date: 18/10/04 7:58 $
+//               $Date: 12/12/04 12:16 $
 // Description :
 //    Concrete classes for sequences, sequence positions
 //
@@ -42,6 +42,8 @@ public:
    : _id (id), _data (data), _reverse (reverse),
      _name (name), _weight (wgt)
    {
+      debug_mustbe ((reverse.length () == 0) || 
+                    (reverse.length () == data.length ()));
    }
    ~Sequence () {
    }
@@ -168,7 +170,7 @@ public:
 
 public:
    //
-   // ctor is called in a loop, so must be very effiecient
+   // ctor is called in a loop, so must be very efficient
    inline SeqPosition (Sequence const * seq, int pos)
    :  _sequence (seq), _position (pos), _strand (_strand_pos_) {
    }
@@ -201,6 +203,7 @@ public:
    Strand strand () const {
       return _strand;
    }
+
    //
    // returns the sequence string starting at this position,
    // modified by 'offset'with length 'length'.
