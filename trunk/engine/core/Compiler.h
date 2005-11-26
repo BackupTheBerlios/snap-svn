@@ -1,6 +1,8 @@
 #ifndef _SeedSearcher_Core_Compiler_h
 #define _SeedSearcher_Core_Compiler_h
 
+#include <boost/config.hpp>
+
 //
 // compiler type
 #define ENV_MICROSOFT			0x02
@@ -120,9 +122,9 @@ Compiler-dependent definitions
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Compiler.h $
-// Version     : $Revision: 8 $ 
+// Version     : $Revision: 9 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:45 $ 
+//               $Date: 7/09/04 9:43 $ 
 // Description :
 //	The Core library contains contains basic definitions and classes
 // which are useful to any highly-portable applications

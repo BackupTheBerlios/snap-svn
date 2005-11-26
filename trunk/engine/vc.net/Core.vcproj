@@ -1,7 +1,7 @@
-<?xml version="1.0" encoding = "windows-1255"?>
+<?xml version="1.0" encoding="windows-1255"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="7.00"
+	Version="7.10"
 	Name="Core"
 	ProjectGUID="{A9E58B03-3A1B-4F52-9BC8-2376A2D6CAF5}"
 	SccProjectName="&quot;$/SeedSearcher&quot;, ECAAAAAA"
@@ -57,6 +57,12 @@
 				Name="VCResourceCompilerTool"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
@@ -108,8 +114,16 @@
 				Name="VCResourceCompilerTool"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 	</Configurations>
+	<References>
+	</References>
 	<Files>
 		<Filter
 			Name="Source Files"
@@ -124,6 +138,9 @@
 				RelativePath="..\..\seedsearcher\Core\Defs.cpp">
 			</File>
 			<File
+				RelativePath="..\core\dlmalloc.c">
+			</File>
+			<File
 				RelativePath="..\core\FixedStr.cpp">
 			</File>
 			<File
@@ -134,9 +151,6 @@
 			</File>
 			<File
 				RelativePath="..\..\seedsearcher\Core\Str.cpp">
-			</File>
-			<File
-				RelativePath="..\core\dlmalloc.c">
 			</File>
 		</Filter>
 		<Filter
@@ -161,6 +175,9 @@
 				RelativePath="..\..\seedsearcher\Core\Defs.h">
 			</File>
 			<File
+				RelativePath="..\..\seedsearcher\Core\dlmalloc.h">
+			</File>
+			<File
 				RelativePath="..\core\FixedStr.h">
 			</File>
 			<File
@@ -180,9 +197,6 @@
 			</File>
 			<File
 				RelativePath="..\..\seedsearcher\Core\Str.h">
-			</File>
-			<File
-				RelativePath="..\..\seedsearcher\Core\dlmalloc.h">
 			</File>
 		</Filter>
 		<Filter

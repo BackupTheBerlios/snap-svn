@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: StdOptions.cpp $
-// Version     : $Revision: 27 $ 
+// Version     : $Revision: 28 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:44 $ 
+//               $Date: 7/09/04 9:44 $ 
 // Description :
 //    Concrete implmentations for Langauge, ScoreFunction, WeightFunction etc
 //
@@ -101,75 +101,70 @@ const AlphabetCode& ACGTLangauge::getCode (bool cardinalityIncludesN)
 void ACGTLangauge::write(const Assignment::Position& pos,
                        Persistance::TextWriter& writer) const
 {
-   char ACGT [] = "ACGTN";
-   
    int c = pos.count ();
-   if (c == 0)
+   if (c == 0) {
       writer << "-";
-   else if (c == 1) {
-      Assignment::PositionIterator it (pos);
-      writer << ACGT [it.get ()];
+      return;
    }
-   else if (c == cardinality ()) {
-      if (pos.strategy ()== assg_together)
-         writer << '?';
-      else
-         writer << '*';
-   }
-   else {
-      char iupac;
-      unsigned long code = pos.toULong ();
-      switch (code) {
-         case ACode:   // A - Adenine 
-            iupac = 'A';
-            break;
-         case CCode:   // C - Cytosine 
-            iupac = 'C';
-            break;
-         case GCode:   // G - Guanine 
-            iupac = 'G';
-            break;
-         case TCode:   // T - Thymine 
-            iupac = 'T';
-            break;
-         case (GCode | ACode): // R [GA] purine 
-            iupac = 'R';
-            break;
-         case (TCode | CCode): // Y [TC] Pyrimidine 
-            iupac = 'Y';
-            break;
-         case (GCode | TCode): // K [GT] Keto 
-            iupac = 'K';
-            break;
-         case (ACode | CCode): // M [AC] Amino 
-            iupac = 'M';
-            break;
-         case (GCode | CCode): // S [GC] ? 
-            iupac = 'S';
-            break;
-         case (ACode | TCode): // W [AT] ? 
-            iupac = 'W';
-            break;
-         case (GCode | TCode | CCode): // B [GTC] ? 
-            iupac = 'B';
-            break;
-         case (GCode | ACode | TCode): // D [GAT] ? 
-            iupac = 'D';
-            break;
-         case (ACode | CCode | TCode): // H [ACT] ? 
-            iupac = 'H';
-            break;
-         case (GCode | CCode | ACode): // V [GCA] ? 
-            iupac = 'V';
-            break;
-         default:
-            debug_mustfail ();
-            iupac = '!';
-            break;
-      };
 
-      writer << iupac;
-   }
+   char iupac;
+   unsigned long code = pos.toULong ();
+   switch (code) {
+      case ACode:   // A - Adenine 
+         iupac = 'A';
+         break;
+      case CCode:   // C - Cytosine 
+         iupac = 'C';
+         break;
+      case GCode:   // G - Guanine 
+         iupac = 'G';
+         break;
+      case TCode:   // T - Thymine 
+         iupac = 'T';
+         break;
+      case (GCode | ACode): // R [GA] purine 
+         iupac = 'R';
+         break;
+      case (TCode | CCode): // Y [TC] Pyrimidine 
+         iupac = 'Y';
+         break;
+      case (GCode | TCode): // K [GT] Keto 
+         iupac = 'K';
+         break;
+      case (ACode | CCode): // M [AC] Amino 
+         iupac = 'M';
+         break;
+      case (GCode | CCode): // S [GC] ? 
+         iupac = 'S';
+         break;
+      case (ACode | TCode): // W [AT] ? 
+         iupac = 'W';
+         break;
+      case (GCode | TCode | CCode): // B [GTC] ? 
+         iupac = 'B';
+         break;
+      case (GCode | ACode | TCode): // D [GAT] ? 
+         iupac = 'D';
+         break;
+      case (ACode | CCode | TCode): // H [ACT] ? 
+         iupac = 'H';
+         break;
+      case (GCode | CCode | ACode): // V [GCA] ? 
+         iupac = 'V';
+         break;
+      case (GCode | CCode | ACode | TCode): // N [GCTA]  
+         if (pos.strategy ()== assg_together)
+            iupac = '?';
+         else
+            iupac = '*';
+         break;
+      default:
+         debug_mustfail ();
+         iupac = '!';
+         break;
+   };
+
+   writer << iupac;
 }
 
 void ACGTLangauge::complement (const Assignment& in , Assignment& out) const

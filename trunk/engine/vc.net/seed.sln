@@ -1,13 +1,29 @@
-Microsoft Visual Studio Solution File, Format Version 7.00
+Microsoft Visual Studio Solution File, Format Version 8.00
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Core", "Core.vcproj", "{A9E58B03-3A1B-4F52-9BC8-2376A2D6CAF5}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Persistance", "Persistance.vcproj", "{16C4D29E-6206-48AF-AE0E-E413B563CE75}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SeedSearcher", "SeedSearcher.vcproj", "{3071C567-8503-473B-A530-6D93E43B1809}"
+	ProjectSection(ProjectDependencies) = postProject
+		{16C4D29E-6206-48AF-AE0E-E413B563CE75} = {16C4D29E-6206-48AF-AE0E-E413B563CE75}
+		{80D22A42-7429-4BA2-8136-0AF6FADBEB11} = {80D22A42-7429-4BA2-8136-0AF6FADBEB11}
+		{A9E58B03-3A1B-4F52-9BC8-2376A2D6CAF5} = {A9E58B03-3A1B-4F52-9BC8-2376A2D6CAF5}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SeedSearcherCore", "SeedSearcherCore.vcproj", "{80D22A42-7429-4BA2-8136-0AF6FADBEB11}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MotifCalc", "..\MotifCalc\MotifCalc.vcproj", "{4B2499B1-89B3-4737-A8E8-BA6EA4A10684}"
+	ProjectSection(ProjectDependencies) = postProject
+		{80D22A42-7429-4BA2-8136-0AF6FADBEB11} = {80D22A42-7429-4BA2-8136-0AF6FADBEB11}
+		{16C4D29E-6206-48AF-AE0E-E413B563CE75} = {16C4D29E-6206-48AF-AE0E-E413B563CE75}
+		{A9E58B03-3A1B-4F52-9BC8-2376A2D6CAF5} = {A9E58B03-3A1B-4F52-9BC8-2376A2D6CAF5}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SourceCodeControl) = preSolution
@@ -36,16 +52,8 @@ Global
 		SccProjectFilePathRelativizedFromConnection4 = vc.net\\
 	EndGlobalSection
 	GlobalSection(SolutionConfiguration) = preSolution
-		ConfigName.0 = Debug
-		ConfigName.1 = Release
-	EndGlobalSection
-	GlobalSection(ProjectDependencies) = postSolution
-		{3071C567-8503-473B-A530-6D93E43B1809}.0 = {A9E58B03-3A1B-4F52-9BC8-2376A2D6CAF5}
-		{3071C567-8503-473B-A530-6D93E43B1809}.1 = {80D22A42-7429-4BA2-8136-0AF6FADBEB11}
-		{3071C567-8503-473B-A530-6D93E43B1809}.2 = {16C4D29E-6206-48AF-AE0E-E413B563CE75}
-		{4B2499B1-89B3-4737-A8E8-BA6EA4A10684}.0 = {A9E58B03-3A1B-4F52-9BC8-2376A2D6CAF5}
-		{4B2499B1-89B3-4737-A8E8-BA6EA4A10684}.1 = {16C4D29E-6206-48AF-AE0E-E413B563CE75}
-		{4B2499B1-89B3-4737-A8E8-BA6EA4A10684}.2 = {80D22A42-7429-4BA2-8136-0AF6FADBEB11}
+		Debug = Debug
+		Release = Release
 	EndGlobalSection
 	GlobalSection(ProjectConfiguration) = postSolution
 		{A9E58B03-3A1B-4F52-9BC8-2376A2D6CAF5}.Debug.ActiveCfg = Debug|Win32

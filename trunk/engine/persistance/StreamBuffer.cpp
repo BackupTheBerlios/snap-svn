@@ -3,11 +3,6 @@
 
 using namespace Persistance;
 
-template <class T>
-static inline const T& min(const T& a, const T& b) {
-	return a < b ? a : b;
-}
-
 StreamBuffer::StreamBuffer() : ptr(0), bufEnd(0), bufStart(0), bufferPos(0) {
 }
 
@@ -31,7 +26,7 @@ void StreamBuffer::flush() {
 
 void StreamBuffer::skipBytes(Size jumpSize) {
 	for(;;) {
-		Size blockSize= min((Size)(bufEnd - ptr), jumpSize);
+		Size blockSize= tmin((Size)(bufEnd - ptr), jumpSize);
 		debug_mustbe(blockSize >= 0);
 		if ((jumpSize-=blockSize) > 0) {
 			ptr+=blockSize;
@@ -45,7 +40,7 @@ void StreamBuffer::skipBytes(Size jumpSize) {
 
 StreamBuffer::Size StreamBuffer::peekBytes (void* outPtr, Size outSize) 
 {
-	Size blockSize = min ((Size) (bufEnd - ptr), outSize);
+	Size blockSize = tmin ((Size) (bufEnd - ptr), outSize);
 	debug_mustbe (blockSize >= 0);
     if (blockSize > 0) 			// keep the BoundsChecker happy
 		memcpy (outPtr, ptr, blockSize);
@@ -54,7 +49,7 @@ StreamBuffer::Size StreamBuffer::peekBytes (void* outPtr, Size outSize)
 
 void StreamBuffer::readBytes(void* outPtr, Size outSize) {
 	for(;;) {
-		Size blockSize= min((Size)(bufEnd - ptr), outSize);
+		Size blockSize= tmin((Size)(bufEnd - ptr), outSize);
 		debug_mustbe(blockSize >= 0);
         if (blockSize > 0) {			// keep the BoundsChecker happy
 			memcpy(outPtr, ptr, blockSize);
@@ -78,7 +73,7 @@ void StreamBuffer::writeBytes(const void* inPtr, Size inSize) {
 	if (ptr>=bufEnd)
 		advanceNextBuffer();
 	for(;;) {
-		Size blockSize= min(Size(bufEnd - ptr), inSize);
+		Size blockSize= tmin(Size(bufEnd - ptr), inSize);
 		if (blockSize > 0)			// keep the BoundsChecker happy
 			memcpy(ptr, inPtr, blockSize);
 		ptr+=blockSize;
@@ -105,9 +100,9 @@ bool StreamBuffer::canWrite() {
 //
 // File        : $RCSfile: $ 
 //               $Workfile: StreamBuffer.cpp $
-// Version     : $Revision: 6 $ 
+// Version     : $Revision: 7 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:45 $ 
+//               $Date: 7/09/04 9:42 $ 
 // Description :
 //	The Persistence library contains both high & low level IO classes
 //	and is high-performance, highly reusable framework 

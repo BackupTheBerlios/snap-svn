@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Parser.cpp $
-// Version     : $Revision: 31 $ 
+// Version     : $Revision: 33 $ 
 //               $Author: Aviad $
-//               $Date: 1/09/04 1:26 $ 
+//               $Date: 7/09/04 9:39 $ 
 // Description :
 //    Concrete Parser for seed-searcher options
 //
@@ -204,6 +204,20 @@ DEFINE_SEED_PARSER_OPTION(proj_i,
       else {
          parser->__proj_i = parser->getInt (optarg, this->_name);
       }
+   }
+);
+
+DEFINE_SEED_PARSER_OPTION(proj_one,
+      "Sproj-one", 
+      "<projection> selects a specific projection to search for.\n"
+         "if specified, only this projection shall be used for searching."
+         "example: --Sproj-one *?**?A?*\n"
+         "this will search for seeds of length 8 with 2 random positions and one A",
+      "",
+      GetOptWrapper::_required_argument_,
+   {
+      Parser* parser = reinterpret_cast <Parser*> (ctx);
+      parser->__proj_one = optarg;
    }
 );
 
@@ -646,6 +660,7 @@ struct MyOptions {
       REGISTER_SEED_PARSER_OPTION_CLASS (proj_mid, _list);
       REGISTER_SEED_PARSER_OPTION_CLASS (proj_spec, _list);
       REGISTER_SEED_PARSER_OPTION_CLASS (proj_i, _list);
+      REGISTER_SEED_PARSER_OPTION_CLASS (proj_one, _list);
       REGISTER_SEED_PARSER_OPTION_CLASS (seed_n, _list);
       REGISTER_SEED_PARSER_OPTION_CLASS (seed_l, _list);
       REGISTER_SEED_PARSER_OPTION_CLASS (seed_r, _list);
@@ -716,11 +731,6 @@ void Parser::parse (int argc, char* argv[])
    __argv = argv;
 
    __firstFileArg =  argc;
-
-   //
-   // initialize projection seed here
-   __proj_i = time (NULL);
-
 
    GET_SEED_PARSER_OPTION_CLASS (help) help_option;
    _impl.parse (argc, argv, __options._list, this, help_option);

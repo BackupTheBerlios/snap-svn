@@ -18,17 +18,6 @@
 #define BEGIN_NAMESPACE(name) namespace name {
 #define END_NAMESPACE(name) };
 
-//
-// definitions for 'typename' keyword. 
-// some compilers (VC 6.0) dont support it properly
-// while others (gcc) enforce it rather strictly.
-#if ENV_C_SUPPORTS & ENV_TYPENAME_KEYWORD
-#  define TYPENAME typename
-#else
-#  define TYPENAME
-#endif
-
-
 
 //	}{ BASE_DEBUG -- debugging
 
@@ -270,9 +259,9 @@ inline const T& tmax(const T& a, const T& b) {
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Defs.h $
-// Version     : $Revision: 14 $ 
+// Version     : $Revision: 15 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:45 $ 
+//               $Date: 7/09/04 9:43 $ 
 // Description :
 //	The Core library contains contains basic definitions and classes
 // which are useful to any highly-portable applications

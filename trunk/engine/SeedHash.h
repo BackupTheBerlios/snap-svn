@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: SeedHash.h $
-// Version     : $Revision: 14 $ 
+// Version     : $Revision: 15 $ 
 //               $Author: Aviad $
-//               $Date: 27/08/04 2:08 $ 
+//               $Date: 7/09/04 9:39 $ 
 // Description :
 //    Concrete and interface classes for a hash-table of positions
 //
@@ -99,7 +99,7 @@ public:
 
    //
    //
-   template <class C, class D = TYPENAME HashTable <C>::Deallocator>
+   template <class C, class D = BOOST_DEDUCED_TYPENAME HashTable <C>::Deallocator>
    class Table : public HashTable <C, D> {
    public:
       typedef C UserCluster;

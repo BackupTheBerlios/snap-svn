@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: StdOptions.h $
-// Version     : $Revision: 25 $ 
+// Version     : $Revision: 27 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:44 $ 
+//               $Date: 7/09/04 9:44 $ 
 // Description :
 //    Concrete implmentations for Langauge, ScoreFunction, WeightFunction etc
 //
@@ -115,7 +115,7 @@ public:
    virtual void write (const Assignment::Position&, Persistance::TextWriter& out) const ;
 
    //
-   // returns the complement of an assignemnt 
+   // returns the complement of an assignment 
    // (for instance the reverse assignment for ACGT langugaue)
    virtual void complement (const Assignment&, Assignment&) const;
    virtual void complement (const Str&, StrBuffer&) const;
@@ -123,7 +123,12 @@ public:
    //
    // return a wildcard with the appropriate strategy (for searching)
    virtual Assignment::Position wildcard (Assignment::Strategy s) const {
-      return Assignment::Position (Assignment::Position::all, cardinality (), s);
+      //
+      // currently wildcards do not match 'N' characters.
+      // this may seem ridiculous because these are supposed to be wildcards
+      // after all, but really 'N' means I-dunno-whats-there
+      // so if you want to match dunno's you'd better ask for it
+      return Assignment::Position (Assignment::Position::all, 4, s);
    }
 
    //
@@ -154,6 +159,32 @@ public:
    //
    // 
    static const AlphabetCode& getCode (bool cardinalityIncludesN);
+
+   virtual Assignment& stringToAssignment (Assignment& motif, const Str& motif_str) const {
+      int l = motif_str.length ();
+      for (int i=0 ; i<l ; i++) {
+         AlphabetCode::Char c = motif_str.getCharAt (i);
+         if (c == '?' || c == 'N') {
+            motif.addPosition (wildcard (assg_together));
+         }
+         else if (c == '*') {
+            motif.addPosition (wildcard (assg_discrete));
+         }
+         else {
+            AlphabetCode::CodedChar cc = code ().code (c);
+            if (cc == AlphabetCode::notInCode) {
+               throw AlphabetCode::UnknownCodeError (c);
+            }
+
+            //
+            // create a position for each char in the string, 
+            // using assg_discrete strategy
+            motif.addPosition (AssgPosition (cc, assg_discrete));
+         }
+      }
+
+      return motif;
+   }
 
 protected:
    //

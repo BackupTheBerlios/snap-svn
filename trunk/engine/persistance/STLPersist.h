@@ -103,8 +103,8 @@ struct OLink : public Manipulator {
 // output the first value, then the second
 // may be augmented using other template parameters instead of the default ones
 template <  class Pair,
-            class Action1 = OT <TYPENAME Pair::first_type>,
-            class Action2 = OT <TYPENAME Pair::second_type>
+            class Action1 = OT <BOOST_DEDUCED_TYPENAME Pair::first_type>,
+            class Action2 = OT <BOOST_DEDUCED_TYPENAME Pair::second_type>
          >
 struct OPair : public Manipulator {
    //
@@ -133,11 +133,11 @@ struct OPair : public Manipulator {
 // but saves typing because it uses the types of a map.
 template <  class Map,             
 	    class Action1 = 
-	       TYPENAME OPair <TYPENAME Map::value_type>::Action1Type,
+	       BOOST_DEDUCED_TYPENAME OPair <BOOST_DEDUCED_TYPENAME Map::value_type>::Action1Type,
 	    class Action2 = 
-	       TYPENAME OPair <TYPENAME Map::value_type>::Action2Type
+	       BOOST_DEDUCED_TYPENAME OPair <BOOST_DEDUCED_TYPENAME Map::value_type>::Action2Type
          >
-struct OMapPair : public OPair <TYPENAME Map::value_type, Action1, Action2> {
+struct OMapPair : public OPair <BOOST_DEDUCED_TYPENAME Map::value_type, Action1, Action2> {
    //
    //
    typedef Action1 Action1Type;
@@ -158,7 +158,7 @@ struct OMapPair : public OPair <TYPENAME Map::value_type, Action1, Action2> {
 // by going over ALL elements, performing 'Action' on them 
 // (default = just write the elements using '<<')
 template <  class Container, 
-            class Action = OT <TYPENAME Container::value_type>
+            class Action = OT <BOOST_DEDUCED_TYPENAME Container::value_type>
          >
 class OSTL : public Manipulator {
 public:
@@ -191,8 +191,8 @@ private:
 // by going over ALL elements, performing 'Action' on them 
 // (default = just write the elements using '<<')
 template <  class Container,
-            class Action1 = TYPENAME OMapPair <Container>::Action1Type,
-            class Action2 = TYPENAME OMapPair <Container>::Action2Type
+            class Action1 = BOOST_DEDUCED_TYPENAME OMapPair <Container>::Action1Type,
+            class Action2 = BOOST_DEDUCED_TYPENAME OMapPair <Container>::Action2Type
          >
 class OMap : public OSTL < Container, OMapPair <Container> > {
 public:
@@ -280,8 +280,8 @@ struct IT : public Manipulator {
 // persistance for STL pairs
 // reads it using 'Action1' 'Action2' which default to '>>'
 template <  class Pair,
-            class Action1 = IT <TYPENAME Pair::first_type>,
-            class Action2 = IT <TYPENAME Pair::second_type>
+            class Action1 = IT <BOOST_DEDUCED_TYPENAME Pair::first_type>,
+            class Action2 = IT <BOOST_DEDUCED_TYPENAME Pair::second_type>
          >
 struct IPair : public Manipulator {
    //
@@ -310,8 +310,8 @@ struct IPair : public Manipulator {
 // this is needed because we cannot use the map's 'value_type' type
 // 'Map::value_type::first_type' always has const...
 template <  class Map,             
-            class Action1 = IT <TYPENAME Map::key_type>,
-            class Action2 = IT <TYPENAME Map::value_type::second_type>
+            class Action1 = IT <BOOST_DEDUCED_TYPENAME Map::key_type>,
+            class Action2 = IT <BOOST_DEDUCED_TYPENAME Map::value_type::second_type>
          >
 struct IMapPair : public Manipulator {
    //
@@ -345,7 +345,7 @@ struct IMapPair : public Manipulator {
 // by going over ALL elements, performing 'Action' on them 
 // (default = just write the elements using '<<')
 template <  class Container, 
-            class Action = IT <TYPENAME Container::value_type>
+            class Action = IT <BOOST_DEDUCED_TYPENAME Container::value_type>
          >
 class ISTL : public Manipulator {
    //
@@ -388,7 +388,7 @@ private:
 // long after the scope of the 'ISTLReg' object is over.
 // therefore, it creates an 'Array' object which stays alive in heap memory
 // until all the links to it have been created.
-template <class Container, class T = TYPENAME Container::value_type>
+template <class Container, class T = BOOST_DEDUCED_TYPENAME Container::value_type>
 class ISTLReg : public Manipulator {
 public:
    //
@@ -494,9 +494,9 @@ END_NAMESPACE (Persistance);
 //
 // File        : $RCSfile: $ 
 //               $Workfile: STLPersist.h $
-// Version     : $Revision: 8 $ 
+// Version     : $Revision: 9 $ 
 //               $Author: Aviad $
-//               $Date: 27/08/04 2:08 $ 
+//               $Date: 7/09/04 9:42 $ 
 // Description :
 //	The Persistence library contains both high & low level IO classes
 //	and is high-performance, highly reusable framework 

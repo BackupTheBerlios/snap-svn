@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: main.cpp $
-// Version     : $Revision: 56 $ 
+// Version     : $Revision: 57 $ 
 //               $Author: Aviad $
-//               $Date: 1/09/04 1:24 $ 
+//               $Date: 7/09/04 10:12 $ 
 // Description :
 //    main routine for the seed-searcher program
 //
@@ -319,7 +319,7 @@ static void mainRoutine (int argc,
 
    finish = time(NULL);
    printGoodbye (start, finish);
-   cerr << endl << "Cleaning up...";
+   DLOG << DLOG.EOL () << "Cleaning up...";
    time (&cleanupStart);
 }
 

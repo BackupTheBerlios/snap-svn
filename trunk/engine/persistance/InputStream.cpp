@@ -48,7 +48,7 @@ void InputStream::copyTo(OutputStream* output, Size inBytes)
         if (bytes > 0)  {
             //
             // copy every byte left in buffer to output, but no more than inBytes
-            toCopy = min (bytes, inBytes);
+            toCopy = tmin (bytes, inBytes);
             inBytes -= toCopy;
 
 			output->write(ptr, toCopy);
@@ -78,7 +78,7 @@ void InputStream::read(void* inDest, Size inDestSize) {
 	Ptr dest= Ptr(inDest);
 	debug_only(Ptr endDest= dest + inDestSize);
 	for(;;) {
-		Size blockSize= min((Size)(bufEnd - ptr), inDestSize);
+		Size blockSize= tmin((Size)(bufEnd - ptr), inDestSize);
 		debug_mustbe(blockSize >= 0);
 		if (blockSize > 0) {			// keep the BoundsChecker happy
 			memcpy(dest, ptr, blockSize);
@@ -97,9 +97,9 @@ void InputStream::read(void* inDest, Size inDestSize) {
 //
 // File        : $RCSfile: $ 
 //               $Workfile: InputStream.cpp $
-// Version     : $Revision: 6 $ 
+// Version     : $Revision: 7 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:45 $ 
+//               $Date: 7/09/04 9:42 $ 
 // Description :
 //	The Persistence library contains both high & low level IO classes
 //	and is high-performance, highly reusable framework 

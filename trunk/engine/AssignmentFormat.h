@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: AssignmentFormat.h $
-// Version     : $Revision: 10 $ 
+// Version     : $Revision: 11 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:44 $ 
+//               $Date: 2/09/04 7:36 $ 
 // Description :
 //    interface classes for the formatting and structure of assignments.
 //    of special importance is the Langauge idiom.
@@ -79,6 +79,10 @@ public:
    // returns true if complements are supported for this langauge
    virtual bool supportComplement () const {
       return false;
+   }
+
+   virtual Assignment& stringToAssignment (Assignment& motif, const Str& motif_str) const{
+      return motif;
    }
 };
 

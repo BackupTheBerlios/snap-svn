@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: RandomProjections.h $
-// Version     : $Revision: 14 $ 
+// Version     : $Revision: 15 $ 
 //               $Author: Aviad $
-//               $Date: 23/08/04 21:44 $ 
+//               $Date: 7/09/04 9:44 $ 
 // Description :
 //    Concrete classes for creating and retrieving random projections
 //    from given <l,d> parameters
@@ -26,8 +26,20 @@
 //
 
 #include "Assignment.h"
+#include "AssignmentFormat.h"
+#include <boost/shared_ptr.hpp>
 
-class RandomProjections {
+class ProjectionGenerator {
+public:
+   virtual ~ProjectionGenerator () {
+   }
+
+   virtual const Assignment& getAssignment (int index) const = 0;
+
+   virtual int numOfProjections () const = 0;
+};
+
+class RandomProjections : public ProjectionGenerator {
 public:
    enum All {
       all
@@ -35,12 +47,14 @@ public:
    
    RandomProjections (  All,              // create all possible projections
                         int length,          // length of the assignment to create
-                        int numOfPositions   // number of positions to select in each assignment
+                        int numOfPositions,  // number of positions to select in each assignment
+                        boost::shared_ptr <Langauge>
                         );
 
    RandomProjections (  int numOfProjections,// num of assignments to generate
                         int length,          // length of the assignment to create
-                        int numOfPositions   // number of positions to select in each assignment
+                        int numOfPositions,  // number of positions to select in each assignment
+                        boost::shared_ptr <Langauge>
                         );
 
    virtual ~RandomProjections () {
@@ -48,7 +62,7 @@ public:
 
    //
    // returns how many different projections actually created
-   int numOfProjections () const {
+   virtual int numOfProjections () const {
       return _vector.size ();
    }
    int maxPossibleProjections () const {
@@ -67,10 +81,7 @@ public:
       return _numOfPositions;
    }
 
-   virtual const Assignment& getAssignment (
-                        int index, 
-                        const Assignment::Position& randPos,
-                        const Assignment::Position& normalPos) const;
+   virtual const Assignment& getAssignment (int index) const;
 
    typedef Vec <int> RandomPositions;
    typedef Vec <RandomPositions> RandomPositionsVector;
@@ -78,12 +89,13 @@ public:
 
    static void srand (unsigned int seed);
 
-private:
+protected:
    int _length;
    int _numOfPositions;
    int _maxPossibleProjections;
    RandomPositionsVector _vector;
    AssignmentVector _assignments;
+   boost::shared_ptr <Langauge> _langauge;
 };
 
 //
@@ -94,9 +106,10 @@ public:
       All,              // create all possible projections
       int length,          // length of the assignment to create
       int numOfPositions,  // number of positions to select in each assignment
-      int midsection       
+      int midsection,
+      boost::shared_ptr <Langauge> lang
       )
-      : RandomProjections (all, length - midsection, numOfPositions), 
+      : RandomProjections (all, length - midsection, numOfPositions, lang), 
          _midsection (midsection)
    {
    }
@@ -105,25 +118,27 @@ public:
       int numOfProjections,// num of assignments to generate
       int length,          // length of the assignment to create
       int numOfPositions,  // number of positions to select in each assignment
-      int midsection       
+      int midsection,
+      boost::shared_ptr <Langauge> lang
       )
-      : RandomProjections (numOfProjections, length - midsection, numOfPositions),
+      : RandomProjections (numOfProjections, 
+                           length - midsection, 
+                           numOfPositions, 
+                           lang),
          _midsection (midsection)
    {
    }
 
-   virtual const Assignment& getAssignment (
-      int index, 
-      const Assignment::Position& randPos,
-      const Assignment::Position& normalPos) const 
-   {
+   virtual const Assignment& getAssignment (int index) const {
       Assignment& out = const_cast <Assignment&> (
-         RandomProjections::getAssignment (index, randPos, normalPos));
+         RandomProjections::getAssignment (index));
 
       if (_midsection > 0) {
          //
          // now add the midsection
-         out.addPositionAt (out.length () / 2, randPos, _midsection);
+         out.addPositionAt (  out.length () / 2, 
+                              _langauge->wildcard (assg_together), 
+                              _midsection);
       }
 
       return out;
@@ -133,15 +148,29 @@ private:
    int _midsection;
 };
 
+class SpecificProjectionGenerator : public ProjectionGenerator{
+public:
+   SpecificProjectionGenerator (
+      const Str& in, boost::shared_ptr <Langauge> lang)  : _langauge (lang){
+      _langauge->stringToAssignment (_assg, in);
+   }
+   virtual ~SpecificProjectionGenerator () {
+   }
+   virtual const Assignment& getAssignment (int index) const{
+      mustbe (index == 0);
+      return _assg;
+   }
+   virtual int numOfProjections () const {
+      return 1;
+   }
+
+private:
+   Assignment _assg;
+   boost::shared_ptr <Langauge> _langauge;
+};
+
 
 #endif // _SeedSearcher_RandomProjections_h
-
-
-
-
-
-
-
 
 
 

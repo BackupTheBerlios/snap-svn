@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: SeedSearcherMain.cpp $
-// Version     : $Revision: 22 $ 
+// Version     : $Revision: 23 $ 
 //               $Author: Aviad $
-//               $Date: 27/08/04 2:08 $ 
+//               $Date: 7/09/04 9:38 $ 
 // Description :
 //    Concrete and interface classes for seting-up 
 //    a seed-searching environment or program
@@ -102,9 +102,8 @@ SeedSearcherMain::search (boost::shared_ptr <Parameters> inParams)
       //
       // create 
       const Assignment& assg =
-         _params->projections ().getAssignment (  i, 
-                                 _params->langauge ().wildcard (assg_together),
-                                 _params->langauge ().wildcard (assg_discrete));
+         _params->projections ().getAssignment (i);
+
 
       //
       // call virtual 'beforeProjection' handler
@@ -238,12 +237,6 @@ void SeedSearcherMain::CmdLineParameters::setup (const Str& seq, const Str& wgt)
    // TODO: what should we do when _parser.__seed_r 
    // is too large for the length of seed?
    setupFeatureContainer ();
-
-   //
-   // TODO: this is a HACK!
-   // searches should ignore assignments with N's
-   // so now we disable the N
-   dynamic_cast <ACGTLangauge*> (_langauge.get ())->includeN (false);
 }
 
 void SeedSearcherMain::CmdLineParameters::setupParameters ()
@@ -256,25 +249,36 @@ void SeedSearcherMain::CmdLineParameters::setupParameters ()
 void SeedSearcherMain::CmdLineParameters::setupProjections ()
 {
    //
-   // initialize the random seed
-   RandomProjections::srand (_parser.__proj_i);
-   if (_parser.__proj_e) {
-      _projections.reset (
-            new MidsectionRandomProjections (
-               RandomProjections::all,
-               _parser.__seed_l,
-               _parser.__proj_d,
-               _parser.__proj_mid)
-         );
+   // check if a specific projection was asked for
+   if (!_parser.__proj_one.empty()) {
+      _projections.reset(
+         new SpecificProjectionGenerator (_parser.__proj_one, _langauge)
+      );
    }
    else {
-      _projections.reset (
-            new MidsectionRandomProjections (
-               _parser.__proj_n,
-               _parser.__seed_l,
-               _parser.__proj_d,
-               _parser.__proj_mid)
+      //
+      // initialize the random seed
+      RandomProjections::srand (_parser.__proj_i);
+      if (_parser.__proj_e) {
+         _projections.reset (
+               new MidsectionRandomProjections (
+                  RandomProjections::all,
+                  _parser.__seed_l,
+                  _parser.__proj_d,
+                  _parser.__proj_mid,
+                  _langauge)
             );
+      }
+      else {
+         _projections.reset (
+               new MidsectionRandomProjections (
+                  _parser.__proj_n,
+                  _parser.__seed_l,
+                  _parser.__proj_d,
+                  _parser.__proj_mid,
+                  _langauge)
+               );
+      }
    }
 
    _parser.__proj_n = _projections->numOfProjections ();

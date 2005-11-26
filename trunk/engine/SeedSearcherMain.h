@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: SeedSearcherMain.h $
-// Version     : $Revision: 14 $ 
+// Version     : $Revision: 15 $ 
 //               $Author: Aviad $
-//               $Date: 27/08/04 2:08 $ 
+//               $Date: 7/09/04 9:39 $ 
 // Description :
 //    Concrete and interface classes for seting-up 
 //    a seed-searching environment or program
@@ -130,7 +130,7 @@ public:
    }
    //
    // returns the randome projections for the search
-   const RandomProjections& projections () const {
+   const ProjectionGenerator& projections () const {
       return *_projections;
    }
    //
@@ -157,7 +157,7 @@ protected:
    boost::shared_ptr <SequenceDB> _db;
    //
    // the projections 
-   boost::shared_ptr <RandomProjections> _projections;
+   boost::shared_ptr <ProjectionGenerator> _projections;
    //
    // search type table/tree
    SearchType _searchType;

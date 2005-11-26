@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: Parser.h $
-// Version     : $Revision: 23 $ 
+// Version     : $Revision: 24 $ 
 //               $Author: Aviad $
-//               $Date: 1/09/04 1:41 $ 
+//               $Date: 7/09/04 9:39 $ 
 // Description :
 //    Concrete Parser for seed-searcher options
 //
@@ -84,6 +84,9 @@ public:
    //
    // seed for random projections 
    int __proj_i;
+   //
+   // ask for a specific projection (not random)
+   StrBuffer __proj_one;
    //
    // no of seeds to output
    int __seed_n;
