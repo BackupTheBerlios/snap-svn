@@ -60,10 +60,20 @@ public:
       }
 
       void dispose () {
-         delete _assg;
-         delete _cluster;
-         if (_params) 
+         debug_only (
+            //
+            // guard against repetitive calls to delete
+            debug_mustbe (_score != 0xBAADF00D);
+            _score = 0xBAADF00D;
+            debug_mustbe (_score == 0xBAADF00D);
+         );
+
+         delete _assg;     _assg = NULL;
+         delete _cluster;  _cluster = NULL;
+         if (_params) {
             _params->dispose ();
+            _params = NULL;
+         }
       }
 
       struct Owner {
@@ -105,6 +115,7 @@ public:
       };
 
       virtual bool isSorted () const = 0;
+      virtual void sort () = 0;
    };
 
 
@@ -123,7 +134,8 @@ public:
          const Assignment& projection,       // how to climb down the tree
          WeightFunction& weightFunc,         // which sequences are positively labeled
          ScoreFunction& scoreFunc,           // how to score features
-         BestFeatures& bestFeatures          // stores the best features
+         BestFeatures& bestFeatures,         // stores the best features
+         bool specializeProjections          // should specialize projections?
          )
    {
       return prefixTreeSearch (tree, 
@@ -131,7 +143,9 @@ public:
                         weightFunc, 
                         scoreFunc, 
                         bestFeatures, 
-                        projection.length ());
+                        projection.length (),
+                        specializeProjections
+                        );
    }
    
    //
@@ -143,7 +157,8 @@ public:
          WeightFunction& weightFunc,         // which sequences are positively labeled
          ScoreFunction& scoreFunc,           // how to score features
          BestFeatures& bestFeatures,         // stores the best features
-         int desiredDepth                    // desired depth / length of features
+         int desiredDepth,                   // desired depth / length of features
+         bool specializeProjections          // should specialize projections?
          );
 
 //
@@ -155,17 +170,23 @@ public:
    //
    // search the tree for seeds that correspond to a projection (total counts)
    // returns the total number of seeds found
-   static int totalCountSearch (
-      Preprocessor& data, // where to search
+   static int tableSearch (
+      bool totalCount,
+      bool specialization,
+      const AlphabetCode& code,
+      const Preprocessor& data, // where to search
       const Assignment& projection, // how to climb down the tree
       AssignmentWriter& writer,     // (used for hashing)
-      const SequenceDB::Cluster& positivelyLabeled, // which sequences are positively labeled
+      const SeqWeightFunction& positivelyLabeled,   // which sequences are positively labeled
       SeedSearcher::ScoreFunction& scoreFunc,       // how to score features
       SeedSearcher::BestFeatures& bestFeatures      // stores the best features
          );
 };
 
 #endif // _SeedSearcher_SeedSeacher_h
+
+
+
 
 
 

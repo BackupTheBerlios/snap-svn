@@ -55,10 +55,13 @@ public:
 
       _chunks.clear ();
       _currentChunk = _currentChunkSize = _currentChunkIndex = 0;
+#if CORE_DL_MALLOC_OPTIMIZATION
       //
       // return memory to the system
       int result = dlmalloc_trim (0);
-      printf (result? "[DLMalloc released system memory]\n" : "[DLMalloc did not release system memory]\n");
+      printf (result? "[DLMalloc released system memory]\n" : 
+	      "[DLMalloc did not release system memory]\n");
+#endif
    }
 
    inline T* newT () {
@@ -89,12 +92,12 @@ public:
          //_elements = new T [_size];
          //
          // and this seems to allocate 4 bytes less than new...
-         char* ptr = (char*) dlmalloc (4 + sizeof (T) * _size);
+         char* ptr = (char*) SEED_MALLOC (4 + sizeof (T) * _size);
          _elements = (T*) (ptr + 4);
       }
       ~Chunk () {
          char* ptr = (char*)_elements;
-         dlfree (ptr - 4);
+         SEED_FREE (ptr - 4);
          //
          // this causes elements to be freed twice...
          // delete [] _elements;
@@ -124,6 +127,7 @@ private:
 };
 
 #endif // _SeedSearcher_Core_ChunkAllocator_h
+
 
 
 

@@ -56,14 +56,16 @@ SeqCluster::~SeqCluster ()
 
 void SeqCluster::clear ()
 {
-   SequenceSet::iterator it = _set.begin ();
-   SequenceSet::iterator end = _set.end ();
-   for (; it != end ; it++) {
-      PosCluster* pos = it->second;
-      delete pos;
-   }
+   if (!_set.empty ()) {
+      SequenceSet::iterator it = _set.begin ();
+      SequenceSet::iterator end = _set.end ();
+      for (; it != end ; it++) {
+         PosCluster* pos = it->second;
+         delete pos;
+      }
 
-   _set.clear ();
+      _set.clear ();
+   }
 }
 
 bool SeqCluster::addSequence (const Sequence* in)
@@ -99,7 +101,7 @@ PosCluster* SeqCluster::getPositions (Iterator& it)
    return it.getImpl ().getImpl ()->second;
 }
 
-PosCluster* SeqCluster::getPositions (ConstIterator& it)
+PosCluster* SeqCluster::getPositions (CIterator& it)
 {
    return it.getImpl ().getImpl ()->second;
 }
@@ -163,7 +165,7 @@ const PosCluster* SeqCluster::getPositions (Iterator& it) const
    return it.getImpl ().getImpl ()->second;
 }
 
-const PosCluster* SeqCluster::getPositions (ConstIterator& it) const
+const PosCluster* SeqCluster::getPositions (CIterator& it) const
 {
    return it.getImpl ().getImpl ()->second;
 }
@@ -179,7 +181,7 @@ bool SeqCluster::hasPositions (Iterator& it) const
    return (pos)? !pos->empty () : false;
 }
 
-bool SeqCluster::hasPositions (ConstIterator& it) const
+bool SeqCluster::hasPositions (CIterator& it) const
 {
    const PosCluster* pos = getPositions (it);
    return (pos)? !pos->empty () : false;
@@ -212,7 +214,7 @@ void SeqCluster::intersect (
       y = &a;
    }
 
-   ConstIterator it (x->iterator ());
+   CIterator it (x->iterator ());
    for (; it.hasNext () ; it.next ()) {
       if (y->hasSequence ((*it)))
          o.addSequence (*it);
@@ -222,7 +224,7 @@ void SeqCluster::intersect (
 
 void SeqCluster::unify (const SeqCluster& o)
 {
-   ConstIterator it (o.iterator ());
+   CIterator it (o.iterator ());
    for (; it.hasNext () ; it.next ()) {
       addSequence (*it);
    }
@@ -230,7 +232,7 @@ void SeqCluster::unify (const SeqCluster& o)
 
 void SeqCluster::unifyPositions (const SeqCluster& o)
 {
-   ConstIterator it (o.iterator ());
+   CIterator it (o.iterator ());
    for (; it.hasNext () ; it.next ()) {
       addSequence (*it);
       const PosCluster* pos = o.getPositions (it);
@@ -253,7 +255,7 @@ void SeqCluster::importPositions (const SeqCluster& o)
 double SeqCluster::sumAbsWeights () const
 {
    double result = 0;
-   ConstIterator it (iterator());
+   CIterator it (iterator());
 
    //
    // Wi = (Weight - 0.5) * 2
@@ -272,7 +274,7 @@ double SeqCluster::sumPositionAbsWeights () const
 {
    double result = 0;
 
-   ConstIterator it (iterator());
+   CIterator it (iterator());
    for (; it.hasNext (); it.next ()) {
       const Sequence& seq = *(*it);
       debug_mustbe (seq.hasWeight ());
@@ -291,7 +293,7 @@ double SeqCluster::sumPositionAbsWeights () const
 double SeqCluster::maxPositionsAbsWeightsNoOverlaps (int seedLength) const
 {
    double result = 0;
-   ConstIterator it (iterator());
+   CIterator it (iterator());
    for (; it.hasNext (); it.next ()) {
       const Sequence& seq = *(*it);
       debug_mustbe (seq.hasWeight ());
@@ -308,7 +310,7 @@ double SeqCluster::maxPositionsAbsWeightsNoOverlaps (int seedLength) const
 int SeqCluster::maxPositionsNoOverlaps (int seedLength) const
 {
    double result = 0;
-   ConstIterator it (iterator());
+   CIterator it (iterator());
    for (; it.hasNext (); it.next ()) {
       const Sequence& seq = *(*it);
       double L_by_K = double (seq.length ()) / seedLength;
@@ -321,7 +323,7 @@ int SeqCluster::maxPositionsNoOverlaps (int seedLength) const
 int SeqCluster::countPositions () const
 {
    int count = 0;
-   ConstIterator it (iterator ());
+   CIterator it (iterator ());
    for (; it.hasNext () ; it.next ()) {
       const PosCluster* pos = getPositions (it);
       debug_mustbe (pos);
@@ -334,7 +336,8 @@ int SeqCluster::countPositions () const
 
 void SeqCluster::addPos2Vector (PositionVector& out) const
 {
-   perform (AddPositions (out));
+   AddPositions action (out);
+   perform (action);
 }
 void SeqCluster::addPos2Vector (PositionVector& out, Sequence::ID id) const
 {
@@ -343,7 +346,15 @@ void SeqCluster::addPos2Vector (PositionVector& out, Sequence::ID id) const
 
 void SeqCluster::addSeq2Vector (SequenceVector& out) const
 {
-   perform (AddSequences (out));
+   AddSequences action(out);
+   perform (action);
+}
+
+bool SeqCluster::hasSequence (const SeqWeightFunction& wf) const
+{
+   FindPositive findPositive (wf);
+   CIterator& it = performUntil (findPositive);
+   return it.hasNext ();
 }
 
 
@@ -374,8 +385,10 @@ bool PosCluster::addPosition (const Position* in)
 
 void PosCluster::removePosition (const Position* in)
 {
-   int result = _set.erase (in);
-   debug_mustbe (result == 1);
+   USELESS (int result =)
+     _set.erase (in);
+
+   USELESS (debug_mustbe (result == 1));
 }
 
 int PosCluster::removeOverlaps (int positionDistance)
@@ -438,6 +451,9 @@ void PosCluster::add2Vector (PositionVector& out) const
       out.push_back (*it);
    }
 }
+
+
+
 
 
 

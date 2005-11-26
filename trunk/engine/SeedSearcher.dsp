@@ -182,20 +182,11 @@ SOURCE=.\main.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\PrefixTreePreprocessor.cpp
-
-!IF  "$(CFG)" == "SeedSearcher - Win32 Release"
-
-# ADD CPP /O2 /Ob1
-
-!ELSEIF  "$(CFG)" == "SeedSearcher - Win32 Debug"
-
-!ENDIF 
-
+SOURCE=.\Parser.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\PrefixTreeWalker.cpp
+SOURCE=.\PrefixTreePreprocessor.cpp
 
 !IF  "$(CFG)" == "SeedSearcher - Win32 Release"
 
@@ -348,11 +339,11 @@ SOURCE=.\LeafPreprocessor.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\PrefixTreePreprocessor.h
+SOURCE=.\Parser.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\PrefixTreeWalker.h
+SOURCE=.\PrefixTreePreprocessor.h
 # End Source File
 # Begin Source File
 

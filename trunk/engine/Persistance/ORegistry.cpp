@@ -56,10 +56,10 @@ void ORegistry::registerObjectInstance (const Object* p_Obj, OArchive& cia)
    Object::OID id= Object::getSafeID ( p_Obj );
 
    // Register it 
-   bool isNew = 
+   USELESS (bool isNew = )
      _idvector.insert (id).second;
 
-   debug_mustbe (isNew);
+   USELESS (debug_mustbe (isNew));
    _registerObjectInstance (id, p_Obj, cia);
 
 
@@ -99,6 +99,7 @@ void ORegistry::registerObject(const Object * p_Obj , OArchive& cia)
       registerObjectLink (p_Obj, cia);
    }
 }
+
 
 
 

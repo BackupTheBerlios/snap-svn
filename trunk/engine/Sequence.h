@@ -129,7 +129,7 @@ public:
          return 0;
       }
 
-      debug_mustbe (length > 0);
+      debug_mustbe (length >= 0);
       debug_mustbe (_position + offset >= 0);
       debug_mustbe (_position + offset + length <= _sequence->length ());
 
@@ -227,6 +227,9 @@ typedef ConstIteratorWrapper <SequenceVector> CSequenceIterator;
 
 
 #endif // _SeedSearcher_Sequence_h
+
+
+
 
 
 

@@ -34,27 +34,59 @@ void Assignment::setPosition (int index, const Position& p)
    _positions [index] = p;
 }
 
-bool Assignment::contains (const Assignment& o) const
+#include "DebugLog.h"
+
+void Assignment::unify (const Assignment& o, int startIndex)  
+{
+#if 0
+   DLOG  << "unifying " << Format (*this) 
+         << " with " << Format (o) << DLOG.EOL ();
+#endif
+
+   int length = o.length ();
+   if (_positions.size () < length) {
+      _positions.resize (length);
+   }
+
+   for (int i=startIndex ; i<length ; i++) {
+      Position& my_pos = getPosition (i);
+      const Position& o_pos = o.getPosition (i);
+
+      debug_only (
+         if ((!my_pos.empty ()) && my_pos.strategy () == discrete) {
+            if (!my_pos.contains (o_pos)) {
+               DLOG  << "unifying " << Format (*this) 
+                     << " with " << Format (o) << DLOG.EOL ();
+               DLOG.flush ();
+               debug_mustfail ();
+            }
+         }
+      );
+
+      my_pos.unify (o_pos);
+   }
+}
+
+bool Assignment::contains (const Assignment& o, int startIndex) const
 {
    int l = length ();
    debug_mustbe (length () == o.length ());
-   for (int i=0 ; i<l ; i++) {
-      if (!getPosition (i).contains (o [i]))
+   for (int i=startIndex ; i<l ; i++) {
+      if (!getPosition (i).contains (o [i])) {
          return false;
       }
    }
 
    return true;
-
 }
 
-bool Assignment::equals (const Assignment& o)  const
+bool Assignment::equals (const Assignment& o, int startIndex)  const
 {
    if (length () != o.length ())
       return false;
 
    int l =length ();
-   for (int i=0 ; i<l ; i++) {
+   for (int i=startIndex ; i<l ; i++) {
       if (!_positions [i].equals (o._positions [i]))
          return false;
    }
@@ -62,14 +94,14 @@ bool Assignment::equals (const Assignment& o)  const
    return true;
 }
 
-int Assignment::compare (const Assignment& o)  const
+int Assignment::compare (const Assignment& o, int startIndex)  const
 {
    int length_diff = length () < o.length ();
    if (length_diff != 0)
       return length_diff;
 
    int l = length ();
-   for (int i=0 ; i<l ; i++) {
+   for (int i= startIndex ; i<l ; i++) {
       int result = _positions [i].compare (o._positions [i]);
       if (result != 0)
          return result;
@@ -132,6 +164,9 @@ Assignment::PositionIterator::PositionIterator (const Position& p)
 }
 
  
+
+
+
 
 
 

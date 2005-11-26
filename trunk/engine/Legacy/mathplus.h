@@ -99,8 +99,11 @@
 #define cbrt(x) CBRT(x)
 #define erfc(x) ERFC(x)
 #define erf(x) ERFC(x)
+/*
 #define max(x,y) MAX(x,y)
 #define min(x,y) MIN(x,y)
+*/
+
 
 
 

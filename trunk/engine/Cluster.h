@@ -93,7 +93,8 @@ public:
    inline bool isRelevant (double weight, bool& outIsPositive) const {
       bool result = 
          isRelevantImpl (weight, outIsPositive);
-      _invert? outIsPositive = !outIsPositive : NULL;
+      if (_invert)
+	    outIsPositive = ! outIsPositive;
       return result;
    }
 
@@ -145,17 +146,17 @@ public:
 
    typedef std::map <const Sequence*, PosCluster*, SequenceComparator> SequenceSet;
    typedef IteratorWrapper < Map1stBinder <SequenceSet> > Iterator;
-   typedef ConstIteratorWrapper < Map1stBinder <SequenceSet> > ConstIterator;
+   typedef ConstIteratorWrapper < Map1stBinder <SequenceSet> > CIterator;
 
 public:
    SeqCluster () {
    }
-   SeqCluster (const SequenceDB&);
+   explicit SeqCluster (const SequenceDB&);
    //SeqCluster (const SeqCluster&);
    //
    // copies only the positive elements from the cluster, does not import positions
    SeqCluster (const SeqCluster& seq, const SeqWeightFunction& wf) {
-      ConstIterator it (seq.iterator ());
+      CIterator it (seq.iterator ());
       for (; it.hasNext () ; it.next ()) {
          if (wf.isPositive (*(*it)))
             addSequence (*it);
@@ -170,6 +171,7 @@ public:
    void removeSequence (Sequence::ID);
    const Sequence* getSequence (Sequence::ID) const;
 
+   bool hasSequence (const SeqWeightFunction&) const;
    bool hasSequence (const Sequence*) const;
    bool hasSequence (Sequence::ID id) const {
       return getSequence (id) != NULL;
@@ -181,30 +183,30 @@ public:
                        Map1stBinder <SequenceSet>::Iterator (_set.end ()));
    }
 
-   ConstIterator iterator () const {
-      Map1stBinder <SequenceSet>::ConstIterator a (_set.begin ());
-      Map1stBinder <SequenceSet>::ConstIterator b (_set.end ());
-      return ConstIterator (a, b);
+   CIterator iterator () const {
+      Map1stBinder <SequenceSet>::CIterator a (_set.begin ());
+      Map1stBinder <SequenceSet>::CIterator b (_set.end ());
+      return CIterator (a, b);
    }
    
    //
    // 
    PosCluster* getPositions (Sequence::ID id);
    PosCluster* getPositions (Iterator&);
-   PosCluster* getPositions (ConstIterator&);
+   PosCluster* getPositions (CIterator&);
    PosCluster* getPositions (const Sequence*);
    PosCluster& getCreatePositions (const Sequence*);
    PosCluster& getCreatePositions (Sequence::ID);
    PosCluster& getCreatePositions (Iterator&);
    const PosCluster* getPositions (Sequence::ID) const;
    const PosCluster* getPositions (Iterator&) const;
-   const PosCluster* getPositions (ConstIterator&) const;
+   const PosCluster* getPositions (CIterator&) const;
    const PosCluster* getPositions (const Sequence*) const;
    //
    //
    bool hasPositions (Sequence::ID) const;
    bool hasPositions (Iterator&) const;
-   bool hasPositions (ConstIterator&) const;
+   bool hasPositions (CIterator&) const;
    bool hasPositions (const Sequence*) const;
 
    bool empty () const {
@@ -258,6 +260,20 @@ public:
    void addPos2Vector (PositionVector&) const;
    void addPos2Vector (PositionVector&, Sequence::ID) const;
    void addSeq2Vector (SequenceVector&) const;
+
+   struct FindPositive {
+      FindPositive (const SeqWeightFunction& wf) : _wf (wf) {
+      }
+      bool perform (const Sequence& seq, PosCluster*) {
+         //
+         // we continue until we find a positive
+         bool shouldContinue = !_wf.isPositive (seq);
+         return shouldContinue;
+      }
+
+   protected:
+      const SeqWeightFunction& _wf;
+   };
 
    struct AddPositions {
       typedef PositionVector& Result;
@@ -387,7 +403,7 @@ public:
 
    //
    //
-   template <class SeqOp1, class SeqOp2 = SeqOp2>
+   template <class SeqOp1, class SeqOp2 = SeqOp1>
    class DivideByWeight {
    public:
       typedef std::pair <SeqOp1*, SeqOp2*> Result;
@@ -429,15 +445,32 @@ public:
    //
    template <class SeqOp>
    void performOnPositives (const SeqWeightFunction& wf, SeqOp& op) const {
-      perform (ForPositives <SeqOp> (wf, op));
+      ForPositives <SeqOp> action (wf, op);
+      perform (action);
    }
 
 
    //
    //
    template <class SeqOp1, class SeqOp2>
-   void perform (const SeqWeightFunction& wf, SeqOp1& op1, SeqOp2& op2) const {
-      perform (DivideByWeight <SeqOp1, SeqOp2> (wf, op1, op2));
+   void performDivided (const SeqWeightFunction& wf, 
+                        SeqOp1& op1                , 
+                        SeqOp2& op2                ) const {
+      DivideByWeight <SeqOp1, SeqOp2> action (wf, op1, op2);
+      perform (action);
+   }
+
+   template <class SeqBoolOp>
+   CIterator performUntil (SeqBoolOp& op) const {
+      SequenceSet::const_iterator current = _set.begin ();
+      SequenceSet::const_iterator end = _set.end();
+      for (; current != end ; ++current) {
+         bool result = op.perform (*(current->first), current->second);
+         if (!result)
+            break;
+      }
+
+      return CIterator (current, end);
    }
 
 
@@ -448,6 +481,9 @@ private:
 
 
 #endif // _SeedSearcher_Cluster_h
+
+
+
 
 
 

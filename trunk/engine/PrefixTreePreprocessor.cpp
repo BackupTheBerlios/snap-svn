@@ -1,4 +1,6 @@
 #include "PrefixTreePreprocessor.h"
+
+#include "Assignment.h"
 #include "Sequence.h"
 #include "PrefixTreeWalker.h"
 
@@ -18,7 +20,7 @@ USING_TYPE (PrefixTreePreprocessor, TreeNodeRep);
 USING_TYPE (PrefixTreePreprocessor, SeqPositions);
 
 
-ChunkAllocator <PositionVector> PositionVector::__allocator (4);
+ChunkAllocator <PositionVector> PositionVector::__allocator (16);
 
 
 /*****************************
@@ -36,11 +38,13 @@ public:
    //
    // used for serialization
    inline TreeNodeRep (); 
-   inline TreeNodeRep (TreeNodeRep* parent, int cardinality);
+   inline TreeNodeRep (TreeNodeRep* parent);
+   inline TreeNodeRep (const AlphabetCode&);
    virtual ~TreeNodeRep ();
 
    //
    //
+   void setup ();
    void dispose (bool isRoot);
 
    //
@@ -50,6 +54,7 @@ public:
 
    //
    //
+   void removeChild (int index);
    TreeNodeRep* getCreateChild (int index, bool& wasCreated);
    SeqPositions getSeqPositions (SequenceDB::ID id) const;
 
@@ -111,13 +116,17 @@ public:
    virtual void add2SeqClusterPositions (SequenceDB::Cluster& outSeqInNode) const;
    virtual void add2PosCluster (PosCluster&, Sequence::ID) const;
 
+   virtual void add2Assignment (Assignment&) const;
+
 protected:
    // TODO:
    // maybe save space in the tree by storing the cardinality only in one place
-   int _cardinality; 
+   int _depth;
+   const AlphabetCode* _code; 
    SeqPositionVector _positions;
    TreeNodeRep ** _children;
    TreeNodeRep* _parent;
+
    
    static ChunkAllocator <TreeNodeRep> __allocator;
 };
@@ -197,37 +206,40 @@ public:
    }
 
    void install (TreeNodeRep* parent) {
-      //
-      //
       for (int i=0 ; i < _cardinality ; i++) {
          if (_positions [i]->size () > 0) {
-            
             bool wasCreated;
             TreeNodeRep* child = parent->getCreateChild (i, wasCreated);
             child->addSequencePositions (_positions [i]);
 
-            int vectorSize = _positions [i]->size ();
-            int vectorCapacity = _positions [i]->capacity ();
-            debug_mustbe (vectorSize <= vectorCapacity);
-
-            _sizeInVectors += vectorSize;
-            _spaceLostInVectors += (vectorCapacity - vectorSize);
-            _positions [i] = new PositionVector;
+            //
+            // for statistics
+            updateStatistics (i, wasCreated);
             
+            _positions [i] = new PositionVector;
+
 #           if SEED_RESERVE_VECTOR_SPACE_OPTIMIZATION
                //
                // optimization (?) reserve size in the vector
                // something in the order of the last vector
+               int vectorSize = _positions [i]->size ();
                _positions [i]->reserve (vectorSize / _cardinality);
 #           endif
-
-            //
-            // for statistics
-            _numOfVectors++;
-            if (wasCreated)
-               _numOfNodes++;
          }
       }
+   }
+
+   void updateStatistics (int i, bool wasCreated) {
+      int vectorSize = _positions [i]->size ();
+      int vectorCapacity = _positions [i]->capacity ();
+      debug_mustbe (vectorSize <= vectorCapacity);
+
+      _sizeInVectors += vectorSize;
+      _spaceLostInVectors += (vectorCapacity - vectorSize);
+
+      _numOfVectors++;
+      if (wasCreated)
+         _numOfNodes++;
    }
 
    int numOfVectors () const {
@@ -261,48 +273,52 @@ private:
  * Tree - building
  *****************************/
 
+static void negativeNodeOptimization (int cardinality,
+                                      const SeqWeightFunction& wf,
+                                      TreeNodeRep* parent)
+{
+   //
+   // the optimization below works this way:
+   // it removes nodes with only negative positions from the tree.
+   //
+   // WARNING:
+   // in order to score seeds correctly, one has to take note of this:
+   // any random projection must be 'specialized' - 
+   // e.g. it must refer with it's wildcards only to actual positive seeds
+   // it has encountered.
+   //
+   // Example:
+   // suppose we have 3 sequnces Pos1, Pos2, Neg (2 positives & 1 negative)
+   //    Pos1: 'A'
+   //    Pos2: 'C'
+   //    Neg:  'G'
+   //
+   // and we build the tree with the optimization below.
+   // further suppose we are searching with a '?' projection.
+   // we of course will find only 'A' & 'C' 
+   // (because 'G' was thrown out of the tree)
+   // now in order to give accurate information about projection scores
+   // the projection must be specialized to reflect the fact it knows 
+   // very little about negative positions - 
+   // the projection should be changed to: 'A or C'
+   for (int i=0 ; i < cardinality ; i++) {
+      TreeNodeRep* child = parent->getChild (i);
+      if (child == NULL) continue;
 
+      if (!child->hasPositions (wf))
+         parent->removeChild (i);
+   }
+}
 
 static void buildTree (PositionsBuilder& builder,
-                       const SequenceDB::Cluster* positivelyLabeled, 
+                       bool optimize,
+                       const SeqWeightFunction& wf, 
                        const AlphabetCode& code,
                        TreeNodeRep* parent,
                        int currentDepth, 
                        int maxDepth) {
    if (currentDepth >= maxDepth)
       return;
-
-   //
-   // the 'optimization' below doesn't work - it messes up seed scoring :
-   // for example consider a genome with 2 sequences, each with 1 position:
-   //    A  - this is the 'positively labeled' sequence
-   //    C  - this is the 'non-positively labeled' sequnce.
-   //
-   // when we build the tree (WITH the optimization below)
-   // we would, of course, discard the prefix node 'C' because it
-   // doesnt contain any positive positions.
-   //
-   // when we later score a seed, such as '?' the score should
-   // be: 1 positive position, 1 negative position 
-   // (because is should find both 'A' and 'C')
-   //
-   // BUT: the score will only be 1: positive position
-   // because the 'C' node is not in the tree at all and so it's positions
-   // cant be found! therefore we CANNOT remove ANY nodes from the tree.
-   //
-#  if 0
-      //
-      // optimization:
-      if (positivelyLabeled != NULL) {
-         //
-         // we do not continue to build the tree from nodes
-         // that do not have any positively labeled positions
-         PrefixTreePreprocessor::TreeNode node (parent);
-         if (!node.hasPositions (*positivelyLabeled)) {
-            return;
-         }
-      }
-#  endif
    
    //
    // now we go over all positions, ordered by the sequence they are located in
@@ -357,30 +373,37 @@ static void buildTree (PositionsBuilder& builder,
    builder.finish (parent);
 
    //
+   // perform optimization
+   if (optimize) {
+      negativeNodeOptimization (code.cardinality (), wf, parent);
+   }
+
+   //
    // finished going through all the sequences of the parent
    // now continue to build the tree for all the children
    for (int i=0 ; i < code.cardinality () ; i++) {
       TreeNodeRep* child = parent->getChild (i);
       if (child == NULL) continue;
 
-      buildTree (builder, positivelyLabeled, code, child, currentDepth+1, maxDepth);
+      buildTree (builder, optimize, wf, code, child, currentDepth+1, maxDepth);
    }
 }
 
 
-static TreeRep* build(const SequenceDB::Cluster* positivelyLabeled,
-                      SequenceDB* db, 
+static TreeRep* build(bool optimize,
+                      const SeqWeightFunction& wf,
+                      const SequenceDB& db, 
                       int maxDepth)
 {
    time_t start, finish;
    time (&start);
 
    int cardinality = 
-      db->alphabetCode ().cardinality ();
+      db.alphabetCode ().cardinality ();
 
    int numberOfPositions = 0;
-   TreeNodeRep* root = new TreeNodeRep (NULL, cardinality);
-   SequenceDB::SequenceIterator it = db->sequenceIterator ();
+   TreeNodeRep* root = new TreeNodeRep (db.alphabetCode ());
+   SequenceDB::SequenceIterator it = db.sequenceIterator ();
    for (;it.hasNext () ; it.next ()) {
       //
       // get the sequence we are current working on
@@ -408,8 +431,8 @@ static TreeRep* build(const SequenceDB::Cluster* positivelyLabeled,
    //
    // now the root node has all the positions in all sequences.
    // build up the tree until the desired depth 
-   PositionsBuilder builder (db->alphabetCode ().cardinality ());
-   buildTree (builder, positivelyLabeled, db->alphabetCode (), root, 0, maxDepth);
+   PositionsBuilder builder (db.alphabetCode ().cardinality ());
+   buildTree (builder, optimize, wf, db.alphabetCode (), root, 0, maxDepth);
 
    time (&finish);
    int totalBytes =  numberOfPositions * sizeof (Position) +
@@ -428,21 +451,16 @@ static TreeRep* build(const SequenceDB::Cluster* positivelyLabeled,
           << (totalBytes / 1024) << " KBytes approximated tree size." << DLOG.EOL ()
           << DLOG.EOL ();
 
-   return new TreeRep (db, root, maxDepth);
+   return new TreeRep (&db, root, maxDepth);
 }
 
 
-TreeRep* PrefixTreePreprocessor::build (SequenceDB* db, 
+TreeRep* PrefixTreePreprocessor::build (bool optimization,
+                                        const SeqWeightFunction& wf, 
+                                        const SequenceDB& db, 
                                         int depth)
 {
-   return ::build (NULL, db, depth);
-}
-
-TreeRep* PrefixTreePreprocessor::build (const SequenceDB::Cluster& positivelyLabeled, 
-                                        SequenceDB* db, 
-                                        int depth)
-{
-   return ::build (&positivelyLabeled, db, depth);
+   return ::build (optimization, wf, db, depth);
 }
 
 
@@ -541,6 +559,16 @@ const Sequence* SeqPositions::sequence () const
       return NULL;
 
    return _positions->empty ()? NULL : (*_positions) [0]->sequence ();
+}
+
+const Position* SeqPositions::firstPosition () const
+{
+   if (_positions == NULL)
+      return NULL;
+   else {
+      debug_mustbe (!_positions->empty ());
+      return ((*_positions) [0]);
+   }
 }
 
 
@@ -713,40 +741,55 @@ SeqPositions TreeNodeRep::getSeqPositions (SequenceDB::ID id) const
 
 
 
-TreeNodeRep::TreeNodeRep (TreeNodeRep* parent, 
-                          int cardinality) 
-: _cardinality (cardinality), _parent (parent) 
+TreeNodeRep::TreeNodeRep (const AlphabetCode& code)
+: _depth (0), _code (&code), _parent (NULL) 
 {
-   _children = new TreeNodeRep* [cardinality];
-   for (int i=0 ; i<_cardinality ; i++) {
-      _children [i] = NULL;
-   }
-   
-#     if SEED_RESERVE_VECTOR_SPACE_OPTIMIZATION
-      //
-      // optimization (?) we use the size of the parent's _position vector
-      // to hint at our _position vector's approximated size
-      if (parent)
-         _positions.reserve (parent->_positions.size () / _cardinality);
-#     endif
+   setup ();
+}
+
+
+TreeNodeRep::TreeNodeRep (TreeNodeRep* parent)
+: _depth (parent->_depth +1), _code (parent->_code), _parent (parent) 
+{
+   setup ();
 }
 
 //
 // used for serialization
 TreeNodeRep::TreeNodeRep () 
-: _cardinality (0), _children (NULL), _parent (NULL)   
+: _code (0), _children (NULL), _parent (NULL)   
 {
 }
+
 
 TreeNodeRep::~TreeNodeRep () 
 {
    dispose (false);
 }
 
+void TreeNodeRep::setup ()
+{
+   int cardinality = _code->cardinality ();
+   _children = new TreeNodeRep* [cardinality];
+   for (int i=0 ; i<cardinality ; i++) {
+      _children [i] = NULL;
+   }
+   
+#     if SEED_RESERVE_VECTOR_SPACE_OPTIMIZATION
+         //
+         // optimization (?) we use the size of the parent's _position vector
+         // to hint at our _position vector's approximated size
+         if (_parent)
+            _positions.reserve (_parent->_positions.size () / cardinality);
+#     endif
+}
+
+
 void TreeNodeRep::dispose (bool isRoot) 
 {
+   int cardinality = _code->cardinality ();
    if (_children) {
-      for (int i=0 ; i<_cardinality ; i++) {
+      for (int i=0 ; i<cardinality ; i++) {
          if (_children [i]) {
             _children [i]->dispose (false);
             delete _children [i];
@@ -790,24 +833,41 @@ PrefixTreePreprocessor::SeqPositionIterator TreeNodeRep::
    return SeqPositionIterator (_positions.begin (), _positions.end ());
 }
 
+void TreeNodeRep::removeChild (int index)
+{
+   int cardinality = _code->cardinality ();
+
+   debug_mustbe (index >=0);
+   debug_mustbe (index < cardinality);
+
+   delete _children [index];
+   _children [index] = NULL;
+}
+
+
 TreeNodeRep* TreeNodeRep::getCreateChild (int index, bool&wasCreated) 
 {
+   int cardinality = _code->cardinality ();
+
    debug_mustbe (index >=0);
-   debug_mustbe (index < _cardinality);
+   debug_mustbe (index < cardinality);
 
    wasCreated = false;
    if (_children [index] == NULL) {
-      _children [index] = new TreeNodeRep (this, _cardinality);
+      _children [index] = new TreeNodeRep (this);
       wasCreated = true;
    }
 
    return _children [index];
 }
 
+
 TreeNodeRep* TreeNodeRep::getChild (int index) const
 {
+   int cardinality = _code->cardinality ();
+
    debug_mustbe (index >=0);
-   debug_mustbe (index < _cardinality);
+   debug_mustbe (index < cardinality);
    return _children [index];
 }
 
@@ -862,11 +922,25 @@ void TreeNodeRep::add2PosCluster (PosCluster& posCluster, Sequence::ID id) const
    }
 }
 
+void TreeNodeRep::add2Assignment (Assignment& outAssg) const
+{
+   //
+   debug_mustbe (!_positions.empty ());
+   const Position* samplePosition = _positions[0].firstPosition ();
+
+   //
+   debug_mustbe (samplePosition != NULL);
+
+   //
+   Assignment assg (samplePosition->getSeedString (_depth), *_code);
+   outAssg.unify (assg);
+}
+
 
 
 int TreeNodeRep::getCardinality () const
 {
-   return _cardinality;
+   return _code->cardinality ();
 }
 
 TreeNodeRep* TreeNodeRep::getParent () const
@@ -876,10 +950,7 @@ TreeNodeRep* TreeNodeRep::getParent () const
 
 int TreeNodeRep::depth () const
 {
-   //
-   // TODO: not implemented (is it really necessary?)
-   debug_mustfail ();
-   return -1;
+   return _depth;
 }
 
 //
@@ -906,7 +977,7 @@ PrefixTreePreprocessor::TreeNodeRep::positionIterator (SequenceDB::ID id)
  * Node
  *****************************/
 
-TreeNode::TreeNode (TreeNodeRep* in) : _rep (in), Node (in) {
+TreeNode::TreeNode (TreeNodeRep* in) : Node (in), _rep (in) {
 }
 
 int PrefixTreePreprocessor::TreeNode::getCardinality ()
@@ -991,12 +1062,15 @@ void PrefixTreePreprocessor::TreeRep::serialize (Persistance::IArchive& in)
 
 void PrefixTreePreprocessor::TreeNodeRep::serialize (Persistance::OArchive& out)
 {
-   out << _cardinality; 
+   //
+   // TODO: the alphabet code needs to be restored on load
+   int cardinality = _code->cardinality ();
+   out << cardinality;
  
    out.setContext (_parent);
    out << OSTL <SeqPositionVector> (_positions);
 
-   for (int i=0 ; i<_cardinality ; i++)
+   for (int i=0 ; i<cardinality ; i++)
       out.registerObject (_children [i], true);
 
    out.registerObject (_parent, false);
@@ -1004,11 +1078,14 @@ void PrefixTreePreprocessor::TreeNodeRep::serialize (Persistance::OArchive& out)
 
 void PrefixTreePreprocessor::TreeNodeRep::serialize (Persistance::IArchive& in)
 {
-   in >> _cardinality; 
+   // in >> _cardinality; 
+   int cardinality;
+   in >> cardinality; 
+
    in >> ISTL <SeqPositionVector> (_positions);
 
-   _children = new TreeNodeRep* [_cardinality];
-   for (int i=0 ; i<_cardinality ; i++)
+   _children = new TreeNodeRep* [cardinality];
+   for (int i=0 ; i<cardinality ; i++)
       in.registerObject (_children [i]);
 
    in.registerObject (_parent);
@@ -1088,7 +1165,8 @@ static void rec_addAssignmentNodes (int depth,
    }
 
    if (depth == desiredDepth) {
-      nodes.addNode (Preprocessor::AssgNodePair (inNode, path));
+      Preprocessor::AssgNodePair pair(inNode, path);
+      nodes.addNode (pair);
       //
       // there is no need to go further down the tree
       // because no new positions can be found further down (this is a prefix tree)
@@ -1129,3 +1207,6 @@ void PrefixTreePreprocessor::add2Cluster (NodeCluster& cluster,
                               path);
    }
 }
+
+
+

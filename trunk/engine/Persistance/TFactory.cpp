@@ -59,10 +59,11 @@ bool TFactoryList::add (TFactoryBase* factory)
    return_value = _rep->_names.insert( map_value );
    if (return_value.second) {
       const std::type_info& type = factory->type ();
-      bool ok = _rep->_types.insert( 
+      USELESS (bool ok = )
+	_rep->_types.insert( 
          Type2FactoryMap::value_type ( &type, factory)).second;
 
-      debug_mustbe (ok);
+      USELESS (debug_mustbe (ok));
    }
 
    //
@@ -194,6 +195,7 @@ void TFactoryList::serialize (IArchive& in)
       }
    }
 }
+
 
 
 

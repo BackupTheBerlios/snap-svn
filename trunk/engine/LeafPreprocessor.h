@@ -28,6 +28,21 @@ public:
       virtual void add2SeqCluster (SequenceDB::Cluster& outSeqInNode) const;
       virtual void add2SeqClusterPositions (SequenceDB::Cluster& outSeqInNode) const;
       virtual void add2PosCluster (PosCluster&, Sequence::ID) const;
+
+      virtual void add2Assignment (Assignment&) const;
+
+#if SEED_CHUNK_ALLOCATION_OPTIMIZATION
+      void* operator new (size_t size) {
+         debug_mustbe (size == sizeof (LeafNode));
+         return __allocator.newT ();
+      }
+      void operator delete(void *p)    {
+         __allocator.deleteT (reinterpret_cast <LeafNode*> (p));
+      }
+#endif
+
+   protected:
+      static ChunkAllocator <LeafNode> __allocator;
    };
 
 
@@ -41,6 +56,15 @@ public:
                      const SequenceDB&    , 
                      const AlphabetCode&  , 
                      AssignmentWriter&    );
+
+   //
+   // includes negative-node-removal optimization
+   static LeafPreprocessor::Rep* LeafPreprocessor::buildNoNegatives (
+                     int seedLength       ,
+                     const SequenceDB&    , 
+                     const AlphabetCode&  , 
+                     AssignmentWriter&    ,
+                     const SeqWeightFunction&);
 
 	//
 	// smallest/largest searchable assignments
@@ -75,3 +99,5 @@ protected:
 };
 
 #endif
+
+

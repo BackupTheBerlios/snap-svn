@@ -189,3 +189,6 @@ double const * Multinomial::getParams(int & n ) const { n=_n;return _PR;}
 
 
 
+
+
+

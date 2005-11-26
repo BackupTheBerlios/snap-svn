@@ -48,7 +48,7 @@ struct HyperGeoScore {
    public:
       FixedTotalCount (int seedLength,
                      bool countWeights,
-                     const SeqCluster& positivelyLabeled,   // m
+                     const SeqWeightFunction& wf,   // m
                      const SequenceDB& allSequences                  // n
                      );
 
@@ -70,7 +70,7 @@ struct HyperGeoScore {
    private:
       bool _countWeights;
       SeqCluster _allSequences;     // m
-      SeqCluster _positivelyLabeled; // n
+      const SeqWeightFunction& _wf; // n
       HyperGeoCache* _cache;
    };
 
@@ -110,6 +110,9 @@ struct HyperGeoScore {
 
 
 #endif // _SeedSearcher_HyperGeoScore_h
+
+
+
 
 
 

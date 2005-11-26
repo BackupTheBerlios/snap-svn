@@ -1,3 +1,4 @@
+#include "Assignment.h"
 #include "HyperGeoCache.h"
 #include "Core/HashTable.h"
 #include "Persistance/TextWriter.h"
@@ -17,6 +18,9 @@ struct HyperGeoCache::XK {
    int _k;
 };
 
+
+static const unsigned long L_PI = (unsigned long) 314159265;
+static const unsigned long L_E = (unsigned long) 271828183;
 
 
 //
@@ -45,8 +49,8 @@ public:
 	inline static HashValue hash (const Key& inKey) {
       //
       // TODO: is this good???
-		return defaultHashFunction(inKey._k) * 3141592653
-           + defaultHashFunction(inKey._x) * 2718281828;
+		return defaultHashFunction(inKey._k) * L_PI 
+           + defaultHashFunction(inKey._x) * L_E;
 	}
    inline double score () const {
       return _score;
@@ -286,6 +290,9 @@ void HyperGeoTotalCache::writeAsText (Persistance::TextWriter& writer,
           << ", N = "<< cachedScore->getKey ()._n
           << ", M = "<< cachedScore->getKey ()._m;
 }
+
+
+
 
 
 

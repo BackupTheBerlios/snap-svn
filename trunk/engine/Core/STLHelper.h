@@ -222,21 +222,21 @@ public:
       iterator_type _it;
    };
 
-   class ConstIterator {
+   class CIterator {
    public:
-      ConstIterator (const_iterator_type in) : _it (in) {
+      CIterator (const_iterator_type in) : _it (in) {
       }
-      bool operator == (ConstIterator o) const{
+      bool operator == (CIterator o) const{
          return _it == o._it;
       }
-      bool operator != (ConstIterator o) const{
+      bool operator != (CIterator o) const{
          return _it != o._it;
       }
       void operator ++ () {
          _it++;
       }
-      ConstIterator operator ++ (int) {
-         return ConstIterator (_it++);
+      CIterator operator ++ (int) {
+         return CIterator (_it++);
       }
       value_type& operator * () const{
          return _it->first;
@@ -252,7 +252,7 @@ public:
    };
    
    typedef Iterator iterator;
-   typedef ConstIterator const_iterator;
+   typedef CIterator const_iterator;
 };
 
 template <class Container>
@@ -290,6 +290,7 @@ protected:
 };
 
 #endif //_SeedSearcher_STLHelper_h
+
 
 
 

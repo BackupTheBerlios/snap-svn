@@ -142,14 +142,6 @@ void ACGTWriter::write(const Assignment::Position& pos,
       };
 
       writer << iupac;
-/*
-      Assignment::PositionIterator it (pos);
-      writer << '{';
-      for (; it.hasNext () ; it.next ())
-         writer << ACGT [it.get ()];
-
-      writer << '}';
-      */
    }
 }
 
@@ -312,35 +304,16 @@ void KBestFeatures::sort ()
 // GoodFeatures
 //
 
-GoodFeatures::GoodFeatures (SeedSearcher::BestFeatures* next, 
-                                          const SequenceDB::Cluster& posSeqs,
-                                          double minScore, 
-                                          int minPos, 
-                                          bool isPercent)
-:  BestFeaturesLink (next),
-   _posSeqs (posSeqs)
-{
-   //
-   // scores are 'logged' so the minScore should be 'logged' too.
-   _minScore = log (minScore);
-
-   if (isPercent) {
-      debug_mustbe (minPos >= 0);
-      debug_mustbe (minPos <= 100);
-      _minPositiveSeqs = (_posSeqs.size () * minPos) / 100;
-   }
-   else {
-      _minPositiveSeqs = minPos;
-   }
-}
-
-GoodFeatures::GoodFeatures (SeedSearcher::BestFeatures* next, 
-                                          const SequenceDB::Cluster& posSeqs,
-                                          double minScore, 
-                                          int minPos, 
-                                          int minPosPercent)
-:  BestFeaturesLink (next),
-   _posSeqs (posSeqs)
+GoodFeatures::GoodFeatures (
+                           SeedSearcher::BestFeatures* next, 
+                           bool owner                    ,
+                           const SeqCluster& db          ,
+                           const SeqWeightFunction& wf   ,
+                           double minScore               , 
+                           int minPos                    , 
+                           int minPosPercent             )
+:  BestFeaturesLink (next, owner),
+   _wf (wf)
 {
    //
    // scores are 'logged' so the minScore should be 'logged' too.
@@ -350,8 +323,13 @@ GoodFeatures::GoodFeatures (SeedSearcher::BestFeatures* next,
    debug_mustbe (minPosPercent >= 0);
    debug_mustbe (minPosPercent <= 100);
 
+   //
+   // count positive sequences
+   SeqCluster::CountSequences count;
+   db.performOnPositives (_wf, count);
+
    int threshold = 
-      max (minPos, _posSeqs.size () * minPosPercent / 100);
+      tmax (minPos, count.result () * minPosPercent / 100);
 
    _minPositiveSeqs = threshold;
 }
@@ -364,12 +342,10 @@ bool GoodFeatures::add (SeedSearcher::Feature_var daFeature)
       return false;
 
    if (_minPositiveSeqs > 0) {
-      //
-      // TODO: is this taking a lot of time???
-      SequenceDB::Cluster posContainingCluster;
-      SequenceDB::Cluster::intersect (*daFeature->_cluster, _posSeqs, posContainingCluster);
+      SeqCluster::CountSequences count;
+      daFeature->_cluster->performOnPositives (_wf, count);
 
-      if (posContainingCluster.size () < _minPositiveSeqs)
+      if (count.result () < _minPositiveSeqs)
          return false;
    }
 
@@ -380,6 +356,8 @@ bool GoodFeatures::add (SeedSearcher::Feature_var daFeature)
 int StatFix::FDR (SeedSearcher::BestFeatures& features, int N, double P) 
 {
    debug_mustbe (features.isSorted ());
+   if (features.size () <= 0)
+      return 0;
 
    //
    // because we use scores after 'log', we have to also 'log' N, P & K
@@ -414,6 +392,8 @@ int StatFix::FDR (SeedSearcher::BestFeatures& features, int N, double P)
 int StatFix::bonferroni (SeedSearcher::BestFeatures& features, int N, double P) 
 {
    debug_mustbe (features.isSorted ());
+   if (features.size () <= 0)
+      return 0;
 
    //
    // because we use scores after 'log', we have to also 'log' N, P & K
@@ -443,6 +423,9 @@ int StatFix::bonferroni (SeedSearcher::BestFeatures& features, int N, double P)
    debug_mustfail ();
    return 0;
 }
+
+
+
 
 
 

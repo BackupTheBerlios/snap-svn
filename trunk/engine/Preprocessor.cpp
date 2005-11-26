@@ -97,3 +97,5 @@ void NodeCluster::add2PosCluster (PosCluster& cluster, Sequence::ID id) const
       it->node ()->add2PosCluster(cluster, id);
    }
 }
+
+

@@ -10,10 +10,15 @@
 #if ENV_COMPILER==ENV_MICROSOFT
 #  include "Legacy/MathFunctions.h"
 #  include "Legacy/MathPlus.h"
+#else
+#  include <math.h>
 #endif 
 
 
 #endif
+
+
+
 
 
 

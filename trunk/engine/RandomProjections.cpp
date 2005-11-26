@@ -38,6 +38,8 @@ inline static void createAllProjections (
                   int numOfPositions
                   )
 {
+   //
+   // TODO: this implementation is incorrect
    if (numOfPositions == 0)
       return;
 
@@ -60,6 +62,9 @@ static int verifyProjectionNumber( int motifLength,
 					 int projNum */
                 )
 {
+   if (motifLength <= 2)
+      return 1;
+
    //make sure we are not asked to many projections:
    // NIR: last position must always be present...
    motifLength--;
@@ -275,6 +280,9 @@ Assignment RandomProjections::getAssignment (int index,
 
    return assg;
 }
+
+
+
 
 
 

@@ -4,7 +4,7 @@
 #include "Persistance/IArchive.h"
 #include "Persistance/STLPersist.h"
 
-ChunkAllocator <Position> Position::__allocator (4);
+ChunkAllocator <Position> Position::__allocator (16);
 ChunkAllocator <Sequence> Sequence::__allocator;
 
 void Sequence::serialize (Persistance::OArchive& out)
@@ -36,6 +36,9 @@ void Position::serialize (Persistance::IArchive& in)
    in.registerObject (const_cast <Sequence*&> (_sequence));
    in >> _position;
 }
+
+
+
 
 
 

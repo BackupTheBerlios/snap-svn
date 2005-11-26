@@ -106,7 +106,7 @@ class HashTable {
 				else
 					root= entry->next();
 				delete entry;
-				count--;
+				_count--;
 				return;
 			}
 		}
@@ -122,7 +122,7 @@ class HashTable {
 					prev->setNext(entry->next());
 				else
 					head= entry->next();
-				count--;
+				_count--;
 				return;
 			}
 		}
@@ -145,11 +145,11 @@ class HashTable {
 				}
 				entry= nextOne;
 			}
-		}
+		} 
 	}
 
 	void visitAll(Visitor& inVisitor) {
-		TableIter tabI(table, table+size);
+		TableIter tabI(_table, _table + _size);
 		while(tabI.next()) {
 			for(Entry* entry= *tabI, *prev= 0; entry; ) {
 				Entry* nextOne= entry->next();
@@ -164,7 +164,8 @@ class HashTable {
 						prev->setNext(nextOne);
 					else
 						*tabI= nextOne;
-					count--;
+
+					_count--;
 				}
 				entry= nextOne;
 			}
@@ -236,20 +237,25 @@ class HashTable {
 	}
 
 	void resize(size_t inNewSize) {
-		TableItem* oldTable= _table;
-		size_t oldSize= _size;
-		_table= makeTable(inNewSize);
-		_size= inNewSize;
+	  TableItem* oldTable= _table;
+	  size_t oldSize= _size;
+	  _table= makeTable(inNewSize);
+	  _size= inNewSize;
+	  
+	  TableIter tabI(oldTable, oldTable+oldSize);
+	  while(tabI.next()) {
+	    for(Entry* entry= *tabI; entry; ) {
+	      do {
+		Entry* nextOne= entry->next();
+		entry->setNext(0);
+		insert(entry);
+		entry = nextOne;
+	      }
+	      while (entry);
+	    }
+	  }
 
-		TableIter tabI(oldTable, oldTable+oldSize);
-		while(tabI.next()) {
-			for(Entry* entry= *tabI; entry; ) {
-				Entry* nextOne= entry->next();
-				entry->setNext(0);
-				insert(entry);
-			}
-		}
-		delete[] oldTable;
+	  delete[] oldTable;
 	}
 
    size_t getTableSize () const {
@@ -376,6 +382,7 @@ inline HashValue defaultHashFunction(const void* inValue) {
 HashValue defaultHashFunction(const char* inStr, size_t inSize);
 
 #endif
+
 
 
 

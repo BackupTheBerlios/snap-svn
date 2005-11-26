@@ -1,3 +1,4 @@
+#include "Assignment.h"
 #include "HyperGeoScore.h"
 #include "Legacy/mathplus.h"
 
@@ -14,7 +15,7 @@ HyperGeoScore::Simple::Simple (
                       )
 :  _countWeights (countWeights),
    _allSequences (allSequences),
-   _positivelyLabeled (allSequences, wf),
+   _positivelyLabeled (_allSequences, wf),
    _wf (wf)
 {
    if (!_countWeights) {
@@ -35,19 +36,6 @@ double HyperGeoScore::Simple::score (const Assignment& feature,
                      SeedSearcher::ScoreParameters** parameters
                      )
 {
-/*
-   //
-   // TODO: mustbe some easier way...
-   SequenceDB::Cluster positiveContaining;
-   SequenceDB::Cluster::intersect ( _positivelyLabeled,
-                                    containingFeature,
-                                    positiveContaining);
-*/
-
-   //
-   // otherwise its just a waste of time...
-   //debug_mustbe (positiveContaining.size () > 0);
-
    //
    // check if we are counting the weights of all sequences
    // or just the amount of sequences
@@ -56,34 +44,20 @@ double HyperGeoScore::Simple::score (const Assignment& feature,
    if (_countWeights) {
       SeqCluster::SumWeights posWeightCount;
       SeqCluster::SumWeights negWeightCount;
-      containingFeature.perform (_wf, posWeightCount, negWeightCount);
+      containingFeature.performDivided (_wf, posWeightCount, negWeightCount);
 
-      posCount = posWeightCount.result ();
-      containingCount = negWeightCount.result () + posCount;
-
-   /*
-      double posWeightCount = positiveContaining.sumAbsWeights ();
-      posCount = ROUND (posWeightCount);
-
-      //
-      // sums the weights only of weighted sequences.
-      double containingWeightCount = containingFeature.sumAbsWeights ();
-      containingCount = ROUND (containingWeightCount);
-      */
+      posCount = ROUND (posWeightCount.result ());
+      containingCount = ROUND (negWeightCount.result () + posCount);
    }
    else {
       //
       // 
       SeqCluster::CountSequences posCountPred;
       SeqCluster::CountSequences negCountPred;
-      containingFeature.perform (_wf, posCountPred, negCountPred);
+      containingFeature.performDivided (_wf, posCountPred, negCountPred);
 
       posCount = posCountPred.result ();
       containingCount = negCountPred.result () + posCount;
-/*
-      posCount = positiveContaining.size();
-      containingCount = containingFeature.size();
-*/
    }
 
    return _cache->logTail (posCount, containingCount, parameters);
@@ -107,22 +81,30 @@ void HyperGeoScore::Simple::writeAsText (Persistance::TextWriter& writer,
 
 HyperGeoScore::FixedTotalCount::FixedTotalCount (int seedLength,
                              bool countWeights,
-                              const SequenceDB::Cluster& positivelyLabeled,// n
+                              const SeqWeightFunction& wf,// n
                               const SequenceDB& allSequences // m
                )
 :  _countWeights (countWeights),
    _allSequences (allSequences),
-   _positivelyLabeled (positivelyLabeled)
+   _wf (wf)
 {
    int n;
    int m;
    if (_countWeights) {
-      n = ROUND (_positivelyLabeled.maxPositionsAbsWeightsNoOverlaps (seedLength));
-      m = ROUND (_allSequences.maxPositionsAbsWeightsNoOverlaps (seedLength));
+      SeqCluster::MaxPosWeightsNoOverlaps pos (seedLength);
+      SeqCluster::MaxPosWeightsNoOverlaps neg (seedLength);
+      _allSequences.performDivided (wf, pos, neg);
+
+      n = ROUND (pos.result ());
+      m = ROUND (neg.result () + pos.result ());
    }
    else {
-      n = _positivelyLabeled.maxPositionsNoOverlaps (seedLength);
-      m = _allSequences.maxPositionsNoOverlaps (seedLength);
+      SeqCluster::MaxPosNoOverlaps pos (seedLength);
+      SeqCluster::MaxPosNoOverlaps neg (seedLength);
+      _allSequences.performDivided (wf, pos, neg);
+
+      n = ROUND (pos.result ());
+      m = ROUND (pos.result () + neg.result ());
    }
 
    _cache = new HyperGeoCache (n, m);
@@ -136,37 +118,25 @@ double HyperGeoScore::FixedTotalCount::score (const Assignment& feature,
                      )
 {
    //
-   // TODO: mustbe some easier way...
-   SequenceDB::Cluster positiveContaining;
-   SequenceDB::Cluster::intersect ( _positivelyLabeled,
-                                    containingFeature,
-                                    positiveContaining);
-
-   //
-   // otherwise its just a waste of time...
-//   debug_mustbe (positiveContaining.size () > 0);
-
-   positiveContaining.importPositions (containingFeature);
-
-   //
    // check if we are counting the weights of all sequences
    // or just the amount of sequences
    int posCount;
    int containingCount;
    if (_countWeights) {
-      double posWeightCount = positiveContaining.sumPositionAbsWeights ();
-      posCount = ROUND (posWeightCount);
+      SeqCluster::SumPosWeights pos;
+      SeqCluster::SumPosWeights neg;
+      containingFeature.performDivided (_wf, pos, neg);
 
-      //
-      // sums the weights only of weighted sequences.
-      double containingWeightCount = containingFeature.sumPositionAbsWeights ();
-      containingCount = ROUND (containingWeightCount);
+      posCount = ROUND (pos.result ());
+      containingCount = ROUND (pos.result () + neg.result ());
    }
    else {
-      //
-      // 
-      posCount = positiveContaining.countPositions ();
-      containingCount = containingFeature.countPositions ();
+      SeqCluster::SumWeights pos;
+      SeqCluster::SumWeights neg;
+      containingFeature.performDivided (_wf, pos, neg);
+      
+      posCount = ROUND (pos.result ());
+      containingCount = ROUND (neg.result ());
    }
 
    return _cache->logTail (posCount, containingCount, parameters);
@@ -261,6 +231,9 @@ void HyperGeoScore::TotalCount::writeAsText (Persistance::TextWriter& writer,
 {
    _totalCache->writeAsText (writer, params);
 }
+
+
+
 
 
 

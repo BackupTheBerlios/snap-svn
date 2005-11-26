@@ -4,7 +4,9 @@
 #include "Core/Defs.h"
 #include "Core/STLHelper.h"
 #include "Persistance/Defs.h"
+
 #include <bitset>
+
 
 class Str;
 class AlphabetCode;
@@ -85,6 +87,14 @@ public:
       //
       // returns the number of set indexes
       int count () const;
+
+      //
+      // does not affect strategy
+      void unify (const Position& o) {
+         Strategy s = strategy ();
+         _bits |= o._bits;
+         strategy (s);
+      }
 
       //
       //
@@ -184,12 +194,14 @@ public:
    }
    void setPosition (int, const Position& p);
    
-   bool contains (const Assignment&) const;
-   int compare (const Assignment&) const;
-   bool equals (const Assignment&) const;
+   bool contains (const Assignment&, int startIndex = 0) const;
+   int compare (const Assignment&, int startIndex = 0) const;
+   bool equals (const Assignment&, int startIndex = 0) const;
    bool operator == (const Assignment& o) const {
       return this->equals (o);
    }
+
+   void unify (const Assignment& o, int startIndex = 0) ;
    
    typedef Vec <Position> PositionVector;
       
@@ -198,6 +210,9 @@ private:
 };
 
 #endif // _SeedSearcher_Assignment_h
+
+
+
 
 
 

@@ -76,13 +76,72 @@ protected:
 
 //
 //
+class IntervalWeightFunction : public SeqWeightFunction {
+public:
+   IntervalWeightFunction (double lo, double hi) : _hi (hi), _lo (lo) {
+   }
+   virtual ~IntervalWeightFunction () {
+   }
+   //
+   // returns true iff the weight belongs to the positive or negative set.
+   // if so, 'outIsPositive' is set to true iff the weight belongs to the
+   // positive set.
+   virtual bool isRelevantImpl (double weight, bool& outIsPositive) const {
+      outIsPositive = (weight >= _lo) && (weight <= _hi);
+      return true;
+   }
+
+protected:
+   double _hi;
+   double _lo;
+};
+
+
+//
+//
+class BorderWeightFunction : public SeqWeightFunction {
+public:
+   BorderWeightFunction (double lo, double hi) : _hi (hi), _lo (lo) {
+   }
+   virtual ~BorderWeightFunction () {
+   }
+   //
+   // returns true iff the weight belongs to the positive or negative set.
+   // if so, 'outIsPositive' is set to true iff the weight belongs to the
+   // positive set.
+   virtual bool isRelevantImpl (double weight, bool& outIsPositive) const {
+      if (weight >= _hi) {
+         outIsPositive = true;
+         return true;
+      }
+      else if (weight <= _lo) {
+         outIsPositive = false;
+         return true;
+      }
+
+      return false;
+   }
+
+protected:
+   double _hi;
+   double _lo;
+};
+
+
+//
+//
 class BestFeaturesLink : public SeedSearcher::BestFeatures {
    //
    // this class is the base class of all BestFeatures classes
    // that do only partial processing of a feature, before passing
    // the feature along to the next BestFeatures link
 public:
-   BestFeaturesLink (SeedSearcher::BestFeatures* next) : _next (next) {
+   BestFeaturesLink (SeedSearcher::BestFeatures* next, bool owner) 
+   : _owner (owner), _next (next) {
+   }
+   virtual ~BestFeaturesLink () {
+      if (_owner)
+         delete _next;
    }
    virtual bool add (SeedSearcher::Feature_var feature) {
       return _next->add (feature);
@@ -99,8 +158,12 @@ public:
    virtual bool isSorted () const {
       return _next->isSorted ();
    }
+   virtual void sort () {
+      _next->sort ();
+   }
 
 protected:
+   bool _owner;
    SeedSearcher::BestFeatures* _next;
 };
 
@@ -151,14 +214,9 @@ class GoodFeatures : public BestFeaturesLink {
    //                   (2) are present in at least k positive sequences
    //                   (3) are presnt in at least n percent of positive sequences
 public:
-   GoodFeatures (SeedSearcher::BestFeatures* next, 
-                  const SequenceDB::Cluster& posSeqs,
-                  double minScore, 
-                  int minPos,
-                  bool isPercent);
-
-   GoodFeatures (SeedSearcher::BestFeatures* next, 
-                  const SequenceDB::Cluster& posSeqs,
+   GoodFeatures (SeedSearcher::BestFeatures* next, bool owner,
+                  const SeqCluster& db,
+                  const SeqWeightFunction& wf,
                   double minScore, 
                   int minPos,
                   int minPosPercent);
@@ -179,7 +237,7 @@ public:
 private:
    double _minScore;
    int _minPositiveSeqs;
-   SequenceDB::Cluster _posSeqs;
+   const SeqWeightFunction& _wf;
 };
 
 struct StatFix {
@@ -203,6 +261,9 @@ struct StatFix {
 };
 
 #endif // _SeedSearcher_StdOption_h
+
+
+
 
 
 

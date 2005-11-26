@@ -30,6 +30,10 @@ public:
       virtual void add2SeqCluster (SequenceDB::Cluster& outSeqInNode) const = 0;
       virtual void add2SeqClusterPositions (SequenceDB::Cluster& outSeqInNode) const = 0;
       virtual void add2PosCluster (PosCluster&, Sequence::ID) const = 0;
+
+      //
+      //
+      virtual void add2Assignment (Assignment&) const = 0;
    };
 
    //
@@ -60,6 +64,12 @@ public:
       }
       void add2PosCluster (PosCluster& p, Sequence::ID id) const {
          _node->add2PosCluster (p, id);
+      }
+
+      //
+      //
+      void add2Assignment (Assignment& outAssg) const {
+         _node->add2Assignment (outAssg);
       }
 
    protected:
@@ -185,6 +195,9 @@ public:
 
 
 #endif // _SeedSearcher_Preprocessor_h
+
+
+
 
 
 

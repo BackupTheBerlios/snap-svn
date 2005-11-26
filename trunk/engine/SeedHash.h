@@ -41,6 +41,7 @@ public:
 
       inline Cluster (const AssgKey& key) : _key (key) {
          debug_mustbe (_key.assignment ().length () > 0);
+         _cluster = new SeqCluster;
       }
       virtual ~Cluster () {
          //
@@ -59,22 +60,33 @@ public:
       inline static HashValue hash (const AssgKey& inKey) {
          return inKey.hash ();
       }
-      
+
+      //
+      //
       void addPosition (AutoPtr <Position> pos) {
          PosCluster& posCluster = 
-            _cluster.getCreatePositions (pos->sequence ());
+            _cluster->getCreatePositions (pos->sequence ());
 
-         bool result = posCluster.addPosition (pos.release ());
-         debug_mustbe (result);
+         USELESS (bool result = )
+            posCluster.addPosition (pos.release ());
+
+	      USELESS (debug_mustbe (result));
+      }
+      bool hasSequence (const SeqWeightFunction& wf) const{
+         return _cluster->hasSequence (wf);
       }
 
       const SeqCluster& getCluster () const {
-         return _cluster;
+         return *_cluster;
+      }
+      SeqCluster* releaseCluster () {
+         return _cluster.release ();
       }
 
    protected:
+      bool _owner;
       AssgKey _key;
-      SeqCluster _cluster;
+      AutoPtr <SeqCluster> _cluster;
    };
 
    //
@@ -83,9 +95,14 @@ public:
    class Table : public TableBase {
    public:
       Table (int tableSize, const AlphabetCode&, AssignmentWriter&);
-      ~Table ();
+      virtual ~Table ();
 
+      //
+      //
       void addPosition (const Str& seedData, AutoPtr <Position> position);
+      
+      //
+      //
       virtual Cluster* createCluster (const AssgKey& key) {
          return new Cluster (key);
       }
@@ -99,3 +116,5 @@ public:
 
 
 #endif 
+
+

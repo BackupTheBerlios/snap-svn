@@ -12,10 +12,8 @@
 #endif
 
 
-
-
 #include <string>
-#include <ostream>
+#include <iostream>
 
 #define BEGIN_NAMESPACE(name) namespace name {
 #define END_NAMESPACE(name) };
@@ -238,13 +236,17 @@ inline const T& tmax(const T& a, const T& b) {
    
 //
 // optimizations: should use Doug Lee's malloc? 
-#define CORE_DL_MALLOC_OPTIMIZATION 1
+#define CORE_DL_MALLOC_OPTIMIZATION (ENV_COMPILER == ENV_MICROSOFT)
 
-
+#if CORE_DL_MALLOC_OPTIMIZATION
+#define SEED_MALLOC dlmalloc
+#define SEED_FREE dlfree
+#else
+#define SEED_MALLOC malloc
+#define SEED_FREE free
+#endif
 
 #endif // _SeedSearcher_Core_Defs_h
-
-
 
 
 

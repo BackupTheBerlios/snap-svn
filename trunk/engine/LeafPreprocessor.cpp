@@ -1,6 +1,10 @@
+#include "Assignment.h"
 #include "LeafPreprocessor.h"
 #include "DebugLog.h"
 #include <time.h>
+
+ChunkAllocator <LeafPreprocessor::LeafNode> 
+   LeafPreprocessor::LeafNode::__allocator (4);
 
 
 struct LeafPreprocessor::Rep : public SeedHash::Table {
@@ -64,7 +68,8 @@ void LeafPreprocessor::add2Cluster (NodeCluster& nodes,
                assgTemplate.setPosition (i, seedAssg.getPosition (i));
          }
 
-         nodes.addNode (AssgNodePair (seed, assgTemplate));
+         AssgNodePair pair (seed, assgTemplate);
+         nodes.addNode (pair);
       }
    }
 }
@@ -120,6 +125,61 @@ LeafPreprocessor::getSequences (const Assignment& assg) const
 }
 
 
+LeafPreprocessor::Rep* LeafPreprocessor::buildNoNegatives (
+                   int seedLength                  ,
+                   const SequenceDB& db            , 
+                   const AlphabetCode& code        , 
+                   AssignmentWriter& assgWriter    ,
+                   const SeqWeightFunction& wf     ) 
+{
+   Rep* rep = build (seedLength, db, code, assgWriter);
+   int size = rep->getSize ();
+
+   //
+   // now we remove all the totally-negative nodes
+   struct NegativeNodeRemover : public LeafPreprocessor::Rep::Visitor {
+      NegativeNodeRemover (const SeqWeightFunction& wf) : _wf (wf) {
+      }
+
+      virtual bool call (SeedHash::Cluster* inParm) {
+         if (!inParm->hasSequence (_wf)) {
+            //
+            // this is a totally negative node
+#           if 0 
+               DLOG  << "Removing: " 
+                     << Format (inParm->assignment ()) 
+                     << DLOG.EOL ();
+               DLOG.flush ();
+#           endif
+
+            delete inParm;
+            return false;
+         }
+
+         return true;
+      }
+
+      const SeqWeightFunction& _wf;
+   };
+
+   time_t start;
+   time (&start);
+
+   NegativeNodeRemover nodeRemover (wf);
+   rep->visitAll (nodeRemover);
+   int newSize = rep->getSize ();
+
+   time_t finish;
+   time(&finish);
+
+   DLOG  << "LeafPreprocessor removed " << (size - newSize) << " negative nodes (" 
+         << (finish - start) << " seconds)" << DLOG.EOL ()
+         << DLOG.EOL ();
+   DLOG.flush ();
+
+
+   return rep;
+}
 
 //
 //
@@ -170,8 +230,13 @@ LeafPreprocessor::Rep* LeafPreprocessor::build (
       // TODO: is this working properly?
       int tableSize = rep->getTableSize ();
       int numberOfEntries = rep->getSize ();
-      if (numberOfEntries > 8 * tableSize)
-         rep->resize ((4 * tableSize) - 1);
+      if (numberOfEntries > 8 * tableSize)   {
+         int newTableSize = (3 * tableSize) - 1;
+         DLOG << "Increasing table size from " 
+              << tableSize << " to "<< newTableSize << DLOG.EOL ();
+
+         rep->resize (newTableSize);
+      }
    }
 
    time (&finish);
@@ -198,10 +263,12 @@ LeafPreprocessor::Rep* LeafPreprocessor::build (
 // check if node has any positions for a particular sequence
 bool LeafPreprocessor::LeafNode::hasPositions (SequenceDB::ID id) const
 {
-   return _cluster.hasPositions (id);
+   return _cluster->hasPositions (id);
 }
 bool LeafPreprocessor::LeafNode::hasPositions (const SeqWeightFunction& wf) const
 {
+
+
    //
    // TODO
    return false;
@@ -211,21 +278,28 @@ bool LeafPreprocessor::LeafNode::hasPositions (const SeqWeightFunction& wf) cons
 // returns all the sequences in this node
 void LeafPreprocessor::LeafNode::add2SeqCluster (SequenceDB::Cluster& outSeqInNode) const
 {
-   outSeqInNode.unify (_cluster);
+   outSeqInNode.unify (*_cluster);
 }
 
 void LeafPreprocessor::LeafNode::
    add2SeqClusterPositions (SequenceDB::Cluster& outSeqInNode) const
 {
-   outSeqInNode.unifyPositions (_cluster);
+   outSeqInNode.unifyPositions (*_cluster);
 }
 
 void LeafPreprocessor::LeafNode::
    add2PosCluster (PosCluster& out, Sequence::ID id)  const
 {
-   const PosCluster* pos = _cluster.getPositions (id);
+   const PosCluster* pos = _cluster->getPositions (id);
    if (pos) {
       out.unify (*pos);
    }
 
 }
+
+void LeafPreprocessor::LeafNode::
+   add2Assignment (Assignment& assg) const{
+   assg.unify (assignment ());
+}
+
+

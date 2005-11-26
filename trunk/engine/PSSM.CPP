@@ -175,3 +175,6 @@ Multinomial::MAP() const
 
   return M;
 }
+
+
+

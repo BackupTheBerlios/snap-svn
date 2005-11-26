@@ -7,5 +7,5 @@ dos2unix Core/*.*
 dos2unix Persistance/*.*
 dos2unix Legacy/*.*
 
-for i in *.h *.cpp; do echo "" >> $i ; echo adding newline to $i ; done
-for i in Core/*.h Core/*.cpp Legacy/*.h Legacy/*.cpp Persistance/*.h Persistance/*.cpp ; do echo "" >> $i ; echo adding newline to $i ; done
+# for i in *.h *.cpp; do echo "" >> $i ; echo adding newline to $i ; done
+# for i in Core/*.h Core/*.cpp Legacy/*.h Legacy/*.cpp Persistance/*.h Persistance/*.cpp ; do echo "" >> $i ; echo adding newline to $i ; done

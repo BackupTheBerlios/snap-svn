@@ -9,3 +9,6 @@ AssignmentWriter* SeedSearcherLog::__assgWriter;
 
 
 
+
+
+

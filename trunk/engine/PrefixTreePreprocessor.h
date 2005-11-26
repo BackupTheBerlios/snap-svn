@@ -60,6 +60,7 @@ public:
       CPositionIterator iterator () const;
       const Sequence* sequence () const;
       const PositionVector* positions () const;
+      const Position* firstPosition () const;
       bool empty () const;
       int size () const;
 
@@ -138,11 +139,9 @@ public:
    //
    // builds a new prefix tree. uses data from SequenceDB. 
    // depth is the maximum prefix size
-   static TreeRep* build ( SequenceDB*, 
-                           int depth);
-   
-   static TreeRep* build ( const SequenceDB::Cluster&, 
-                           SequenceDB*, 
+   static TreeRep* build ( bool removeNodeOptimization,
+                           const SeqWeightFunction& wf, 
+                           const SequenceDB&, 
                            int depth);
 
    void serialize (Persistance::IArchive& in);
@@ -158,6 +157,9 @@ private:
 };
 
 #endif // _SeedSearcher_PrefixTreePreprocessor_h
+
+
+
 
 
 

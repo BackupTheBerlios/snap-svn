@@ -71,3 +71,5 @@ void SeedHash::Table::addPosition (const Str& seedData, AutoPtr <Position> posit
    // add this new position to the seed
    seed->addPosition (position.release ());
 }
+
+
