@@ -1,6 +1,30 @@
 #ifndef _SeedSearcher_Feature_h
 #define _SeedSearcher_Feature_h
 
+//
+// File        : $RCSfile: $ 
+//               $Workfile: Feature.h $
+// Version     : $Revision: 13 $ 
+//               $Author: Aviad $
+//               $Date: 23/08/04 21:44 $ 
+// Description :
+//    Concrete cache for Hyper-Geometric distribution values
+//
+// Author: 
+//    Aviad Rozenhek (mailto:aviadr@cs.huji.ac.il) 2003-2004
+//
+// written for the SeedSearcher program. 
+// for details see www.huji.ac.il/~hoan 
+// and also http://www.cs.huji.ac.il/~nirf/Abstracts/BGF1.html
+//
+// this file and as well as its library are released for academic research 
+// only. the LESSER GENERAL PUBLIC LICENSE (LPGL) license
+// as well as any other restrictions as posed by the computational biology lab
+// and the library authors appliy.
+// see http://www.cs.huji.ac.il/labs/compbio/LibB/LICENSE
+//
+
+
 #include "Defs.h"
 #include "Cluster.h"
 #include "Sequence.h"
@@ -9,8 +33,8 @@
 #include "DebugLog.h"
 #include "Preprocessor.h"
 
-#include "Persistance/Defs.h"
-#include "Core/AutoPtr.h"
+#include "persistance/Defs.h"
+#include "core/AutoPtr.h"
 
 #include "boost/shared_ptr.hpp"
 
@@ -267,7 +291,8 @@ public:
    // use to enable bonferroni
    FeatureInvestigator (const FeatureParameters&, 
                         int outputLength,
-                        int seedsSearched);
+                        int numSeedsSearched,
+                        int numProjections);
    virtual ~FeatureInvestigator () {
    }
 
@@ -303,7 +328,7 @@ public:
                               const PositionVector&   );
    
    virtual void printSeedHeader (Persistance::TextWriter& out) {
-      if (_seedsSearched) {
+      if (_numSeedsSearched) {
          out << "Bonf(-log10)\t";
       }
       out << "Score(-log10)\tSeed\t\tParameters\t\t\tProjection" << out.EOL ();
@@ -329,13 +354,16 @@ public:
       createPSSM (feature, pos, pssm);
       printPSSM (writer, feature, pssm);
    }
+   virtual void printBayesian (Persistance::TextWriter& , 
+                               Feature&, const PositionVector& );
 
 protected:
    int _outputLength;
    std::string _allignment;
    const FeatureParameters& _parameters;
-   int _seedsSearched;
-   double log10_seedsSearched;
+   int _numSeedsSearched;
+   int _numProjections;
+   double _log10_seedsSearched;
 };
 
 

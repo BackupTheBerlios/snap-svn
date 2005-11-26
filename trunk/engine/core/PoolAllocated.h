@@ -34,3 +34,27 @@ template <class T, class UserAllocator>
 typename TPoolAllocated<T, UserAllocator>::TObjectPool TPoolAllocated<T, UserAllocator>::_pool;
 
 #endif
+
+//
+// File        : $RCSfile: $ 
+//               $Workfile: PoolAllocated.h $
+// Version     : $Revision: 5 $ 
+//               $Author: Aviad $
+//               $Date: 23/08/04 21:45 $ 
+// Description :
+//	The Core library contains contains basic definitions and classes
+// which are useful to any highly-portable applications
+//
+// Author: 
+//    Aviad Rozenhek (mailto:aviadr@cs.huji.ac.il) 2003-2004
+//
+// written for the SeedSearcher program. 
+// for details see www.huji.ac.il/~hoan 
+// and also http://www.cs.huji.ac.il/~nirf/Abstracts/BGF1.html
+//
+// this file and as well as its library are released for academic research 
+// only. the LESSER GENERAL PUBLIC LICENSE (LPGL) license
+// as well as any other restrictions as posed by the computational biology lab
+// and the library authors appliy.
+//
+

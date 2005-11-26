@@ -1,10 +1,35 @@
 #ifndef _SeedSearcher_Math_h
 #define _SeedSearcher_Math_h
 
+//
+// File        : $RCSfile: $ 
+//               $Workfile: HyperGeoCache.h $
+// Version     : $Revision: 12 $ 
+//               $Author: Aviad $
+//               $Date: 23/08/04 21:44 $ 
+// Description :
+//    Concrete cache for Hyper-Geometric distribution values
+//
+// Author: 
+//    Aviad Rozenhek (mailto:aviadr@cs.huji.ac.il) 2003-2004
+//
+// written for the SeedSearcher program. 
+// for details see www.huji.ac.il/~hoan 
+// and also http://www.cs.huji.ac.il/~nirf/Abstracts/BGF1.html
+//
+// this file and as well as its library are released for academic research 
+// only. the LESSER GENERAL PUBLIC LICENSE (LPGL) license
+// as well as any other restrictions as posed by the computational biology lab
+// and the library authors appliy.
+// see http://www.cs.huji.ac.il/labs/compbio/LibB/LICENSE
+//
+
 #include <assert.h>
 #include "ExtraMath.h"
+#include "boost/shared_ptr.hpp"
 
 #include "SeedSearcher.h"
+
 
 
 
@@ -166,6 +191,8 @@ public:
    double log2Tail (int x, int k, int n, int m, ScoreParameters**);
 
    void writeAsText (Persistance::TextWriter&, const ScoreParameters*) const;
+
+   static boost::shared_ptr <HyperGeoTotalCache> singleton ();
 
    struct XKNM;
    class Score;

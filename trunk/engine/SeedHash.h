@@ -1,11 +1,34 @@
 #ifndef _SeedSearcher_SeedHash_h
 #define _SeedSearcher_SeedHash_h
 
+//
+// File        : $RCSfile: $ 
+//               $Workfile: SeedHash.h $
+// Version     : $Revision: 13 $ 
+//               $Author: Aviad $
+//               $Date: 23/08/04 21:44 $ 
+// Description :
+//    Concrete and interface classes for a hash-table of positions
+//
+// Author: 
+//    Aviad Rozenhek (mailto:aviadr@cs.huji.ac.il) 2003-2004
+//
+// written for the SeedSearcher program. 
+// for details see www.huji.ac.il/~hoan 
+// and also http://www.cs.huji.ac.il/~nirf/Abstracts/BGF1.html
+//
+// this file and as well as its library are released for academic research 
+// only. the LESSER GENERAL PUBLIC LICENSE (LPGL) license
+// as well as any other restrictions as posed by the computational biology lab
+// and the library authors appliy.
+// see http://www.cs.huji.ac.il/labs/compbio/LibB/LICENSE
+//
+
 #include "Assignment.h"
 #include "Cluster.h"
 #include "DebugLog.h"
 
-#include "Core/HashTable.h"
+#include "core/HashTable.h"
 
 //
 //

@@ -1,3 +1,27 @@
+//
+// File        : $RCSfile: $ 
+//               $Workfile: Feature.cpp $
+// Version     : $Revision: 13 $ 
+//               $Author: Aviad $
+//               $Date: 25/08/04 22:36 $ 
+// Description :
+//    Concrete cache for Hyper-Geometric distribution values
+//
+// Author: 
+//    Aviad Rozenhek (mailto:aviadr@cs.huji.ac.il) 2003-2004
+//
+// written for the SeedSearcher program. 
+// for details see www.huji.ac.il/~hoan 
+// and also http://www.cs.huji.ac.il/~nirf/Abstracts/BGF1.html
+//
+// this file and as well as its library are released for academic research 
+// only. the LESSER GENERAL PUBLIC LICENSE (LPGL) license
+// as well as any other restrictions as posed by the computational biology lab
+// and the library authors appliy.
+// see http://www.cs.huji.ac.il/labs/compbio/LibB/LICENSE
+//
+
+
 #include "Feature.h"
 
 #include "Preprocessor.h"
@@ -8,8 +32,8 @@
 #include "Legacy/MathFunctions.h"
 #include "ExtraMath.h"
 
-#include "Persistance/TextWriter.h"
-#include "Core/Str.h"
+#include "persistance/TextWriter.h"
+#include "core/Str.h"
 
 USING_TYPE (Persistance, TextWriter);
 
@@ -23,14 +47,19 @@ FeatureInvestigator::FeatureInvestigator (const FeatureParameters& in,
 
 FeatureInvestigator::FeatureInvestigator (const FeatureParameters& in, 
                                           int outputLength,
-                                          int numSeeds)
+                                          int numSeeds,
+                                          int numProjections)
 :  _outputLength (outputLength),
    _allignment (outputLength, '-'),
    _parameters (in), 
-   _seedsSearched (numSeeds)
+   _numSeedsSearched (numSeeds),
+   _numProjections (numProjections)
 {
-   if (_seedsSearched > 0) {
-      log10_seedsSearched = ::log10 (_seedsSearched);
+   if (_numSeedsSearched > 0) {
+      //
+      // we use the average number of seeds found on a projection
+      _log10_seedsSearched = 
+         ::log10 (_numSeedsSearched / _numProjections);
    }
 }
 
@@ -126,10 +155,10 @@ void FeatureInvestigator::printSeedScore (
 
    //
    // print bonf correction
-   if (_seedsSearched > 0) {
+   if (_numSeedsSearched > 0) {
       //
       // log10 (score * K) = log10 (score) + log10 (K)
-      double bonfScore = log10_of_score + log10_seedsSearched;
+      double bonfScore = log10_of_score + _log10_seedsSearched;
       writer   << (- bonfScore)
                << '\t';
    }
@@ -161,8 +190,6 @@ void FeatureInvestigator::printSeed (Persistance::TextWriter& writer,
    if (feature.projection ()) {
       writer << '\t' << _parameters.langauge ().format (*feature.projection ());
    }
-
-   writer << writer.EOL ();
 }
 
 void FeatureInvestigator::createPSSM (Feature& feature_i, 
@@ -205,6 +232,33 @@ void FeatureInvestigator::printPSSM (  Persistance::TextWriter& writer,
 
    writer.flush ();
 }
+
+void FeatureInvestigator::printBayesian (
+   Persistance::TextWriter& writer, Feature& feature, 
+   const PositionVector& positions)
+{
+   const int motifLength = feature.assignment ().length ();
+
+   CPositionIterator it (positions.begin (), positions.end ());
+   for (; it.hasNext () ; it.next())   {
+      const SeqPosition& position = *(*it);
+
+      StrBuffer buf;
+      USELESS (int middleSection = )
+         position.getSeedString (buf, motifLength, _outputLength, '?');
+
+      writer << '{';
+
+      int length = buf.length();
+      for (int i=0 ; i<length ; i++) {
+         writer << buf [i] << ' ';
+      }
+
+      writer << '}';
+      writer.writeln ();
+   }
+}
+
 
 
 

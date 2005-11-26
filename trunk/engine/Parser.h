@@ -1,84 +1,35 @@
 #ifndef _SeedSearcher_Parser_h
 #define _SeedSearcher_Parser_h
 
+//
+// File        : $RCSfile: $ 
+//               $Workfile: Parser.h $
+// Version     : $Revision: 22 $ 
+//               $Author: Aviad $
+//               $Date: 25/08/04 17:57 $ 
+// Description :
+//    Concrete Parser for seed-searcher options
+//
+// Author: 
+//    Aviad Rozenhek (mailto:aviadr@cs.huji.ac.il) 2003-2004
+//
+// written for the SeedSearcher program. 
+// for details see www.huji.ac.il/~hoan 
+// and also http://www.cs.huji.ac.il/~nirf/Abstracts/BGF1.html
+//
+// this file and as well as its library are released for academic research 
+// only. the LESSER GENERAL PUBLIC LICENSE (LPGL) license
+// as well as any other restrictions as posed by the computational biology lab
+// and the library authors appliy.
+// see http://www.cs.huji.ac.il/labs/compbio/LibB/LICENSE
+//
+
+
 #include "Defs.h"
-#include "Core/Str.h"
-#include "Persistance/TextWriter.h"
-
-class Argv{
-   //
-   // utlitity class for argv
-public:
-   Argv () : _argc (0), _argv (NULL) {
-   }
-   Argv (int argc, char** argv) : _argc (0), _argv (NULL) {
-      set (argc, argv);
-   }
-   Argv (const Argv& in) : _argc (0), _argv (NULL) {
-      set (in);
-   }
-   Argv (const Str& in);
-   Argv (const Str& prefix, const Str& in);
-   ~Argv () {
-      clear ();
-   }
-
-   Argv& operator = (const Argv& argv) {
-      set (argv);
-      return *this;
-   };
-
-   //
-   // create argv from a single string
-   void set (const Str&);
-   //
-   // create argv from a prefix, and a string
-   void set (const Str& prefix, const Str&);
-
-   void set (const Argv& in) {
-      set (in._argc, in._argv);
-   }
-   void set (int argc, char** argv) {
-      mustbe (argc >= 0);
-      clear ();
-      _argc = argc;
-      _argv = new char* [_argc];
-      for (int i=0 ; i<_argc ; i++)
-         _argv [i] = dup (argv [i]);
-   }
-
-   void clear () {
-      if (_argv != NULL) {
-         for (int i=0 ; i<_argc ; i++)
-            delete [] _argv[i];
-
-         delete [] _argv;
-         _argv = NULL;
-         _argc = 0;
-      }
-   }
-
-   int argc () const {
-      return _argc;
-   }
-   char ** argv () const {
-      return _argv;
-   }
-   bool empty () const {
-      return _argc == 0;
-   }
-
-
-   template <typename StringT>
-   static char* dup (StringT& s)   {
-     StrBuffer temp = Str (s);
-     return temp.release ();
-   }
-
-protected:
-   int _argc;
-   char** _argv;
-};
+#include "core/Str.h"
+#include "core/Argv.h"
+#include "core/Parser.h"
+#include "persistance/TextWriter.h"
 
 
 class Parser {
@@ -123,6 +74,9 @@ public:
    //
    // no. of wildcards in projection
    int __proj_d;
+   //
+   // how long is midsection (which is only wildcards)
+   int __proj_mid;
    //
    // specialize projection 
    // (expret optimization, may lead to incorrect results)
@@ -189,17 +143,25 @@ public:
    SearchType __searchType;
    ScoreType __scoreType;
 
-   enum MotifType {
-      _motif_all_,
-      _motif_pos_,
-      _motif_none_,
+   //
+   // values for exponential loss score
+   float __expLossPos;
+   float __expLossNeg;
+
+   enum OutputType {
+      _out_all_,
+      _out_pos_,
+      _out_none_,
    };
    //
    // flag that determines if PSSM files should be created
-   bool __generatePSSM;
+   OutputType __generatePSSM;
    //
    // flag that determines if .Motif files should be created
-   MotifType __generateMotif;
+   OutputType __generateMotif;
+   //
+   // flag that determines if .sample file should be created
+   OutputType __generateBayesian;
    //
    // (in seed performance test)
    // the number of BestPositions used for each sequence evaluation
@@ -237,8 +199,11 @@ public:
    //
    int __firstFileArg;
 
- private:
-   bool Parser::getOptBoolean (char* in, bool* optUnknown = NULL);
+   bool Parser::getOptBoolean (const char* in, bool* optUnknown = NULL);
+   OutputType getOptOutputType(const char*);
+   int getInt (const char* in, const char* ctx);
+
+   GetOptParser _impl;
 };
 
 #endif

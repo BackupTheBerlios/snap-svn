@@ -50,5 +50,5 @@ protected:
 
 };
 
+#endif // __DUMMY_STATUS_REPORTER_H__
 
-#endif __DUMMY_TATUS_REPORTER_H__

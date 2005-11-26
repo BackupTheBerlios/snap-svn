@@ -1,9 +1,36 @@
 #ifndef _SeedSearcher_Assignment_h
 #define _SeedSearcher_Assignment_h
 
-#include "Core/Defs.h"
-#include "Core/STLHelper.h"
-#include "Persistance/Defs.h"
+//
+// File        : $RCSfile: $ 
+//               $Workfile: Assignment.h $
+// Version     : $Revision: 18 $ 
+//               $Author: Aviad $
+//               $Date: 23/08/04 21:44 $ 
+// Description :
+//    Concrete class describing an assignment - 
+//       which is a sequence of assignment positions.
+//    
+//    an assignment position is a subset of the set of all possible
+//    letters of a given alphabet.
+//
+// Author: 
+//    Aviad Rozenhek (mailto:aviadr@cs.huji.ac.il) 2003-2004
+//
+// written for the SeedSearcher program. 
+// for details see www.huji.ac.il/~hoan 
+// and also http://www.cs.huji.ac.il/~nirf/Abstracts/BGF1.html
+//
+// this file and as well as its library are released for academic research 
+// only. the LESSER GENERAL PUBLIC LICENSE (LPGL) license
+// as well as any other restrictions as posed by the computational biology lab
+// and the library authors appliy.
+// see http://www.cs.huji.ac.il/labs/compbio/LibB/LICENSE
+//
+
+#include "core/Defs.h"
+#include "core/STLHelper.h"
+#include "persistance/Defs.h"
 
 #include <bitset>
 
@@ -236,6 +263,15 @@ public:
    void addPosition (const Position& p) {
       _positions.push_back (p);
    }
+   void addPositionAt (int index, const Position& p, int count = 1) {
+      _positions.insert (_positions.begin() + index, count, p);
+   }
+   void addAssignmentAt (int index, const Assignment& assg) {
+      _positions.insert (  _positions.begin() + index, 
+                           assg._positions.begin (), 
+                           assg._positions.end ());
+   }
+
    void setPosition (int, const Position& p);
 
    void unify (const Assignment& o, int startIndex = 0) ;

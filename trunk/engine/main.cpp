@@ -1,3 +1,26 @@
+//
+// File        : $RCSfile: $ 
+//               $Workfile: main.cpp $
+// Version     : $Revision: 53 $ 
+//               $Author: Aviad $
+//               $Date: 25/08/04 22:36 $ 
+// Description :
+//    main routine for the seed-searcher program
+//
+// Author: 
+//    Aviad Rozenhek (mailto:aviadr@cs.huji.ac.il) 2003-2004
+//
+// written for the SeedSearcher program. 
+// for details see www.huji.ac.il/~hoan 
+// and also http://www.cs.huji.ac.il/~nirf/Abstracts/BGF1.html
+//
+// this file and as well as its library are released for academic research 
+// only. the LESSER GENERAL PUBLIC LICENSE (LPGL) license
+// as well as any other restrictions as posed by the computational biology lab
+// and the library authors appliy.
+// see http://www.cs.huji.ac.il/labs/compbio/LibB/LICENSE
+//
+
 #include "Parser.h"
 
 #include "SequenceDB.h"
@@ -12,27 +35,24 @@
 #include "StdOptions.h"
 #include "DebugLog.h"
 
-#include "Core/ImplList.h"
-#include "Core/AutoPtr.h"
-#include "Util/ConfReader.h"
+#include "core/AutoPtr.h"
 
-#include "Persistance/TextWriter.h"
-#include "Persistance/StdOutputStream.h"
-#include "Persistance/StdInputStream.h"
+#include "persistance/TextWriter.h"
+#include "persistance/StdOutputStream.h"
+#include "persistance/StdInputStream.h"
 
-#include "StatusReporter/DummyStatusReporter.hpp"
+#include "status_reporter/BaseStatusReporter.hpp"
 
 #include <iostream>
 #include <fstream>
 #include <time.h>
 #include <stdio.h>
-#include <queue>
 
 using namespace std;
 using namespace Persistance;
 
 static const int __versionMajor = 2;
-static const int __versionMinor = 2;
+static const int __versionMinor = 3;
 
 //
 //
@@ -92,43 +112,47 @@ static Persistance::OutputStream* openFile (const char* filename)
 
 
 
+static const char* getOutputFileName (char* motifFileName,
+                                      bool isPositives, 
+                                      int index,
+                                      const char* fileStub, 
+                                      const char* typeStub)
+{
+   if (index >= 0) {
+      if (isPositives)
+         sprintf (motifFileName, "%s.%d.%s", 
+         fileStub, (index+1), typeStub);
+      else
+         sprintf (motifFileName, "%s.%d.neg.%s", 
+         fileStub, (index+1), typeStub);
+   }
+   else {
+      if (isPositives)
+         sprintf (motifFileName, "%s.%s", 
+         fileStub, typeStub);
+      else
+         sprintf (motifFileName, "%s.neg.%s", 
+         fileStub, typeStub);
+   }
+
+   return motifFileName;
+}
+
 //
 //
-static Persistance::OutputStream* openMotifFile (  
-      bool isPositives, int index, const char* fileStub)
+static Persistance::OutputStream* openFile (  
+      bool isPositives, 
+      int index, 
+      const char* fileStub,
+      const char* typeStub)
 {
    //
    // create the motif file name
    char motifFileName [1024];
-   if (isPositives)
-      sprintf (motifFileName, "%s.%d.motifs", 
-	       fileStub, (index+1));
-   else
-      sprintf (motifFileName, "%s.%d.neg.motifs", 
-	       fileStub, (index+1));
-
-   return openFile (motifFileName);
+   return openFile (
+      getOutputFileName (motifFileName, isPositives, index, fileStub, typeStub)
+   );
 }
-
-
-//
-//
-static Persistance::OutputStream* openPSSMFile (  
-      int index, const char* fileStub)
-{
-   //
-   // create the motif file name
-   char motifFileName [1024];
-   sprintf (motifFileName, "%s.%d.PSSM", 
-	      fileStub, (index+1));
-
-   return openFile (motifFileName);
-}
-
-
-
-
-
 
 static void welcomeMessage ()
 {
@@ -148,14 +172,13 @@ static void welcomeMessage ()
    DLOG.flush ();
 }
 
+
 static void welcomeMessage (const Parser& parser)
 {
    time_t ltime;
    time( &ltime );
    DLOG << DLOG.EOL ()
         << "Execution started on " << ctime( &ltime ) << DLOG.EOL ();
-
-
    //
    // (2) write execution line
    DLOG  << '#' << DLOG.EOL () 
@@ -165,10 +188,12 @@ static void welcomeMessage (const Parser& parser)
       DLOG << parser.__argv [i] << ' ';
    DLOG << DLOG.EOL ();
 
+   /*
    DLOG  << DLOG.EOL ();
    DLOG  << '#' << DLOG.EOL () 
          << "# execution parameters " << DLOG.EOL ();
    parser.logParams (DLOG);
+   */
 }
 
 
@@ -184,31 +209,15 @@ static void mainRoutine (int argc,
 // Copied/Adapted from legacy SeedSearcher
 int cpp_main(int argc, char* argv [])
 {
-   struct auto_report {
-      auto_report () {
-         //
-         // setup the status report manager
-         StatusReportManager::setup (
-            boost::shared_ptr <BaseStatusReporter> (
-               new DummyStatusReporter (NULL, NULL, NULL, NULL, 0)
-            )
-         );
-
-         StatusReportManager::setJobStarted ();
-      }
-      ~auto_report () {
-         StatusReportManager::setJobDone ();
-      }
-   };
-
-   auto_report report;
-
-   int exit_value = 0;
+int exit_value = 0;
    try {
+	   Argv anArgv;
+	   StatusReportManager::Sentry report( argc, argv, anArgv );
+   
       //
       // setup basic logging
       SeedSearcherLog::setupConsoleLogging ( /* dont supress */ false);
-      mainRoutine (argc, argv);
+      mainRoutine ( anArgv.argc(), anArgv.argv() );
 
       if (cleanupStart) {
          cleanupFinish = time(NULL);
@@ -226,10 +235,16 @@ int cpp_main(int argc, char* argv [])
    return exit_value;
 }
 
+static const char MOTIF_FILE_STUB[] = "motifs";
+static const char PSSM_FILE_STUB[] = "pssm";
+static const char SAMPLE_FILE_STUB[] = "sample";
+static const char SEEDS_FILE_STUB[] = "seeds";
+
 
 static void printMotif (FeatureInvestigator& printer,
-                        bool gPSSM,
-                        Parser::MotifType gMotif,
+                        Parser::OutputType gPSSM,
+                        Parser::OutputType gMotif,
+                        Parser::OutputType gSample,
                         PositionVector pos,
                         PositionVector neg,
                         const char* fileStub,
@@ -242,40 +257,83 @@ static void printMotif (FeatureInvestigator& printer,
    // now we print the seed result line,
    // which includes the seed, score projection etc.
    printer.printSeed (DLOG, feature, pos);
-
-   if (gMotif != Parser::_motif_none_) {
-      //
-      // now we print pos & neg motif files
-      bool isPos = true;
-      for (int i = 0 ; i <= 1; i++) {
-         //
-         // print neg only if Parser::_motif_all_ is specified
-         if ((gMotif == Parser::_motif_all_) || isPos) {
-            //
-            // we open a file for the motif
-            TextWriter motifFile (openMotifFile (  isPos, 
-               results.featureIndex (),
-               fileStub
-               ));
-            printer.printMotif ( motifFile, 
-               feature, 
-               isPos? pos : neg);
-         }
-
-         isPos = !isPos;
-      }
-   }
+   DLOG.writeln();
 
    //
-   // now we print the PSSM files
-   if (gPSSM) {
-      TextWriter pssmFile (openPSSMFile ( results.featureIndex (),
-         fileStub
-         ));
+   // now we print pos & neg motif files
+   bool isPos = true;
+   for (int i = 0 ; i <= 1; i++) {
+      //
+      // print neg only if Parser::_motif_all_ is specified
+      if (  (gMotif!= Parser::_out_none_) &&
+            (gMotif == Parser::_out_all_) || isPos) {
+         //
+         // we open a file for the motif
+         TextWriter motifFile (
+            openFile (isPos, results.featureIndex (), fileStub, MOTIF_FILE_STUB)
+         );
 
-      printer.printPSSM (pssmFile, feature, pos);
+         printer.printMotif ( motifFile, 
+            feature, 
+            isPos? pos : neg);
+      }
+
+      //
+      // now we print the PSSM files
+      if (  (gPSSM != Parser::_out_none_) &&
+            (gPSSM == Parser::_out_all_) || isPos) {
+         TextWriter pssmFile (
+            openFile (isPos, results.featureIndex (), fileStub, PSSM_FILE_STUB)
+            );
+
+         printer.printPSSM (pssmFile, feature, pos);
+      }
+
+      //
+      // now we print the bayesian sample files
+      if (  (gSample!= Parser::_out_none_) &&
+            (gSample == Parser::_out_all_) || isPos) {
+         TextWriter sampleFile (
+            openFile (isPos, results.featureIndex (), fileStub, SAMPLE_FILE_STUB)
+            );
+
+         printer.printBayesian (sampleFile, feature, pos);
+      }
+
+      isPos = !isPos;
    }
 }
+
+static void printSeedFile (TextWriter& seedsFile,
+                           FeatureInvestigator& printer,
+                           Parser::OutputType gPSSM,
+                           Parser::OutputType gMotif,
+                           Parser::OutputType gSample,
+                           PositionVector pos,
+                           PositionVector neg,
+                           const char* fileStub,
+                           SeedSearcherMain::Results& results)
+{
+   printer.printSeed (seedsFile, results.getFeature (), pos);
+   Parser::OutputType outputs [3] = { gMotif, gPSSM, gSample };
+   const char* names [] = { MOTIF_FILE_STUB, PSSM_FILE_STUB, SAMPLE_FILE_STUB };
+
+   char buffer [8096];
+   for (int i=0 ; i<3; i++) {
+      if (outputs[i] != Parser::_out_none_) 
+         getOutputFileName(buffer, true, 
+         results.featureIndex (),
+         fileStub, names [i]);
+      else
+         strcpy (buffer , "-----");
+
+         seedsFile << '\t'
+                   << buffer;
+   }
+
+   seedsFile.writeln();
+}
+
 
 class ApplicationMain : public SeedSearcherMain {
 public:
@@ -301,12 +359,28 @@ protected:
          params.parser ().__score_bonf? results.numSeedsSearched () : 0;
       FeatureInvestigator printer ( params                     , 
                                     params.parser ().__seed_o  ,
-                                    bonfN                      );
+                                    bonfN                      ,
+                                    results.numProjectionsSearched ()
+                                    );
       printer.printSeedHeader (DLOG);
 
-      bool gPSSM = params.parser ().__generatePSSM;
-      Parser::MotifType gMotif = params.parser ().__generateMotif;
+      Parser::OutputType gPSSM = params.parser ().__generatePSSM;
+      Parser::OutputType gMotif = params.parser ().__generateMotif;
+      Parser::OutputType gBayesian = params.parser ().__generateBayesian;
 
+      //
+      // should we generate a file that contains only the seeds?
+      bool gSeeds =  (gMotif  != Parser::_out_none_)  ||
+                     (gPSSM   != Parser::_out_none_)  ||
+                     (gBayesian != Parser::_out_none_);
+
+      StrBuffer fileStub (params.name ());
+
+      TextWriter seedsFile (
+         gSeeds? 
+            openFile (true, -1, fileStub, SEEDS_FILE_STUB) :
+            NULL
+      );
 
       //
       // we print the results to the log
@@ -321,7 +395,18 @@ protected:
          PositionVector neg;
          printer.addPositions (feature, pos, neg);
 
-         printMotif (printer, gPSSM, gMotif, pos, neg, StrBuffer (params.name ()), results);
+         printMotif (printer, 
+                     gPSSM, gMotif, gBayesian, 
+                     pos, neg, 
+                     fileStub, results
+                     );
+
+         printSeedFile (seedsFile, printer,
+                        gPSSM, gMotif, gBayesian,
+                        pos, neg, 
+                        fileStub, results
+                        );
+
       }
    }
 }; 
@@ -369,7 +454,7 @@ static void mainRoutine (int argc,
 
 #if SEED_DL_MALLOC_OPTIMIZATION
 
-#include "Core/dlmalloc.h"
+#include "core/dlmalloc.h"
 
 void* operator new (size_t inSize) 
 {

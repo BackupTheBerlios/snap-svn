@@ -549,45 +549,30 @@ tRandomGenerator::SampleDirichlet(int n,
 				  float * rgprob)
 
 {
-
   double dblSum = 0.0;
 
   int i;
-
-  
-
-  for( i = 0; i < n; i++ )
-
-    dblSum += (rgprob[i] = SampleGamma(mean[i] * precision));
-
-
-
-  for( i = 0; i < n; i++)
-
-  {
-
-    rgprob[i] = rgprob[i] / dblSum;
-
+  for( i = 0; i < n; i++ ) {
+     double tempSum = SampleGamma(mean[i] * precision);
+     rgprob[i] = static_cast <float> (tempSum);
+     dblSum += tempSum;
   }
 
+  for( i = 0; i < n; i++)  {
+    rgprob[i] = static_cast <float> (rgprob[i] / dblSum);
+  }
 } 
 
 
 
 int
-
 tRandomGenerator::SampleMultinomial( int n, double const* prob )
-
 {
-
   double p = SampleUniform();
-
   int i = 0;
 
   do{
-
     p -= prob[i++];
-
   } while( p > 0.0 && i < n );
 
 

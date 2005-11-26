@@ -1,5 +1,7 @@
 #include <iostream>
 
+#include "Core/Defs.h"
+
 using namespace std;
 
 #include "DummyStatusReporter.hpp"
@@ -12,34 +14,54 @@ DummyStatusReporter::DummyStatusReporter( const char * inHost,
 }
 
 
-DummyStatusReporter::~DummyStatusReporter() {
+DummyStatusReporter::~DummyStatusReporter() 
+{
 }
 
 bool 
-DummyStatusReporter::hasUserCancelled() {
-
+DummyStatusReporter::hasUserCancelled() 
+{
 	return false;
 }
 
 void 
-DummyStatusReporter::setProgress( int inPercentDone ) {
-
-	cout << "Progress: " << inPercentDone << "\n";
-
+DummyStatusReporter::setProgress( int inPercentDone ) 
+{
+   debug_only (
+	   cout << "Progress: " << inPercentDone << "\n";
+   );
 }
 
 void 
 DummyStatusReporter::setJobStarted()
 {
-	cout << "STATUS: job started\n";
+   debug_only (cout << "STATUS: job started\n";);
 }
 
 void 
 DummyStatusReporter::setJobCancelled() {
-	cout << "STATUS: job cancelled\n";
+	debug_only (
+      cout << "STATUS: job cancelled\n";
+   );
 }
 
 void 
-DummyStatusReporter::setJobDone() {
-	cout << "STATUS: job DONE!\n";
+DummyStatusReporter::setJobDone() 
+{
+   debug_only (
+	   cout << "STATUS: job DONE!\n";
+   );
+}
+
+
+
+StatusReportManager::Sentry::Sentry( int argc, char **argv, Argv &outArgv )
+{
+   outArgv = Argv( argc, argv );
+
+   StatusReportManager::setup (
+      boost::shared_ptr <BaseStatusReporter> (
+         new DummyStatusReporter (NULL, NULL, NULL, NULL, 0)
+         )
+      );
 }

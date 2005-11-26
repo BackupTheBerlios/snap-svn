@@ -1,3 +1,27 @@
+//
+// File        : $RCSfile: $ 
+//               $Workfile: SeedSearcherMain.cpp $
+// Version     : $Revision: 21 $ 
+//               $Author: Aviad $
+//               $Date: 23/08/04 21:44 $ 
+// Description :
+//    Concrete and interface classes for seting-up 
+//    a seed-searching environment or program
+//
+// Author: 
+//    Aviad Rozenhek (mailto:aviadr@cs.huji.ac.il) 2003-2004
+//
+// written for the SeedSearcher program. 
+// for details see www.huji.ac.il/~hoan 
+// and also http://www.cs.huji.ac.il/~nirf/Abstracts/BGF1.html
+//
+// this file and as well as its library are released for academic research 
+// only. the LESSER GENERAL PUBLIC LICENSE (LPGL) license
+// as well as any other restrictions as posed by the computational biology lab
+// and the library authors appliy.
+// see http://www.cs.huji.ac.il/labs/compbio/LibB/LICENSE
+//
+
 #include "SeedSearcherMain.h"
 #include "DebugLog.h"
 #include "StdOptions.h"
@@ -5,7 +29,7 @@
 #include "LeafPreprocessor.h"
 #include "HyperGeoScore.h"
 
-#include "StatusReporter/BaseStatusReporter.hpp"
+#include "status_reporter/BaseStatusReporter.hpp"
 #include <time.h>
 
 USING_TYPE (SeedSearcherMain, CmdLineParameters);
@@ -77,10 +101,10 @@ SeedSearcherMain::search (boost::shared_ptr <Parameters> inParams)
    for (int i=0 ; i<numOfProjections ; i++) {
       //
       // create 
-      const Assignment& assg = 
+      const Assignment& assg =
          _params->projections ().getAssignment (  i, 
-                                    _params->langauge ().wildcard (assg_together),
-                                    _params->langauge ().wildcard (assg_discrete));
+                                 _params->langauge ().wildcard (assg_together),
+                                 _params->langauge ().wildcard (assg_discrete));
 
       //
       // call virtual 'beforeProjection' handler
@@ -236,18 +260,20 @@ void SeedSearcherMain::CmdLineParameters::setupProjections ()
    RandomProjections::srand (_parser.__proj_i);
    if (_parser.__proj_e) {
       _projections.reset (
-            new RandomProjections (
+            new MidsectionRandomProjections (
                RandomProjections::all,
                _parser.__seed_l,
-               _parser.__proj_d)
+               _parser.__proj_d,
+               _parser.__proj_mid)
          );
    }
    else {
       _projections.reset (
-            new RandomProjections (
+            new MidsectionRandomProjections (
                _parser.__proj_n,
                _parser.__seed_l,
-               _parser.__proj_d)
+               _parser.__proj_d,
+               _parser.__proj_mid)
             );
    }
 
@@ -345,7 +371,9 @@ void SeedSearcherMain::CmdLineParameters::setupScoreFunc ()
    }
    else {
       mustbe (_parser.__scoreType == _score_exp_);
-      _score.reset (new ExpScore (1.2, 1.2, *_wf));
+      _score.reset (
+         new ExpScore (_parser.__expLossPos, _parser.__expLossNeg, *_wf)
+      );
    }
 }
 

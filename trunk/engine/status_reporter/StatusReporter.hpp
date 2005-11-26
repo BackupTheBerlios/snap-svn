@@ -26,12 +26,13 @@
 class StatusReporter : public BaseStatusReporter {
 
 protected:
-	char mHostName[256];
-	char mDBName[256];
-	char mUserName[256];
-	char mPassword[256];
-	int  mJobID;
-	bool mUserCancelled;
+	char  mHostName[256];
+	char  mDBName[256];
+	char  mUserName[256];
+	char  mPassword[256];
+	int   mJobID;
+	pid_t mPid;
+	bool  mUserCancelled;
 	
 	MYSQL mSQLObj;
 
@@ -65,10 +66,10 @@ public:
 	
 protected:
 	void connect();
-	void setJobStatus( JobStatus inStatus );
+	void setJobStatus( JobStatus inStatus, bool inSetEndTime );
 	void disconnect();
 
 };
 
 
-#endif __STATUS_REPORTER_H__
+#endif //__STATUS_REPORTER_H__

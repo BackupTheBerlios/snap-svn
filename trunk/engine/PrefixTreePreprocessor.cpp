@@ -1,14 +1,37 @@
+//
+// File        : $RCSfile: $ 
+//               $Workfile: PrefixTreePreprocessor.cpp $
+// Version     : $Revision: 37 $ 
+//               $Author: Aviad $
+//               $Date: 23/08/04 21:44 $ 
+// Description :
+//    Concrete preprocessor class - based on a prefix tree
+//
+// Author: 
+//    Aviad Rozenhek (mailto:aviadr@cs.huji.ac.il) 2003-2004
+//
+// written for the SeedSearcher program. 
+// for details see www.huji.ac.il/~hoan 
+// and also http://www.cs.huji.ac.il/~nirf/Abstracts/BGF1.html
+//
+// this file and as well as its library are released for academic research 
+// only. the LESSER GENERAL PUBLIC LICENSE (LPGL) license
+// as well as any other restrictions as posed by the computational biology lab
+// and the library authors appliy.
+// see http://www.cs.huji.ac.il/labs/compbio/LibB/LICENSE
+//
+
 #include "PrefixTreePreprocessor.h"
 
 #include "Assignment.h"
 #include "Sequence.h"
 
-#include "Core/AutoPtr.h"
-#include "Persistance/IArchive.h"
-#include "Persistance/OArchive.h"
+#include "core/AutoPtr.h"
+#include "persistance/IArchive.h"
+#include "persistance/OArchive.h"
 #include "DebugLog.h"
 
-#include "Core/AllocPolicy.h"
+#include "core/AllocPolicy.h"
 
 #include <algorithm>
 #include <time.h>

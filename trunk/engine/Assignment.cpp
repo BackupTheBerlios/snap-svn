@@ -1,10 +1,37 @@
+//
+// File        : $RCSfile: $ 
+//               $Workfile: Assignment.cpp $
+// Version     : $Revision: 21 $ 
+//               $Author: Aviad $
+//               $Date: 23/08/04 21:44 $ 
+// Description :
+//    Concrete class describing an assignment - 
+//       which is a sequence of assignment positions.
+//    
+//    an assignment position is a subset of the set of all possible
+//    letters of a given alphabet.
+//
+// Author: 
+//    Aviad Rozenhek (mailto:aviadr@cs.huji.ac.il) 2003-2004
+//
+// written for the SeedSearcher program. 
+// for details see www.huji.ac.il/~hoan 
+// and also http://www.cs.huji.ac.il/~nirf/Abstracts/BGF1.html
+//
+// this file and as well as its library are released for academic research 
+// only. the LESSER GENERAL PUBLIC LICENSE (LPGL) license
+// as well as any other restrictions as posed by the computational biology lab
+// and the library authors appliy.
+// see http://www.cs.huji.ac.il/labs/compbio/LibB/LICENSE
+//
+
 #include "Assignment.h"
 #include "Alphabet.h"
 
-#include "Persistance/TextWriter.h"
-#include "Persistance/StdOutputStream.h"
+#include "persistance/TextWriter.h"
+#include "persistance/StdOutputStream.h"
 
-#include "Core/Str.h"
+#include "core/Str.h"
 
 using namespace Persistance;
 

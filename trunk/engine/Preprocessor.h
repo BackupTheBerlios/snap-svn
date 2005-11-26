@@ -1,12 +1,35 @@
 #ifndef _SeedSearcher_Preprocessor_h
 #define _SeedSearcher_Preprocessor_h
 
+//
+// File        : $RCSfile: $ 
+//               $Workfile: Preprocessor.h $
+// Version     : $Revision: 21 $ 
+//               $Author: Aviad $
+//               $Date: 23/08/04 21:44 $ 
+// Description :
+//    interface classes for preprocessors
+//
+// Author: 
+//    Aviad Rozenhek (mailto:aviadr@cs.huji.ac.il) 2003-2004
+//
+// written for the SeedSearcher program. 
+// for details see www.huji.ac.il/~hoan 
+// and also http://www.cs.huji.ac.il/~nirf/Abstracts/BGF1.html
+//
+// this file and as well as its library are released for academic research 
+// only. the LESSER GENERAL PUBLIC LICENSE (LPGL) license
+// as well as any other restrictions as posed by the computational biology lab
+// and the library authors appliy.
+// see http://www.cs.huji.ac.il/labs/compbio/LibB/LICENSE
+//
+
 #include "Defs.h"
 #include "SequenceDB.h"
 #include "Assignment.h"
 
-#include "Core/AutoPtr.h"
-#include "Core/STLHelper.h"
+#include "core/AutoPtr.h"
+#include "core/STLHelper.h"
 
 #include <list>
 

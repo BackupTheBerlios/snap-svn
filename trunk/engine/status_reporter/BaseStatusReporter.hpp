@@ -9,14 +9,19 @@
    Abstract base class for progress reporting.
 */
 
+#include "boost/shared_ptr.hpp"
+#include "Core/Defs.h"
+#include "Core/Str.h"
+#include "Core/Argv.h"
+
 class BaseStatusReporter {
 protected:
    enum JobStatus {
-      NULL_STATUS             = 0,
-      PROCESSING_ERROR_STATUS = 1, //an error occured while processing
-      PROCESSING_STATUS       = 2,
-      CANCELLED_STATUS        = 3,
-      DONE_STATUS             = 4
+		NULL_STATUS             = 0,
+		PROCESSING_ERROR_STATUS = 1, //an error occured while processing
+		PROCESSING_STATUS       = 2,
+		CANCELLED_STATUS        = 6,
+		DONE_STATUS             = 3
    };
 
 public:
@@ -38,9 +43,22 @@ public:
 
    //call when job is completed
    virtual void setJobDone() = 0;
+   
+protected:
+	class StatusException : public BaseException {
+	
+	private:
+		StrBuffer mErrString;
+	
+	public:
+		StatusException( const Str &inErrString );
+	
+		virtual void explain( std::ostream &inStr );
+	};
 };
 
-#include "boost/shared_ptr.hpp"
+
+//Aviad's Singleton Manager
 
 struct StatusReportManager {
    //
@@ -87,11 +105,19 @@ struct StatusReportManager {
    static inline void setJobDone() {
       if (_reporter) _reporter->setJobDone ();
    }
+
+   struct Sentry {
+      Sentry ( int argc, char **argv, Argv &outArgv );
+      ~Sentry () {
+         StatusReportManager::setJobDone ();
+      }
+   };
+
 private:
    static int _progressPoints;
    static int _maxProgressPoints;
    static boost::shared_ptr <BaseStatusReporter> _reporter;
 };
 
+#endif //__BASE_STATUS_REPORTER_H__
 
-#endif __BASE_STATUS_REPORTER_H__

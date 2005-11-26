@@ -146,6 +146,9 @@
 			RelativePath="..\main.cpp">
 		</File>
 		<File
+			RelativePath="..\makefile">
+		</File>
+		<File
 			RelativePath="..\seed.conf">
 		</File>
 	</Files>

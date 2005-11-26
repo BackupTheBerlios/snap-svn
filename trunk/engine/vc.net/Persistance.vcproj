@@ -148,6 +148,9 @@
 				RelativePath="..\..\seedsearcher\Persistance\TextReader.cpp">
 			</File>
 			<File
+				RelativePath="..\persistance\TextTableReport.cpp">
+			</File>
+			<File
 				RelativePath="..\..\seedsearcher\Persistance\TextWriter.cpp">
 			</File>
 		</Filter>
@@ -209,6 +212,9 @@
 				RelativePath="..\..\seedsearcher\Persistance\TextReader.h">
 			</File>
 			<File
+				RelativePath="..\persistance\TextTableReport.h">
+			</File>
+			<File
 				RelativePath="..\..\seedsearcher\Persistance\TextWriter.h">
 			</File>
 			<File
@@ -219,6 +225,9 @@
 			Name="Resource Files"
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
 		</Filter>
+		<File
+			RelativePath="..\persistance\readme">
+		</File>
 	</Files>
 	<Globals>
 	</Globals>

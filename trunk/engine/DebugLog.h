@@ -1,9 +1,32 @@
 #ifndef _SeedSearcher_DebugLog_h
 #define _SeedSearcher_DebugLog_h
 
-#include "Persistance/Defs.h"
-#include "Persistance/TextWriter.h"
-#include "Persistance/AbstractFormat.h"
+//
+// File        : $RCSfile: $ 
+//               $Workfile: DebugLog.h $
+// Version     : $Revision: 14 $ 
+//               $Author: Aviad $
+//               $Date: 23/08/04 21:44 $ 
+// Description :
+//    Concrete class for outputing useful debug information
+//
+// Author: 
+//    Aviad Rozenhek (mailto:aviadr@cs.huji.ac.il) 2003-2004
+//
+// written for the SeedSearcher program. 
+// for details see www.huji.ac.il/~hoan 
+// and also http://www.cs.huji.ac.il/~nirf/Abstracts/BGF1.html
+//
+// this file and as well as its library are released for academic research 
+// only. the LESSER GENERAL PUBLIC LICENSE (LPGL) license
+// as well as any other restrictions as posed by the computational biology lab
+// and the library authors appliy.
+// see http://www.cs.huji.ac.il/labs/compbio/LibB/LICENSE
+//
+
+#include "persistance/Defs.h"
+#include "persistance/TextWriter.h"
+#include "persistance/AbstractFormat.h"
 
 #include "AssignmentFormat.h"
 

@@ -1,6 +1,30 @@
 #ifndef _SeedSearcher_SeedSearcherMain_h
 #define _SeedSearcher_SeedSearcherMain_h
 
+//
+// File        : $RCSfile: $ 
+//               $Workfile: SeedSearcherMain.h $
+// Version     : $Revision: 13 $ 
+//               $Author: Aviad $
+//               $Date: 23/08/04 21:44 $ 
+// Description :
+//    Concrete and interface classes for seting-up 
+//    a seed-searching environment or program
+//
+// Author: 
+//    Aviad Rozenhek (mailto:aviadr@cs.huji.ac.il) 2003-2004
+//
+// written for the SeedSearcher program. 
+// for details see www.huji.ac.il/~hoan 
+// and also http://www.cs.huji.ac.il/~nirf/Abstracts/BGF1.html
+//
+// this file and as well as its library are released for academic research 
+// only. the LESSER GENERAL PUBLIC LICENSE (LPGL) license
+// as well as any other restrictions as posed by the computational biology lab
+// and the library authors appliy.
+// see http://www.cs.huji.ac.il/labs/compbio/LibB/LICENSE
+//
+
 #include "Defs.h"
 
 #include "Parser.h"
@@ -175,6 +199,11 @@ public:
    int numSeedsSearched () const {
       return _numSearched;
    }
+   //
+   // returns the number of projections searched
+   int numProjectionsSearched () const {
+      return _params->projections ().numOfProjections ();
+   }
 
    //
    // returns the number of features discovered
@@ -321,7 +350,7 @@ struct SeedSearcherMain::PreprocessorFactory {
 };
 
 #include "SeedConf.h"
-#include "Core/ImplList.h"
+#include "core/ImplList.h"
 
 class ConfParameterIterator : public SeedSearcherMain::ParameterIterator {
 public:

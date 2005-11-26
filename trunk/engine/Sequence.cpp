@@ -1,8 +1,31 @@
+//
+// File        : $RCSfile: $ 
+//               $Workfile: Sequence.cpp $
+// Version     : $Revision: 13 $ 
+//               $Author: Aviad $
+//               $Date: 23/08/04 21:44 $ 
+// Description :
+//    Concrete classes for sequences, sequence positions 
+//
+// Author: 
+//    Aviad Rozenhek (mailto:aviadr@cs.huji.ac.il) 2003-2004
+//
+// written for the SeedSearcher program. 
+// for details see www.huji.ac.il/~hoan 
+// and also http://www.cs.huji.ac.il/~nirf/Abstracts/BGF1.html
+//
+// this file and as well as its library are released for academic research 
+// only. the LESSER GENERAL PUBLIC LICENSE (LPGL) license
+// as well as any other restrictions as posed by the computational biology lab
+// and the library authors appliy.
+// see http://www.cs.huji.ac.il/labs/compbio/LibB/LICENSE
+//
+
 #include "Sequence.h"
 
-#include "Persistance/OArchive.h"
-#include "Persistance/IArchive.h"
-#include "Persistance/STLPersist.h"
+#include "persistance/OArchive.h"
+#include "persistance/IArchive.h"
+#include "persistance/STLPersist.h"
 
 
 
