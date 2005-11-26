@@ -1,0 +1,46 @@
+- reverse sequence
+- random projections :
+	input: weights & sequences
+	output: what are the seeds/motifs
+
+	currently: hard-threshold for sequences for positively labeled
+		finds all the features in the positive sequence
+		puts random projection. keeps the k-best.
+		
+		works with a parameterized length of motives,
+		number of projections position, number of randomizations
+
+	future: 
+1) real counts: count the weights
+2) total-counts/gene counts
+	gene counts - prevent overlaps (or math fix later on)
+			* option to have at least k positions in gene to count it
+
+3) N in sequence : do not allow more than k- N in a KMer
+4) statistical fix for score
+
+random projections :
+go down the tree until there is no more than k sequences (gene counts)from positively labeled
+K positions (total counts)
+
+strategy:  K best / score less than: (both)
+
+* if two motifs are the same in all no-random poisition - keep the best
+* offset similarity (redundancy) - 
+
+* exhaustive random projections
+* dont allow random projections to be in outer positions
+
+* score function doesnt have to hyper-geometric
+	descend/dont descend is dependant on score
+	* descend if p-value is low enough
+	* descend if motif exists in 10% of sequences in the cluster
+
+
+
+stat fix:
+Bonneferoni
+FDR
+
+
+
