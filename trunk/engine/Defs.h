@@ -70,10 +70,23 @@ enum Strand {
 #define SEED_RESERVE_VECTOR_SPACE_OPTIMIZATION 1
 
 //
-// allocate objects in chunks (reduces calls to new/delete)
-// #define SEED_CHUNK_ALLOCATION_OPTIMIZATION 1
-#define SEED_CHUNK_ALLOCATION_OPTIMIZATION 0
+// allocate objects in pools (reduces calls to new/delete)
+#define SEED_POOL_ALLOCATION_OPTIMIZATION 1
 
+#if SEED_POOL_ALLOCATION_OPTIMIZATION
+   //
+   // inherit from TPoolAllocated class
+#  define POOL_ALLOCATED(T) TPoolAllocated<T>
+#else
+   //
+   // dummy class
+   class TStdAllocation {
+   };
+   
+   //
+   // inherit from dummy class instead
+#  define POOL_ALLOCATED(T) TStdAllocated
+#endif
 
 //
 // use Doug Lee's malloc - much better than Microsoft's malloc!

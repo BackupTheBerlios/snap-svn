@@ -44,11 +44,13 @@ static AutoPtr <AlphabetCode> __ACGT;
 static void initACGTCode () 
 {
    AlphabetCode::copy (__acgt, AlphabetCode::emptyCode ());
-   __acgt ['a'] = __acgt ['A'] = 0;
-   __acgt ['c'] = __acgt ['C'] = 1;
-   __acgt ['g'] = __acgt ['G'] = 2;
-   __acgt ['t'] = __acgt ['T'] = 3;
-   __acgt ['n'] = __acgt ['N'] = 4; // AlphabetCode::dunnoCode;
+   //
+   // cast to int to make gcc happy
+   __acgt [(int)'a'] = __acgt [(int)'A'] = 0;
+   __acgt [(int)'c'] = __acgt [(int)'C'] = 1;
+   __acgt [(int)'g'] = __acgt [(int)'G'] = 2;
+   __acgt [(int)'t'] = __acgt [(int)'T'] = 3;
+   __acgt [(int)'n'] = __acgt [(int)'N'] = 4; // AlphabetCode::dunnoCode;
 }
 
 const AlphabetCode& ACGTLangauge::getCode (bool cardinalityIncludesN)
@@ -464,11 +466,11 @@ int StatFix::FDR (SeedSearcher::FeatureFilter& features, int N, double P)
    //
    // because we use scores after 'log2', we have to also 'log' N, P & K
    int K = 1;
-   double LOG_P_div_N = ::log2 (P) - ::log2 (N);
+   double LOG_P_div_N = log2 (P) - log2 ((double)N);
    //
    // first, check that the best feature is good enough, other-wise
    // there is no point in searching at all
-   if (features->get (K-1).log2score ()> LOG_P_div_N + ::log (K)) {
+   if (features->get (K-1).log2score ()> LOG_P_div_N + ::log ((double)K)) {
       //
       // no feature is actually good enough
       return 0;
@@ -479,7 +481,7 @@ int StatFix::FDR (SeedSearcher::FeatureFilter& features, int N, double P)
    // that is still good enough to face the requirements
    for (K = features->size () ; K >= 1 ; K--) {
       double featureScore = features->get (K-1).log2score ();
-      double LOG_P_div_N_MUL_K = LOG_P_div_N + ::log2(K);
+      double LOG_P_div_N_MUL_K = LOG_P_div_N + log2((double)K);
       if (featureScore <= LOG_P_div_N_MUL_K) {
          return K;
       }
@@ -501,7 +503,7 @@ int StatFix::bonferroni (SeedSearcher::FeatureFilter& features, int N, double P)
    // because we use scores after 'log', we have to also 'log' N, P & K
 
    int K= 1;
-   double LOG_P_div_N = ::log2 (P) - ::log2 (N);
+   double LOG_P_div_N = log2 (P) - log2 ((double)N);
    //
    // first, check that the best feature is good enough, other-wise
    // there is no point in searching at all

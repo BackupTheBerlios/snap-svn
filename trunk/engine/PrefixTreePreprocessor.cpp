@@ -4,7 +4,6 @@
 #include "Sequence.h"
 
 #include "Core/AutoPtr.h"
-#include "Core/ChunkAllocator.h"
 #include "Persistance/IArchive.h"
 #include "Persistance/OArchive.h"
 #include "DebugLog.h"
@@ -19,8 +18,6 @@ USING_TYPE (PrefixTreePreprocessor, TreeNodeRep);
 USING_TYPE (PrefixTreePreprocessor, SeqPositions);
 
 
-ChunkAllocator <PositionVector> PositionVector::__allocator (16);
-
 
 /*****************************
  * TreeNodeRep
@@ -28,7 +25,9 @@ ChunkAllocator <PositionVector> PositionVector::__allocator (16);
 
 
 
-class PrefixTreePreprocessor::TreeNodeRep : public Preprocessor::NodeRep
+class PrefixTreePreprocessor::TreeNodeRep :  
+   public Preprocessor::NodeRep, 
+   public POOL_ALLOCATED(PrefixTreePreprocessor::TreeNodeRep)
 {
    //
    // tree-building interface
@@ -43,7 +42,7 @@ public:
    //
    //
    void setup ();
-   void dispose (bool isRoot);
+   inline void dispose (bool isRoot);
 
    //
    //
@@ -55,16 +54,6 @@ public:
    void removeChild (int index);
    TreeNodeRep* getCreateChild (int index, bool& wasCreated);
    SeqPositions getSeqPositions (SequenceDB::ID id) const;
-
-#if SEED_CHUNK_ALLOCATION_OPTIMIZATION
-   void* operator new (size_t size) {
-      debug_mustbe (size == sizeof (TreeNodeRep));
-      return __allocator.newT ();
-   }
-   void operator delete(void *p)    {
-      __allocator.deleteT (reinterpret_cast <TreeNodeRep*> (p));
-   }
-#endif
 
    //
    // user-friendly tree-node interface
@@ -121,14 +110,8 @@ protected:
    SeqPositionVector _positions;
    TreeNodeRep ** _children;
    TreeNodeRep* _parent;
-
-   
-   static ChunkAllocator <TreeNodeRep> __allocator;
 };
 
-//
-// static instantiation
-ChunkAllocator <TreeNodeRep> PrefixTreePreprocessor::TreeNodeRep::__allocator (4);
 
 
 
@@ -778,7 +761,7 @@ void TreeNodeRep::setup ()
 }
 
 
-void TreeNodeRep::dispose (bool isRoot) 
+inline void TreeNodeRep::dispose (bool isRoot) 
 {
    int cardinality = _code->cardinality ();
    if (_children) {
@@ -788,18 +771,20 @@ void TreeNodeRep::dispose (bool isRoot)
             delete _children [i];
          }
       }
-   }
 
-   delete [] _children;
-   _children = NULL;
+      delete [] _children;
+      _children = NULL;
+   }
 
    //
    // free memory of all SeqPositions
    int n = _positions.size ();
-   for (int i=0 ; i<n ; i++) {
-      _positions [i].dispose (isRoot);
+   if (n > 0) {
+      for (int i=0 ; i<n ; i++) {
+         _positions [i].dispose (isRoot);
+      }
+      _positions.clear ();
    }
-   _positions.clear ();
 }
 
 void TreeNodeRep::addSequencePositions (PositionVector* pos) 

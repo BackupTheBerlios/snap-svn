@@ -45,6 +45,9 @@ public:
    bool empty () const {
       return _set.empty ();
    }
+   void clear () {
+      _set.clear ();
+   }
    int size () const {
       return _set.size ();
    }

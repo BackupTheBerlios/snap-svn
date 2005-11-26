@@ -255,6 +255,7 @@ public:
       :  FeatureFilterLink (next, owner), 
          _dirty (false), 
          _log2Sum (-HUGE_VAL), 
+         _log2InverseSum (-HUGE_VAL), 
          _noFeatures (0)
    {
    }
@@ -262,15 +263,9 @@ public:
    //
    // takes ownership of Assignment & Cluster
    virtual bool add (Feature_var feature) {
-      if (_dirty) {
-         _noFeatures++;
-         _log2Sum = AddLog2 (_log2Sum, feature->log2score ());
-      }
-      else {
-         _noFeatures++;
-         _log2Sum = feature->log2score ();
-         _dirty = true;
-      }
+     _noFeatures++;
+     _log2Sum = AddLog2 (_log2Sum, feature->log2score ());
+     _log2InverseSum = AddLog2 (_log2InverseSum, -feature->log2score ());
 
       return FeatureFilterLink::add (feature);
    }
@@ -288,6 +283,10 @@ public:
       return _log2Sum;
    }
 
+   double log2InverseSumScoresSeen () const {
+      return _log2InverseSum;
+   }
+
    //
    // for each 'best' feature i we perform
    // log2(score (i)) = log2(score(i)) - log2SumScoresSeen ()
@@ -295,13 +294,14 @@ public:
    void normalizeBackgroundScoresLinear () {
       SeedSearcher::FeatureArray& arr = getArray ();
       for (int i=0 ; i < arr.size () ; i++) {
-         arr[i].log2score (arr[i].log2score () - log2SumScoresSeen ());
+         arr[i].log2score (-arr[i].log2score () - log2InverseSumScoresSeen ());
       }
    }
 
 protected:
    bool _dirty;
    double _log2Sum;
+   double _log2InverseSum;
    int _noFeatures;
 };
 

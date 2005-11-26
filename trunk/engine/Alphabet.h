@@ -34,7 +34,10 @@ public:
    }
 
    inline CodedChar code (Char c) const {
-      int result = _code [c];
+     //
+     // keep gcc happy
+     int index = static_cast <int> (c);
+      int result = _code [index];
       debug_mustbe ( (result == notInCode)  || 
                      (result == dunnoCode)  ||
                      ((result>=0) && (result <= _cardinality)));

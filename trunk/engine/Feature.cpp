@@ -121,7 +121,7 @@ void FeatureInvestigator::printSeedScore (
                                  const PositionVector& 
                                  )
 {
-   static const double LOG2_10 = ::log2 (10);
+  static const double LOG2_10 = log2 (static_cast <double> (10));
    double log10_of_score = (feature.log2score ()) / LOG2_10;
 
    //

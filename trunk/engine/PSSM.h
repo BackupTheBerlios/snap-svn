@@ -116,7 +116,10 @@ public:
          for (int i=0; i<myLength ; i++) {
             AlphabetCode::Char c = (*it)->getData(myOffset++);
             AlphabetCode::CodedChar cc = code.code (c);
-            positions [i][cc] += weight;
+	    //
+	    // keep gcc happy
+	    int cc_index = static_cast <int> (cc);
+            positions [i][cc_index] += weight;
          }
       }
 

@@ -3,18 +3,41 @@
 #include "DebugLog.h"
 #include <time.h>
 
+/*
 ChunkAllocator <LeafPreprocessor::LeafNode> 
    LeafPreprocessor::LeafNode::__allocator (4);
+   */
+
+USING_TYPE (LeafPreprocessor, LeafNode);
+USING_TYPE (LeafPreprocessor, Rep);
 
 
-struct LeafPreprocessor::Rep : public SeedHash::Table {
+struct LeafPreprocessor::Rep : public SeedHash::Table <LeafNode> {
    Rep ( int seedLength, int tableSize, const Langauge& langauge)   
-   : SeedHash::Table (tableSize, langauge), _seedLength (seedLength)
+   : SeedHash::Table <LeafNode> (tableSize, langauge), _seedLength (seedLength)
    {
    }
 
-   virtual SeedHash::Cluster* createCluster (const SeedHash::AssgKey& key) {
-      return new LeafPreprocessor::LeafNode (key);
+   virtual LeafNode* createCluster (const SeedHash::AssgKey& key) {
+      return new LeafNode (key);
+   }
+
+   LeafNode& addPosition ( const Str& seedData, AutoPtr <SeqPosition> position) {
+      //
+      //
+      SeedHash::AssgKey key (seedData, _langauge);
+      LeafNode* seed = this->find (key);
+      if (seed == NULL) {
+         //
+         // this is a new seed
+         seed = createCluster (key);
+         this->add (seed);
+      }
+
+      //
+      // add this new position to the seed
+      seed->addPosition (position.release ());
+      return *seed;
    }
 
    int _seedLength;
@@ -48,7 +71,7 @@ void LeafPreprocessor::add2Cluster (NodeCluster& nodes,
    Assignment assgTemplate (assg);
    Rep::Iterator nodeIt (*_rep);
    for (; nodeIt.hasNext () ; nodeIt.next ()) {
-      LeafNode* seed = dynamic_cast <LeafNode*> (nodeIt.get ());
+      LeafNode* seed = nodeIt.get ();
       const Assignment& seedAssg = seed->assignment ();
 
       //
@@ -137,7 +160,7 @@ LeafPreprocessor::Rep* LeafPreprocessor::buildNoNegatives (
       NegativeNodeRemover (const SeqWeightFunction& wf) : _wf (wf) {
       }
 
-      virtual bool call (SeedHash::Cluster* inParm) {
+      virtual bool call (LeafNode* inParm) {
          if (!inParm->hasSequence (_wf)) {
             //
             // this is a totally negative node
@@ -229,8 +252,9 @@ static int buildReverse (
          else {
             Str first = (result < 0)? data : rev_data;
 
-            SeedHash::Cluster& posCluster = 
+            LeafPreprocessor::LeafNode& posCluster = 
                rep->addPosition (first, posPosition);
+
             posCluster.addPosition (negPosition);
          }
       }

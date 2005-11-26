@@ -36,17 +36,14 @@ public:
 
    //
    //
-   class Cluster : public HashLinkEntry <Cluster> {
+   template <class UserCluster>
+   class Cluster : public HashLinkEntry <UserCluster> {
    public:
       typedef AssgKey Key;
 
       inline Cluster (const AssgKey& key) : _key (key) {
          debug_mustbe (_key.assignment ().length () > 0);
          _cluster = new SeqCluster;
-      }
-      virtual ~Cluster () {
-         //
-         // TODO: we are owners of the positions, remove them all
       }
       inline bool fitsKey (const AssgKey& key) {
          return _key.assignment () == key.assignment ();
@@ -61,18 +58,6 @@ public:
       inline static HashValue hash (const AssgKey& inKey) {
          return inKey.hash ();
       }
-
-      //
-      //
-      void addPosition (AutoPtr <SeqPosition> pos) {
-         PosCluster& posCluster = 
-            _cluster->getCreatePositions (pos->sequence ());
-
-         USELESS (bool result = )
-            posCluster.addPosition (pos.release ());
-
-	      USELESS (debug_mustbe (result));
-      }
       bool hasSequence (const SeqWeightFunction& wf) const{
          return _cluster->hasSequence (wf);
       }
@@ -85,27 +70,22 @@ public:
       }
 
    protected:
-      bool _owner;
       AssgKey _key;
       AutoPtr <SeqCluster> _cluster;
    };
 
    //
    //
-   typedef HashTable <Cluster> TableBase;
-   class Table : public TableBase {
+   template <class UserCluster>
+   class Table : public HashTable <UserCluster> {
    public:
-      Table (int tableSize, const Langauge&);
-      virtual ~Table ();
+      typedef HashTable <UserCluster> HashTableBase;
 
-      //
-      //
-      Cluster& addPosition (const Str& seedData, AutoPtr <SeqPosition> position);
-      
-      //
-      //
-      virtual Cluster* createCluster (const AssgKey& key) {
-         return new Cluster (key);
+      Table (int tableSize, const Langauge& langauge) 
+      : HashTableBase (tableSize), _langauge (langauge)
+      {
+      }
+      virtual ~Table () {
       }
 
       //
@@ -127,7 +107,6 @@ public:
       const Langauge& _langauge;
    };
 };
-
 
 
 #endif 

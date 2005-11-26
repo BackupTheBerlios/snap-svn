@@ -37,7 +37,17 @@ static void compareSeedResult (const PrefixTreePreprocessor& tree,
 
 //
 // assignment that lead to a node <--> cluster of sequences in the node
-typedef std::pair <Assignment*, SequenceDB::Cluster*> FeaturePair;
+typedef std::pair <Assignment*, SequenceDB::Cluster*> FeaturePairBase;
+struct FeaturePair : 
+   public FeaturePairBase
+{
+   FeaturePair () {
+   }
+   FeaturePair (Assignment* assg, SequenceDB::Cluster* cluster) 
+   : FeaturePairBase (assg, cluster) {
+   }
+};
+
 class FeatureVector : public Vec <FeaturePair> {
 };
 
@@ -397,7 +407,7 @@ int SeedSearcher::prefixTreeSearch (
       childFeatures.resize (0);
    }
 
-   DLOG << "[Evaluating seeds: " << (time_t) totalTimeEvaluatingSeeds << "seconds] ";
+   DLOG << "[Evaluating seeds: " << (time_t) totalTimeEvaluatingSeeds << " seconds] ";
    return totalSeedsFound;
 }
 
@@ -409,13 +419,15 @@ int SeedSearcher::prefixTreeSearch (
 struct TableSearcher {
    //
    //
-   class Seed : public SeedHash::Cluster {
+   class AbstractSeed : public SeedHash::Cluster <AbstractSeed> {
    public:
-      inline Seed (const Key& key) : Cluster (key) {
-      }
-      virtual ~Seed () {
+      inline AbstractSeed (const Key& key) 
+      : SeedHash::Cluster <AbstractSeed> (key) 
+      {
       }
 
+      virtual ~AbstractSeed () {
+      }
       int removeOverlaps () {
          //
          // get the length of the feature, needed to compute
@@ -435,6 +447,19 @@ struct TableSearcher {
          // that's it, we have removed all overlaps!!!
          return removed;
       }
+      virtual void addPositions (const Preprocessor::Node& node)=0;
+      virtual void addSequences (const Preprocessor::Node& node)=0;
+
+   };
+   class Seed : 
+      public AbstractSeed,
+      public POOL_ALLOCATED(Seed)
+   {
+   public:
+      inline Seed (const Key& key) : AbstractSeed (key) {
+      }
+      virtual ~Seed () {
+      }
 
       //
       //
@@ -448,9 +473,12 @@ struct TableSearcher {
       }
    };
 
-   class SpecializedSeed : public Seed {
+   class SpecializedSeed : 
+      public AbstractSeed,
+      public POOL_ALLOCATED(SpecializedSeed)
+   {
    public:
-      SpecializedSeed (const Key& key) : Seed (key)   {
+      SpecializedSeed (const Key& key) : AbstractSeed (key)   {
          //
          //
          const Assignment& assg  = key.assignment ();
@@ -496,13 +524,14 @@ struct TableSearcher {
 
    //
    //
-   class Table : public SeedHash::Table {
+   typedef SeedHash::Table <AbstractSeed> SeedHashTableBase;
+   class Table : public SeedHashTableBase{
    public:
       Table (  bool totalCount,
                bool specialize,
                int tableSize, 
                const Langauge& langauge)
-      :  SeedHash::Table (tableSize, langauge), 
+      :  SeedHashTableBase (tableSize, langauge), 
          _totalCount (totalCount), _specialize (specialize) {
       }
       //
@@ -513,11 +542,11 @@ struct TableSearcher {
    
          //
          // search for it in the table
-         Seed* cachedSeed = dynamic_cast <Seed*> (this->find (key));
+         AbstractSeed* cachedSeed = this->find (key);
          if (cachedSeed == NULL) {
             //
             // it is a totally new feature
-            cachedSeed = dynamic_cast <Seed*> (createCluster (key));
+            cachedSeed = createCluster (key);
             this->add (cachedSeed);
          }
 
@@ -533,8 +562,11 @@ struct TableSearcher {
          }
       }
 
-      virtual SeedHash::Cluster* createCluster (const SeedHash::AssgKey& key){
-         return _specialize? new SpecializedSeed (key) : new Seed (key);
+      virtual AbstractSeed* createCluster (const SeedHash::AssgKey& key){
+         if (_specialize)
+            return new SpecializedSeed (key);
+         else
+            return new Seed (key);
       }
 
    protected:
@@ -577,7 +609,7 @@ int SeedSearcher::tableSearch (  SearchParameters& params,
 
    //
    // now spit out all the features...
-   TableSearcher::Table::Iterator featureIt (hashTable);
+   TableSearcher::SeedHashTableBase::Iterator featureIt (hashTable);
    for (; featureIt.hasNext () ; featureIt.next ()) {
       TableSearcher::Seed* feature = 
          dynamic_cast <TableSearcher::Seed*> (featureIt.get ());
@@ -608,7 +640,7 @@ int SeedSearcher::tableSearch (  SearchParameters& params,
       Assignment* featureAssg;
       if (params.useSpecialization ()) {
          featureAssg = 
-            dynamic_cast <TableSearcher::SpecializedSeed*> (
+            safe_cast (TableSearcher::SpecializedSeed*, 
                feature)->releaseSpecializtion ();
       }
       else {

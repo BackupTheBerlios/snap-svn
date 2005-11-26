@@ -373,6 +373,11 @@ static void testSeedPerformance (
       }
       else {
          double score = 0;
+         /** 
+         changes made by Yoseph on 18.4.04:
+         to make the linear combination of the exponential socres and not their logs
+         */
+         score = -HUGE_VAL; // Yoseph
          double bestScore = positionScores.top (); 
 /*
       for (int i=0 ; i<MBestPositions ; i++) {
@@ -383,10 +388,12 @@ static void testSeedPerformance (
 */
          int j;
          for (j=0 ; !positionScores.empty () && j<MBestPositions ; j++) {
-            score += positionScores.top ();
+            //score += positionScores.top (); 
+            score = AddLog2(score,positionScores.top ()); // Yoseph
             positionScores.pop ();
          }
-         score = (score / j);
+         //score = (score / j);
+         score -= log2(static_cast<double>(j)); // Yoseph
 
          //
          // we compensate sequence's score by dividing
@@ -399,7 +406,7 @@ static void testSeedPerformance (
                break;
 
             case Parser::_perflencomp_log_:
-               score = (score / log2 (seqlen));
+	      score = (score / log2 (static_cast<double>(seqlen)));
                break;
 
             default:
@@ -408,10 +415,14 @@ static void testSeedPerformance (
          
          //
          // now we print the sequence information
+	 // we transform from log2 internal representation to log10 in the output:
+	 static const double LOG2_10 = 
+	   log2 (static_cast<double> (10));
+	 
          perfWriter << (*seqit)->name () << "\t\t"
                   << (*seqit)->weight () << '\t'
-                  << bestScore << "\t\t"
-                  << score
+                  << bestScore/ LOG2_10 << "\t\t"
+                  << score / LOG2_10
                   << perfWriter.EOL ();
       }
    }
@@ -591,48 +602,41 @@ static void mainRoutine (int argc,
 
 #include "Core/dlmalloc.h"
 
-#if ENV_COMPILER==ENV_MICROSOFT
-#  define SEED_CDECL __cdecl
-#else
-#  define SEED_CDECL
-#endif
-
-
-void* SEED_CDECL operator new (size_t inSize) throw (std::bad_alloc)
+void* operator new (size_t inSize) 
 {
 	void* ptr = dlmalloc (inSize);
 	debug_mustbe (ptr);
 	return ptr;
 }
 
-void* SEED_CDECL operator new (size_t inSize, const std::nothrow_t&) throw ()
+void* operator new (size_t inSize, const std::nothrow_t&) 
 {
 	void* ptr = dlmalloc (inSize);
 	debug_mustbe (ptr);
 	return ptr;
 }
 
-void SEED_CDECL operator delete (void* inPtr) throw ()
+void operator delete (void* inPtr) 
 {
    if (inPtr)
 	   dlfree (inPtr);
 }
 
-void* operator new[] (size_t inSize) throw (std::bad_alloc) 
+void* operator new[] (size_t inSize) 
 {
 	void* ptr = dlmalloc (inSize);
 	debug_mustbe (ptr);
 	return ptr;
 }
 
-void* operator new[] (size_t inSize, const std::nothrow_t& nothrow) throw () 
+void* operator new[] (size_t inSize, const std::nothrow_t& nothrow) 
 {
 	void* ptr = dlmalloc (inSize);
 	debug_mustbe (ptr);
 	return ptr;
 }
 
-void operator delete[] (void* inPtr) throw () 
+void operator delete[] (void* inPtr) 
 {
    if (inPtr)
 	   dlfree (inPtr);

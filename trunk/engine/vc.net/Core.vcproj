@@ -110,9 +110,6 @@
 			Name="Source Files"
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm">
 			<File
-				RelativePath="..\..\seedsearcher\Core\ChunkAllocator.cpp">
-			</File>
-			<File
 				RelativePath="..\Util\ConfReader.cpp">
 			</File>
 			<File
@@ -138,9 +135,6 @@
 				RelativePath="..\..\seedsearcher\Core\Bitset.h">
 			</File>
 			<File
-				RelativePath="..\..\seedsearcher\Core\ChunkAllocator.h">
-			</File>
-			<File
 				RelativePath="..\..\seedsearcher\Core\Compiler.h">
 			</File>
 			<File
@@ -154,6 +148,9 @@
 			</File>
 			<File
 				RelativePath="..\CORE\ImplList.h">
+			</File>
+			<File
+				RelativePath="..\CORE\PoolAllocated.h">
 			</File>
 			<File
 				RelativePath="..\..\seedsearcher\Core\STLHelper.h">

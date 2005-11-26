@@ -37,39 +37,8 @@ SeedHash::AssgKey::AssgKey (const Assignment& assg,
    _hash = defaultHashFunction (hashString.c_str (), hashString.length ());
 }
 
-//
-// Table
 
-SeedHash::Table::Table (int tableSize, 
-                        const Langauge& langauge)
-: TableBase (tableSize), _langauge (langauge)
-{
-}
 
-SeedHash::Table::~Table ()
-{
-   //
-   // TODO: we own the positions, so delete them
-}
-
-SeedHash::Cluster& SeedHash::Table::addPosition (const Str& seedData, 
-                                   AutoPtr <SeqPosition> position) {
-   //
-   //
-   AssgKey key (seedData, _langauge);
-   Cluster* seed = this->find (key);
-   if (seed == NULL) {
-      //
-      // this is a new seed
-      seed = createCluster (key);
-      this->add (seed);
-   }
-
-   //
-   // add this new position to the seed
-   seed->addPosition (position.release ());
-   return *seed;
-}
 
 
 

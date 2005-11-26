@@ -11,9 +11,15 @@ public:
 
    //
    //
-   class LeafNode : public Preprocessor::NodeRep, public SeedHash::Cluster {
+   class LeafNode :  
+      public Preprocessor::NodeRep, 
+      public SeedHash::Cluster <LeafNode>,
+      public POOL_ALLOCATED(LeafNode) 
+   {
    public:
-      LeafNode (const SeedHash::AssgKey& key) : Cluster (key) {
+      LeafNode (const SeedHash::AssgKey& key) 
+      : SeedHash::Cluster <LeafNode> (key) 
+      {
       }
       virtual ~LeafNode () {
       }
@@ -31,18 +37,17 @@ public:
 
       virtual void add2Assignment (Assignment&) const;
 
-#if SEED_CHUNK_ALLOCATION_OPTIMIZATION
-      void* operator new (size_t size) {
-         debug_mustbe (size == sizeof (LeafNode));
-         return __allocator.newT ();
-      }
-      void operator delete(void *p)    {
-         __allocator.deleteT (reinterpret_cast <LeafNode*> (p));
-      }
-#endif
+      //
+      //
+      void addPosition (AutoPtr <SeqPosition> pos) {
+         PosCluster& posCluster = 
+            _cluster->getCreatePositions (pos->sequence ());
 
-   protected:
-      static ChunkAllocator <LeafNode> __allocator;
+         USELESS (bool result = )
+            posCluster.addPosition (pos.release ());
+
+	      USELESS (debug_mustbe (result));
+      }
    };
 
 

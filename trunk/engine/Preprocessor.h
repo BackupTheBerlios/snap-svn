@@ -6,7 +6,6 @@
 #include "Assignment.h"
 
 #include "Core/AutoPtr.h"
-#include "Core/ChunkAllocator.h"
 #include "Core/STLHelper.h"
 
 class Preprocessor {
@@ -16,10 +15,12 @@ public:
 public:
    //
    //
-   struct NodeRep {
+   class NodeRep {
+   protected:
       virtual ~NodeRep () {
       }
 
+   public:
       //
       // check if node has any positions for a particular sequence
       virtual bool hasPositions (SequenceDB::ID) const = 0; 

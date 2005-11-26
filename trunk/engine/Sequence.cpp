@@ -4,9 +4,6 @@
 #include "Persistance/IArchive.h"
 #include "Persistance/STLPersist.h"
 
-ChunkAllocator <SeqPosition> SeqPosition::__allocator (16);
-ChunkAllocator <Sequence> Sequence::__allocator;
-
 
 
 Str SeqPosition::getSeedString (int length, int offset) const {

@@ -3,11 +3,10 @@
 
 #include "Defs.h"
 #include "Core/STLHelper.h"
-#include "Core/ChunkAllocator.h"
 #include "Core/Str.h"
+#include "Core/PoolAllocated.h"
 
-
-class Sequence {
+class Sequence : public POOL_ALLOCATED(Sequence) {
 public:
    typedef int ID;
    typedef StrBuffer Name;
@@ -47,23 +46,12 @@ public:
       return Str (data (strand), startPos, startPos + length);
    }
 
-#if SEED_CHUNK_ALLOCATION_OPTIMIZATION
-   void* operator new (size_t size) {
-      debug_mustbe (size == sizeof (Sequence));
-      return __allocator.newT ();
-   }
-   void operator delete(void *p)    {
-      __allocator.deleteT (reinterpret_cast <Sequence*> (p));
-   }
-#endif
-
 private:
    ID _id;
    StrBuffer _data;
    StrBuffer _reverse;
    Name _name;
    double _weight;
-   static ChunkAllocator <Sequence> __allocator;
 };
 
 
@@ -149,7 +137,7 @@ protected:
 
 
 
-class SeqPosition {
+class SeqPosition : public POOL_ALLOCATED(SeqPosition) {
 public:
    //
    // ctor is called in a loop, so must be very effiecient
@@ -231,21 +219,10 @@ public:
    // also if the length is too large, it is decreased.
    void getModifiedOffsets (int& offset, int& length) const;      
 
-#if SEED_CHUNK_ALLOCATION_OPTIMIZATION
-   void* operator new (size_t size) {
-      debug_mustbe (size == sizeof (SeqPosition));
-      return __allocator.newT ();
-   }
-   void operator delete(void *p)    {
-      __allocator.deleteT (reinterpret_cast <SeqPosition*> (p));
-   }
-#endif
-
 private:
 	Sequence const * _sequence;
 	int _position;
    Strand _strand;
-   static ChunkAllocator <SeqPosition> __allocator;
 };
 
 //
@@ -254,7 +231,10 @@ typedef Vec <Sequence const*> SequenceVector;
 
 //
 // a vector of positions
-class PositionVector : public Vec <SeqPosition const*> {
+class PositionVector : 
+   public Vec <SeqPosition const*>,
+   public POOL_ALLOCATED(PositionVector)
+{
 public:
    PositionVector () {
    }
@@ -262,19 +242,6 @@ public:
    }
    ~PositionVector () {
    }
-
-#     if SEED_CHUNK_ALLOCATION_OPTIMIZATION
-      void* operator new (size_t size) {
-         debug_mustbe (size == sizeof (PositionVector));
-         return __allocator.newT ();
-      }
-      void operator delete(void *p)    {
-         __allocator.deleteT (reinterpret_cast <PositionVector*> (p));
-      }
-#     endif
-
-private:
-   static ChunkAllocator <PositionVector> __allocator;
 };
 
 //

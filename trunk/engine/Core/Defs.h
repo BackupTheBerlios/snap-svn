@@ -239,6 +239,19 @@ inline const T& tmax(const T& a, const T& b) {
 	return  a < b ? b : a;
 }
 
+#if BASE_DEBUG
+	template<class Source, class Target>
+	inline Target safe_cast_(Source inPtr, Target) {
+		Target result = dynamic_cast<Target>(inPtr);
+        debug_mustbe((inPtr==NULL) || ((inPtr!=NULL) && (result!=NULL)));
+		return (Target)result;
+	}
+
+	#define safe_cast(Type, src) (safe_cast_((src), (Type)0))
+#else	
+	#define safe_cast(Type, src) ((Type)(src))
+#endif
+
    
 //
 // optimizations: should use Doug Lee's malloc? 
