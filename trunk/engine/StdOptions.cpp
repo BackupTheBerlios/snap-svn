@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: StdOptions.cpp $
-// Version     : $Revision: 28 $ 
+// Version     : $Revision: 29 $ 
 //               $Author: Aviad $
-//               $Date: 7/09/04 9:44 $ 
+//               $Date: 13/11/04 16:36 $ 
 // Description :
 //    Concrete implmentations for Langauge, ScoreFunction, WeightFunction etc
 //
@@ -98,6 +98,97 @@ const AlphabetCode& ACGTLangauge::getCode (bool cardinalityIncludesN)
    }
 }
 
+static void writeACGTLangaugeCode (unsigned long code, 
+                                   Assignment::Strategy strategy,
+                                   Persistance::TextWriter& writer)
+{
+   char iupac;
+   switch (code) {
+      case ACGTLangauge::ACode:   // A - Adenine 
+         iupac = 'A';
+         break;
+      case ACGTLangauge::CCode:   // C - Cytosine 
+         iupac = 'C';
+         break;
+      case ACGTLangauge::GCode:   // G - Guanine 
+         iupac = 'G';
+         break;
+      case ACGTLangauge::TCode:   // T - Thymine 
+         iupac = 'T';
+         break;
+      case (ACGTLangauge::GCode | ACGTLangauge::ACode): // R [GA] purine 
+         iupac = 'R';
+         break;
+      case (ACGTLangauge::TCode | ACGTLangauge::CCode): // Y [TC] Pyrimidine 
+         iupac = 'Y';
+         break;
+      case (ACGTLangauge::GCode | ACGTLangauge::TCode): // K [GT] Keto 
+         iupac = 'K';
+         break;
+      case (ACGTLangauge::ACode | ACGTLangauge::CCode): // M [AC] Amino 
+         iupac = 'M';
+         break;
+      case (ACGTLangauge::GCode | ACGTLangauge::CCode): // S [GC] ? 
+         iupac = 'S';
+         break;
+      case (ACGTLangauge::ACode | ACGTLangauge::TCode): // W [AT] ? 
+         iupac = 'W';
+         break;
+      case (ACGTLangauge::GCode | ACGTLangauge::TCode | ACGTLangauge::CCode): // B [GTC] ? 
+         iupac = 'B';
+         break;
+      case (ACGTLangauge::GCode | ACGTLangauge::ACode | ACGTLangauge::TCode): // D [GAT] ? 
+         iupac = 'D';
+         break;
+      case (ACGTLangauge::ACode | ACGTLangauge::CCode | ACGTLangauge::TCode): // H [ACT] ? 
+         iupac = 'H';
+         break;
+      case (ACGTLangauge::GCode | ACGTLangauge::CCode | ACGTLangauge::ACode): // V [GCA] ? 
+         iupac = 'V';
+         break;
+      case (ACGTLangauge::GCode | ACGTLangauge::CCode | ACGTLangauge::ACode | ACGTLangauge::TCode): // N [GCTA]  
+         if (strategy == assg_together)
+            iupac = '?';
+         else
+            iupac = '*';
+         break;
+      case (ACGTLangauge::NCode):  {
+            writer << "[N]";
+            return;
+         }
+         break;
+
+      case (ACGTLangauge::NCode | ACGTLangauge::ACode):
+      case (ACGTLangauge::NCode | ACGTLangauge::CCode):
+      case (ACGTLangauge::NCode | ACGTLangauge::GCode):
+      case (ACGTLangauge::NCode | ACGTLangauge::TCode):
+      case (ACGTLangauge::NCode | ACGTLangauge::TCode | ACGTLangauge::ACode):
+      case (ACGTLangauge::NCode | ACGTLangauge::TCode | ACGTLangauge::CCode):
+      case (ACGTLangauge::NCode | ACGTLangauge::TCode | ACGTLangauge::GCode):
+      case (ACGTLangauge::NCode | ACGTLangauge::GCode | ACGTLangauge::ACode):
+      case (ACGTLangauge::NCode | ACGTLangauge::GCode | ACGTLangauge::CCode):
+      case (ACGTLangauge::NCode | ACGTLangauge::CCode | ACGTLangauge::ACode):
+      case (ACGTLangauge::NCode | ACGTLangauge::GCode | ACGTLangauge::CCode | ACGTLangauge::ACode):
+      case (ACGTLangauge::NCode | ACGTLangauge::TCode | ACGTLangauge::CCode | ACGTLangauge::ACode):
+      case (ACGTLangauge::NCode | ACGTLangauge::TCode | ACGTLangauge::GCode | ACGTLangauge::ACode):
+      case (ACGTLangauge::NCode | ACGTLangauge::TCode | ACGTLangauge::GCode | ACGTLangauge::CCode):
+      case (ACGTLangauge::NCode | ACGTLangauge::TCode | ACGTLangauge::GCode | ACGTLangauge::CCode | ACGTLangauge::ACode):   {
+            writer << "[N";
+            writeACGTLangaugeCode (code  - ACGTLangauge::NCode, strategy, writer);
+            writer << ']';
+            return;
+         }
+         break;
+
+      default:
+         debug_mustfail ();
+         iupac = '!';
+         break;
+   };
+
+   writer << iupac;
+}
+
 void ACGTLangauge::write(const Assignment::Position& pos,
                        Persistance::TextWriter& writer) const
 {
@@ -106,65 +197,10 @@ void ACGTLangauge::write(const Assignment::Position& pos,
       writer << "-";
       return;
    }
-
-   char iupac;
    unsigned long code = pos.toULong ();
-   switch (code) {
-      case ACode:   // A - Adenine 
-         iupac = 'A';
-         break;
-      case CCode:   // C - Cytosine 
-         iupac = 'C';
-         break;
-      case GCode:   // G - Guanine 
-         iupac = 'G';
-         break;
-      case TCode:   // T - Thymine 
-         iupac = 'T';
-         break;
-      case (GCode | ACode): // R [GA] purine 
-         iupac = 'R';
-         break;
-      case (TCode | CCode): // Y [TC] Pyrimidine 
-         iupac = 'Y';
-         break;
-      case (GCode | TCode): // K [GT] Keto 
-         iupac = 'K';
-         break;
-      case (ACode | CCode): // M [AC] Amino 
-         iupac = 'M';
-         break;
-      case (GCode | CCode): // S [GC] ? 
-         iupac = 'S';
-         break;
-      case (ACode | TCode): // W [AT] ? 
-         iupac = 'W';
-         break;
-      case (GCode | TCode | CCode): // B [GTC] ? 
-         iupac = 'B';
-         break;
-      case (GCode | ACode | TCode): // D [GAT] ? 
-         iupac = 'D';
-         break;
-      case (ACode | CCode | TCode): // H [ACT] ? 
-         iupac = 'H';
-         break;
-      case (GCode | CCode | ACode): // V [GCA] ? 
-         iupac = 'V';
-         break;
-      case (GCode | CCode | ACode | TCode): // N [GCTA]  
-         if (pos.strategy ()== assg_together)
-            iupac = '?';
-         else
-            iupac = '*';
-         break;
-      default:
-         debug_mustfail ();
-         iupac = '!';
-         break;
-   };
+   writeACGTLangaugeCode (code, pos.strategy (), writer);
 
-   writer << iupac;
+
 }
 
 void ACGTLangauge::complement (const Assignment& in , Assignment& out) const

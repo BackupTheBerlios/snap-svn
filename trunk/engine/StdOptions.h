@@ -4,9 +4,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: StdOptions.h $
-// Version     : $Revision: 28 $ 
+// Version     : $Revision: 29 $ 
 //               $Author: Aviad $
-//               $Date: 13/10/04 3:33 $ 
+//               $Date: 13/11/04 16:36 $ 
 // Description :
 //    Concrete implmentations for Langauge, ScoreFunction, WeightFunction etc
 //
@@ -101,6 +101,7 @@ public:
       CCode = 0x2,
       GCode = 0x4,
       TCode = 0x8,
+      NCode = 0x10, // for N in the seq file
    };
    ACGTLangauge (bool useReverse = true, bool includeN = false) 
    : _includeN (includeN), _useReverse (useReverse) 

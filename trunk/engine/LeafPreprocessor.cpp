@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: LeafPreprocessor.cpp $
-// Version     : $Revision: 20 $ 
+// Version     : $Revision: 22 $ 
 //               $Author: Aviad $
-//               $Date: 4/11/04 17:52 $ 
+//               $Date: 13/11/04 16:35 $ 
 // Description :
 //    Concrete preprocessor class - based on a hash table
 //
@@ -242,22 +242,8 @@ static int buildReverse (
          debug_mustbe (data.length () == seedLength);
          debug_mustbe (rev_data.length () == seedLength);
 
-         int result = langauge.compare (data, rev_data);
-         if (result == 0) {
-            //
-            // this is a palindrome, 
-            // this means that the pos positions are the same as the 
-            // neg positions, so in them only once
-            rep->addPosition (data, posPosition);
-         }
-         else {
-            Str first = (result < 0)? data : rev_data;
-
-            LeafNode& posCluster = 
-               rep->addPosition (first, posPosition);
-
-            posCluster.addPosition (negPosition);
-         }
+         rep->addPosition (data, posPosition);
+         rep->addPosition (data, negPosition);
       }
 
       rep->adjustTableSize ();

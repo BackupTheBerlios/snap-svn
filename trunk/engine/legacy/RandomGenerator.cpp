@@ -14,9 +14,9 @@
 
 
 
-static const unsigned int CONST1 = 4294967291;
+static const unsigned int CONST1 = 4294967291ul;
 
-static const unsigned int CONST2 = 362436069;
+static const unsigned int CONST2 = 362436069ul;
 
 
 

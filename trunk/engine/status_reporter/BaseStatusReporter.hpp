@@ -18,10 +18,12 @@ class BaseStatusReporter {
 protected:
    enum JobStatus {
 		NULL_STATUS             = 0,
-		PROCESSING_ERROR_STATUS = 1, //an error occured while processing
 		PROCESSING_STATUS       = 2,
+		CANCEL_REQUEST_STATUS   = 5,
 		CANCELLED_STATUS        = 6,
-		DONE_STATUS             = 3
+		DONE_STATUS             = 3,
+		PROCESSING_ERROR_STATUS = 7 //an error occured while processing
+		
    };
 
 public:

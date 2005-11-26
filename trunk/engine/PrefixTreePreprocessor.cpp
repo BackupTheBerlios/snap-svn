@@ -1,9 +1,9 @@
 //
 // File        : $RCSfile: $ 
 //               $Workfile: PrefixTreePreprocessor.cpp $
-// Version     : $Revision: 38 $ 
+// Version     : $Revision: 39 $ 
 //               $Author: Aviad $
-//               $Date: 4/11/04 17:53 $ 
+//               $Date: 13/11/04 16:36 $ 
 // Description :
 //    Concrete preprocessor class - based on a prefix tree
 //
@@ -421,26 +421,9 @@ static void buildTree (PositionsBuilder& builder,
 }
 
 
-static TreeRep* build(bool optimize,
-                      const SeqWeightFunction& wf,
-                      const SequenceDB& db,
-                      const Langauge& langauge,
-                      int maxDepth)
+static int buildPositionsNoReverse (TreeNodeRep* root, const SequenceDB& db)
 {
-   time_t start, finish;
-   time (&start);
-
-   DLOG << '#' << DLOG.EOL () 
-        << "# PrefixTreePreprocessor" << DLOG.EOL ();
-   DLOG.flush ();
-
-   const AlphabetCode& code = langauge.code ();
-   int cardinality = code.cardinality ();
-
-   AutoPtr <TreeRep> tree (new TreeRep (&db, code, maxDepth));
-
    int numberOfPositions = 0;
-   TreeNodeRep* root = tree->getRoot ();
    SequenceDB::SequenceIterator it = db.sequenceIterator ();
    for (;it.hasNext () ; it.next ()) {
       //
@@ -465,6 +448,68 @@ static TreeRep* build(bool optimize,
 
       root->addSequencePositions (positions);
    }
+
+   return numberOfPositions;
+}
+
+static int  buildPositionsWithReverse (TreeNodeRep* root, const SequenceDB& db)
+{
+   int numberOfPositions = 0;
+   SequenceDB::SequenceIterator it = db.sequenceIterator ();
+   for (;it.hasNext () ; it.next ()) {
+      //
+      // get the sequence we are current working on
+      Sequence* seq = it.get ();
+      debug_mustbe (seq);
+
+      //
+      // create a vector of positions for this sequence
+      PositionVector* positions = new PositionVector;
+
+      //
+      // stuff every position in this sequence to the root node
+      int length = seq->length ();
+      numberOfPositions += length * 2;
+      for (int i=0 ; i<length ; i++)   {
+         SeqPosition* posPosition = 
+            new SeqPosition (seq, i, _strand_pos_);
+
+         SeqPosition* negPosition = 
+            new SeqPosition (seq, length - i - 1, _strand_neg_);
+
+         positions->push_back (posPosition);
+         positions->push_back (negPosition);
+      }
+
+      root->addSequencePositions (positions);
+   }
+
+   return numberOfPositions;
+}
+
+static TreeRep* build(bool optimize,
+                      const SeqWeightFunction& wf,
+                      const SequenceDB& db,
+                      const Langauge& langauge,
+                      int maxDepth)
+{
+   time_t start, finish;
+   time (&start);
+
+   DLOG << '#' << DLOG.EOL () 
+        << "# PrefixTreePreprocessor" << DLOG.EOL ();
+   DLOG.flush ();
+
+   const AlphabetCode& code = langauge.code ();
+   int cardinality = code.cardinality ();
+
+   int numberOfPositions;
+   AutoPtr <TreeRep> tree (new TreeRep (&db, code, maxDepth));
+   TreeNodeRep* root = tree->getRoot ();
+   if (langauge.supportComplement ())
+      numberOfPositions = buildPositionsWithReverse(root, db);
+   else
+      numberOfPositions = buildPositionsNoReverse(root, db);
 
    //
    // now the root node has all the positions in all sequences.
@@ -826,7 +871,8 @@ void TreeNodeRep::removeChild (int index)
    debug_mustbe (index < cardinality);
    );
 
-   delete _children [index];
+   //delete _children [index];
+   _host->destroyNode (_children [index]);
    _children [index] = NULL;
 }
 
