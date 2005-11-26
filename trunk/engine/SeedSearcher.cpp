@@ -16,47 +16,6 @@ using namespace std;
 
 
 //
-// Feature
-Feature::Feature () 
-:  _assg (NULL), _cluster (NULL), _projection (0), 
-   _params (0), _score (0) {
-}
-
-Feature::Feature (Assignment* assg, 
-         SequenceDB::Cluster* cluster,
-         const Assignment* projection,
-         ScoreParameters* params,
-         double score)
-:  _assg(assg), _complement (NULL), _projection (projection),
-   _params (params), _cluster (cluster), _score (score) 
-{
-}
-
-void Feature::dispose () {
-   debug_only (
-      //
-      // guard against repetitive calls to delete
-      debug_mustbe (_score != 0xBAADF00D);
-      _score = 0xBAADF00D;
-      debug_mustbe (_score == 0xBAADF00D);
-   );
-
-   delete _assg;     _assg = NULL;
-   delete _cluster;  _cluster = NULL;
-   delete _complement;  _complement = NULL;
-   if (_params) {
-      _params->dispose ();
-      _params = NULL;
-   }
-}
-
-
-
-
-
-
-
-//
 // debug: cross-reference tree-search model with prefix-tree-walk model (safer)
 #define SEED_TREE_SEARCH_DEBUG 0
 
@@ -694,6 +653,7 @@ static void compareSeedResult (const PrefixTreePreprocessor& tree,
 }
 
 #endif
+
 
 
 

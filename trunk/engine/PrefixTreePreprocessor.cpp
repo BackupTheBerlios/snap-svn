@@ -28,8 +28,7 @@ ChunkAllocator <PositionVector> PositionVector::__allocator (16);
 
 
 
-class PrefixTreePreprocessor::TreeNodeRep : public Preprocessor::NodeRep,
-                                            public Persistance::Object 
+class PrefixTreePreprocessor::TreeNodeRep : public Preprocessor::NodeRep
 {
    //
    // tree-building interface
@@ -56,9 +55,6 @@ public:
    void removeChild (int index);
    TreeNodeRep* getCreateChild (int index, bool& wasCreated);
    SeqPositions getSeqPositions (SequenceDB::ID id) const;
-
-   void serialize (Persistance::IArchive& in);
-   void serialize (Persistance::OArchive& out);
 
 #if SEED_CHUNK_ALLOCATION_OPTIMIZATION
    void* operator new (size_t size) {
@@ -144,25 +140,17 @@ ChunkAllocator <TreeNodeRep> PrefixTreePreprocessor::TreeNodeRep::__allocator (4
  * TreeRep
  *****************************/
 
-class PrefixTreePreprocessor::TreeRep : public Persistance::Object{
+class PrefixTreePreprocessor::TreeRep {
 public:
    TreeRep (const SequenceDB* inDb, TreeNodeRep* inRoot, int inDepth)
       : _depth (inDepth), _root (inRoot), _db (inDb)
    {
    }
 
-   //
-   // used for serialization
-   TreeRep () {
-   }
-
    ~TreeRep () {
       _root->dispose (true);
       delete _root;
    }
-
-   void serialize (Persistance::IArchive& in);
-   void serialize (Persistance::OArchive& out);
 
    int _depth;
    TreeNodeRep* _root;
@@ -1038,103 +1026,6 @@ PositionIterator PrefixTreePreprocessor::TreeNode::
 
 
 
-
-
-//
-// Serialization
-//
-#include "Persistance/STLPersist.h"
-using namespace Persistance;
-
-
-void PrefixTreePreprocessor::TreeRep::serialize (Persistance::OArchive& out)
-{
-   out.registerObject (_db, false);
-   out << _depth;
-   out.registerObject (_root, true);
-}
-
-
-void PrefixTreePreprocessor::TreeRep::serialize (Persistance::IArchive& in)
-{
-   in.registerObject (const_cast <SequenceDB*&> (_db));
-   in >> _depth;
-   in.registerObject (_root);
-}
-
-
-
-
-
-void PrefixTreePreprocessor::TreeNodeRep::serialize (Persistance::OArchive& out)
-{
-   //
-   // TODO: the alphabet code needs to be restored on load
-   int cardinality = _code->cardinality ();
-   out << cardinality;
- 
-   out.setContext (_parent);
-   out << OSTL <SeqPositionVector> (_positions);
-
-   for (int i=0 ; i<cardinality ; i++)
-      out.registerObject (_children [i], true);
-
-   out.registerObject (_parent, false);
-}
-
-void PrefixTreePreprocessor::TreeNodeRep::serialize (Persistance::IArchive& in)
-{
-   // in >> _cardinality; 
-   int cardinality;
-   in >> cardinality; 
-
-   in >> ISTL <SeqPositionVector> (_positions);
-
-   _children = new TreeNodeRep* [cardinality];
-   for (int i=0 ; i<cardinality ; i++)
-      in.registerObject (_children [i]);
-
-   in.registerObject (_parent);
-}
-
-
-
-void PrefixTreePreprocessor::SeqPositions::serialize (Persistance::OArchive& out)
-{
-   bool isRoot = out.getContext () == NULL;
-
-   if (isRoot) 
-      out << OSTL <PositionVector, OInstance> (*_positions);
-   else 
-      out << OSTL <PositionVector, OLink> (*_positions);
-}
-
-void PrefixTreePreprocessor::SeqPositions::serialize (Persistance::IArchive& in)
-{
-   _positions = new PositionVector;
-   in >> ISTLReg <PositionVector> (*_positions);
-}
-
-void PrefixTreePreprocessor::serialize (Persistance::IArchive& in)
-{
-   in.readObject (_rep);
-}
-void PrefixTreePreprocessor::serialize (Persistance::OArchive& out)
-{
-   out.writeObject (_rep);
-}
-
-void PrefixTreePreprocessor::createFactories (TFactoryList& factories)
-{
-   new TFactory <TreeRep> (&factories);
-   new TFactory <TreeNodeRep> (&factories);
-}
-
-
-
-
-
-
 /********************
  * NodeCluster
  ********************/
@@ -1213,6 +1104,7 @@ void PrefixTreePreprocessor::add2Cluster (NodeCluster& cluster,
                               path);
    }
 }
+
 
 
 

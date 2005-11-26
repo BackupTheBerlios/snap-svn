@@ -367,8 +367,23 @@ StrBuffer& StrBuffer::append(const Str& in) {
 	return *this;
 }
 
+StrBuffer& StrBuffer::append(char in, int repetitions) {
+   if (repetitions > 0) {
+	   char buffer [1024];
+      memset (buffer, in, tmin <size_t> (sizeof (buffer), repetitions));
+      for (; repetitions > 0 ; repetitions -= sizeof(buffer)) {
+         //
+         //
+         int current = tmin <size_t> (sizeof (buffer), repetitions);
+         doAppend (buffer, current);
+      }
+   }
+
+   return *this;
+}
+
 StrBuffer& StrBuffer::append(char in) {
-	doAppend(&in, 1);
+   doAppend(&in, 1);
 	return *this;
 }
 
@@ -571,6 +586,7 @@ The inheritance "StrBuffer : public Str" is coincidental and should be treated a
 I will try to get rid of it in the future.
 
 */
+
 
 
 

@@ -82,7 +82,6 @@ public:
    Str substring(Index inStart, Index inEnd) const;
    // Return part of me between the indices 'inStart' and 'inEnd'
    // Both 'inStart' and 'inEnd' have to be valid
-   Str substring(Index inStart, Size inSize, Index) const;
    Str substring(Index inStart) const {
       return substring(inStart, mLength);
    }
@@ -162,6 +161,7 @@ public:
 //   void readExternal(DataInput& input);
    
    StrBuffer& append(char in);
+   StrBuffer& append(char in, int repetitions);
    StrBuffer& append(const Str& in);
    StrBuffer& operator+=(const Str& in) {
       return append(in);
@@ -238,6 +238,7 @@ inline bool operator >= (const Str& a, const Str& b) {
 }
 
 #endif
+
 
 
 

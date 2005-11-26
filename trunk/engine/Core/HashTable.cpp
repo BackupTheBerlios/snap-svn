@@ -22,3 +22,4 @@ HashValue defaultHashFunction(const char* inStr, size_t inSize)
 	return result;
 }
 
+

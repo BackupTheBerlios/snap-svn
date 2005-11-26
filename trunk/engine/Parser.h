@@ -2,6 +2,7 @@
 #define _SeedSearcher_Parser_h
 
 #include "Defs.h"
+#include "Persistance/TextWriter.h"
 
 class Parser {
 public:
@@ -10,6 +11,8 @@ public:
    //
    void parse (int argc, char* argv[]);
    static void usage (const char*);
+
+   void logParams (Persistance::TextWriter&) const;
 
    //
    //
@@ -26,7 +29,8 @@ public:
    // no. of wildcards in projection
    int __proj_d;
    //
-   // specialize projection (optimization)
+   // specialize projection 
+   // (expret optimization, may lead to incorrect results)
    bool __proj_spec;
    //
    // seed for random projections 
@@ -47,11 +51,9 @@ public:
    // type of preprocessor
    PrepType __prep;
    //
-   // save the preprocessor data in file
-   bool __prep_save;
-   //
-   // load the preprocessor data from file
-   bool __prep_load;
+   // remove totaly negative features
+   // (expert feature, may lead to incorrect results)
+   bool __prep_noneg;
    //
    // type of counting mechanism: gene-count / total count
    CountType __count;
@@ -95,3 +97,4 @@ public:
 };
 
 #endif
+

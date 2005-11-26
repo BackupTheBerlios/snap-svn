@@ -183,3 +183,4 @@ double const * Multinomial::getParams(int & n ) const { n=_n;return _PR;}
 #endif // _SeedSearcher_PSSM_h
 
 
+

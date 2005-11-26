@@ -9,14 +9,29 @@
 #include "ExtraMath.h"
 
 #include "Persistance/TextWriter.h"
+#include "Core/Str.h"
 
 USING_TYPE (Persistance, TextWriter);
 
 FeatureInvestigator::FeatureInvestigator (const Parameters& in, 
                                           int outputLength)
-:  _outputLength (outputLength), _parameters (in), 
-   _allignment (outputLength, '-')
+  :   _outputLength (outputLength),
+      _allignment (outputLength, '-'),
+      _parameters (in)
 {
+}
+
+FeatureInvestigator::FeatureInvestigator (const Parameters& in, 
+                                          int outputLength,
+                                          int numSeeds)
+:  _outputLength (outputLength),
+   _allignment (outputLength, '-'),
+   _parameters (in), 
+   _seedsSearched (numSeeds)
+{
+   if (_seedsSearched > 0) {
+      log10_seedsSearched = ::log10 (_seedsSearched);
+   }
 }
 
 inline static int getMotifLeftOffset (int motifLen, int seedLen)
@@ -64,53 +79,19 @@ void FeatureInvestigator::printMotifPosition (
                      Feature& feature, 
                      const SeqPosition& position)
 {
-   //
-   // write the motif: LeftPadding Seed RightPadding
-   
-   //
-   // left padding
-   const int leftPaddingLength = 
-      getMotifLeftOffset (_outputLength, feature.assignment ().length ());
+   int motifLength = feature.assignment ().length ();
+   StrBuffer buf;
+   int middleSection = 
+      position.getSeedString (
+                           buf, 
+                           motifLength,
+                           _outputLength
+                           );
 
-   if (leftPaddingLength > 0) {
-      Str leftPad = 
-	   position.getDataString (-leftPaddingLength, leftPaddingLength);
-      writer.write ( _allignment.c_str (), 
-                     leftPaddingLength - leftPad.length ());
-
-      writer.write (leftPad);
-   }
-   
-   //
-   // separate left padding from seed
-   writer << ' ';
-   
-   //
-   // write the actual seed
-   const int seedLength = 
-     tmin (_outputLength - 2 * leftPaddingLength, feature.assignment ().length ());
-
-   Str motif = position.getSeedString (seedLength);
-   writer << motif;
-
-   //
-   // separate right padding from seed
-   writer << ' ';
-
-   //
-   // right padding
-   const int rightPaddingPosition =
-     _outputLength - seedLength - leftPaddingLength;
-   const int rightPaddingLength =  rightPaddingPosition;
-   if (rightPaddingLength > 0) {
-      Str rightPad = 
-	      position.getDataString (rightPaddingPosition, rightPaddingLength);
-
-      writer.write (rightPad);
-      writer.write ( _allignment.c_str (), 
-		               rightPaddingLength - rightPad.length ());
-   }
-  
+   writer << buf.substring (0, middleSection) << ' '
+          << buf.substring (middleSection, motifLength) << ' '
+          << buf.substring (middleSection + motifLength);
+ 
    //
    // write seq id and name
    writer << '\t' << position.sequence ()->id () 
@@ -140,10 +121,20 @@ void FeatureInvestigator::printSeedScore (
                                  const PositionVector& 
                                  )
 {
-   static const double Log_2_10 = ::log2 (10);
-   double log_10_of_score = (feature.score ()) / Log_2_10;
-   
-   writer << (- log_10_of_score);
+   static const double LOG2_10 = ::log2 (10);
+   double log10_of_score = (feature.score ()) / LOG2_10;
+
+   //
+   // print bonf correction
+   if (_seedsSearched > 0) {
+      //
+      // log10 (score * K) = log10 (score) + log10 (K)
+      double bonfScore = log10_of_score + log10_seedsSearched;
+      writer   << (- bonfScore)
+               << '\t';
+   }
+  
+   writer << (- log10_of_score);
 }
 
 void FeatureInvestigator::printSeed (Persistance::TextWriter& writer, 
@@ -213,4 +204,43 @@ void FeatureInvestigator::printPSSM (  Persistance::TextWriter& writer,
    }
 
    writer.flush ();
+}
+
+
+
+
+//
+// Feature
+Feature::Feature () 
+  :  _assg (NULL), _projection (0), 
+   _params (0), _cluster (NULL), _score (0) 
+{
+}
+
+Feature::Feature (Assignment* assg, 
+         SequenceDB::Cluster* cluster,
+         const Assignment* projection,
+         ScoreParameters* params,
+         double score)
+:  _assg(assg), _complement (NULL), _projection (projection),
+   _params (params), _cluster (cluster), _score (score) 
+{
+}
+
+void Feature::dispose () {
+   debug_only (
+      //
+      // guard against repetitive calls to delete
+      debug_mustbe (_score != 0xBAADF00D);
+      _score = 0xBAADF00D;
+      debug_mustbe (_score == 0xBAADF00D);
+   );
+
+   delete _assg;     _assg = NULL;
+   delete _cluster;  _cluster = NULL;
+   delete _complement;  _complement = NULL;
+   if (_params) {
+      _params->dispose ();
+      _params = NULL;
+   }
 }

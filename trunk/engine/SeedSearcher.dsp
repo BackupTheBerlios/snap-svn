@@ -147,6 +147,10 @@ SOURCE=.\Feature.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\HyperGeoCache.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\HyperGeoScore.cpp
 
 !IF  "$(CFG)" == "SeedSearcher - Win32 Release"
@@ -340,10 +344,6 @@ SOURCE=.\Defs.h
 # Begin Source File
 
 SOURCE=.\Feature.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\HyperGeoCache.cpp
 # End Source File
 # Begin Source File
 

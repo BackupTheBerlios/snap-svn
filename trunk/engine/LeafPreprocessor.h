@@ -55,7 +55,7 @@ public:
                      bool useReverse      ,
                      int seedLength       ,
                      const SequenceDB&    , 
-                     Langauge&    );
+                     const Langauge&      );
 
    //
    // includes negative-node-removal optimization
@@ -63,7 +63,7 @@ public:
                      bool useReverse      ,
                      int seedLength       ,
                      const SequenceDB&    , 
-                     Langauge&    ,
+                     const Langauge&      ,
                      const SeqWeightFunction&);
 
 	//
@@ -99,5 +99,6 @@ protected:
 };
 
 #endif
+
 
 

@@ -284,7 +284,7 @@ bool KBestFeatures::checkSimilarity (int offset,
          return false;
       }
    }
-
+#if 0
    debug_only (
       DLOG << "Assignments are redundant (offset " 
            << offset 
@@ -294,6 +294,7 @@ bool KBestFeatures::checkSimilarity (int offset,
            << Format (b)
            << DLOG.EOL ();
       )
+#endif
 
    //
    // they have a common base assignment, so they are similar
@@ -536,6 +537,7 @@ int StatFix::bonferroni (SeedSearcher::BestFeatures& features, int N, double P)
    debug_mustfail ();
    return 0;
 }
+
 
 
 

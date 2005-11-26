@@ -6,8 +6,6 @@
 #include "Alphabet.h"
 #include "Sequence.h"
 #include "Cluster.h"
-#include "Persistance/Object.h"
-
 
 #include <string>
 #include <vector>
@@ -18,7 +16,7 @@
 
 
 
-class SequenceDB : public Persistance::Object {
+class SequenceDB  {
 public:
    typedef Sequence::ID ID;
    typedef Sequence::Name Name;
@@ -68,14 +66,6 @@ public:
 
    friend class TextFileStorage::Rep;
 
-   void serialize (Persistance::IArchive& in);
-   void serialize (Persistance::OArchive& out);
-
-   //
-   // used for serialization
-   SequenceDB () :_code (AlphabetCode::emptyCode (), 0) {
-   }
-
 private:
    typedef std::map <Name, ID> Name2ID;
    typedef std::vector <Name> ID2Name;
@@ -86,6 +76,7 @@ private:
 };
 
 #endif // _SeedSearcher_SequenceDB_h
+
 
 
 

@@ -184,3 +184,4 @@ tMultinomial::MAP() const
 
 
 
+

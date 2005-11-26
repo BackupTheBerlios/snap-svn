@@ -1,6 +1,6 @@
 #include "Parser.h"
-
 #include "Core/Str.h"
+
 
 #if ENV_COMPILER==ENV_MICROSOFT
 #  include "Legacy/GetOpt.h"
@@ -10,13 +10,14 @@
 
 #include <time.h>
 #include <iostream>
+#include <math.h>
 
 using namespace std;
 
 
 struct MyOptions {
    char* name;
-   char* desc;
+   char* desc [8];
    char* def;
    int has_arg;
 };
@@ -38,15 +39,17 @@ Parser::Parser ()
    __proj_e = false;
    __proj_n = 3;
    __proj_d = 4;
-   __proj_spec = true;
-   __proj_i; // need to be initialized in main
+   __proj_spec = false;
+   USELESS (
+    __proj_i; // need to be initialized in main
+   );
    __seed_n = 5;
    __seed_l = 9;
    __seed_r = 2;
    __seed_o = 20;
    __prep = _prep_leaf_;
-   __prep_save = false;
-   __prep_load = false;
+   __prep_noneg = false;
+
    __count = _count_gene_;
    __score_partial = false;
    __count_reverse = false;
@@ -74,8 +77,7 @@ enum {
    __SEED_R,
    __SEED_O,
    __PREP,
-   __PREP_SAVE,
-   __PREP_LOAD,
+   __PREP_NONEG,
    __COUNT,
    __COUNT_REVERSE,
    __SCORE_PARTIAL,
@@ -91,153 +93,218 @@ enum {
    __SEARCH_TYPE
 };
 
+char* puk [] =      {"[on | off] use exhaustive random projections", 
+      NULL
+};
+
+MyOptions kuku = 
+   { "Sproj-e", 
+     {"[on | off] use exhaustive random projections", 
+      NULL
+     },
+     "off", 
+     optional_argument
+   };
+
 static MyOptions my_options [] = { 
-   { "proj-e", 
-     "[on | off] use exhaustive random projections", 
+   { "Sproj-e", 
+     {"[on | off] use exhaustive random projections", 
+      NULL
+     },
      "off", 
      optional_argument
    },
 
-   {  "proj-n",   
-      "<number> of random projections",
+   {  "Sproj-n",   
+      {"<number> of random projections",
+       NULL
+      },
       "3",
       required_argument
    },
 
-   {  "proj-d", 
-      "<number> of wildcards (projection distance)",
+   {  "Sproj-d", 
+      {"<number> of wildcards (projection distance)",
+       NULL
+      },
       "4",
       required_argument
    },
 
-   {  "proj-spec",
-      "[on | off] use projection-specialization optimization",
-      "on",
+   {  "Sproj-spec",
+      {"[on | off] use projection-specialization",
+       "(experts use only)",
+       NULL
+      },
+      "off",
       optional_argument
    },
 
-   {  "proj-i",
-      "<seed-number> for random projection generator",   
+   {  "Sproj-i",
+      {"<seed-number> for random projection generator",   
+       NULL
+      },
       "time",
       required_argument
    },
 
-   {  "seed-n",
-      "<number> of seeds to output",
+   {  "Sseed-n",
+      {"<number> of seeds to output",
+       NULL
+      },
       "5",
       required_argument
    },
 
-   {  "seed-l",
-      "<length> of seeds to search",
+   {  "Sseed-l",
+      {"<length> of seeds to search",
+       NULL
+      },
       "9",
       required_argument
    },
 
-   {  "seed-r",
-      "<offset> to check for redundancy in seeds",
+   {  "Sseed-r",
+      {"<offset> to check for redundancy in seeds",
+       NULL,
+      },
       "2",
       required_argument
    },
 
-   {  "seed-o",
-      "<length> of seeds to output",
+   {  "Sseed-o",
+      {"<length> of seeds to output",
+       NULL
+      },
       "20",
       required_argument
    },
 
-   {  "prep",
-      "<tree | leaf> type of preprocessor",
+   {  "Sprep",
+      {"<tree | leaf> type of preprocessor",
+       NULL
+      },
       "leaf",
       required_argument
    },
 
-   {  "prep-save",
-      "save preprocessed data to disk",
+   {  "Sprep-noneg",
+      {"[on | off] removes features with no positive positions",
+       "(experts use only)",
+       NULL
+      },
       "off",
-      no_argument
+      optional_argument
    },
 
-   {  "prep-load",
-      "load preprocessed data from disk",
-      "off",
-      no_argument
-   },
-
-   {  "count",
-      "<gene | total> counting mechanism", 
+   {  "Scount",
+      {"<gene | total> counting mechanism", 
+       NULL
+      },
       "gene",
       required_argument
    },
 
-   {  "count-reverse",
-      "[on | off] use reverse strand",
+   {  "Scount-reverse",
+      {"[on | off] use reverse strand",
+       "(enables the reverse-feature-redundancy removal.",
+       " but complete the feature is currently", 
+       " available only on leaf preprocessor)",
+       NULL
+      },
       "off",
       optional_argument
    },
 
-   {  "score-partial",
-      "[on | off] use partial counts for scores",
+   {  "Sscore-partial",
+      {"[on | off] use partial counts for scores",
+       NULL,
+      },
       "off",
       optional_argument
    },
 
-   {  "score-fdr",
-      "[on | off] apply FDR statistical fix",
+   {  "Sscore-fdr",
+      {"[on | off] apply FDR statistical fix",
+       NULL,
+      },
       "off",
       optional_argument
    },
 
-   {  "score-bonf",
-      "[on | off] apply Bonferroni statistical fix",
+   {  "Sscore-bonf",
+      {"[on | off] apply Bonferroni statistical fix",
+       NULL
+      },
       "on",
       optional_argument
    },
 
-   {  "score-min",
-      "<min-score> for seed",
+   {  "Sscore-min",
+      {"<min-score> for seed",
+       NULL
+      },
       "0.5",
       required_argument
    },
 
-   {  "score-min-seq",
-      "<min-positive> sequences for seed",
+   {  "Sscore-min-seq",
+      {"<min-positive> sequences for seed",
+       NULL
+      },
       "1",
       required_argument
    },
 
-   {  "score-min-seq-per",
-      "<min-positive> percent of sequences for seed",
+   {  "Sscore-min-seq-per",
+      {"<min-positive> percent of sequences for seed",
+       NULL
+      },
       "10",
       required_argument
    },
 
-   {  "weight-t",
-      "<threshold> for positive sequences",
+   {  "Sweight-t",
+      {"<threshold> for positive sequences",
+       NULL
+      },
       "0.5",
       required_argument
    },
 
-   {  "weight-interval",
-      "<low> all sequences in the interval [low, threshold] are positives",
+   {  "Sweight-interval",
+      {"<low> defines the interval weight function",
+       "all sequences in the interval [low, threshold],"
+       "are positives",
+       NULL
+      },
       "off",
       required_argument
    },
 
-   {  "weight-border",
-      "<low> all below are negative, all above threshold are positives",
+   {  "Sweight-border",
+      {"<low> defines the border weight function",
+       "all below the threshold are negative", 
+       "all above the threshold are positives",
+       NULL
+      },
       "off",
       required_argument
    },
       
-   {  "weight-invert",
-      "[on | off] weight function inversion",
+   {  "Sweight-invert",
+      {"[on | off] weight function inversion",
+       NULL
+      },
       "off",
       optional_argument
    },
 
-   {  "search-t",
-      "<default, table, tree> type of search (tree-search works only with tree-prep",
+   {  "Ssearch-t",
+      {"<default, table, tree> type of search",
+       "(tree-search works only with tree-Preprocessor)",
+       NULL
+      },
       "default",
       required_argument
    },
@@ -262,13 +329,23 @@ void Parser::usage (const char* error)
    cout << endl;
    cout << endl;
 
-   cerr << "Usage: seedSearch [options] <SeqFile> <RegFile> <output stub> " << endl;
+   cerr << "Usage: seedSearch [options] <SeqFile> <RegFile> <output stub> " 
+	<< endl;
    cerr << "  " << endl;
 
    for (int i=0 ; i<numberOfOptions ; i++) {
-      cout << my_options [i].name << "\t - "
-                << my_options [i].desc 
-                << " {" << my_options [i].def << "}" << endl;
+     cout << my_options [i].name << "\t - "
+	  << my_options [i].desc [0] 
+	  << " {" 
+	  << my_options [i].def 
+	  << "}" << endl;
+     
+     int j=1;
+     while (my_options [i].desc [j] != NULL) {
+       cout << "\t\t   "
+	    << my_options [i].desc [j] << endl; 
+       j++;
+     }
    }
 
    cout << endl;
@@ -371,12 +448,8 @@ void Parser::parse (int argc, char* argv[])
          break;
       }
 
-      case __PREP_SAVE:
-         __prep_save = getOptBoolean (optarg);
-         break;
-
-      case __PREP_LOAD:
-         __prep_load = getOptBoolean (optarg);
+      case __PREP_NONEG:
+         __prep_noneg = getOptBoolean (optarg);
          break;
 
       case __COUNT: {
@@ -484,3 +557,49 @@ void Parser::parse (int argc, char* argv[])
 }
 
 
+void Parser::logParams (Persistance::TextWriter& out) const
+{
+   out << "Seed length: " << __seed_l << out.EOL ();
+   out << "No of Random Positions (dist): " << __proj_d << out.EOL ();
+
+   out << "Preprocessor Type: " << (__prep == _prep_leaf_? "Table" : "Tree") << out.EOL ();
+   out << "Count Type: " << (__count == _count_total_? "Total" : "Gene") << out.EOL ();
+   out << "Search Type: " << (__searchType == _search_table_? "Table" : "Tree") << out.EOL ();
+   out << "Use reverse: " << __count_reverse << out.EOL ();
+   out << "Partial count: " << __score_partial << out.EOL ();
+   out << "Projection Specialization (expert): " << __proj_spec << out.EOL ();
+   out << "Remove negatives (expert): " << __prep_noneg << out.EOL ();
+
+   out << "No of Random Projections: " << __proj_n << out.EOL ();
+   out << "Use all possible projections: " << __proj_e << out.EOL ();
+
+   out << "PSSM length: " << __seed_o << out.EOL ();
+   out << "No of PSSMs: " << __seed_n << out.EOL ();
+
+   out << "Threshold for pos/neg cluster assignment: " << __weight_t << out.EOL ();
+   out << "Weight Function Type: ";
+   switch (__weightType) {
+      case _weight_simple_:
+         out << "Simple" << out.EOL ();
+         break;
+
+      case _weight_interval_:
+         out << "Interval, low threshold = " << __weight_lowt << out.EOL ();
+         break;
+
+      case _weight_border_:
+         out << "Border, low threshold = " << __weight_lowt << out.EOL ();
+         break;
+   };
+   out << "Weight Function invert: " << (__weight_invert? "on" : "off") << out.EOL ();
+   out << "Maximum offset to check for seed redundancy: " << __seed_r << out.EOL ();
+
+   out << "Minimum positive sequences a Seed must contain: " << __score_min_seq << out.EOL ();
+   out << "Minimum positive sequences a Seed must contain: " << __score_min_seq_per << '%' << out.EOL ();
+   out << "Minimum score for seed: -log10 (" << __score_min << ") = " << -log10 (__score_min) << out.EOL ();
+
+   out << "Use Bonferroni statistical fix: " << __score_bonf << out.EOL ();
+   out << "Use FDR statistical fix: " << __score_fdr << out.EOL ();
+   out << "Randomization seed: " << __proj_i << out.EOL ();
+   out.flush ();
+}

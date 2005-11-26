@@ -48,6 +48,11 @@ public:
       clear ();
    }
    void clear () {
+     if (_currentChunk == -1) {
+       //
+       // not used, nothing to do or print
+       return;
+     }
       printf ("Clearing %d chunks for %s... ", _currentChunk + 1, typeid (T).name ());
       for (int i=0 ; i<= _currentChunk ; i++) {
          delete _chunks [i];
@@ -61,6 +66,8 @@ public:
       int result = dlmalloc_trim (0);
       printf (result? "[DLMalloc released system memory]\n" : 
 	      "[DLMalloc did not release system memory]\n");
+#else
+      printf ("\n");
 #endif
    }
 
@@ -127,6 +134,7 @@ private:
 };
 
 #endif // _SeedSearcher_Core_ChunkAllocator_h
+
 
 
 

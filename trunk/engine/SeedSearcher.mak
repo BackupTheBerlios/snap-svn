@@ -59,6 +59,8 @@ CLEAN :
 	-@erase "$(INTDIR)\Cluster.sbr"
 	-@erase "$(INTDIR)\DebugLog.obj"
 	-@erase "$(INTDIR)\DebugLog.sbr"
+	-@erase "$(INTDIR)\Feature.obj"
+	-@erase "$(INTDIR)\Feature.sbr"
 	-@erase "$(INTDIR)\getopt.obj"
 	-@erase "$(INTDIR)\getopt.sbr"
 	-@erase "$(INTDIR)\HyperGeoCache.obj"
@@ -71,10 +73,10 @@ CLEAN :
 	-@erase "$(INTDIR)\main.sbr"
 	-@erase "$(INTDIR)\Multinomial.obj"
 	-@erase "$(INTDIR)\Multinomial.sbr"
+	-@erase "$(INTDIR)\Parser.obj"
+	-@erase "$(INTDIR)\Parser.sbr"
 	-@erase "$(INTDIR)\PrefixTreePreprocessor.obj"
 	-@erase "$(INTDIR)\PrefixTreePreprocessor.sbr"
-	-@erase "$(INTDIR)\PrefixTreeWalker.obj"
-	-@erase "$(INTDIR)\PrefixTreeWalker.sbr"
 	-@erase "$(INTDIR)\Preprocessor.obj"
 	-@erase "$(INTDIR)\Preprocessor.sbr"
 	-@erase "$(INTDIR)\PSSM.OBJ"
@@ -87,6 +89,8 @@ CLEAN :
 	-@erase "$(INTDIR)\SeedHash.sbr"
 	-@erase "$(INTDIR)\SeedSearcher.obj"
 	-@erase "$(INTDIR)\SeedSearcher.sbr"
+	-@erase "$(INTDIR)\SeedSearcherMain.obj"
+	-@erase "$(INTDIR)\SeedSearcherMain.sbr"
 	-@erase "$(INTDIR)\Sequence.obj"
 	-@erase "$(INTDIR)\Sequence.sbr"
 	-@erase "$(INTDIR)\SequenceDB.obj"
@@ -110,23 +114,25 @@ BSC32_SBRS= \
 	"$(INTDIR)\Assignment.sbr" \
 	"$(INTDIR)\Cluster.sbr" \
 	"$(INTDIR)\DebugLog.sbr" \
+	"$(INTDIR)\Feature.sbr" \
 	"$(INTDIR)\HyperGeoScore.sbr" \
 	"$(INTDIR)\LeafPreprocessor.sbr" \
 	"$(INTDIR)\main.sbr" \
+	"$(INTDIR)\Parser.sbr" \
 	"$(INTDIR)\PrefixTreePreprocessor.sbr" \
-	"$(INTDIR)\PrefixTreeWalker.sbr" \
 	"$(INTDIR)\Preprocessor.sbr" \
 	"$(INTDIR)\PSSM.SBR" \
 	"$(INTDIR)\RandomProjections.sbr" \
 	"$(INTDIR)\SeedHash.sbr" \
 	"$(INTDIR)\SeedSearcher.sbr" \
+	"$(INTDIR)\SeedSearcherMain.sbr" \
 	"$(INTDIR)\Sequence.sbr" \
 	"$(INTDIR)\SequenceDB.sbr" \
 	"$(INTDIR)\StdOptions.sbr" \
+	"$(INTDIR)\HyperGeoCache.sbr" \
 	"$(INTDIR)\getopt.sbr" \
 	"$(INTDIR)\Multinomial.sbr" \
-	"$(INTDIR)\RandomGenerator.sbr" \
-	"$(INTDIR)\HyperGeoCache.sbr"
+	"$(INTDIR)\RandomGenerator.sbr"
 
 "$(OUTDIR)\SeedSearcher.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -140,23 +146,25 @@ LINK32_OBJS= \
 	"$(INTDIR)\Assignment.obj" \
 	"$(INTDIR)\Cluster.obj" \
 	"$(INTDIR)\DebugLog.obj" \
+	"$(INTDIR)\Feature.obj" \
 	"$(INTDIR)\HyperGeoScore.obj" \
 	"$(INTDIR)\LeafPreprocessor.obj" \
 	"$(INTDIR)\main.obj" \
+	"$(INTDIR)\Parser.obj" \
 	"$(INTDIR)\PrefixTreePreprocessor.obj" \
-	"$(INTDIR)\PrefixTreeWalker.obj" \
 	"$(INTDIR)\Preprocessor.obj" \
 	"$(INTDIR)\PSSM.OBJ" \
 	"$(INTDIR)\RandomProjections.obj" \
 	"$(INTDIR)\SeedHash.obj" \
 	"$(INTDIR)\SeedSearcher.obj" \
+	"$(INTDIR)\SeedSearcherMain.obj" \
 	"$(INTDIR)\Sequence.obj" \
 	"$(INTDIR)\SequenceDB.obj" \
 	"$(INTDIR)\StdOptions.obj" \
+	"$(INTDIR)\HyperGeoCache.obj" \
 	"$(INTDIR)\getopt.obj" \
 	"$(INTDIR)\Multinomial.obj" \
 	"$(INTDIR)\RandomGenerator.obj" \
-	"$(INTDIR)\HyperGeoCache.obj" \
 	".\Core\Release\Core.lib" \
 	".\Persistance\Release\Persistance.lib"
 
@@ -196,6 +204,8 @@ CLEAN :
 	-@erase "$(INTDIR)\Cluster.sbr"
 	-@erase "$(INTDIR)\DebugLog.obj"
 	-@erase "$(INTDIR)\DebugLog.sbr"
+	-@erase "$(INTDIR)\Feature.obj"
+	-@erase "$(INTDIR)\Feature.sbr"
 	-@erase "$(INTDIR)\getopt.obj"
 	-@erase "$(INTDIR)\getopt.sbr"
 	-@erase "$(INTDIR)\HyperGeoCache.obj"
@@ -208,10 +218,10 @@ CLEAN :
 	-@erase "$(INTDIR)\main.sbr"
 	-@erase "$(INTDIR)\Multinomial.obj"
 	-@erase "$(INTDIR)\Multinomial.sbr"
+	-@erase "$(INTDIR)\Parser.obj"
+	-@erase "$(INTDIR)\Parser.sbr"
 	-@erase "$(INTDIR)\PrefixTreePreprocessor.obj"
 	-@erase "$(INTDIR)\PrefixTreePreprocessor.sbr"
-	-@erase "$(INTDIR)\PrefixTreeWalker.obj"
-	-@erase "$(INTDIR)\PrefixTreeWalker.sbr"
 	-@erase "$(INTDIR)\Preprocessor.obj"
 	-@erase "$(INTDIR)\Preprocessor.sbr"
 	-@erase "$(INTDIR)\PSSM.OBJ"
@@ -224,6 +234,8 @@ CLEAN :
 	-@erase "$(INTDIR)\SeedHash.sbr"
 	-@erase "$(INTDIR)\SeedSearcher.obj"
 	-@erase "$(INTDIR)\SeedSearcher.sbr"
+	-@erase "$(INTDIR)\SeedSearcherMain.obj"
+	-@erase "$(INTDIR)\SeedSearcherMain.sbr"
 	-@erase "$(INTDIR)\Sequence.obj"
 	-@erase "$(INTDIR)\Sequence.sbr"
 	-@erase "$(INTDIR)\SequenceDB.obj"
@@ -248,23 +260,25 @@ BSC32_SBRS= \
 	"$(INTDIR)\Assignment.sbr" \
 	"$(INTDIR)\Cluster.sbr" \
 	"$(INTDIR)\DebugLog.sbr" \
+	"$(INTDIR)\Feature.sbr" \
 	"$(INTDIR)\HyperGeoScore.sbr" \
 	"$(INTDIR)\LeafPreprocessor.sbr" \
 	"$(INTDIR)\main.sbr" \
+	"$(INTDIR)\Parser.sbr" \
 	"$(INTDIR)\PrefixTreePreprocessor.sbr" \
-	"$(INTDIR)\PrefixTreeWalker.sbr" \
 	"$(INTDIR)\Preprocessor.sbr" \
 	"$(INTDIR)\PSSM.SBR" \
 	"$(INTDIR)\RandomProjections.sbr" \
 	"$(INTDIR)\SeedHash.sbr" \
 	"$(INTDIR)\SeedSearcher.sbr" \
+	"$(INTDIR)\SeedSearcherMain.sbr" \
 	"$(INTDIR)\Sequence.sbr" \
 	"$(INTDIR)\SequenceDB.sbr" \
 	"$(INTDIR)\StdOptions.sbr" \
+	"$(INTDIR)\HyperGeoCache.sbr" \
 	"$(INTDIR)\getopt.sbr" \
 	"$(INTDIR)\Multinomial.sbr" \
-	"$(INTDIR)\RandomGenerator.sbr" \
-	"$(INTDIR)\HyperGeoCache.sbr"
+	"$(INTDIR)\RandomGenerator.sbr"
 
 "$(OUTDIR)\SeedSearcher.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -278,23 +292,25 @@ LINK32_OBJS= \
 	"$(INTDIR)\Assignment.obj" \
 	"$(INTDIR)\Cluster.obj" \
 	"$(INTDIR)\DebugLog.obj" \
+	"$(INTDIR)\Feature.obj" \
 	"$(INTDIR)\HyperGeoScore.obj" \
 	"$(INTDIR)\LeafPreprocessor.obj" \
 	"$(INTDIR)\main.obj" \
+	"$(INTDIR)\Parser.obj" \
 	"$(INTDIR)\PrefixTreePreprocessor.obj" \
-	"$(INTDIR)\PrefixTreeWalker.obj" \
 	"$(INTDIR)\Preprocessor.obj" \
 	"$(INTDIR)\PSSM.OBJ" \
 	"$(INTDIR)\RandomProjections.obj" \
 	"$(INTDIR)\SeedHash.obj" \
 	"$(INTDIR)\SeedSearcher.obj" \
+	"$(INTDIR)\SeedSearcherMain.obj" \
 	"$(INTDIR)\Sequence.obj" \
 	"$(INTDIR)\SequenceDB.obj" \
 	"$(INTDIR)\StdOptions.obj" \
+	"$(INTDIR)\HyperGeoCache.obj" \
 	"$(INTDIR)\getopt.obj" \
 	"$(INTDIR)\Multinomial.obj" \
 	"$(INTDIR)\RandomGenerator.obj" \
-	"$(INTDIR)\HyperGeoCache.obj" \
 	".\Core\Debug\Core.lib" \
 	".\Persistance\Debug\Persistance.lib"
 
@@ -442,6 +458,16 @@ CPP_SWITCHES=/nologo /MLd /W3 /Gm /GR /GX /ZI /Od /I "." /D "WIN32" /D "_DEBUG" 
 
 !ENDIF 
 
+SOURCE=.\Feature.cpp
+
+"$(INTDIR)\Feature.obj"	"$(INTDIR)\Feature.sbr" : $(SOURCE) "$(INTDIR)"
+
+
+SOURCE=.\HyperGeoCache.cpp
+
+"$(INTDIR)\HyperGeoCache.obj"	"$(INTDIR)\HyperGeoCache.sbr" : $(SOURCE) "$(INTDIR)"
+
+
 SOURCE=.\HyperGeoScore.cpp
 
 !IF  "$(CFG)" == "SeedSearcher - Win32 Release"
@@ -514,6 +540,11 @@ CPP_SWITCHES=/nologo /MLd /W3 /Gm /GR /GX /ZI /Od /I "." /D "WIN32" /D "_DEBUG" 
 
 !ENDIF 
 
+SOURCE=.\Parser.cpp
+
+"$(INTDIR)\Parser.obj"	"$(INTDIR)\Parser.sbr" : $(SOURCE) "$(INTDIR)"
+
+
 SOURCE=.\PrefixTreePreprocessor.cpp
 
 !IF  "$(CFG)" == "SeedSearcher - Win32 Release"
@@ -531,30 +562,6 @@ CPP_SWITCHES=/nologo /ML /W3 /GR /GX /Zi /O2 /Op /Oy- /Ob1 /I "." /D "WIN32" /D 
 CPP_SWITCHES=/nologo /MLd /W3 /Gm /GR /GX /ZI /Od /I "." /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
 "$(INTDIR)\PrefixTreePreprocessor.obj"	"$(INTDIR)\PrefixTreePreprocessor.sbr" : $(SOURCE) "$(INTDIR)"
-	$(CPP) @<<
-  $(CPP_SWITCHES) $(SOURCE)
-<<
-
-
-!ENDIF 
-
-SOURCE=.\PrefixTreeWalker.cpp
-
-!IF  "$(CFG)" == "SeedSearcher - Win32 Release"
-
-CPP_SWITCHES=/nologo /ML /W3 /GR /GX /Zi /O2 /Op /Oy- /Ob1 /I "." /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-"$(INTDIR)\PrefixTreeWalker.obj"	"$(INTDIR)\PrefixTreeWalker.sbr" : $(SOURCE) "$(INTDIR)"
-	$(CPP) @<<
-  $(CPP_SWITCHES) $(SOURCE)
-<<
-
-
-!ELSEIF  "$(CFG)" == "SeedSearcher - Win32 Debug"
-
-CPP_SWITCHES=/nologo /MLd /W3 /Gm /GR /GX /ZI /Od /I "." /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
-
-"$(INTDIR)\PrefixTreeWalker.obj"	"$(INTDIR)\PrefixTreeWalker.sbr" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
   $(CPP_SWITCHES) $(SOURCE)
 <<
@@ -682,6 +689,11 @@ CPP_SWITCHES=/nologo /MLd /W3 /Gm /GR /GX /ZI /Od /I "." /D "WIN32" /D "_DEBUG" 
 
 !ENDIF 
 
+SOURCE=.\SeedSearcherMain.cpp
+
+"$(INTDIR)\SeedSearcherMain.obj"	"$(INTDIR)\SeedSearcherMain.sbr" : $(SOURCE) "$(INTDIR)"
+
+
 SOURCE=.\Sequence.cpp
 
 !IF  "$(CFG)" == "SeedSearcher - Win32 Release"
@@ -770,11 +782,6 @@ SOURCE=.\Legacy\RandomGenerator.cpp
 
 "$(INTDIR)\RandomGenerator.obj"	"$(INTDIR)\RandomGenerator.sbr" : $(SOURCE) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-SOURCE=.\HyperGeoCache.cpp
-
-"$(INTDIR)\HyperGeoCache.obj"	"$(INTDIR)\HyperGeoCache.sbr" : $(SOURCE) "$(INTDIR)"
 
 
 !IF  "$(CFG)" == "SeedSearcher - Win32 Release"

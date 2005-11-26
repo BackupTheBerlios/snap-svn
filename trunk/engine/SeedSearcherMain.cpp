@@ -90,10 +90,6 @@ void SeedSearcherMain::CmdLineParameters::setup ()
    setupLangauge ();
 
    //
-   // setup the default console logging
-   SeedSearcherLog::setupConsoleLogging (false);
-
-   //
    // setup the db
    setupDB ();
 
@@ -205,42 +201,16 @@ void SeedSearcherMain::CmdLineParameters::setupWeightFunction ()
 
 void SeedSearcherMain::CmdLineParameters::setupPreprocessor ()
 {
-   AutoPtr <Preprocessor> prep;
-   if (_parser.__prep == _prep_leaf_) {
-      LeafPreprocessor::Rep* rep;
-      if (_parser.__proj_spec) {
-         rep = LeafPreprocessor::buildNoNegatives (
-             useReverse (),
-            _parser.__seed_l, 
-            *_db, 
-            *_langauge,
-            *_wf
-         );
-      }
-      else {
-         rep = LeafPreprocessor::build (  
-            useReverse (),
-            _parser.__seed_l, 
-            *_db, 
-            *_langauge
-         );
-      }
-
-      prep = new LeafPreprocessor (rep);
-   }
-   else {
-      mustbe (_parser.__prep == _prep_tree_);
-      PrefixTreePreprocessor::TreeRep* rep = 
-         PrefixTreePreprocessor::build (  _parser.__proj_spec,
-                                          *_wf,
-                                          *_db,
-                                          _parser.__seed_l);
-
-      prep = new PrefixTreePreprocessor (rep);
-//      ___kuku = dynamic_cast <PrefixTreePreprocessor*> (prep.get ());
-   }
-
-   _preprocessor = prep.release ();
+   _preprocessor =
+      SeedSearcherMain::PreprocessorFactory::createPreprocessor (
+         _parser.__prep,
+         *_db,
+         *_wf,
+         *_langauge,
+         _parser.__seed_l,
+         useReverse (),
+         _parser.__prep_noneg
+      );
 }
 
 void SeedSearcherMain::CmdLineParameters::setupScoreFunc ()
@@ -262,10 +232,22 @@ void SeedSearcherMain::CmdLineParameters::setupScoreFunc ()
 
 void SeedSearcherMain::CmdLineParameters::setupFeatureContainer ()
 {
+   KBestFeatures* container = NULL;
+   if (useReverse ()) {
+      container  = 
+         new KBestFeaturesComplement ( _parser.__seed_n, 
+                                       _parser.__seed_r, 
+                                       *_langauge);
+   }
+   else {
+      container = 
+         new KBestFeatures (_parser.__seed_n, _parser.__seed_r);
+   }
+
    //
    // use GoodFeatures to allow only features above a threshold
    _bestFeatures = new GoodFeatures (
-      new KBestFeatures (_parser.__seed_n, _parser.__seed_r),
+      container,
       true,
       SeqCluster (*_db),
       *_wf,
@@ -291,4 +273,52 @@ SeedSearcherMain::Results::Results (Parameters& params, int n)
 
 SeedSearcherMain::Results::~Results ()
 {
+}
+
+Preprocessor*
+   SeedSearcherMain::PreprocessorFactory::createPreprocessor (
+               PrepType prepType,
+               const SequenceDB& db,
+               const SeqWeightFunction& wf,
+               const Langauge& langauge,
+               int featureLength,
+               bool useReverse,
+               bool removeNegatives
+               )
+{
+   AutoPtr <Preprocessor> prep;
+   if (prepType == _prep_leaf_) {
+      LeafPreprocessor::Rep* rep;
+      if (removeNegatives) {
+         rep = LeafPreprocessor::buildNoNegatives (
+            useReverse,
+            featureLength, 
+            db, 
+            langauge,
+            wf
+         );
+      }
+      else {
+         rep = LeafPreprocessor::build (  
+            useReverse,
+            featureLength, 
+            db, 
+            langauge
+         );
+      }
+
+      prep = new LeafPreprocessor (rep);
+   }
+   else {
+      mustbe (prepType == _prep_tree_);
+      PrefixTreePreprocessor::TreeRep* rep = 
+         PrefixTreePreprocessor::build (  removeNegatives,
+                                          wf,
+                                          db,
+                                          featureLength);
+
+      prep = new PrefixTreePreprocessor (rep);
+   }
+
+   return prep.release ();
 }

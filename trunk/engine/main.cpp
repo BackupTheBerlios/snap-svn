@@ -1,15 +1,13 @@
 #include "Parser.h"
 
 #include "SequenceDB.h"
-#include "PrefixTreePreprocessor.h"
 #include "Assignment.h"
 #include "Sequence.h"
 #include "RandomProjections.h"
 #include "SeedSearcher.h"
 #include "HyperGeoScore.h"
 #include "PSSM.h"
-
-#include "LeafPreprocessor.h"
+#include "SeedSearcherMain.h"
 
 #include "StdOptions.h"
 #include "DebugLog.h"
@@ -19,10 +17,6 @@
 #include "Persistance/TextWriter.h"
 #include "Persistance/StdOutputStream.h"
 #include "Persistance/StdInputStream.h"
-#include "Persistance/TFactory.h"
-#include "Persistance/OArchive.h"
-#include "Persistance/IArchive.h"
-
 
 #include <iostream>
 #include <fstream>
@@ -32,13 +26,18 @@ using namespace std;
 using namespace Persistance;
 
 static const int __versionMajor = 2;
-static const int __versionMinor = 0;
+static const int __versionMinor = 1;
 
-Parser parser;
+//
+//
+enum {
+   SeqFileIndex = 0,
+   WgtFileIndex = 1,
+   StubFileIndex = 2,
+   RequiredParams = 3
+};
 
 
-
-PrefixTreePreprocessor* ___kuku;
 
 struct MainError : public BaseException {
    MainError (std::string const & s) : _error (s) {
@@ -59,284 +58,8 @@ static void Err(std::string const & s) {
 
 
 
-static void welcomeMessage ()
-{
-   //
-   // (1) write header, and execution time
-   DLOG << "SeedSearcher v" << __versionMajor << '.' << __versionMinor;
-   debug_only (
-      DLOG << " (Debug)";
-   );
-#ifdef __TIMESTAMP__
-   DLOG << " Compiled on " << __TIMESTAMP__;
-#endif
-   DLOG << DLOG.EOL ();
-   DLOG << "By Yoseph Barash (hoan@cs.huji.ac.il)" << DLOG.EOL ();
-   DLOG << "Implemented by: Aviad Rozenhek (aviadr@cs.huji.ac.il) " << DLOG.EOL ();
-   time_t ltime;
-   time( &ltime );
-   DLOG << DLOG.EOL ()
-        << "Execution started on " << ctime( &ltime ) << DLOG.EOL ();
-
-
-   //
-   // (2) write execution line
-   DLOG << '#' << DLOG.EOL () << "# execution parameters " << DLOG.EOL ();
-
-   for (int i=0 ;i<parser.__argc ; i++)
-      DLOG << parser.__argv [i] << ' ';
-
-   DLOG << DLOG.EOL ();
-
-   //
-   // (3) write execution parameters
-   DLOG << "Seed length: " << parser.__seed_l << DLOG.EOL ();
-   DLOG << "No of Random Positions (dist): " << parser.__proj_d << DLOG.EOL ();
-   DLOG << "Use reverse: " << (parser.__count_reverse? "true" : "false") << DLOG.EOL ();
-   DLOG << "No of Random Projections: " << parser.__proj_n << DLOG.EOL ();
-   DLOG << "Use all possible projections: " << (parser.__proj_e? "true" : "false") << DLOG.EOL ();
-   DLOG << "PSSM length: " << parser.__seed_o << DLOG.EOL ();
-   DLOG << "No of PSSMs: " << parser.__seed_n << DLOG.EOL ();
-   DLOG << "Randomization seed: " << parser.__proj_i << DLOG.EOL ();
-   DLOG << "Threshold for pos/neg cluster assignment: " << parser.__weight_t << DLOG.EOL ();
-   DLOG << "Maximum offset to check for seed redundancy: " << parser.__seed_r << DLOG.EOL ();
-   DLOG << "Partial count: " << (parser.__score_partial? "on" : "off") << DLOG.EOL ();
-   DLOG << "Minimum positive sequences a Seed must contain: " << parser.__score_min_seq << DLOG.EOL ();
-   DLOG << "Minimum positive sequences a Seed must contain: " << parser.__score_min_seq_per << '%' << DLOG.EOL ();
-   DLOG << "Minimum score for seed: log (" << parser.__score_min << ") = " << log (parser.__score_min) << DLOG.EOL ();
-   DLOG << "Use Total-Counts: " << (parser.__count == _count_total_? "true" : "false") << DLOG.EOL ();
-   DLOG << "Use Bonferroni statistical fix: " << (parser.__score_bonf? "true" : "false") << DLOG.EOL ();
-   DLOG << "Use FDR statistical fix: " << (parser.__score_fdr? "true" : "false") << DLOG.EOL ();
-   DLOG.flush ();
-}
-
-
-
-
-
 
 #if 0
-
-static void setupRandomProjections (const AlphabetCode& code,
-                                    AutoPtr <RandomProjections>& projections)
-{
-   //
-   // initialize the random seed
-   RandomProjections::srand (parser.__proj_i);
-   if (parser.__proj_e) {
-      projections = new RandomProjections (
-         RandomProjections::all,
-         code.cardinality (),
-         parser.__seed_l,
-         parser.__proj_d);
-   }
-   else {
-      projections = new RandomProjections (
-         parser.__proj_n,
-         code.cardinality (),
-         parser.__seed_l,
-         parser.__proj_d);
-   }
-}
-
-
-#if 0 
-static TFactoryList* createFactories ()
-{
-   AutoPtr <TFactoryList> factories = new TFactoryList;
-   PrefixTreePreprocessor::createFactories (*factories);
-   new TFactory <PrefixTreePreprocessor> (factories);
-   new TFactory <SequenceDB> (factories);
-   new TFactory <Sequence> (factories);
-   new TFactory <SeqPosition> (factories);
-
-   return factories.release ();
-}
-
-
-static void saveTreeFile (SequenceDB* db,
-                          PrefixTreePreprocessor* tree)
-{
-   time_t start, finish;
-   time (&start);
-
-   std::string treeFile (parser.__argv[parser.__lastFileArg]);
-   treeFile.append (".tree");
-
-   ofstream treeOut (treeFile.c_str (),
-      ios_base::out | ios_base::trunc | ios_base::binary);
-   if(!treeOut.is_open() )
-      Err(string("Cannot open preprocessed file ") + treeFile);
-
-   //
-   // we save the DB and the Tree to archive
-   /*
-   debug_only (
-   DLOG << "Writing SequenceDB and PrefixTree into "
-   << treeFile.c_str ()
-   << "... ";
-   DLOG.flush ();
-   );
-   */
-
-   {  Persistance::OArchive out (new BufferedStdOutputStream (treeOut), createFactories ());
-   out.registerObject (db);
-   out.writeObject (tree);
-   }
-
-   time (&finish);
-   DLOG << "SequenceDB and PrefixTree written into "
-      << treeFile.c_str () << " ("
-      << (finish - start) << " seconds.)"
-      << DLOG.EOL ();
-
-   debug_only (
-      DLOG << "Finished." << DLOG.EOL ();
-   DLOG.flush ();
-   );
-
-}
-
-
-
-static void readTreeFile (AutoPtr <SequenceDB>& db,
-                          AutoPtr <PrefixTreePreprocessor>& tree)
-{
-   time_t start, finish, linkStart, linkFinish;
-   time (&start);
-
-   //
-   // we must retrieve the tree from a file
-   ifstream treeIn (__readPreprocessedName, ios_base::in | ios_base::binary);
-   if(!treeIn.is_open() )
-      Err(string("Cannot open preprocessed file ")+__readPreprocessedName);
-
-   SequenceDB* dbPtr;
-   PrefixTreePreprocessor* treePtr;
-
-   {  Persistance::IArchive in (new StdInputStream (treeIn), createFactories ());
-   in.registerObject (dbPtr);
-   in.readObject (treePtr);
-
-   time (&linkStart);
-   in.registry ().link ();
-   time (&linkFinish);
-   }
-
-   db = dbPtr;
-   tree = treePtr;
-
-   time (&finish);
-
-   DLOG << "SequenceDB and PrefixTree read from "
-      << __readPreprocessedName << " ("
-      << (finish - start) << " seconds, of which "
-      << (linkFinish - linkStart) << " used for linking)"
-      << DLOG.EOL ();
-   //
-   // assign new weights to the sequence db
-   // SequenceDB::TextFileStorage::assignWeights (*db, parser.__argv [parser.__firstFileArg], true);
-}
-
-#endif
-
-
-
-
-static void setupDB (AutoPtr <SequenceDB>& db, 
-                     const AlphabetCode& acgt)
-{
-   DLOG << '#' << DLOG.EOL ()
-        << "# SequenceDB: " << DLOG.EOL ();
-
-   DLOG  << "Reading Sequence File: " 
-         << parser.__argv[parser.__firstFileArg] 
-         << DLOG.EOL ();
-
-   DLOG  << "Reading Weights File: " 
-         << parser.__argv[parser.__firstFileArg+1] 
-         << DLOG.EOL ();
-
-   DLOG.flush ();
-
-   //
-   // load the sequence files
-   time_t start, finish;
-   time (&start);
-   db = SequenceDB::TextFileStorage::loadFastaAndWeights (acgt,
-      parser.__argv[parser.__firstFileArg],
-      parser.__argv[parser.__firstFileArg+1]);
-
-   time (&finish);
-
-   DLOG << "Loaded " << db->size () <<  " Sequences. ("
-        << (finish - start) << " seconds )." << DLOG.EOL ();
-}
-
-
-
-
-static void setupDBAndTree (const AlphabetCode& acgt,
-                            AutoPtr <SequenceDB>& db,
-                            AutoPtr <PrefixTreePreprocessor>& tree,
-                            const SeqWeightFunction& wf)
-{
-#if 0 
-   //
-   // create the prefix tree.
-   if (__readPreprocessed) {
-
-      DLOG << '#' << DLOG.EOL ()
-           << "# SequenceDB & PrefixTreePreprocessor "<< DLOG.EOL ();
-      readTreeFile (db, tree);
-      db->getSequencesAbove (__thresh, positiveSequences);
-   }
-   else 
-#endif
-   {
-      if (!db.valid ())
-         setupDB (parser, db, acgt);
-
-      DLOG << '#' << DLOG.EOL ()
-           << "# PrefixTreePreprocessor "<< DLOG.EOL ();
-      DLOG << "Creating a new PrefixTree Preprocessor from sequence data: " << DLOG.EOL ();
-      DLOG.flush ();
-
-      tree  = new PrefixTreePreprocessor (
-         PrefixTreePreprocessor::build (  parser.__proj_spec, 
-                                          wf,
-                                          *db,
-                                          parser.__seed_l
-         )
-      );
-   }
-}
-
-
-
-static void openLogFile (ofstream& logOut)
-{
-   string outStub;
-   outStub = string(parser.__argv[parser.__lastFileArg]);
-   logOut.open ((outStub+".log").c_str(),
-      ios_base::out | ios_base::trunc | ios_base::binary);
-   if( ! logOut.is_open() )
-      Err(string("Cannot open logFile for ")+outStub);
-}
-
-
-
-
-inline static int getMotifLeftOffset (int motifLen, int seedLen)
-{
-   const int leftPaddingLength = 
-      tmax ((motifLen - seedLen) / 2, 0);
-
-   return leftPaddingLength;
-}
-
-
-
 static void printMotif (TextWriter& writer, 
                         const Assignment& assg,
                         const SeqPosition& position,
@@ -444,52 +167,6 @@ static void printMotifFile (bool isPositives,
 
    writer.flush ();
 }
-
-
-
-static void printPSSMFile ( const AlphabetCode& code,
-                            const Feature& feature_i,
-                            const PositionVector& positions,
-                            int index)
-                           
-{
-   const int seed_length = feature_i.assignment ().length ();
-   const int offset = getMotifLeftOffset (parser.__seed_o, seed_length);
-   PSSM pssm(code, offset, parser.__seed_o, positions);
-
-   char motifFileName [256];
-   sprintf (motifFileName, "%s.%d.pssm", 
-	    parser.__argv[parser.__lastFileArg], (index+1));
-
-   ofstream motifFile (motifFileName,
-                   ios_base::out | ios_base::trunc | ios_base::binary);
-
-   if( ! motifFile.is_open() )
-      Err(string("Cannot open logFile for ") + motifFileName);
-
-   TextWriter writer (new BufferedStdOutputStream (motifFile));
-
-   int size = pssm.length ();          
-   int cardinality = code.cardinality ();    debug_mustbe (cardinality > 0);
-   for (int j=0 ; j<cardinality ; j++) {
-      //
-      // write the first position
-      writer << pssm [0][j];
-
-      //
-      // write all other positions with a prepending '\t'
-      for (int i=1 ; i<size ; i++) {
-         writer << "\t\t\t" << pssm [i][j];
-      }
-
-      //
-      //
-      writer.writeln ();
-   }
-
-   writer.flush ();
-}
-
 
 
 
@@ -642,120 +319,10 @@ static void printGoodbye (time_t start, time_t finish)
    DLOG.flush ();
 }
 
-#if 0 
 
-static AutoPtr <SeqWeightFunction> createWeightFunction ()
-{
-   AutoPtr <SeqWeightFunction> wf;
-   switch (parser.__weightType) {
-   case _weight_simple_:
-      wf = new SimpleWeightFunction (parser.__weight_t);
-      break;
-   
-   case _weight_border_:
-      wf = new BorderWeightFunction (parser.__weight_lowt, parser.__weight_t);
-      break;
-   case _weight_interval_:
-      wf = new IntervalWeightFunction (parser.__weight_lowt, parser.__weight_t);
-      break;
 
-   default:
-      mustfail ();
-      break;
-   };
-
-   if (parser.__weight_invert)
-      wf->invert ();
-
-   return wf;
-}
-
-static AutoPtr <Preprocessor> createPreprocessor (const AlphabetCode& code,
-                                                  const SequenceDB& db,
-                                                  const SeqWeightFunction& wf)
-{
-   AutoPtr <Preprocessor> prep;
-   if (parser.__prep == _prep_leaf_) {
-      LeafPreprocessor::Rep* rep;
-      if (parser.__proj_spec) {
-         rep = LeafPreprocessor::buildNoNegatives (  
-            parser.__seed_l, 
-            db, 
-            code, 
-            SeedSearcherLog::assgWriter (),
-            wf
-         );
-      }
-      else {
-         rep = LeafPreprocessor::build (  
-            parser.__seed_l, 
-            db, 
-            code, 
-            SeedSearcherLog::assgWriter ()
-         );
-      }
-
-      prep = new LeafPreprocessor (rep);
-   }
-   else {
-      mustbe (parser.__prep == _prep_tree_);
-      PrefixTreePreprocessor::TreeRep* rep = 
-         PrefixTreePreprocessor::build (  parser.__proj_spec,
-                                          wf,
-                                          db,
-                                          parser.__seed_l);
-
-      prep = new PrefixTreePreprocessor (rep);
-      ___kuku = dynamic_cast <PrefixTreePreprocessor*> (prep.get ());
-   }
-
-   return prep;
-}
-
-static AutoPtr <ScoreFunction> 
-   createScoreFunc ( const SequenceDB& db,
-                     const SeqWeightFunction& wf)
-{
-   AutoPtr <ScoreFunction> score;
-   if (parser.__count == _count_total_) {
-      score = 
-         new HyperGeoScore::FixedTotalCount (parser.__seed_l, 
-                                             parser.__score_partial, 
-                                             wf, 
-                                             db);
-   }
-   else {
-      score = 
-         new HyperGeoScore::Simple (parser.__score_partial, 
-                                    wf, 
-                                    db);
-   }
-
-   return score;
-}
-
-static AutoPtr <SeedSearcher::BestFeatures> 
-   createFeatureContainer (const SequenceDB& db,
-                           const SeqWeightFunction& wf)
-{
-   AutoPtr <SeedSearcher::BestFeatures> bestFeatures;
-   
-   //
-   // use GoodFeatures to allow only features above a threshold
-   bestFeatures = new GoodFeatures (
-      new KBestFeatures (parser.__seed_n, parser.__seed_r),
-      true,
-      SeqCluster (db),
-      wf,
-      parser.__score_min,
-      parser.__score_min_seq,
-      parser.__score_min_seq_per);
-
-   return bestFeatures;
-}
-
-#endif 
-
+//
+//
 static Persistance::OutputStream* openMotifFile (  
       bool isPositives, int index, const char* fileStub)
 {
@@ -778,6 +345,9 @@ static Persistance::OutputStream* openMotifFile (
    return new StdOutputStream (motifFile, true);
 }
 
+
+//
+//
 static Persistance::OutputStream* openPSSMFile (  
       int index, const char* fileStub)
 {
@@ -797,14 +367,43 @@ static Persistance::OutputStream* openPSSMFile (
 }
 
 
-#include "SeedSearcherMain.h"
 
-enum {
-   SeqFileIndex = 0,
-   WgtFileIndex = 1,
-   StubFileIndex = 2,
-   RequiredParams = 3
-};
+
+static void welcomeMessage (const Parser& parser)
+{
+   //
+   // (1) write header, and execution time
+   DLOG << "SeedSearcher v" << __versionMajor << '.' << __versionMinor;
+   debug_only (
+      DLOG << " (Debug)";
+   );
+#ifdef __TIMESTAMP__
+   DLOG << " Compiled on " << __TIMESTAMP__;
+#endif
+
+   DLOG << DLOG.EOL ();
+   DLOG << "By Yoseph Barash (hoan@cs.huji.ac.il)" << DLOG.EOL ();
+   DLOG << "And Aviad Rozenhek (aviadr@cs.huji.ac.il) " << DLOG.EOL ();
+   time_t ltime;
+   time( &ltime );
+   DLOG << DLOG.EOL ()
+        << "Execution started on " << ctime( &ltime ) << DLOG.EOL ();
+
+
+   //
+   // (2) write execution line
+   DLOG  << '#' << DLOG.EOL () 
+         << "# command line" << DLOG.EOL ();
+
+   for (int i=0 ;i<parser.__argc ; i++)
+      DLOG << parser.__argv [i] << ' ';
+   DLOG << DLOG.EOL ();
+
+   DLOG  << DLOG.EOL ();
+   DLOG  << '#' << DLOG.EOL () 
+         << "# execution parameters " << DLOG.EOL ();
+   parser.logParams (DLOG);
+}
 
 //
 // Copied/Adapted from legacy SeedSearcher
@@ -815,7 +414,14 @@ int main(int argc, char* argv [])
 
    time(&start);
    try {
+      //
+      // setup basic logging
+      SeedSearcherLog::setupConsoleLogging (false);
+
+      //
+      // initialize parameters
       SeedSearcherMain::CmdLineParameters params (argc, argv);
+
 
       //
       // check that we have enough arguments
@@ -826,15 +432,35 @@ int main(int argc, char* argv [])
       if(numOfFileArgs < RequiredParams)
          params.parser ().usage ("Missing arguments");
 
-      const char* fileStub = params.parser ().__argv [StubFileIndex];
+      //
+      // now setup file logging
+      int fileStubArg = 
+         params.parser ().__firstFileArg + StubFileIndex;
+
+      const char* fileStub = 
+         params.parser ().__argv [fileStubArg];
       
+      {  TextWriter* oldWriter = 
+            SeedSearcherLog::setupFileLogging (
+		       StrBuffer (fileStub, ".log"), false);
+         delete oldWriter;
+      }
+
+      //
+      // write welcome message
+      welcomeMessage(params.parser ());
+
+      //
+      // begin 
       params.setup ();
       SeedSearcherMain main (params);
       AutoPtr <SeedSearcherMain::Results> results = main.search ();
 
-      FeatureInvestigator printer ( params, 
-                                    params.parser ().__seed_o);
-
+      int bonfN = 
+         params.parser ().__score_bonf? results->numSeedsSearched () : 0;
+      FeatureInvestigator printer ( params                     , 
+                                    params.parser ().__seed_o  ,
+                                    bonfN                      );
       //
       // we print the results to the log
       for (; results->hasMoreFeatures () ; results->nextFeature ()) {
@@ -856,7 +482,8 @@ int main(int argc, char* argv [])
          
          //
          // now we print pos & neg motif files
-         for (bool isPos = true ; isPos ; isPos = false) {
+         bool isPos = true;
+         for (int i = 0 ; i <= 1; i++) {
             //
             // we open a file for the motif
             TextWriter motifFile (openMotifFile (  isPos, 
@@ -866,6 +493,7 @@ int main(int argc, char* argv [])
             printer.printMotif ( motifFile, 
                                  feature, 
                                  isPos? pos : neg);
+            isPos = !isPos;
          }
 
          //
@@ -876,164 +504,6 @@ int main(int argc, char* argv [])
 
          printer.printPSSM (pssmFile, feature, pos);
       }
-
-
-
-      //
-      // now the seeds are waiting in the KBestFeatures 
-
-/*
-
-      //
-      // parse arguments
-      parser.parse (argc, argv);
-
-      ofstream logOut;
-      openLogFile (logOut);
-
-      //
-      // setup program output
-      StdUnbufferedOutput consoleChannel (cout);
-      StdUnbufferedOutput fileChannel (logOut);
-
-      UnbufferedOutput* channels [] = { &consoleChannel, &fileChannel };
-      const int numOfChannels = sizeof (channels) / sizeof (UnbufferedOutput*);
-
-      ACGTLangauge langauge;
-
-      TextWriter consoleWriter (
-         new SmallChannelOutput (
-            new UnbufferedOutputMux (channels, numOfChannels , false), true));
-
-      SeedSearcherLog::setup (langauge);
-      SeedSearcherLog::setup (consoleWriter);
-
-      //
-      // welcome message
-      welcomeMessage ();
-      long start = time(NULL);
-
-      //
-      // for now, only ACGT code is available
-      // TODO: add more alphabets
-      const AlphabetCode& acgt = ACGTLangauge::getCode (//include N 
-                                                         true);
-      /*
-
-      AutoPtr <SequenceDB> db;
-      AutoPtr <SeqWeightFunction> wf;
-      AutoPtr <Preprocessor> preprocessor;
-      AutoPtr <ScoreFunction> score;
-      AutoPtr <RandomProjections> projections;
-      AutoPtr <SeedSearcher::BestFeatures> bestFeatures;
-
-      //
-      // setup the db
-      setupDB (db, acgt);
-
-      //
-      // create the weight function
-      wf = createWeightFunction ();
-
-      //
-      // create the preprocessor
-      preprocessor = createPreprocessor (acgt, *db, *wf);
-
-      //
-      // create random projections
-      setupRandomProjections (acgt, projections);
-
-      //
-      // TODO: if we have read the tree file from archive,
-      // and we need longer seeds than the tree's depth,
-      // then continue to build the tree until the required size
-#if 0 
-      if (__generatePreprocessed) {
-         saveTreeFile (db, tree);
-      }
-#endif
-
-      //
-      // create the hyper-geometric scoring scheme
-      score = createScoreFunc (*db, *wf);
-
-      //
-      // keep only the best features
-      // TODO: what should we do when parser.__seed_r 
-      // is too large for the length of seed?
-      bestFeatures = createFeatureContainer (*db, *wf);
-
-      //
-      // now run over all projections, searching for seeds.
-      // the seeds are stored inside kbestFeatures.
-
-      int totalNumOfSeedsFound = 0;
-      int numOfProjections = projections->numOfProjections ();
-      for (int i=0 ; i<numOfProjections ; i++) {
-         const Assignment& assg = 
-            projections->getAssignment (  
-               i, 
-               langauge.wildcard (Assignment::together),
-               langauge.wildcard (Assignment::discrete)
-            );
-
-         //
-         //
-         DLOG << "Searching for " << Format (assg) << ": ";
-         DLOG.flush ();
-         int save = totalNumOfSeedsFound;
-         time_t start, finish;
-         time (&start);
-
-
-         if (parser.__prep == _prep_tree_) {
-            totalNumOfSeedsFound +=
-               SeedSearcher::prefixTreeSearch (
-                  dynamic_cast <PrefixTreePreprocessor&> (*preprocessor),
-                  assg,
-                  *wf,
-                  *score,
-                  *bestFeatures,
-                  parser.__proj_spec,
-                  parser.__count == _count_total_
-               );
-         }
-         else {
-            totalNumOfSeedsFound +=
-               SeedSearcher::tableSearch (
-                  parser.__count == _count_total_,
-                  parser.__proj_spec,
-                  acgt,
-                  *preprocessor,
-                  assg,
-                  lan,
-                  *wf,
-                  *score,
-                  *bestFeatures
-               );
-         }
-
-         time (&finish);
-         DLOG << (finish - start) << " seconds, Found "
-              << totalNumOfSeedsFound - save << " seeds." << DLOG.EOL ();
-      }
-
-      //
-      // now output all the seeds
-      bestFeatures->sort ();
-
-
-
-      //
-      // do not include N when printing PSSMs
-      printSeeds (*wf,
-                  *score,
-                  ACGTAlphabet::get (//include N
-                                       false),
-                  *preprocessor, 
-                  totalNumOfSeedsFound, 
-                  *bestFeatures);
-      */
 
       finish = time(NULL);
       printGoodbye (start, finish);
@@ -1076,6 +546,7 @@ void operator delete (void* p)
 }
 
 #endif
+
 
 
 

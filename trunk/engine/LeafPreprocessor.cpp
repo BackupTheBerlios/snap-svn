@@ -8,7 +8,7 @@ ChunkAllocator <LeafPreprocessor::LeafNode>
 
 
 struct LeafPreprocessor::Rep : public SeedHash::Table {
-   Rep ( int seedLength, int tableSize, Langauge& langauge)   
+   Rep ( int seedLength, int tableSize, const Langauge& langauge)   
    : SeedHash::Table (tableSize, langauge), _seedLength (seedLength)
    {
    }
@@ -126,7 +126,7 @@ LeafPreprocessor::Rep* LeafPreprocessor::buildNoNegatives (
                    bool useReverse,
                    int seedLength                  ,
                    const SequenceDB& db            , 
-                   Langauge& langauge    ,
+                   const Langauge& langauge        ,
                    const SeqWeightFunction& wf     ) 
 {
    Rep* rep = build (useReverse, seedLength, db, langauge);
@@ -181,10 +181,10 @@ LeafPreprocessor::Rep* LeafPreprocessor::buildNoNegatives (
 //
 //
 LeafPreprocessor::Rep* LeafPreprocessor::build (
-                     bool useReverse               ,
-                   int seedLength                  ,
-                   const SequenceDB& db            , 
-                   Langauge& langauge    ) 
+                     bool useReverse             ,
+                     int seedLength              ,
+                     const SequenceDB& db        , 
+                     const Langauge& langauge    ) 
 {
    time_t start, finish;
    time (&start);
@@ -217,7 +217,7 @@ LeafPreprocessor::Rep* LeafPreprocessor::build (
          SeqPosition* position = 
             new SeqPosition (seq, i);
 
-         Str data = position->getDataString (0, seedLength);
+         Str data = position->getSeedString (seedLength);
          debug_mustbe (data.length () == seedLength);
          rep->addPosition (data, position);
       }
@@ -298,5 +298,6 @@ void LeafPreprocessor::LeafNode::
    add2Assignment (Assignment& assg) const{
    assg.unify (assignment ());
 }
+
 
 

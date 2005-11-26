@@ -2,9 +2,8 @@
 #define _SeedSearcher_PrefixTreePreprocessor_h
 
 #include "Preprocessor.h"
-#include "Persistance/Object.h"
 
-class PrefixTreePreprocessor : public Preprocessor, public Persistance::Object {
+class PrefixTreePreprocessor : public Preprocessor {
    //
    // interface inherited from Preprocessor
 public:
@@ -48,7 +47,7 @@ public:
    
    //
    // class that represents a vector of positions of a single sequence
-   class SeqPositions : public Persistance::Object {
+   class SeqPositions   {
    public:
      SeqPositions ();
       explicit SeqPositions (PositionVector*);
@@ -63,9 +62,6 @@ public:
       const SeqPosition* firstPosition () const;
       bool empty () const;
       int size () const;
-
-      void serialize (Persistance::IArchive& in);
-      void serialize (Persistance::OArchive& out);
 
       void dispose (bool disposePositions);
 
@@ -144,19 +140,13 @@ public:
                            const SequenceDB&, 
                            int depth);
 
-   void serialize (Persistance::IArchive& in);
-   void serialize (Persistance::OArchive& out);
-   PrefixTreePreprocessor () {
-   }
-
-   static void createFactories (Persistance::TFactoryList&);
-
 private:
    bool _owner;
    TreeRep* _rep;
 };
 
 #endif // _SeedSearcher_PrefixTreePreprocessor_h
+
 
 
 

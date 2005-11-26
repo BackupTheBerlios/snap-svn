@@ -2,14 +2,12 @@
 #define _SeedSearcher_Sequence_h
 
 #include "Defs.h"
-#include "Persistance/Object.h"
-
 #include "Core/STLHelper.h"
 #include "Core/ChunkAllocator.h"
 #include "Core/Str.h"
 
 
-class Sequence : public Persistance::Object {
+class Sequence {
 public:
    typedef int ID;
    typedef StrBuffer Name;
@@ -54,11 +52,6 @@ public:
       return Str (_data, startPos, length);
    }
 
-   void serialize (Persistance::IArchive& in);
-   void serialize (Persistance::OArchive& out);
-   Sequence () {
-   }
-
 #if SEED_CHUNK_ALLOCATION_OPTIMIZATION
    void* operator new (size_t size) {
       debug_mustbe (size == sizeof (Sequence));
@@ -70,7 +63,7 @@ public:
 #endif
 
 private:
-	ID _id;
+   ID _id;
    StrBuffer _data;
    Name _name;
    double _weight;
@@ -154,14 +147,14 @@ public:
 
 protected:
    virtual bool isRelevantImpl (double weight, bool& outIsPositive) const = 0;
-   bool _partialCount;
    bool _invert;
+   bool _partialCount;
 };
 
 
 
 
-class SeqPosition : public Persistance::Object {
+class SeqPosition {
 public:
    //
    // ctor is called in a loop, so must be very effiecient
@@ -193,67 +186,38 @@ public:
       return _position;
    }
    //
-   // return the sequence string starting at this position, with length 'length'
-   Str getSeedString (int seedLength) const {
-      return Str (_sequence->data (), _position, _position + seedLength);
-   }
-   //
-   // returns the sequence string starting at this position, modified by 'offset'
-   // with length 'length'. if offset is too big or too small (negative)
+   // returns the sequence string starting at this position, 
+   // modified by 'offset'with length 'length'. 
+   // if offset is too big or too small (negative)
    // it will return a shorter string. in any case, it always returns 
    // a valid string.
-   Str getDataString (int offset, int length) const {
-      //
-      // 
-      getModifiedOffsets (offset, length);
+   Str getSeedString (int seedLength, int offset = 0) const;
 
-      //
-      // keep str's ctor happy
-      if (_position + offset > _sequence->length ()) {
-         return 0;
-      }
-
-      debug_mustbe (length >= 0);
-      debug_mustbe (_position + offset >= 0);
-      debug_mustbe (_position + offset + length <= _sequence->length ());
-
-
-      return Str (_sequence->data (), 
-                  _position + offset, 
-                  _position + offset + length);
-   }
    //
+   // 'expands' a motif of length 'inLength' leftwards and rightwards,
+   // in the desired amount. it adds alignment bytes if necessary.
+   // returns the index of the beginning of the middle section
+   int getSeedString (StrBuffer& outBuffer,  // the string is stored here
+                      int inLength,          // desired length
+                      int inDesiredExpansionLeft, 
+                      int inDesiredExpansionRight,
+                      char alignment = '-'  // alignment for missing pos
+                      ) const; 
+
+   int getSeedString (  StrBuffer& outBuffer, 
+                        int inLength,  // length of seed before expansion
+                        int inDesiredLength,  // length after expansion
+                        char alignment = '-'  // alignment for missing pos
+                        ) const;
+
    //
-   void getModifiedOffsets (int& offset, int& length) const
-   {
-      //
-      // do not go past the beginning of the string
-      int startIndex = _position + offset;
-      if (startIndex < 0) {
-         //
-         // the string is truncated in the left, so return less bytes
-         length += startIndex;   // shorten length
-         offset -= startIndex;   // make offset less negative
-         startIndex = 0;
-      }
-
-      //
-      // do not go beyond the end of the string
-      int endIndex = startIndex + length;
-      if (endIndex > _sequence->length ()) {
-         endIndex = _sequence->length ();
-      }
-
-      //
-      // calculate length
-      length = tmax (endIndex - startIndex, 0);
-   }
-      
-
-   void serialize (Persistance::IArchive& in);
-   void serialize (Persistance::OArchive& out);
-   SeqPosition () {
-   }
+   // the 1st argument (in/out) provides the offset from this position
+   // the 2nd argument (in/out) provides the length from the offset
+   //
+   // this method makes changes the offset (if necessary) so 
+   // that it is legal, decreasing the length in accordance.
+   // also if the length is too large, it is decreased.
+   void getModifiedOffsets (int& offset, int& length) const;      
 
 #if SEED_CHUNK_ALLOCATION_OPTIMIZATION
    void* operator new (size_t size) {
@@ -312,6 +276,7 @@ typedef ConstIteratorWrapper <SequenceVector> CSequenceIterator;
 
 
 #endif // _SeedSearcher_Sequence_h
+
 
 
 

@@ -37,16 +37,16 @@ TextWriter* SeedSearcherLog::setupFileLogging (
 {
    //
    // open the file
-   ofstream logOut;
-   logOut.open (filename.getCString (), 
+   ofstream* logOut = new ofstream;
+   logOut->open (filename.getCString (), 
                   ios_base::out | ios_base::trunc | ios_base::binary);
    
-   mmustbe ( logOut.is_open(), 
+   mmustbe ( logOut->is_open(), 
             StrBuffer (Str ("Cannot open logFile for "), filename));
 
    //
    // setup the channel to the file
-   StdUnbufferedOutput* fileChannel = new StdUnbufferedOutput (logOut);
+   StdUnbufferedOutput* fileChannel = new StdUnbufferedOutput (logOut, true);
 
    TextWriter* old = NULL;
    if (!suppressConsole)   {
@@ -87,13 +87,6 @@ TextWriter* SeedSearcherLog::setupFileLogging (
 
    return old;
 }
-
-
-
-
-
-
-
 
 
 

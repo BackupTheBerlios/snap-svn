@@ -105,9 +105,14 @@ double HyperGeoCache::logTail (int x, int k, ScoreParameters** params)
    Score* cachedScore = _cache->find (xk);
    if (cachedScore == NULL) {
       //
-      // TODO: compute actual value
+      // 
       double score = 
          HyperGeometric::logTailhyge (x, _cache->_m, k, _cache->_n);
+
+      //
+      // change from ln to 2-base log
+      static const double LN_2 = ::log (2);
+      score = score / LN_2;
 
       cachedScore = new Score (xk, score); 
       _cache->add (cachedScore);
@@ -251,9 +256,14 @@ double HyperGeoTotalCache::logTail (int x, int k, int n, int m,
    Score* cachedScore = _cache->find (xknm);
    if (cachedScore == NULL) {
       //
-      // TODO: compute actual value
+      // 
       double score = 
          HyperGeometric::logTailhyge (x, m, k, n);
+
+      //
+      // change from ln to 2-base log
+      static const double LN_2 = ::log (2);
+      score = score / LN_2;
 
       cachedScore = new Score (xknm, score); 
       _cache->add (cachedScore);
@@ -292,6 +302,7 @@ void HyperGeoTotalCache::writeAsText (
           << ", N = "<< cachedScore->getKey ()._n
           << ", M = "<< cachedScore->getKey ()._m;
 }
+
 
 
 

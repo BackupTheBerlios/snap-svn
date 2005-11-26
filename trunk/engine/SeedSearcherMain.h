@@ -83,7 +83,7 @@ public:
 public:
    SeedSearcherMain (Parameters& in) : _params (in) {
    }
-   ~SeedSearcherMain () {
+   virtual ~SeedSearcherMain () {
    }
 
    virtual void beforeSearch (int /* search handle */,
@@ -198,6 +198,21 @@ public:
       CmdLineParameters (const CmdLineParameters&);
    };
 
+   //
+   //
+   struct PreprocessorFactory {
+      //
+      //
+      static Preprocessor* createPreprocessor (
+               PrepType,
+               const SequenceDB&,
+               const SeqWeightFunction&,
+               const Langauge&,
+               int featureLength,
+               bool useReverse,
+               bool removeNegatives = false
+            );
+   };
 
 protected:
    Parameters& _params;

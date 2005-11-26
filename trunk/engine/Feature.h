@@ -6,6 +6,7 @@
 #include "Sequence.h"
 #include "AssignmentFormat.h"
 #include "PSSM.h"
+#include "DebugLog.h"
 
 #include "Persistance/Defs.h"
 #include "Core/AutoPtr.h"
@@ -93,6 +94,13 @@ public:
       debug_mustbe (_assg);
       _complement = new Assignment ();
       langauge.complement (*_assg, *_complement);
+
+#     if 1
+         DLOG << "Reverse of "   << Format (*_assg) 
+              << " is "          << Format (*_complement)
+              << DLOG.EOL ();
+#     endif
+
       return *_complement;
    }
 
@@ -180,7 +188,13 @@ public:
    //
    //
 public:
-   FeatureInvestigator (const Parameters&, int outputLength);
+   FeatureInvestigator (const Parameters&, 
+                        int outputLength);
+   //
+   // use to enable bonferroni
+   FeatureInvestigator (const Parameters&, 
+                        int outputLength,
+                        int seedsSearched);
    virtual ~FeatureInvestigator () {
    }
 
@@ -240,6 +254,8 @@ protected:
    int _outputLength;
    std::string _allignment;
    const Parameters& _parameters;
+   int _seedsSearched;
+   double log10_seedsSearched;
 };
 
 

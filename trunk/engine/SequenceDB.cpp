@@ -328,31 +328,8 @@ void SequenceDB::getSequencesAbove (double weight, Cluster& out) const
 
 
 
-#include "Persistance/STLPersist.h"
 
-using namespace Persistance;
 
-void SequenceDB::serialize (Persistance::IArchive& in)
-{
-   int cardinality;
-   AlphabetCode::Code code;
-   
-   in >> cardinality;
-   in.readCharBuffer (code, sizeof (code));
-   _code = AlphabetCode (code, cardinality);
-   
-   in >> Persistance::ISTLReg <SequenceVector> (_sequences);
-   in >> IMap <Name2ID> (_name2ID);
-}
-
-void SequenceDB::serialize (Persistance::OArchive& out)
-{
-   out << (int) _code.cardinality ();
-   out.writeCharArray (_code.getCode (), sizeof (AlphabetCode::Code));
-   
-   out << OSTLReg <SequenceVector> (_sequences);
-   out << OMap <Name2ID> (_name2ID);
-}
 
 
 

@@ -54,10 +54,10 @@ public:
 
       //
       // stores the best features
-      const SeedSearcher::BestFeatures& bestFeatures () const {
+      const BestFeatures& bestFeatures () const {
          return *_bestFeatures;
       }
-      SeedSearcher::BestFeatures& bestFeatures () {
+      BestFeatures& bestFeatures () {
          return *_bestFeatures;
       }
       //
@@ -67,12 +67,13 @@ public:
       }
       //
       // should specialize projections?
+      // warning: expert-level feature.
       bool useSpecialization () const {
          return _useSpecialization;
       }
 
    protected:
-      AutoPtr <SeedSearcher::BestFeatures> _bestFeatures;
+      AutoPtr <BestFeatures> _bestFeatures;
       bool _useSpecialization;
       CountType _count;
    };
@@ -107,6 +108,7 @@ public:
 };
 
 #endif // _SeedSearcher_SeedSeacher_h
+
 
 
 

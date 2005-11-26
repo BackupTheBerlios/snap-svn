@@ -217,7 +217,7 @@ tRandomGenerator::SampleDirichlet(const std::vector<double>& mean,
   assert(mean.size() == rgprob.size());
   double dblSum = 0.0;
 
-  int i;
+  std::vector<double>::size_type i;
   
   for( i = 0; i < mean.size(); i++ )
     dblSum += (rgprob[i] = SampleGamma(mean[i] * precision));
@@ -361,6 +361,7 @@ tRandomGenerator::sampleGroup(int size,int groupSize)
 
   return group;
 }
+
 
 
 

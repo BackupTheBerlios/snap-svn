@@ -92,3 +92,4 @@ inline Persistance::AbstractFormat::Owner
 
 #endif // _SeedSearcher_AssignmentFormat_h
 
+
