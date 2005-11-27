@@ -27,6 +27,35 @@ public:
    virtual const std::type_info& type () const = 0;
 };
 
+
+class TFactoryList {
+   //
+   // a list of factories. required by archives, 
+   // in order to recognized the classes used.
+public:
+   TFactoryList ();
+   ~TFactoryList ();
+
+   typedef int FactoryID;
+
+   bool add (TFactoryBase*);
+   bool remove (const char*);
+
+   TFactoryBase* getFactory (const std::type_info&) const;
+   TFactoryBase* getFactory (FactoryID) const;
+   Object* createObject (FactoryID) const;
+
+   TFactoryBase* getFactory (const char*) const;
+   Object* createObject (const char*) const;
+
+   void serialize (IArchive&);
+   void serialize (OArchive&);
+
+private:
+   class Rep;
+   Rep* _rep;
+};
+
 template <class T>
 class TFactory : public TFactoryBase {
    //
@@ -57,38 +86,6 @@ public:
       return new T;
    }
 };
-
-
-
-
-class TFactoryList {
-   //
-   // a list of factories. required by archives, 
-   // in order to recognized the classes used.
-public:
-   TFactoryList ();
-   ~TFactoryList ();
-
-   typedef int FactoryID;
-
-   bool add (TFactoryBase*);
-   bool remove (const char*);
-
-   TFactoryBase* getFactory (const std::type_info&) const;
-   TFactoryBase* getFactory (FactoryID) const;
-   Object* createObject (FactoryID) const;
-
-   TFactoryBase* getFactory (const char*) const;
-   Object* createObject (const char*) const;
-
-   void serialize (IArchive&);
-   void serialize (OArchive&);
-
-private:
-   class Rep;
-   Rep* _rep;
-};
-
 
 
 END_NAMESPACE (Persistance);
