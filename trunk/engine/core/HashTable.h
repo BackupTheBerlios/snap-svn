@@ -151,7 +151,7 @@ class HashTable {
 	}
 
 	void visitAll_const (Visitor& inVisitor) const {
-		TableIter tabI(table, table+size);
+		TableIter tabI(this->table, this->table+this->size);
 		while(tabI.next()) {
 			for(Entry* entry= *tabI, *prev= 0; entry; ) {
 				Entry* nextOne= entry->next();

@@ -90,11 +90,11 @@ class	AutoPtr : public GenPtr<T> {
 		return *this;
 	}
 	bool valid() const {	//YTD// Should live in GenPtr.h?
-		return ptr!=0;
+		return this->ptr!=0;
 	}
 	T* release() {
-		T* result= ptr;
-		ptr= 0;
+		T* result= this->ptr;
+		this->ptr= 0;
 		return result;
 	}
 	void dispose() {
@@ -106,8 +106,8 @@ class	AutoPtr : public GenPtr<T> {
 		// do it in this order
 		// to prevent premature object dispose for 'x=x' statements
 		Owner::acquire(in);
-		Owner::release(ptr);
-		ptr= in;
+		Owner::release(this->ptr);
+		this->ptr= in;
 	}
 };
 

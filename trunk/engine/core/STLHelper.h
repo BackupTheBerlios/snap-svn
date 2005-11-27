@@ -183,7 +183,7 @@ public:
       //
       // weird syntax needed in case 'iterator' is a class/struct and 
       // not a pointer
-      return &(*_current); 
+      return &(*this->_current); 
    }
 };
 
@@ -211,7 +211,7 @@ public:
       //
       // weird syntax needed in case 'iterator' is a class/struct and 
       // not a pointer
-      return &(*_current); 
+      return &(*this->_current); 
    }
 };
 
