@@ -45,15 +45,17 @@ public:
       all
    };
    
-   RandomProjections (  All,              // create all possible projections
+   RandomProjections (  All,						// create all possible projections
                         int length,          // length of the assignment to create
                         int numOfPositions,  // number of positions to select in each assignment
+								bool allowOuterWildcards, 
                         boost::shared_ptr <Langauge>
                         );
 
    RandomProjections (  int numOfProjections,// num of assignments to generate
                         int length,          // length of the assignment to create
                         int numOfPositions,  // number of positions to select in each assignment
+								bool allowOuterWildcards, 
                         boost::shared_ptr <Langauge>
                         );
 
@@ -75,7 +77,7 @@ public:
       return _maxPossibleProjections;
    }
    static int numOfProjections (bool exhaustive, int requestedProjections,
-                                 int length, int numOfPositions);
+                                 int length, int numOfPositions, bool allowOuterPositions);
    //
    // returns the length of each projection
    int length () const {
@@ -120,9 +122,10 @@ public:
       int length,          // length of the assignment to create
       int numOfPositions,  // number of positions to select in each assignment
       int midsection,
+		bool allowOuterWildcards,
       boost::shared_ptr <Langauge> lang
       )
-      : RandomProjections (all, length - midsection, numOfPositions, lang), 
+      : RandomProjections (all, length - midsection, numOfPositions, allowOuterWildcards, lang), 
          _midsection (midsection)
    {
    }
@@ -132,11 +135,13 @@ public:
       int length,          // length of the assignment to create
       int numOfPositions,  // number of positions to select in each assignment
       int midsection,
+		bool allowOuterWildcards,
       boost::shared_ptr <Langauge> lang
       )
       : RandomProjections (numOfProjections, 
                            length - midsection, 
                            numOfPositions, 
+									allowOuterWildcards,
                            lang),
          _midsection (midsection)
    {
@@ -162,16 +167,21 @@ private:
 };
 
 class SpecificProjectionGenerator : public RandomProjections {
+	//
+	// The purpose of this class is to produce projections
+	// on a given assignment.
 public:
    SpecificProjectionGenerator (  
       All,              // create all possible projections
       const Str& base,     // base assignment on which to project
       int numOfPositions,  // number of positions to select in each assignment
+		bool allowOuterPositions, // this usually should be set to true
       boost::shared_ptr <Langauge> lang
       )
       : RandomProjections (   all, 
                               base.length (), 
                               numOfPositions, 
+										allowOuterPositions,
                               lang) 
    {
       _langauge->stringToAssignment (_base, base);
@@ -181,11 +191,13 @@ public:
       int numOfProjections,// num of assignments to generate
       const Str& base,     // base assignment on which to project
       int numOfPositions,  // number of positions to select in each assignment
+		bool allowOuterPositions, // this usually should be set to true
       boost::shared_ptr <Langauge> lang
       )
       : RandomProjections (   numOfProjections, 
                               base.length (), 
                               numOfPositions, 
+										allowOuterPositions,
                               lang)
    {
       _langauge->stringToAssignment (_base, base);

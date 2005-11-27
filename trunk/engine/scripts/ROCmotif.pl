@@ -36,8 +36,7 @@ die "Usage: $0 motif -nonreverse <seqfile> <wgtfile>\n"
 $motif =~ tr/acgt/ACGT/;
 $motif =~ s/S/[CG]/gi;
 $motif =~ s/W/[AT]/gi;
-$motif =~ s/R/[AG]/gi;
-
+$motif =~ s/R/[AG]/gi;
 $motif =~ s/Y/[CT]/gi;
 $motif =~ s/K/[GT]/gi;
 $motif =~ s/M/[AC]/gi;
