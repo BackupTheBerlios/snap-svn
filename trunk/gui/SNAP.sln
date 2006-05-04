@@ -7,11 +7,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Core", "..\engine\src\vc.ne
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SeedSearcherCore", "..\engine\src\vc.net\SeedSearcherCore.vs8.vcproj", "{80D22A42-7429-4BA2-8136-0AF6FADBEB11}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{20CEE648-4C50-4B1A-94CD-00563F7A6845}"
-	ProjectSection(SolutionItems) = preProject
-		..\..\..\Dev\SNAP\svn.berlios.de\trunk\engine\src\vc.net\Persistance.vcproj = ..\..\..\Dev\SNAP\svn.berlios.de\trunk\engine\src\vc.net\Persistance.vcproj
-	EndProjectSection
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Persistance", "..\engine\src\vc.net\Persistance.vs8.vcproj", "{16C4D29E-6206-48AF-AE0E-E413B563CE75}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SeedSearcher", "..\engine\src\vc.net\SeedSearcher.vs8.vcproj", "{3071C567-8503-473B-A530-6D93E43B1809}"
@@ -22,6 +17,20 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SeedSearcher", "..\engine\s
 	EndProjectSection
 EndProject
 Global
+	GlobalSection(SourceCodeControl) = preSolution
+		SccNumberOfProjects = 3
+		SccProjectName0 = gui
+		SccLocalPath0 = ..\\..\\..
+		SccProvider0 = MSSCCI:PushOk\u0020SVN\u0020Proxy
+		SccProjectFilePathRelativizedFromConnection0 = svn.berlios.de\\trunk\\gui\\
+		SccProjectUniqueName1 = src\\SNAP.csproj
+		SccProjectName1 = gui/src
+		SccLocalPath1 = src
+		SccProjectUniqueName2 = ..\\engine\\src\\vc.net\\Persistance.vs8.vcproj
+		SccProjectName2 = engine/src/persistance
+		SccLocalPath2 = ..\\engine\\src
+		SccProjectFilePathRelativizedFromConnection2 = vc.net\\
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|Mixed Platforms = Debug|Mixed Platforms
