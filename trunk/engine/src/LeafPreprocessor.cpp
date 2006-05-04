@@ -233,7 +233,7 @@ LeafPreprocessor::Rep* LeafPreprocessor::buildNoNegatives (
    time(&finish);
 
    DLOG  << "LeafPreprocessor removed " << (size - newSize) << " negative nodes (" 
-         << (finish - start) << " seconds)" << DLOG.EOL ()
+         << static_cast <int>(finish - start) << " seconds)" << DLOG.EOL ()
          << DLOG.EOL ();
    DLOG.flush ();
 
@@ -369,7 +369,7 @@ LeafPreprocessor::Rep* LeafPreprocessor::build (
 
 	DLOG	<< "LeafPreprocessor (Depth == " 
 			<< seedLength
-			<< ") created: (" << (finish - start) 
+			<< ") created: (" << static_cast <int> (finish - start) 
 			<< " seconds)" << DLOG.EOL ()
 			<< numberOfPositions << " SeqPosition objects each of " 
 			<< sizeof (SeqPosition) << " Bytes." << DLOG.EOL ()

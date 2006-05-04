@@ -422,7 +422,7 @@ int SeedSearcher::prefixTreeSearch (
       childFeatures.resize (0);
    }
 
-   DLOG << "[Evaluating seeds: " << (time_t) totalTimeEvaluatingSeeds << " seconds] ";
+   DLOG << "[Evaluating seeds: " << static_cast <int> (totalTimeEvaluatingSeeds) << " seconds] ";
    return totalSeedsFound;
 }
 
@@ -863,7 +863,7 @@ int SeedSearcher::tableSearch (  SearchParameters& params,
       }
 
       finish = time (NULL);
-      DLOG << (finish - start) << " seconds.] ";
+      DLOG << static_cast <int>(finish - start) << " seconds.] ";
 
       return seeds.size ();
    }

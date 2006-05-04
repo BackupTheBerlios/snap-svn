@@ -51,7 +51,7 @@ SeedSearcherMain::SeedSearcherMain ()
 {
    //
    // initialize the random seed
-   RandomProjections::srand (time (NULL));
+   RandomProjections::srand (static_cast <unsigned int> (time (NULL)));
 }
 
 void SeedSearcherMain::beforeProjection (int /* search handle */,
@@ -88,7 +88,7 @@ void SeedSearcherMain::afterProjection (int /* search handle */,
 
    //
    // produce output message
-   DLOG << (searchFinish - searchStart) << " seconds, Found "
+   DLOG << static_cast <int>(searchFinish - searchStart) << " seconds, Found "
          << totalNumOfSeedsFound - _lastTotalNumOfSeedsFound
          << " seeds." << DLOG.EOL ();
 
@@ -387,7 +387,7 @@ void SeedSearcherMain::CmdLineParameters::setupDB ()
    time (&finish);
 
    DLOG << "Loaded " << _db->size () <<  " Sequences. ("
-        << (finish - start) << " seconds )." << DLOG.EOL ();
+        << static_cast <int>(finish - start) << " seconds )." << DLOG.EOL ();
    DLOG.flush ();
 }
 

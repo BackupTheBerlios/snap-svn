@@ -516,7 +516,7 @@ static TreeRep* build(bool optimize,
      builder.spaceLostInVectors () * sizeof (SeqPosition*);
                      
    DLOG << "PrefixTreePreprocessor created: (" 
-	<< (finish - start) << " seconds)" 
+	<< static_cast <int>(finish - start) << " seconds)" 
 	<< DLOG.EOL ()
 	<< numberOfPositions << " SeqPosition objects each of " 
 	<< sizeof (SeqPosition) << " Bytes." 
@@ -717,8 +717,8 @@ class GetSeqPosition {
 public:
    GetSeqPosition (const SeqPositions*& found) : _found (found) {
    }
-   bool operator () (const SeqPositions& pos, SequenceDB::ID id) {
-      int seqId = pos.sequence ()->id ();
+   inline bool operator () (const SeqPositions& pos, SequenceDB::ID id) {
+	   SequenceDB::ID seqId = pos.sequence ()->id ();
       if (seqId == id) {
          //
          // we have found the SeqPosisition we were looking for!
@@ -727,20 +727,16 @@ public:
 
       return seqId < id;
    }
-   bool operator () (SequenceDB::ID id, const SeqPositions& pos) {
-      int seqId = pos.sequence ()->id ();
-      if (seqId == id) {
-         //
-         // we have found the SeqPosisition we were looking for!
-         _found = &pos;
-      }
-
-      return id < seqId;
+   inline bool operator () (const SeqPositions& pos1, const SeqPositions& pos2) {
+		return pos1.sequence ()->id () < pos2.sequence ()->id ();
    }
+   inline bool operator () (SequenceDB::ID id, const SeqPositions& pos) {
+		return !this->operator () (pos, id);
+   }
+
 
 private:
    const SeqPositions*& _found; 
-
 };
 
 SeqPositions TreeNodeRep::getSeqPositions (SequenceDB::ID id) const
