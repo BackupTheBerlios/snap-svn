@@ -46,6 +46,7 @@
 #include <time.h>
 #include <stdio.h>
 #include <boost/filesystem/path.hpp>
+#include <boost/test/included/prg_exec_monitor.hpp> 
 
 using namespace std;
 using namespace Persistance;
@@ -83,7 +84,7 @@ static void printGoodbye (time_t start, time_t finish)
    DLOG << '#' << DLOG.EOL ()
       << "# summary" << DLOG.EOL ()
       << "Execution ended on " <<  timeStr.c_str ()
-      << " after running " << (finish - start) << " seconds."
+      << " after running " << int(finish - start) << " seconds."
       << DLOG.EOL ();
    DLOG.flush ();
 }
@@ -168,7 +169,7 @@ int exit_value = 0;
 
       if (cleanupStart) {
          cleanupFinish = time(NULL);
-         DLOG << (cleanupFinish - cleanupStart) << " seconds." << DLOG.EOL ();
+         DLOG << int (cleanupFinish - cleanupStart) << " seconds." << DLOG.EOL ();
          DLOG.flush ();
       }
 

@@ -32,8 +32,6 @@ SOURCES = Alphabet.cpp Assignment.cpp Cluster.cpp \
 		persistance/TextTableReport.cpp \
 		legacy/RandomGenerator.cpp legacy/Multinomial.cpp \
 		status_reporter/BaseStatusReporter.cpp	\
-		$(BOOST)/libs/test/src/cpp_main.cpp					\
-		$(BOOST)/libs/test/src/execution_monitor.cpp				\
 		$(BOOST)/libs/filesystem/src/operations_posix_windows.cpp		\
 		$(BOOST)/libs/filesystem/src/path_posix_windows.cpp			\
 		$(BOOST)/libs/filesystem/src/convenience.cpp				\
