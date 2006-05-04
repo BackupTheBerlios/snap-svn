@@ -127,6 +127,16 @@ public:
    }
 
 	Str trimmedSubstring () const;
+
+	Size copy (char* in, Size count, Size _off = 0) const {
+		debug_mustbe (_off >= 0);
+		if (_off > 0)
+			return substring (_off).copy (in, count);
+		else {
+			this->getCString (in, count);
+			return tmin (this->length (), count);
+		}
+	}
    
 protected:
    char* mData;

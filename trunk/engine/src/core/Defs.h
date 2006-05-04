@@ -225,7 +225,8 @@ debug_only(signal_assertion(msg, __FILE__, __LINE__))
 
 
 #if ENV_C_SUPPORTS & ENV_NAMESPACES
-#    define USING_TYPE(type_path, type) using type_path::type;
+//#    define USING_TYPE(type_path, type) using type_path::type;
+#    define USING_TYPE(type_path, type) typedef type_path::type type;
 #else 
      //
      // using is not properly handled by compiler

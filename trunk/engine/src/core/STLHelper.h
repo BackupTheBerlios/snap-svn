@@ -101,7 +101,8 @@ public:
 
    //
    // Copy Ctor & operator =
-   inline IteratorWrapperBase () : _current (NULL), _end (NULL) {
+   inline IteratorWrapperBase () : _current (), _end () {
+	   _current = _end;
    }
    inline IteratorWrapperBase (iterator begin, iterator end) : _current (begin), _end (end) {
    }

@@ -2,6 +2,10 @@
 
 #include<boost/tokenizer.hpp>
 
+   typedef boost::tokenizer <
+		boost::char_separator <char>
+		> Tok;
+
 Argv::Argv (const Str& in) : _argc (0), _argv (NULL)
 {
    set (in);
@@ -16,9 +20,8 @@ Argv::Argv (const Str& prefix, const Str& in) : _argc (0), _argv (NULL)
 void Argv::set (const Str& prefix, const Str& in)
 {
    clear ();
-
-   typedef boost::tokenizer < boost::char_separator <char> > Tok;
-   Tok tok (in, boost::char_separator <char> (" \t\r\n"));
+	std::string buffer;
+	Tok tok (in.getCString (buffer), boost::char_separator <char> (" \t\r\n"));
 
    //
    // first we count the number of tokens
@@ -42,8 +45,9 @@ void Argv::set (const Str& in)
 {
    clear ();
 
-   typedef boost::tokenizer < boost::char_separator <char> > Tok;
-   Tok tok (in, boost::char_separator <char> (" \t\r\n"));
+   //typedef boost::tokenizer < boost::char_separator <char> > Tok;
+	std::string buffer;
+   Tok tok (in.getCString (buffer), boost::char_separator <char> (" \t\r\n"));
 
    //
    // first we count the number of tokens
