@@ -96,8 +96,11 @@ struct StatusReportManager {
       if (_reporter) _reporter->setProgress (inPercentDone);
    }
    static inline void setProgress() {
-      int percentDone = (100 * ++_progressPoints) / _maxProgressPoints;
-      if (_reporter) _reporter->setProgress (percentDone);
+		++_progressPoints;
+		if (_reporter) {
+			int percentDone = (100 * _progressPoints) / _maxProgressPoints;
+			_reporter->setProgress (percentDone); 
+		}
    }
 
    //call when processing starts on the job
