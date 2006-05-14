@@ -3,6 +3,8 @@
 CCFLAGS = -O3 -Wall -DNDEBUG
 
 BOOST = C:/Aviad/Dev/boost_1_33_1
+PERL = /usr/bin/perl
+PUSHD = /usr/bin/pushd
 
 CC = g++
 IFLAGS = -I.  -I$(BOOST)
@@ -54,16 +56,25 @@ SOURCES = Alphabet.cpp Assignment.cpp Cluster.cpp \
 		
 MYSQL_LIB_DIR = /sw/lib/mysql
 
-all:	seed 
+all:	unitester seed 
 
 seed$(EXE): main.o $(OBJS) status_reporter/DummyStatusReporter.o	
 	$(CC) $(CCFLAGS) -o seed $(OBJS) main.o status_reporter/DummyStatusReporter.o
 	
+unitester$(EXE): UnitTestMain.o $(OBJS) status_reporter/DummyStatusReporter.o
+	$(CC) $(CCFLAGS) -o unitester $(OBJS) UnitTestMain.o status_reporter/DummyStatusReporter.o 
+
 seed_server$(EXE): main.o $(OBJS) status_reporter/StatusReporter.o
 	$(CC) $(CCFLAGS) -L$(MYSQL_LIB_DIR) -lmysqlclient -o seed_server $(OBJS) main.o status_reporter/StatusReporter.o
+	
+
+
+test: 	seed$(EXE)
+	$(PERL) -Itests/ -Itests/details tests/compare_prep.pl seed$(EXE)
 
 %.o: %.cpp 
 	$(CC) -c $(CCFLAGS) $(IFLAGS) $(LDFLAGS) -o $@ $<
+
 
 
 depend: $(SOURCES)

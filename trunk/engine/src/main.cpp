@@ -325,7 +325,7 @@ protected:
       DLOG.flush ();
    }
    //
-   // prints results after a search
+   // prints results after a search 
    virtual void afterSearch (Results& results) {
       SeedSearcherMain::afterSearch (results);
 
