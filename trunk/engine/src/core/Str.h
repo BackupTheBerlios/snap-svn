@@ -81,9 +81,16 @@ public:
    void getCString(char* inDest, Size inDestSize) const;
    // Copy my data to a std string
    std::string& getCString (std::string& in) const {
-     in.replace (in.begin (), in.end (), getChars (), length ());
-     debug_mustbe (Str (in).equals (*this));
-     return in;
+		if (length () > 0) {
+			in.resize (length ());
+			in.replace (in.begin (), in.end (), getChars (), length ());
+		}
+		else {
+			in.resize (0);
+		}
+
+		debug_mustbe (Str (in).equals (*this));
+		return in;
    }
    
    Str substring(Index inStart, Index inEnd) const;

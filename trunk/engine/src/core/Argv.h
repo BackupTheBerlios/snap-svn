@@ -3,7 +3,10 @@
 
 #include "Str.h"
 
-
+/// <summary>
+/// This class encapsulates the concept of the 'argv' generally passed
+/// to c/c++ programs in the main (int argc, char* argv[]) paramters
+/// </summary>
 class Argv{
    //
    // utlitity class for argv
