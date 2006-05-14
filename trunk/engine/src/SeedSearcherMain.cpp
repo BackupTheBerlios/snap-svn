@@ -259,7 +259,7 @@ void SeedSearcherMain::CmdLineParameters::setup (const Str& seq, const Str& wgt)
    // create random projections
    setupProjections ();
 
-   //
+	//
    // setup the db
    setupDB ();
 
@@ -284,6 +284,10 @@ void SeedSearcherMain::CmdLineParameters::setup (const Str& seq, const Str& wgt)
    //
    // TODO: HACK HERE!!!
    (boost::polymorphic_downcast<ACGTLangauge*> (_langauge.get ()))->includeN (false);
+
+	///
+	/// anticipate n searches
+	StatusReportManager::setMaxProgress(_parser.__proj_n);
 }
 
 void SeedSearcherMain::CmdLineParameters::setupParameters ()
@@ -357,38 +361,43 @@ void SeedSearcherMain::CmdLineParameters::setupProjections ()
 
 void SeedSearcherMain::CmdLineParameters::setupDB ()
 {
+
    DLOG << '#' << DLOG.EOL ()
         << "# SequenceDB: " << DLOG.EOL ();
 
-   DLOG  << "Reading Sequence File: "
-         << _seqFilename
-         << DLOG.EOL ();
+	if (!_seqNameWeights) {
+		DLOG  << "Reading Weights File: "
+				<< _wgtFilename
+				<< DLOG.EOL ();
 
-   DLOG  << "Reading Weights File: "
-         << _wgtFilename
-         << DLOG.EOL ();
+		DLOG.flush ();
 
-   DLOG.flush ();
+		_seqNameWeights.reset ((SeqWeightDB::readWgtFile (_wgtFilename)).release ());
+	}
 
-   AutoPtr <SeqWeightDB::Name2Weight> weights =
-      SeqWeightDB::readWgtFile (_wgtFilename);
+	if (!_db) {
 
-   //
-   // load the sequence files
-   time_t start, finish;
-   time (&start);
-   _db.reset (SequenceDB::TextFileStorage::loadFastaAndWeights (
-      *_langauge,
-      _seqFilename,
-      *weights));
+		DLOG  << "Reading Sequence File: "
+				<< _seqFilename
+				<< DLOG.EOL ();
 
-   _seqWeights.reset (SeqWeightDB::computeWeightIndex (*weights, *_db).release ());
+		//
+		// load the sequence files
+		time_t start, finish;
+		time (&start);
+		_db.reset (SequenceDB::TextFileStorage::loadFastaAndWeights (
+			*_langauge,
+			_seqFilename,
+			*_seqNameWeights));
 
-   time (&finish);
+		_seqWeights.reset (SeqWeightDB::computeWeightIndex (*_seqNameWeights, *_db).release ());
 
-   DLOG << "Loaded " << _db->size () <<  " Sequences. ("
-        << static_cast <int>(finish - start) << " seconds )." << DLOG.EOL ();
-   DLOG.flush ();
+		time (&finish);
+
+		DLOG << "Loaded " << _db->size () <<  " Sequences. ("
+			  << static_cast <int>(finish - start) << " seconds )." << DLOG.EOL ();
+		DLOG.flush ();
+	}
 }
 
 void SeedSearcherMain::CmdLineParameters::setupWeightFunction ()
@@ -579,7 +588,6 @@ void ConfParameterIterator::setup (const Str& seqFilename,
 
    //
    // add the new entry to the list
-   StatusReportManager::setMaxProgress(params->parser ().__proj_n);
    _list.addLast (new ParamNode (Param_var (params.release ())));
 
    if (!_optList.empty ()) {

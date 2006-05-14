@@ -47,7 +47,7 @@ public:
       __langauge = in;
    }
    inline static Persistance::TextWriter& writer () {
-      debug_mustbe (__textWriter.get ());
+      mustbe (__textWriter.get ());
       return (*__textWriter);
    }
    static Langauge& assgWriter () {

@@ -157,8 +157,9 @@ protected:
    // the data to be searched
    boost::shared_ptr <SequenceDB> _db;
    //
-   // the projections 
+   // the weights 
    boost::shared_ptr <SeqWeightDB::ID2Weight> _seqWeights;
+	boost::shared_ptr <SeqWeightDB::Name2Weight> _seqNameWeights;
    //
    // the projections 
    boost::shared_ptr <ProjectionGenerator> _projections;
@@ -262,6 +263,7 @@ public:
    // call this function to initialize the parameters, 
    // after the appropriate options have been set 
    void setup (const Str& seqFilename, const Str& wgtFilename);
+
    //
    // call this function if parameters have already been initialized
    // and you want a second seed-searcher run with different parameters.

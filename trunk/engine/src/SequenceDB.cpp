@@ -187,7 +187,7 @@ SequenceDB*
    while (in>>s) {
       if ((s[0]=='>') && seq.size()){
          SeqWeightDB::Name2Weight::iterator node = weights.find(Str (name));
-         if (node != weights.end ()) {	
+			if (node != weights.end ()) {	
             //
             //
             ::insertSequence (   *db, 
@@ -250,11 +250,18 @@ SequenceDB::~SequenceDB ()
 }
 
 
+#include "core/FixedStr.h"
+
 bool SequenceDB::insertSequence (Sequence::ID id, const Str& name, Sequence* seq)
 {
    //
-   // TODO: error checking
-   _name2ID [Str (name)] = id;
+	/// make sure that sequence names are unique
+	if (_name2ID.find (name) != _name2ID.end ()) {
+		/// name already exists
+		Err (FixedStrBuffer <1024> ("A sequence named %s appears more than once in the sequence file.", StrBuffer (name).getCString ()));
+	}
+
+   _name2ID [name] = id;
    _sequences.push_back(seq);
    return true;
 }
