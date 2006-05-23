@@ -179,7 +179,7 @@ public:
       int l = motif_str.length ();
       for (int i=0 ; i<l ; i++) {
          AlphabetCode::Char c = motif_str.getCharAt (i);
-         if (c == '?' || c == 'N') {
+         if (c == '?' || c == 'N' || c == 'n') {
             motif.addPosition (wildcard (assg_together));
          }
          else if (c == '*') {
