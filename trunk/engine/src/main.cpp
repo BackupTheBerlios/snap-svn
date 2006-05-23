@@ -46,7 +46,6 @@
 #include <time.h>
 #include <stdio.h>
 #include <boost/filesystem/path.hpp>
-#include <boost/test/included/prg_exec_monitor.hpp> 
 
 using namespace std;
 using namespace Persistance;
@@ -439,6 +438,19 @@ static void mainRoutine (int argc,
    DLOG << DLOG.EOL () << "Cleaning up...";
    time (&cleanupStart);
 }
+
+
+#ifdef _MSC_VER
+#	pragma warning(disable : 4244)
+#endif
+
+#include <boost/test/included/prg_exec_monitor.hpp> 
+
+#ifdef _MSC_VER
+#	pragma warning(default: 4244)
+#endif
+
+
 
 #if 0
 #if SEED_DL_MALLOC_OPTIMIZATION
