@@ -9,23 +9,19 @@
 #include "SeqWeight.h"
 #include "SeedSearcherMain.h"
 
-
 #define BOOST_AUTO_TEST_MAIN
 
 #include <boost/test/unit_test_suite.hpp>
 #include <boost/test/auto_unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
 
-
-
 using namespace boost::unit_test;
+
 
 
 //
 // Argv Unit test
 //
-
-
 // most frequently you implement test cases as a free functions
 BOOST_AUTO_UNIT_TEST(test_Argv)
 {
@@ -85,9 +81,9 @@ BOOST_AUTO_TEST_CASE ( test_Assignment_basic )
 	BOOST_CHECK (assg [11].strategy () == assg_together);	/// 'N' = '?' has together strategy
 
 	BOOST_CHECK (assg [8].count () == 4);
-	BOOST_CHECK (assg [9].count () == 4);
-	BOOST_CHECK (assg [10].count () == 4);
-	BOOST_CHECK (assg [11].count () == 4);
+	BOOST_CHECK (assg [9].count () == 5);	// when the strategy is assg_together, it is also allowed to look at positions where the sequence has 'N'
+	BOOST_CHECK (assg [10].count () == 5);	// when the strategy is assg_together, it is also allowed to look at positions where the sequence has 'N'
+	BOOST_CHECK (assg [11].count () == 5); // when the strategy is assg_together, it is also allowed to look at positions where the sequence has 'N'
 
 	/// check connection between alphabet and assignment
 	buffer = "acgtACGT";
@@ -118,12 +114,13 @@ BOOST_AUTO_TEST_CASE ( test_Assignment_advanced )
 	BOOST_CHECK_THROW (assg2.contains (assg1), BaseException); /// cannot compare assignments of different length
 	
 	BOOST_CHECK (assg1.contains (assg2, 0, 4));
-	BOOST_CHECK (!assg1.contains (assg2, 1, 4));
-	BOOST_CHECK (assg1.contains (assg2, 4, 4));
-
-
-	
-	assg1.addAssignmentAt (0, assg1);	/// now assg1 == ACGTACGT same as assg2
+	BOOST_CHECK (assg1.contains (assg2, 1, 3));
+	BOOST_CHECK (!assg1.contains (SubAssignment (assg2, 1, 3), 0, 3));
+	BOOST_CHECK (assg1.contains (SubAssignment (assg2, 0, 3), 0, 3));
+	BOOST_CHECK (SubAssignment (assg1, 0, 3).contains (SubAssignment (assg2, 0, 3)));
+	BOOST_CHECK (!SubAssignment (assg1, 1, 3).contains (SubAssignment (assg2, 0, 3)));
+		
+	assg1.addAssignmentAt (0, Assignment (assg1));	/// now assg1 == ACGTACGT same as assg2
 	BOOST_REQUIRE (assg1.length () == 8);
 	BOOST_CHECK (assg1.equals (assg2));
 	BOOST_CHECK (assg1.contains (assg2));
@@ -131,7 +128,7 @@ BOOST_AUTO_TEST_CASE ( test_Assignment_advanced )
 	assg1.erase (4); /// remove last 4 characters, now assg1 = ACGT
 	BOOST_REQUIRE (assg1.length () == 4);
 
-	assg1.addAssignmentAt (0, assg1);	/// now assg1 == ACGTACGT same as assg2
+	assg1.addAssignmentAt (0, Assignment (assg1));	/// now assg1 == ACGTACGT same as assg2
 	BOOST_CHECK (assg1.equals (assg2));
 
 	assg1.erase (3, 2); 	///       01234556
@@ -299,12 +296,12 @@ BOOST_AUTO_UNIT_TEST(test_motifInSeqOuterPositions)
 				new KBestFilter (1, 0, features)
 			);
 
-			SeedSearcher::SearchParameters params;
-			params.wf (wf);
-			params.preprocessor (prep);
-			params.score (scoreFunction);
-			params.langauge(langauge);
-			params.bestFeatures(filter);
+			boost::shared_ptr <SeedSearcher::SearchParameters> params (new SeedSearcher::SearchParameters);
+			params->wf (wf);
+			params->preprocessor (prep);
+			params->score (scoreFunction);
+			params->langauge(langauge);
+			params->bestFeatures(filter);
 
 			SeedSearcher::search ((SearchType) prep_types [i], params, projection);
 
@@ -320,7 +317,7 @@ BOOST_AUTO_UNIT_TEST(test_motifInSeqOuterPositions)
 			if (!feature->cluster ().hasPositions ()) {
 				// add the motif positions if they are missing
 				Preprocessor::NodeCluster motifNodes;
-				params.preprocessor ().add2Cluster ( motifNodes, 
+				params->preprocessor ().add2Cluster ( motifNodes, 
 					feature->assignment ());
 
 				motifNodes.add2SeqClusterPositions (feature->cluster ());
@@ -345,7 +342,12 @@ class TmpFile
 public:
 	static void write (const char* tmpFilePrefix, const char* data, std::string& outFilename)
 	{
-		outFilename = tempnam (NULL, tmpFilePrefix);
+#if	ENV_COMPILER & ENV_MICROSOFT
+#	define TEMPNAM _tempnam
+#else
+#	define TEMPNAM tempnam
+#endif
+		outFilename = TEMPNAM (NULL, tmpFilePrefix);
 		{
 			std::ofstream writer (outFilename.c_str ());
 			writer << data;
@@ -431,10 +433,16 @@ BOOST_AUTO_UNIT_TEST(test_SeedSearcherMain)
 	TmpFile::write (
 		"seq",
 		">Positive1\n"
+//		 0         1         2----
+//		 0123456789012345678901234
 		"AAAAAAAAAAAAAAACCCCCCACGTCCCCCCCCGGGGGGGGGGGGGGTTTTTTTTTTTTT\n"
 		">Positive2\n"
+//		 ----			
+//		 0123456789012345678901234
 		"ACGTTTTTTTTTTTTTTTTTTTTTTCCCCCCCCCCCC\n"
 		">Positive3\n"
+//		           1         2         3         4         5    ---- 
+//		 012345678901234567890123456789012345678901234567890123456789
 		"AAAAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGCCCCCCCCCCCCCCCTTTTTTTACGT\n"
 		">Negative1\n"
 		"AAAACCCCGGGGGTTTTTTAAAAAAACCGGGT\n"
@@ -502,6 +510,36 @@ BOOST_AUTO_UNIT_TEST(test_SeedSearcherMain)
 	BOOST_CHECK (tpfn._FP == 0);
 	BOOST_CHECK (tpfn._TN == 5);
 	BOOST_CHECK (tpfn._FN == 0);
+
+	/// check that the motif appears in the correct positions
+	BOOST_REQUIRE (acgt->cluster ().size () == 3);
+
+	const PosCluster* cluster = NULL;
+	/// since we are using gene counts, the positions will not be available "out-of-the-box"
+	/// we shall have to ask for them explicitly
+	cluster = acgt->cluster (true).getPositions (params->db ().getSequence ("Positive1"));
+	BOOST_REQUIRE (cluster);
+	BOOST_REQUIRE (cluster->size() == 1);
+	BOOST_CHECK (cluster->iterator ().get()->strand () == _strand_pos_);
+	BOOST_CHECK (cluster->iterator ().get()->position () == 21);
+	BOOST_CHECK (cluster->iterator ().get()->getData (0) == 'A');
+	BOOST_CHECK (cluster->iterator ().get()->getSeedString (4, 0).equals ("ACGT"));
+
+	cluster = acgt->cluster (true).getPositions (params->db ().getSequence ("Positive2"));
+	BOOST_REQUIRE (cluster);
+	BOOST_REQUIRE (cluster->size() == 1);
+	BOOST_CHECK (cluster->iterator ().get()->strand () == _strand_pos_);
+	BOOST_CHECK (cluster->iterator ().get()->position () == 0);
+	BOOST_CHECK (cluster->iterator ().get()->getData (0) == 'A');
+	BOOST_CHECK (cluster->iterator ().get()->getSeedString (4, 0).equals ("ACGT"));
+
+	cluster = acgt->cluster (true).getPositions (params->db ().getSequence ("Positive3"));
+	BOOST_REQUIRE (cluster);
+	BOOST_REQUIRE (cluster->size() == 1);
+	BOOST_CHECK (cluster->iterator ().get()->strand () == _strand_pos_);
+	BOOST_CHECK (cluster->iterator ().get()->position () == 55);
+	BOOST_CHECK (cluster->iterator ().get()->getData (0) == 'A');
+	BOOST_CHECK (cluster->iterator ().get()->getSeedString (4, 0).equals ("ACGT"));
 	
 	/// look for the hypergeometric score
 	Scores::HyperGeometricPvalue hypergeo (tpfn);
@@ -516,9 +554,17 @@ BOOST_AUTO_UNIT_TEST(test_SeedSearcherMain)
 	}
 
 	BOOST_REQUIRE (score);
-	BOOST_CHECK_CLOSE (acgt->score ()->log10Score (), double (-1.7), 1);
+	BOOST_CHECK_CLOSE (score->log10Score (), double (-1.7), 1);
 }
 
 
+#ifdef _MSC_VER
+#	pragma warning(disable : 4244)
+#endif
+
 
 #include <boost/test/included/unit_test_framework.hpp>
+
+#ifdef _MSC_VER
+#	pragma warning(default: 4244)
+#endif
