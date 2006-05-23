@@ -118,7 +118,7 @@ public:
    // search the tree for seeds that correspond to a projection
    // returns the total number of seeds found
    static int prefixTreeSearch (
-         SearchParameters& params,
+		boost::shared_ptr <SearchParameters> params,
          const Assignment& projection // how to climb down the tree
          )
    {
@@ -129,7 +129,7 @@ public:
    // search the tree for seeds that correspond to a projection   
    // returns the total number of seeds found
    static int prefixTreeSearch (
-         SearchParameters& params,
+         boost::shared_ptr <SearchParameters> params,
          const Assignment& projection, // how to climb down the tree
          int length
          );
@@ -138,13 +138,13 @@ public:
    // search the tree for seeds that correspond to a projection (total counts)
    // returns the total number of seeds found
    static int tableSearch (
-      SearchParameters& params,
+      boost::shared_ptr <SearchParameters> params,
       const Assignment& projection // how to climb down the tree
          );
 
 	static int search (
 		SearchType type,
-		SearchParameters& params,
+		boost::shared_ptr <SearchParameters> params,
 		const Assignment& projection // how to climb down the tree
 		)
 	{

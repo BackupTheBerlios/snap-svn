@@ -40,6 +40,9 @@
 
 #include "boost/shared_ptr.hpp"
 
+class Feature;
+class FeatureParameters;
+class FeatureInvestigator;
 
 //
 //
@@ -51,8 +54,9 @@ public:
    Feature (Assignment* assg, 
             SeqCluster* cluster,
             const Assignment* projection,
-				boost::shared_ptr <Scores::Score> score) {
-      set (assg, cluster, projection, score);
+				boost::shared_ptr <Scores::Score> score,
+				boost::shared_ptr <FeatureParameters> parameters) {
+      set (assg, cluster, projection, score, parameters);
    }
    ~Feature () {
       dispose ();
@@ -61,7 +65,8 @@ public:
    void set (  Assignment* assg, 
 					SeqCluster* cluster,
 					const Assignment* projection,
-					Scores::Score_ptr score);
+					Scores::Score_ptr score,
+					boost::shared_ptr <FeatureParameters> parameters);
 
 	inline double log2score () const {
 		return _score->log2Score ();
@@ -79,10 +84,15 @@ public:
       debug_mustbe (_cluster);
       return *_cluster;
    }
+	/// returns the SeqCluster which contains the sequences that hold this feature
+	/// Remark: This SeqCluster may or may not be populated with PosClusters
    inline const SeqCluster& cluster () const {
       debug_mustbe (_cluster);
 	   return *_cluster;
    }
+	/// returns the SeqCluster which contains the sequences that hold this feature
+	/// if 'fillInPosCluster' is true, the SeqCluster is guranteed to be populated with PosClusters
+	const SeqCluster& cluster (bool fillInPosCluster);
    inline const Assignment* projection () const {
 	   return _projection;
    }
@@ -113,6 +123,7 @@ protected:
    const Assignment* _projection;
    SeqCluster* _cluster;
    boost::shared_ptr <Scores::Score> _score;
+	boost::shared_ptr <FeatureParameters> _parameters;
 };
 //
 // CORBA notation used here... :-)
@@ -173,14 +184,16 @@ public:
    const Langauge& langauge () const {
       return *_langauge;
    }
-   Feature& createFeature (Feature& out,
+   static Feature& createFeature (
+									boost::shared_ptr <FeatureParameters> params,
+									Feature& out,
                            Assignment* assg, 
                            SeqCluster* cluster,
                            const Assignment* projection,
                            int numSeedsSearched = 0)
    {
 		Scores::Score_ptr score = 
-         _score->score (
+         params->_score->score (
                      *assg,         // the assignment
                      *projection,    // the projection,
                      *cluster      // sequences containing the feature
@@ -191,34 +204,39 @@ public:
                // sequences containing the feature  
                cluster,
                projection,
-               score);
+               score,
+					params);
 
       return out;
    }
 
 
-   Feature& createFeature (Feature& out,
+   static Feature& createFeature (
+									boost::shared_ptr <FeatureParameters> params,
+									Feature& out,
                            Assignment const& assg, 
                            Assignment const& proj) 
    {
       Preprocessor::NodeCluster nodes;
-      _preprocessor->add2Cluster (nodes, assg);
+      params->_preprocessor->add2Cluster (nodes, assg);
 
       SeqCluster* cluster = new SeqCluster;
       nodes.add2SeqClusterPositions (*cluster);
 
-      return createFeature (
+      return createFeature (params,
                out,
                new Assignment (assg),
                cluster,
                new Assignment (proj));
    }
 
-   Feature* createFeature (Assignment const& assg, 
+	static boost::shared_ptr <Feature> createFeature (
+									boost::shared_ptr <FeatureParameters> params,
+									Assignment const& assg, 
                            Assignment const& proj) {
-      AutoPtr <Feature> feature = new Feature;
-      createFeature (*feature, assg, proj);
-      return feature.release ();
+		boost::shared_ptr <Feature> feature (new Feature);
+      createFeature (params, *feature, assg, proj);
+      return feature;
    }
 
 

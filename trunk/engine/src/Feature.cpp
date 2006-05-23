@@ -330,18 +330,42 @@ Feature::Feature ()
 void Feature::set (Assignment* assg, 
          SequenceDB::Cluster* cluster,
          const Assignment* projection,
-			Scores::Score_ptr score)
+			Scores::Score_ptr score,
+			boost::shared_ptr <FeatureParameters> parameters)
 {
    _assg = assg;
    _complement = NULL;
    _projection = projection;
    _cluster = cluster;
    _score = score;
+	_parameters = parameters;
 }
 
 
 void Feature::dispose () {
    delete _assg;     _assg = NULL;
    delete _cluster;  _cluster = NULL;
-   delete _complement;  _complement = NULL;
+   
+	delete _complement;  _complement = NULL;
+}
+
+const SeqCluster& Feature::cluster(bool fillInPosCluster) 
+{
+	debug_mustbe (_cluster);
+	if (fillInPosCluster) {
+	//
+		// use the positions in the cluster if they are available
+		if (!_cluster->hasPositions ()) {
+			//
+			// it is assumed that if it has any positions, then
+			// it contains all relevant positions
+			Preprocessor::NodeCluster motifNodes;
+			_parameters->preprocessor ().add2Cluster ( motifNodes, 
+																	assignment ());
+
+			motifNodes.add2SeqClusterPositions (*_cluster);
+		}
+		debug_mustbe (_cluster->hasPositions ());
+	}
+   return *_cluster;
 }

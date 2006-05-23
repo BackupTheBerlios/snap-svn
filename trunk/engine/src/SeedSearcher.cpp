@@ -340,13 +340,13 @@ static int rec_prefixTreeSearch (
 
 
 int SeedSearcher::prefixTreeSearch (
-      SearchParameters& params,
+		boost::shared_ptr <SearchParameters> params,
       const Assignment& projection, // how to climb down the tree
       int desiredDepth              // desired depth / length of features
          )
 {
    const PrefixTreePreprocessor& tree = 
-		*safe_cast (const PrefixTreePreprocessor*, &params.preprocessor ());
+		*safe_cast (const PrefixTreePreprocessor*, &(params->preprocessor ()));
 
    debug_mustbe (projection.length () > 0);
    debug_mustbe (projection.length () <= tree.getDepth ());
@@ -373,7 +373,7 @@ int SeedSearcher::prefixTreeSearch (
    for (; posIt.hasNext () ; posIt.next ()) {
       int childIndex = posIt.get ();
       rec_prefixTreeSearch (
-         params,
+         *params,
          node.getChild (childIndex), //where to search
          projection,    // how to climb down the tree
          childFeatures, // storage for all the child's features
@@ -401,7 +401,7 @@ int SeedSearcher::prefixTreeSearch (
 #        endif
 
          Feature_var seed_feature (new Feature);
-         params.createFeature (
+			FeatureParameters::createFeature (params,
             *seed_feature,
             // the feature's assignment 
             feature.first,
@@ -412,7 +412,7 @@ int SeedSearcher::prefixTreeSearch (
 
          //
          // this also cleans up memory, if necessary
-         params.bestFeatures ().add (seed_feature);
+         params->bestFeatures ().add (seed_feature);
       }
       //
       // accumolate times
@@ -627,7 +627,7 @@ createFeatureTable (	TableSearcher::SeedVector& outVector,
 }
 
 static int extendedTableSearch (
-                  SeedSearcher::SearchParameters& params,
+										  boost::shared_ptr <SeedSearcher::SearchParameters> params,
                   const Assignment& projection)
 {
    //
@@ -635,7 +635,7 @@ static int extendedTableSearch (
 
    //
    // constants for later use
-   const int prefixLength = params.preprocessor().maxAssignmentSize();
+   const int prefixLength = params->preprocessor().maxAssignmentSize();
    const int postfixLength = projection.length () - prefixLength;
    const int totalLength = prefixLength + postfixLength;
 
@@ -655,13 +655,13 @@ static int extendedTableSearch (
 			/* use total count because we need the positions */ true,
 			/* don't use specialization */ false,
 			DEFAULT_SEED_HASH_TABLE_SIZE,
-			params.langauge ());
+			params->langauge ());
 
       //
       // get all the nodes of the preprocessor up to maximum length
       Preprocessor::NodeCluster nodes;
-      params.preprocessor ().add2Cluster (nodes, projectionPrefix);
-      createFeatureTable (seeds, shortHashTable, params, projectionPrefix);
+      params->preprocessor ().add2Cluster (nodes, projectionPrefix);
+      createFeatureTable (seeds, shortHashTable, *params, projectionPrefix);
    }
 
    //
@@ -714,7 +714,7 @@ static int extendedTableSearch (
             const SeqPosition* current;
             do {
                Str actualPostfixSeed = (*posIt)->getSeedString (postfixLength, prefixLength);
-               Assignment actualPostfixAssg (actualPostfixSeed, params.langauge ().code ());
+               Assignment actualPostfixAssg (actualPostfixSeed, params->langauge ().code ());
                assgFitsProjection = 
                   currentAssgPostfix.specialize(actualPostfixAssg, projectionPostfix);
 
@@ -740,7 +740,7 @@ static int extendedTableSearch (
             // the position's assignment
             Assignment posAssignment (
                (*posIt)->getSeedString (postfixLength, prefixLength),
-               params.langauge ().code ()
+               params->langauge ().code ()
                );
             debug_mustbe (currentAssgPostfix.length () == posAssignment.length ());
             if (currentAssgPostfix.contains (posAssignment)) {
@@ -785,13 +785,13 @@ static int extendedTableSearch (
             // remember, if we had more memory, we could just have created
             // a deeper preprocessor, right?
             Feature_var seed_feature (new Feature);
-            params.createFeature(
+				FeatureParameters::createFeature(params,
                *seed_feature,
                completeAssignment,
                currentSeqCluster.release(),
                &projection);
 
-            params.bestFeatures ().add (seed_feature);
+            params->bestFeatures ().add (seed_feature);
             currentSeqCluster = new SeqCluster;
 
             seedsFound++;
@@ -811,21 +811,21 @@ static int extendedTableSearch (
 //
 // Total counts
 //
-int SeedSearcher::tableSearch (  SearchParameters& params,
+int SeedSearcher::tableSearch (  boost::shared_ptr <SearchParameters> params,
                                  const Assignment& projection)
 {
    debug_mustbe (projection.length () > 0);
-   if (projection.length () <= params.preprocessor ().maxAssignmentSize ()) {
+   if (projection.length () <= params->preprocessor ().maxAssignmentSize ()) {
 
 		TableSearcher::SeedVector seeds;
 		{
 			TableSearcher::Table hashTable ( 
-				params.useTotalCount (),
-				params.useSpecialization (),
+				params->useTotalCount (),
+				params->useSpecialization (),
 				DEFAULT_SEED_HASH_TABLE_SIZE,
-				params.langauge ());
+				params->langauge ());
 
-			createFeatureTable(seeds, hashTable, params, projection);
+			createFeatureTable(seeds, hashTable, *params, projection);
 		}
 
       time_t start = time (NULL), finish;
@@ -843,7 +843,7 @@ int SeedSearcher::tableSearch (  SearchParameters& params,
          // this is implemented in the score-function, no need
          // to do anything here
          Assignment* featureAssg;
-         if (params.useSpecialization ()) {
+         if (params->useSpecialization ()) {
             featureAssg = 
                safe_cast (TableSearcher::SpecializedSeed*, 
                feature)->releaseSpecializtion ();
@@ -853,13 +853,14 @@ int SeedSearcher::tableSearch (  SearchParameters& params,
          }
 
          Feature_var seed_feature (new Feature);
-         params.createFeature(
+			FeatureParameters::createFeature(
+				params,
             *seed_feature,
             featureAssg,
             feature->releaseCluster (),
             &projection);
 
-         params.bestFeatures ().add (seed_feature);
+         params->bestFeatures ().add (seed_feature);
       }
 
       finish = time (NULL);
