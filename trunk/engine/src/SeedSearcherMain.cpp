@@ -105,22 +105,22 @@ SeedSearcherMain::search (boost::shared_ptr <CmdLineParameters> inParams)
 {
    //
    // copy the params
-   Parameters currentPameters = *inParams;
+	boost::shared_ptr <Parameters> currentPameters (new Parameters (*inParams));
 
 	// create a fresh feature set, with all extended filters
-	currentPameters.bestFeatures (
+	currentPameters->bestFeatures (
 		FeatureSetManager::createFilters(*inParams, true)
 	);
 
-   debug_mustbe (currentPameters.bestFeatures ().getArray()->size () == 0);
+   debug_mustbe (currentPameters->bestFeatures ().getArray()->size () == 0);
 
    int totalNumOfSeedsFound = 0;
-   int numOfProjections = currentPameters.projections ().numOfProjections ();
+   int numOfProjections = currentPameters->projections ().numOfProjections ();
    for (int i=0 ; i<numOfProjections ; i++) {
       //
       // create
       const Assignment& assg =
-         currentPameters.projections ().getAssignment (i);
+         currentPameters->projections ().getAssignment (i);
 
 
       //
@@ -130,7 +130,7 @@ SeedSearcherMain::search (boost::shared_ptr <CmdLineParameters> inParams)
       //
       // perform the actual search
 		int currentSeedsFound;
-      if (currentPameters.searchType () == _search_tree_) {
+      if (currentPameters->searchType () == _search_tree_) {
          currentSeedsFound = 
             SeedSearcher::prefixTreeSearch (
                currentPameters,
@@ -148,7 +148,7 @@ SeedSearcherMain::search (boost::shared_ptr <CmdLineParameters> inParams)
       //
       // call virtual 'afterProjection' handler
       afterProjection (i, totalNumOfSeedsFound, assg);
-		currentPameters.bestFeatures ().finalizeProjection (currentSeedsFound); 
+		currentPameters->bestFeatures ().finalizeProjection (currentSeedsFound); 
    }
 /*
    //
@@ -165,9 +165,9 @@ SeedSearcherMain::search (boost::shared_ptr <CmdLineParameters> inParams)
 
 	//
 	// run finalizing scripts, like statistical corrections.
-	currentPameters.bestFeatures ().finalizeSetting (totalNumOfSeedsFound, numOfProjections);
+	currentPameters->bestFeatures ().finalizeSetting (totalNumOfSeedsFound, numOfProjections);
 
-   FeatureSet::Iterator it = currentPameters.bestFeatures()->getIterator();
+   FeatureSet::Iterator it = currentPameters->bestFeatures()->getIterator();
    for (; it.hasNext () ; it.next()) {
 		inParams->bestFeatures ().add (*it);
 	}
