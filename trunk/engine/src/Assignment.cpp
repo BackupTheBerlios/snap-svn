@@ -209,3 +209,15 @@ bool AssignmentBase::equals (const AssignmentBase& o, int startIndex, int cmp_le
    
    return true;
 }
+
+void Assignment::addAssignmentAt (int index, const Assignment& assg)
+{
+	/// will not work correctly if assg references this assignment's positions
+	debug_mustbe (dynamic_cast <const void*> (this) != dynamic_cast <const void*> (&assg));
+	PositionVector::const_iterator b = assg._positions.begin ();
+	PositionVector::const_iterator e = assg._positions.end ();
+
+	PositionVector::iterator i = _positions.begin();
+	std::advance (i, index);
+	_positions.insert (i, b, e);
+}

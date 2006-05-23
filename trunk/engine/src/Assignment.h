@@ -344,11 +344,7 @@ public:
    void addPositionAt (int index, const Position& p, int count = 1) {
       _positions.insert (_positions.begin() + index, count, p);
    }
-   void addAssignmentAt (int index, const Assignment& assg) {
-      _positions.insert (  _positions.begin() + index, 
-                           assg._positions.begin (), 
-                           assg._positions.end ());
-   }
+   void addAssignmentAt (int index, const Assignment& assg);
 
    void setPosition (int, const Position& p);
 
@@ -382,11 +378,12 @@ public:
    //
    //
    virtual void erase (int length, int position = assg_end) {
-      if (position == assg_end) {
+		if (position == assg_end) {
          _positions.resize (_positions.size () - length);
       }
       else {
-         _positions.erase(_positions.begin () + position, _positions.begin() + length);
+			debug_mustbe (length + position <= this->length());
+         _positions.erase(_positions.begin () + position, _positions.begin() + position + length);
       }
    }
    //
@@ -443,18 +440,6 @@ public:
    }
    virtual int length () const {
       return _length;
-   }
-   virtual bool contains (const AssignmentBase& in, int startIndex = 0, int cmp_length = assg_end) const {
-      debug_mustbe (length () == in.length ());
-      return _assg.contains (in, startIndex, (cmp_length == assg_end)? _length : cmp_length);
-   }
-   virtual int compare (const AssignmentBase& in, int startIndex = 0, int cmp_length = assg_end) const {
-      debug_mustbe (length () == in.length ());
-      return _assg.compare(in, startIndex, (cmp_length == assg_end)? _length : cmp_length);
-   }
-   virtual bool equals (const AssignmentBase& in, int startIndex = 0, int cmp_length = assg_end) const {
-      debug_mustbe (length () == in.length ());
-      return _assg.equals (in, startIndex, (cmp_length == assg_end)? _length : cmp_length);
    }
 
    //
