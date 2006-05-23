@@ -5,9 +5,6 @@
 	Name="UnitTests"
 	ProjectGUID="{E9BDC8BD-E4FD-4CD2-B855-9C997E13DEB5}"
 	RootNamespace="UnitTests"
-	SccProjectName="&quot;$/SeedSearcher.2332&quot;, RLDAAAAA"
-	SccLocalPath=".."
-	SccProvider="MSSCCI:PushOk SVN Proxy"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -73,7 +70,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libboost_unit_test_framework-vc80-mt-sgd.lib   libboost_test_exec_monitor-vc80-mt-sgd.lib"
+				AdditionalDependencies="libboost_unit_test_framework-vc80-mt-sgd-1_33_1.lib   libboost_test_exec_monitor-vc80-mt-sgd-1_33_1.lib"
 				OutputFile="$(OutDir)/winseed.testd.exe"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
@@ -169,6 +166,101 @@
 				SubSystem="1"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
+				OptimizeForWindows98="1"
+				LinkTimeCodeGeneration="1"
+				TargetMachine="1"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Optimized Debug|Win32"
+			OutputDirectory="$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)\UnitTests"
+			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
+			CharacterSet="2"
+			WholeProgramOptimization="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalOptions="/EHa"
+				Optimization="3"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="true"
+				WholeProgramOptimization="true"
+				AdditionalIncludeDirectories=".."
+				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE,_CRT_SECURE_NO_DEPRECATE"
+				StringPooling="true"
+				MinimalRebuild="true"
+				ExceptionHandling="2"
+				BasicRuntimeChecks="0"
+				SmallerTypeCheck="false"
+				RuntimeLibrary="1"
+				EnableEnhancedInstructionSet="2"
+				TreatWChar_tAsBuiltInType="true"
+				ForceConformanceInForLoopScope="true"
+				RuntimeTypeInfo="true"
+				UsePrecompiledHeader="0"
+				BrowseInformation="1"
+				WarningLevel="3"
+				Detect64BitPortabilityProblems="false"
+				DebugInformationFormat="3"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="libboost_unit_test_framework-vc80-mt-sgd-1_33_1.lib   libboost_test_exec_monitor-vc80-mt-sgd-1_33_1.lib"
+				OutputFile="$(OutDir)/winseed.testd.exe"
+				LinkIncremental="1"
+				GenerateDebugInformation="true"
+				ProgramDatabaseFile="$(OutDir)/UnitTests.pdb"
+				SubSystem="1"
 				OptimizeForWindows98="1"
 				LinkTimeCodeGeneration="1"
 				TargetMachine="1"
