@@ -15,132 +15,17 @@
 #include <boost/test/auto_unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
 
+#include "tests/Test.h"
+
 using namespace boost::unit_test;
 
 
 
-//
-// Argv Unit test
-//
-// most frequently you implement test cases as a free functions
-BOOST_AUTO_UNIT_TEST(test_Argv)
-{
-   StrBuffer options ("Option1", " Option2=Value2\t", "Option3\r\n");
-   Argv argv[2];
-   argv[0].set("MyApp", options);
-   argv [1] = argv[0];
-   for (int i=0 ; i<2 ; ++i) {
-      BOOST_CHECK (argv[i].argc () == 4);
-      BOOST_CHECK (Str (argv[i].argv ()[0]).equals ("MyApp"));
-      BOOST_CHECK (Str (argv[i].argv ()[1]).equals ("Option1"));
-      BOOST_CHECK (Str (argv[i].argv ()[2]).equals ("Option2=Value2"));
-      BOOST_CHECK (Str (argv[i].argv ()[3]).equals ("Option3"));
-   }
-}
 
 
 
-/// this test also has the desired side-effect that DLOG is initialized
-BOOST_AUTO_TEST_CASE ( test_DLOG )
-{
-	boost::shared_ptr<Langauge> lang (new ACGTLangauge ());
-	SeedSearcherLog::setup (lang);
-	SeedSearcherLog::setupConsoleLogging (false);
-	BOOST_CHECK_NO_THROW (DLOG);
-}
 
-BOOST_AUTO_TEST_CASE ( test_Assignment_basic )
-{
-	Assignment assg;
-	BOOST_REQUIRE (assg.length () == 0);
 
-	ACGTLangauge lang;
-	lang.stringToAssignment (assg, "ACGTacgt*nN?");
-	BOOST_REQUIRE (assg.length () == 12);
-	
-	std::string buffer;
-	{	
-		Persistance::TextWriter writer (new Persistance::StrOutputStream (buffer));
-		writer << Format (assg);
-	}
-	/// the 'N' is always written as '?' by the langauge
-	BOOST_REQUIRE (buffer == "ACGTACGT*???");
-
-	/// check strategies
-	BOOST_CHECK (assg [0].strategy () == assg_discrete);
-	BOOST_CHECK (assg [1].strategy () == assg_discrete);
-	BOOST_CHECK (assg [2].strategy () == assg_discrete);
-	BOOST_CHECK (assg [4].strategy () == assg_discrete);
-	BOOST_CHECK (assg [5].strategy () == assg_discrete);
-	BOOST_CHECK (assg [6].strategy () == assg_discrete);
-	BOOST_CHECK (assg [7].strategy () == assg_discrete);
-	BOOST_CHECK (assg [8].strategy () == assg_discrete);
-	
-	BOOST_CHECK (assg [9].strategy () == assg_together);	/// 'N' = '?' has together strategy
-	BOOST_CHECK (assg [10].strategy () == assg_together);	/// 'N' = '?' has together strategy
-	BOOST_CHECK (assg [11].strategy () == assg_together);	/// 'N' = '?' has together strategy
-
-	BOOST_CHECK (assg [8].count () == 4);
-	BOOST_CHECK (assg [9].count () == 5);	// when the strategy is assg_together, it is also allowed to look at positions where the sequence has 'N'
-	BOOST_CHECK (assg [10].count () == 5);	// when the strategy is assg_together, it is also allowed to look at positions where the sequence has 'N'
-	BOOST_CHECK (assg [11].count () == 5); // when the strategy is assg_together, it is also allowed to look at positions where the sequence has 'N'
-
-	/// check connection between alphabet and assignment
-	buffer = "acgtACGT";
-	for (std::string::size_type i= 0 ; i<buffer.length () ; ++i) {
-		AlphabetCode::CodedChar c = lang.code ().code (buffer[i]);
-		/// make sure each position has the appropriate character 
-		/// and only that character
-		BOOST_CHECK (assg [i].index (c));
-		BOOST_CHECK (assg [i].count () == 1);
-	}
-
-	BOOST_CHECK (assg.equals (assg));
-	BOOST_CHECK (assg.contains (assg));
-	BOOST_CHECK (assg.compare (assg) == 0);
-}
-
-BOOST_AUTO_TEST_CASE ( test_Assignment_advanced )
-{
-	Assignment assg1;
-	Assignment assg2;
-
-	ACGTLangauge lang;
-	lang.stringToAssignment (assg1, "ACGT");
-	lang.stringToAssignment (assg2, "ACGTacgt");
-	BOOST_CHECK (!assg1.equals (assg2));
-	BOOST_CHECK_THROW (assg1.contains (assg2), BaseException);	/// cannot compare assignments of different length
-	BOOST_CHECK (!assg2.equals (assg1));
-	BOOST_CHECK_THROW (assg2.contains (assg1), BaseException); /// cannot compare assignments of different length
-	
-	BOOST_CHECK (assg1.contains (assg2, 0, 4));
-	BOOST_CHECK (assg1.contains (assg2, 1, 3));
-	BOOST_CHECK (!assg1.contains (SubAssignment (assg2, 1, 3), 0, 3));
-	BOOST_CHECK (assg1.contains (SubAssignment (assg2, 0, 3), 0, 3));
-	BOOST_CHECK (SubAssignment (assg1, 0, 3).contains (SubAssignment (assg2, 0, 3)));
-	BOOST_CHECK (!SubAssignment (assg1, 1, 3).contains (SubAssignment (assg2, 0, 3)));
-		
-	assg1.addAssignmentAt (0, Assignment (assg1));	/// now assg1 == ACGTACGT same as assg2
-	BOOST_REQUIRE (assg1.length () == 8);
-	BOOST_CHECK (assg1.equals (assg2));
-	BOOST_CHECK (assg1.contains (assg2));
-
-	assg1.erase (4); /// remove last 4 characters, now assg1 = ACGT
-	BOOST_REQUIRE (assg1.length () == 4);
-
-	assg1.addAssignmentAt (0, Assignment (assg1));	/// now assg1 == ACGTACGT same as assg2
-	BOOST_CHECK (assg1.equals (assg2));
-
-	assg1.erase (3, 2); 	///       01234556
-								/// erase ACGTACGT ==> ACCGT
-								///         ---
-	std::string buffer;
-	{
-		Persistance::TextWriter writer (new Persistance::StrOutputStream (buffer));
-		writer << Format (assg1);
-	}
-	BOOST_CHECK (buffer == "ACCGT");
-}
 
 
 
@@ -177,38 +62,7 @@ BOOST_AUTO_TEST_CASE( parser_basic_input_output)
 // SeqWeight test
 // 
 
-BOOST_AUTO_UNIT_TEST(test_readPosWgtFile)
-{
-   std::istringstream stream (
-      ">seq1 0.1 0.5 = [0,4]\t2.4 =[ 6, 7]\t0.2 = [9,11 ]\r\n"
-      "> seq2   0.2 0.5   =[1,2]     0.67= [  3,3]\r\n"
-   );
 
-   AutoPtr <SeqWeightDB::Name2Weight> pWeights (
-      SeqWeightDB::readWgtFile (stream)
-   );
-   SeqWeightDB::Name2Weight& weights = *pWeights;
-
-   BOOST_CHECK (weights["seq1"] != NULL);
-   BOOST_CHECK (weights["seq2"] != NULL);
-   BOOST_CHECK_CLOSE (weights["seq1"]->getPositionWeight (0), 0.1 * 0.5, 0.01);
-   BOOST_CHECK_CLOSE (weights["seq1"]->getPositionWeight (4), 0.1 * 0.5, 0.01);
-   BOOST_CHECK_CLOSE (weights["seq1"]->getPositionWeight (5), 0.1, 0.01);
-
-   BOOST_CHECK_CLOSE (weights["seq1"]->getPositionWeight (6), 0.1 * 2.4, 0.01);
-   BOOST_CHECK_CLOSE (weights["seq1"]->getPositionWeight (7), 0.1 * 2.4, 0.01);
-   BOOST_CHECK_CLOSE (weights["seq1"]->getPositionWeight (8), 0.1, 0.01);
-
-   BOOST_CHECK_CLOSE (weights["seq1"]->getPositionWeight (9), 0.1 * 0.2, 0.01);
-   BOOST_CHECK_CLOSE (weights["seq1"]->getPositionWeight (11), 0.1 * 0.2, 0.01);
-   BOOST_CHECK_CLOSE (weights["seq1"]->getPositionWeight (12), 0.1, 0.01);
-
-   BOOST_CHECK_CLOSE (weights["seq2"]->getPositionWeight (0), 0.2, 0.01);
-   BOOST_CHECK_CLOSE (weights["seq2"]->getPositionWeight (1), 0.2 * 0.5, 0.01);
-   BOOST_CHECK_CLOSE (weights["seq2"]->getPositionWeight (2), 0.2 * 0.5, 0.01);
-   BOOST_CHECK_CLOSE (weights["seq2"]->getPositionWeight (3), 0.2 * 0.67, 0.01);
-   return;
-}
 
 
 
@@ -337,88 +191,10 @@ BOOST_AUTO_UNIT_TEST(test_motifInSeqOuterPositions)
 
 
 
-class TmpFile
-{
-public:
-	static void write (const char* tmpFilePrefix, const char* data, std::string& outFilename)
-	{
-#if	ENV_COMPILER & ENV_MICROSOFT
-#	define TEMPNAM _tempnam
-#else
-#	define TEMPNAM tempnam
-#endif
-		outFilename = TEMPNAM (NULL, tmpFilePrefix);
-		{
-			std::ofstream writer (outFilename.c_str ());
-			writer << data;
-		}
-	}
-	///
-	/// writes data to temporary file and opens the file
-	static std::auto_ptr<std::ifstream> writeAndOpen (const char* tmpFilePrefix, const char* data)
-	{
-		std::string filename;
-		write (tmpFilePrefix, data, filename);
-		return new std::ifstream (filename.c_str ());
-	}
-};
 
-BOOST_AUTO_UNIT_TEST(test_WeightDB_repetitive_sequence_name)
-{
-	/// write a simple weight file
-	std::string wgtTmpFilename;
-	TmpFile::write (
-		"wgt",
-		">Positive1	1\n"
-		">Positive2	1\n"
-		">Positive1	1\n",
-		wgtTmpFilename
-		);
 
-	/// read the weight file
-	AutoPtr <SeqWeightDB::Name2Weight> weights;
-	BOOST_CHECK_THROW (weights = SeqWeightDB::readWgtFile (wgtTmpFilename.c_str ()), BaseException);
-}
 
-BOOST_AUTO_UNIT_TEST(test_SequenceDB_repetitive_sequence_name)
-{
-	/// write a simple weight file
-	std::string wgtTmpFilename;
-	TmpFile::write (
-		"wgt",
-		">Positive1	1\n"
-		">Positive2	1\n",
-		wgtTmpFilename
-		);
 
-	/// read the weight file
-	AutoPtr <SeqWeightDB::Name2Weight> weights = SeqWeightDB::readWgtFile (wgtTmpFilename.c_str ());
-
-	/// write a simple seq file with a repetitive sequence
-	std::string seqTmpFilename;
-	TmpFile::write (
-		"seq",
-		">Positive1\n"
-		"CCC\n"
-		">Positive2\n"
-		"TTTT\n"
-		">Positive1\n"
-		"AAA\n",
-		seqTmpFilename
-		);
-
-	/// load the sequences, this must throw an exception since
-	/// the sequence file is invalid
-	ACGTLangauge langauge;
-	AutoPtr <SequenceDB> db;
-	BOOST_REQUIRE_THROW (
-		db = SequenceDB::TextFileStorage::loadFastaAndWeights (
-			langauge, 
-			seqTmpFilename.c_str (), 
-			*weights),
-		BaseException
-		);
-}
 
 
 
@@ -554,7 +330,7 @@ BOOST_AUTO_UNIT_TEST(test_SeedSearcherMain)
 	}
 
 	BOOST_REQUIRE (score);
-	BOOST_CHECK_CLOSE (score->log10Score (), double (-1.7), 1);
+	BOOST_CHECK_CLOSE (score->log10Score (), double (-1.748), 1);
 }
 
 
