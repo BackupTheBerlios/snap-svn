@@ -95,6 +95,13 @@ namespace SNAP.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap j0371208_1_ {
+            get {
+                object obj = ResourceManager.GetObject("j0371208[1]", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap j0379009_1_ {
             get {
                 object obj = ResourceManager.GetObject("j0379009[1]", resourceCulture);
@@ -112,6 +119,13 @@ namespace SNAP.Properties {
         internal static System.Drawing.Bitmap j0404277_1_ {
             get {
                 object obj = ResourceManager.GetObject("j0404277[1]", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap j0404413_1_ {
+            get {
+                object obj = ResourceManager.GetObject("j0404413[1]", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

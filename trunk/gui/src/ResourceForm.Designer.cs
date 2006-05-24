@@ -121,10 +121,6 @@ namespace SNAP {
             // 
             this.cmbResourceType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbResourceType.FormattingEnabled = true;
-            this.cmbResourceType.Items.AddRange(new object[] {
-            "Sequence File",
-            "Weight File",
-            "PSSM"});
             this.cmbResourceType.Location = new System.Drawing.Point(82, 11);
             this.cmbResourceType.Name = "cmbResourceType";
             this.cmbResourceType.Size = new System.Drawing.Size(238, 21);
@@ -149,7 +145,7 @@ namespace SNAP {
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(75, 23);
             this.btnOK.TabIndex = 11;
-            this.btnOK.Text = "Create";
+            this.btnOK.Text = "Update";
             this.btnOK.UseVisualStyleBackColor = true;
             this.btnOK.Click += new System.EventHandler(this.btnOK_Click);
             // 

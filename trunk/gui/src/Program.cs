@@ -9,14 +9,14 @@ namespace SNAP {
         /// </summary>
         [STAThread]
         static void Main() {
-            Program.CurrentResources.LoadResources();
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+            Program.CurrentResources.LoadResources();
             Application.Run(new MainForm());
         }
 
         public static Options CurrentOptions = new Options();
-        public static Resources CurrentResources = new Resources();
+        public static Resources.DB CurrentResources = new Resources.DB();
     }
 
     class Options {

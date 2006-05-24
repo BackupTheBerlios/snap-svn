@@ -43,5 +43,16 @@ namespace SNAP {
             form.MdiParent = this;
             form.Show();
         }
+
+        private void aboutToolStripMenuItem_Click(object sender, EventArgs e) {
+            AboutBox1 about = new AboutBox1 ();
+            about.Show ();
+        }
+
+        private void toolStripButton5_Click(object sender, EventArgs e) {
+            CalcForm form = new CalcForm();
+            form.MdiParent = this;
+            form.Show();
+        }
     }
 }

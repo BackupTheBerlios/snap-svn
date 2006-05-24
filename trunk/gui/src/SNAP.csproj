@@ -9,11 +9,14 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>SNAP</RootNamespace>
     <AssemblyName>SNAP</AssemblyName>
-    <SccProjectName>gui/src</SccProjectName>
-    <SccLocalPath>.</SccLocalPath>
+    <SccProjectName>
+    </SccProjectName>
+    <SccLocalPath>
+    </SccLocalPath>
     <SccAuxPath>
     </SccAuxPath>
-    <SccProvider>MSSCCI:PushOk SVN Proxy</SccProvider>
+    <SccProvider>
+    </SccProvider>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -47,11 +50,25 @@
     <Compile Include="AboutBox1.Designer.cs">
       <DependentUpon>AboutBox1.cs</DependentUpon>
     </Compile>
+    <Compile Include="Calc.cs" />
+    <Compile Include="CalcForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CalcForm.Designer.cs">
+      <DependentUpon>CalcForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CompositeResource.cs" />
     <Compile Include="ConfiGenForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="ConfiGenForm.Designer.cs">
       <DependentUpon>ConfiGenForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ErrorForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ErrorForm.Designer.cs">
+      <DependentUpon>ErrorForm.cs</DependentUpon>
     </Compile>
     <Compile Include="FamiliesForm.cs">
       <SubType>Form</SubType>
@@ -59,6 +76,7 @@
     <Compile Include="FamiliesForm.Designer.cs">
       <DependentUpon>FamiliesForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="FileResource.cs" />
     <Compile Include="Jobs.cs" />
     <Compile Include="SeedSearchForm.cs">
       <SubType>Form</SubType>
@@ -79,9 +97,17 @@
       <SubType>Designer</SubType>
       <DependentUpon>AboutBox1.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="CalcForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>CalcForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="ConfiGenForm.resx">
       <SubType>Designer</SubType>
       <DependentUpon>ConfiGenForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ErrorForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>ErrorForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="FamiliesForm.resx">
       <SubType>Designer</SubType>
@@ -128,11 +154,14 @@
       <DependentUpon>ResourceForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Resources.cs" />
+    <Compile Include="Util.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Resources.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Include="Resources\j0371208[1].wmf" />
+    <None Include="Resources\j0404413[1].wmf" />
     <None Include="Resources\logo.gif" />
     <None Include="Resources\bd09375_[1].wmf" />
     <None Include="Resources\j0078736[1].wmf" />

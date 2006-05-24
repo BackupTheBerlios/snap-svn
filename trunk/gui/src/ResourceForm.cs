@@ -10,11 +10,16 @@ namespace SNAP {
     internal partial class ResourceForm : Form {
         public ResourceForm() {
             InitializeComponent();
+            
+            /// load all resource types
+            InitializeResourceTypes();
         }
 
-        public ResourceForm(Resources.Resource resource)
-            : this() {
-            Family = resource.Parent.QualifiedName;
+        public ResourceForm(Resources.Resource resource) {
+            InitializeComponent();
+
+            if (resource.Parent != null)
+                Family = resource.Parent.QualifiedName;
             btnFamilyBrowse.Enabled = false;
 
             /// name and notes are subject to change
@@ -25,7 +30,12 @@ namespace SNAP {
             if (resource is Resources.FileResource) {
                 Filename = (resource as Resources.FileResource).Filename;
             }
+
+            cmbResourceType.Items.Add(new ResourceTypeItem(resource));
+            cmbResourceType.SelectedIndex = 0;
         }
+
+        #region public
 
         /// <summary>
         /// Gets or sets the family.
@@ -79,8 +89,27 @@ namespace SNAP {
             }
         }
 
-        private void Resource_Load(object sender, EventArgs e) {
+        #endregion public
 
+        #region private
+
+        private void InitializeResourceTypes ()
+        {
+            /// look for all resources in this assembly
+            System.Reflection.Assembly currentAssembly =
+                System.Reflection.Assembly.GetAssembly(this.GetType());
+
+            foreach (System.Type type in currentAssembly.GetTypes()) {
+                if (type.IsClass && type.IsSubclassOf(typeof(Resources.FileResource))) {
+                    System.Reflection.ConstructorInfo ctr = type.GetConstructor(Type.EmptyTypes);
+                    Resources.FileResource resourceTemplate = (Resources.FileResource) ctr.Invoke(null);
+
+                    cmbResourceType.Items.Add(new ResourceTypeItem(resourceTemplate));
+                }
+            }
+        }
+
+        private void Resource_Load(object sender, EventArgs e) {
         }
 
         private void btnFamilyBrowse_Click(object sender, EventArgs e) {
@@ -128,6 +157,20 @@ namespace SNAP {
             Program.CurrentResources.Root.Add(resource, txtFamily.Text);
             this.DialogResult = DialogResult.OK;
             Close();
+        }
+
+        #endregion private
+
+        private class ResourceTypeItem {
+            public readonly Resources.Resource _resource;
+
+            public ResourceTypeItem(Resources.Resource resource) {
+                _resource = resource;
+            }
+
+            public override string ToString() {
+                return _resource.Typename; // +" (" + _resource.FileMask + ")"; 
+            }
         }
     }
 }
