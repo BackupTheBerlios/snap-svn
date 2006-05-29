@@ -603,7 +603,7 @@ I will try to get rid of it in the future.
 //               $Author: Aviad $
 //               $Date: 13/05/05 11:14 $ 
 // Description :
-//	The Core library contains contains basic definitions and classes
+//	The Core library contains basic definitions and classes
 // which are useful to any highly-portable applications
 //
 // Author: 

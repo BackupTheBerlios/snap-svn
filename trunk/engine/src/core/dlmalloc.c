@@ -1,4 +1,10 @@
 #define USE_DL_PREFIX 1
+
+#ifdef _MSC_VER
+#	pragma warning(disable : 4308)
+#	pragma warning(disable : 4307)
+#endif
+
 //
 // uncomment for debugging
 // #define DEBUG 1
