@@ -384,10 +384,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\HyperGeoCache.h"
-				>
-			</File>
-			<File
 				RelativePath="..\LeafPreprocessor.h"
 				>
 			</File>

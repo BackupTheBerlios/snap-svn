@@ -294,8 +294,48 @@
 	<References>
 	</References>
 	<Files>
+		<Filter
+			Name="core"
+			>
+			<File
+				RelativePath="..\core\UnitTests.cpp"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="SeedSearcherCore"
+			>
+			<File
+				RelativePath="..\tests\AssignmentTests.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\tests\ParserTests.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\tests\SanityTests.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\tests\SeedSearcherMainTests.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\tests\SequenceDBTests.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\tests\SeqWeightTests.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\tests\Tests.h"
+				>
+			</File>
+		</Filter>
 		<File
-			RelativePath="..\UnitTestMain.cpp"
+			RelativePath="..\tests\UnitTestMain.cpp"
 			>
 		</File>
 	</Files>
