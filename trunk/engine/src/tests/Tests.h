@@ -29,6 +29,7 @@
 #include <stdio.h>
 #include <fstream>
 #include <string>
+#include <memory>
 
 class TmpFile
 {

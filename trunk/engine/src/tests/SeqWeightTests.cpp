@@ -22,6 +22,10 @@
 //
 
 #include "tests.h"
+#include "SeqWeight.h"
+
+#include <boost/test/auto_unit_test.hpp>
+#include <boost/test/floating_point_comparison.hpp>
 
 BOOST_AUTO_UNIT_TEST(test_WeightDB_repetitive_sequence_name)
 {

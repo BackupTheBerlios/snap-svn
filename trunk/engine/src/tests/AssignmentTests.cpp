@@ -28,6 +28,15 @@
 // see http://www.cs.huji.ac.il/labs/compbio/LibB/LICENSE
 //
 
+#include "DebugLog.h"
+#include "Assignment.h"
+#include "StdOptions.h"
+
+#include "persistance/StrOutputStream.h"
+
+#include <boost/test/auto_unit_test.hpp>
+
+
 /// this test also has the desired side-effect that DLOG is initialized
 BOOST_AUTO_TEST_CASE ( test_DLOG )
 {
