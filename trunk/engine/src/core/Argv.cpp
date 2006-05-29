@@ -41,6 +41,7 @@ void Argv::set (const Str& prefix, const Str& in)
    }
 }
 
+
 void Argv::set (const Str& in)
 {
    clear ();
@@ -61,7 +62,16 @@ void Argv::set (const Str& in)
    for (beg=tok.begin(); beg!=tok.end();++beg) {
       int length = (*beg).length () ;
       _argv [index] = new char [length + 1];
-      (*beg).copy (_argv [index], length);
+
+#if ENV_COMPILER & ENV_MICROSOFT
+#	pragma warning(disable : 4996)
+#endif
+
+		(*beg).copy (_argv [index], length);
+
+#if ENV_COMPILER & ENV_MICROSOFT
+#	pragma warning(default: 4996)
+#endif
       _argv [index][length] = 0;
       index++;
    }
