@@ -170,14 +170,15 @@ FDRCorrectedPValue (	boost::shared_ptr <Score> score,
 							int k,
 							const FDRCorrectedPValue* previousScore
 							)
-	: _pscore (score), _repeatedTrials (repeatedTrials)
+	: _pscore (score), _repeatedTrials (repeatedTrials), _k (k)
 {
 	_log2Score = _pscore->log2Score() + log2 (_repeatedTrials) - log2 (_k);
 	//
 	// the k-th best Pvalue must be better than the (k+1)th Pvalue
-	// even after the correction
+	// even after the correction, and since lower scores are better
+	// we take the maximal of the the two scores
 	if (previousScore != NULL)
-		_log2Score = tmin (_log2Score, previousScore->log2Score());
+		_log2Score = tmax (_log2Score, previousScore->log2Score());
 }
 
 

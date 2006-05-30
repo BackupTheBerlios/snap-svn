@@ -318,6 +318,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\tests\ScoreTests.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\tests\SeedSearcherMainTests.cpp"
 				>
 			</File>

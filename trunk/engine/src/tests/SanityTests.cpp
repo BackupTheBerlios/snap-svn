@@ -38,7 +38,6 @@
 
 #include <boost/test/auto_unit_test.hpp>
 
-
 BOOST_AUTO_UNIT_TEST(test_motifInSeqOuterPositions)
 {
 	std::istringstream wgt_stream (
