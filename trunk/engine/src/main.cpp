@@ -54,7 +54,7 @@ using namespace Persistance;
 static const char buildComment [] =
 	"Release notes: \n"
 	"Build was not regression tested\n"
-	"Major fix: Compiles with boost 1.331, Compiles in VS2005\n"
+	"Major fix: FDR works correctly\n"
 	"\n";
 
 
