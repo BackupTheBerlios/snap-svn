@@ -67,7 +67,7 @@ FeatureInvestigator::FeatureInvestigator (const FeatureParameters& in,
 
    _seedFormat.addField ("Score(-log10)", 14);
    _seedFormat.addField ("Seed", outputLength);
-   _seedFormat.addField ("Parameters", 100, 45, false);
+   _seedFormat.addField ("Parameters", 100, 60, false);
    _seedFormat.addField ("Projection", outputLength);
 }
 
