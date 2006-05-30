@@ -2,8 +2,8 @@
 // File        : $RCSfile: $
 //               $Workfile: main.cpp $
 // Version     : $Revision: 71 $
-//               $Author: Aviad $
-//               $Date: 10/05/05 12:12 $
+//               $Author$
+//               $Date$
 // Description :
 //    main routine for the seed-searcher program
 //
