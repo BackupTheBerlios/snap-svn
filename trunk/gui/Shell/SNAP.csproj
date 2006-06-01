@@ -1,0 +1,188 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.50727</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{574B2476-968D-4A85-BC84-B0A18591B0BC}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>SNAP</RootNamespace>
+    <AssemblyName>SNAP</AssemblyName>
+    <SccProjectName>
+    </SccProjectName>
+    <SccLocalPath>
+    </SccLocalPath>
+    <SccAuxPath>
+    </SccAuxPath>
+    <SccProvider>
+    </SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AboutBox1.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AboutBox1.Designer.cs">
+      <DependentUpon>AboutBox1.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CalcForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CalcForm.Designer.cs">
+      <DependentUpon>CalcForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ConfiGenForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ConfiGenForm.Designer.cs">
+      <DependentUpon>ConfiGenForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="DynResourceForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DynResourceForm.Designer.cs">
+      <DependentUpon>DynResourceForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ErrorForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ErrorForm.Designer.cs">
+      <DependentUpon>ErrorForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FamiliesForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FamiliesForm.Designer.cs">
+      <DependentUpon>FamiliesForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SeedSearchForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SeedSearchForm.Designer.cs">
+      <DependentUpon>SeedSearchForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MainForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MainForm.Designer.cs">
+      <DependentUpon>MainForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="AboutBox1.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>AboutBox1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CalcForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>CalcForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ConfiGenForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>ConfiGenForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DynResourceForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>DynResourceForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ErrorForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>ErrorForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FamiliesForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>FamiliesForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SeedSearchForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>SeedSearchForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MainForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>MainForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <None Include="Resources\j0280748[1].wmf" />
+    <None Include="Resources\j0295745[1].wmf" />
+    <None Include="Resources\j0414870[1].wmf" />
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <Compile Include="WinformsController.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Resources.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Include="Resources\j0371208[1].wmf" />
+    <None Include="Resources\j0404413[1].wmf" />
+    <None Include="Resources\logo.gif" />
+    <None Include="Resources\bd09375_[1].wmf" />
+    <None Include="Resources\j0078736[1].wmf" />
+    <None Include="Resources\j0230844[1].wmf" />
+    <None Include="Resources\j0379009[1].wmf" />
+    <None Include="Resources\j0404277[1].wmf" />
+    <None Include="Resources\PSSM.png" />
+    <None Include="Resources\j0382575[1].jpg" />
+    <None Include="RunMe.bat">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SNAP.Core\SNAP.Core.csproj">
+      <Project>{A37E3B59-8BA4-4B6E-BB3B-EC0CCF9F1150}</Project>
+      <Name>SNAP.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SNAP.ResourceFields\SNAP.ResourceFields.csproj">
+      <Project>{F6A52450-297C-40BE-90F7-C7B12AF9ACF4}</Project>
+      <Name>SNAP.ResourceFields</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
