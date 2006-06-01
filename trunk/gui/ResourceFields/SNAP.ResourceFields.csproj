@@ -1,0 +1,123 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.50727</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{F6A52450-297C-40BE-90F7-C7B12AF9ACF4}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>SNAP.ResourceFields</RootNamespace>
+    <AssemblyName>SNAP.ResourceFields</AssemblyName>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ExternalRefField.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ExternalRefField.Designer.cs">
+      <DependentUpon>ExternalRefField.cs</DependentUpon>
+    </Compile>
+    <Compile Include="InternalRefField.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="InternalRefField.Designer.cs">
+      <DependentUpon>InternalRefField.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MultiValueField.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="MultiValueField.Designer.cs">
+      <DependentUpon>MultiValueField.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MultiValueFieldElement.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="MultiValueFieldElement.Designer.cs">
+      <DependentUpon>MultiValueFieldElement.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="TextField.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="TextField.Designer.cs">
+      <DependentUpon>TextField.cs</DependentUpon>
+    </Compile>
+    <Service Include="{94E38DFF-614B-4cbd-B67C-F211BB35CE8B}" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="ExternalRefField.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>ExternalRefField.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="InternalRefField.resx">
+      <DependentUpon>InternalRefField.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MultiValueField.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>MultiValueField.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MultiValueFieldElement.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>MultiValueFieldElement.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <SubType>Designer</SubType>
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TextField.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>TextField.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SNAP.Core\SNAP.Core.csproj">
+      <Project>{A37E3B59-8BA4-4B6E-BB3B-EC0CCF9F1150}</Project>
+      <Name>SNAP.Core</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\images[17].jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\images[34].jpg" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
