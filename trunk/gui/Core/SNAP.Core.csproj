@@ -34,9 +34,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Calc.cs" />
-    <Compile Include="CompositeResource.cs" />
-    <Compile Include="FileResource.cs" />
-    <Compile Include="GenericTree.cs" />
     <Compile Include="Jobs.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

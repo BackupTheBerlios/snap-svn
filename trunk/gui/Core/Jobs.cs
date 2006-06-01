@@ -28,7 +28,7 @@ namespace SNAP.Resources
                 /// process the dynamic output files
                 foreach (string filename in execType.DynamicOutputFiles)
                 {
-                    Program.CurrentResources.LoadAdditionalResources (
+                    Controller.CurrentResources.LoadAdditionalResources (
                         Path.Combine (executionFolder.FullName, filename));
                 }
             }
@@ -37,7 +37,7 @@ namespace SNAP.Resources
         public static string GetExecutionFolder(string executionName, Resource resource)
         {
             System.IO.DirectoryInfo jobsFolder =
-                new System.IO.DirectoryInfo(Program.CurrentOptions.JobFolder);
+                new System.IO.DirectoryInfo(Controller.JobFolder);
 
             string resourceFolderName = System.IO.Path.Combine(jobsFolder.FullName, resource.QualifiedName);
             string executionFolderName = resourceFolderName + "." + executionName;

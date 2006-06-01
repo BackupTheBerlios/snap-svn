@@ -18,7 +18,7 @@ namespace SNAP {
             
             SNAP.Controller.Implementation = new WinformsController();
 
-            Program.CurrentResources.LoadResources();
+            Controller.CurrentResources.LoadResources();
             Application.Run(new MainForm());
         }        
         

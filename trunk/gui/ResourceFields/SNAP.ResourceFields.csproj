@@ -101,7 +101,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SNAP.Core\SNAP.Core.csproj">
+    <ProjectReference Include="..\Core\SNAP.Core.csproj">
       <Project>{A37E3B59-8BA4-4B6E-BB3B-EC0CCF9F1150}</Project>
       <Name>SNAP.Core</Name>
     </ProjectReference>

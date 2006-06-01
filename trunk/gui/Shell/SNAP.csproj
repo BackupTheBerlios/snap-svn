@@ -168,11 +168,11 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SNAP.Core\SNAP.Core.csproj">
+    <ProjectReference Include="..\Core\SNAP.Core.csproj">
       <Project>{A37E3B59-8BA4-4B6E-BB3B-EC0CCF9F1150}</Project>
       <Name>SNAP.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\SNAP.ResourceFields\SNAP.ResourceFields.csproj">
+    <ProjectReference Include="..\ResourceFields\SNAP.ResourceFields.csproj">
       <Project>{F6A52450-297C-40BE-90F7-C7B12AF9ACF4}</Project>
       <Name>SNAP.ResourceFields</Name>
     </ProjectReference>

@@ -33,7 +33,7 @@ namespace SNAP
             //openFileDialog1.DefaultExt = "*.seq, *.fasta";
             //openFileDialog1.Filter = "Fasta sequence files (*.seq;*.fasta)|*.SEQ;*.FASTA;|All files (*.*)|*.*";
             openFileDialog1.Filter = mask;
-            openFileDialog1.InitialDirectory = SNAP.Program.CurrentOptions.SeqFolder;
+            openFileDialog1.InitialDirectory = SNAP.Controller.SeqFolder;
             openFileDialog1.Multiselect = false;
             openFileDialog1.SupportMultiDottedExtensions = true;
             openFileDialog1.Title = "Choose a file";
@@ -47,7 +47,46 @@ namespace SNAP
             return false;
             //txtFilename.Text = openFileDialog1.FileName;
             //txtDisplayName.Text = System.IO.Path.GetFileNameWithoutExtension(Filename);
-            
+        }
+
+        public string SeqFolder
+        {
+            get
+            {
+                return @"C:\Aviad\Dev\SNAP\Inputs";
+            }
+        }
+        public string JobFolder
+        {
+            get
+            {
+                return System.IO.Path.Combine(DataFolder, "MyJobs");
+            }
+        }
+        public string DataFolder
+        {
+            get
+            {
+                /// same location as executable of SNAP
+                return System.IO.Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath);
+            }
+        }
+        public string ResourcesFile
+        {
+            get
+            {
+                /// same location as executable of SNAP
+                return System.IO.Path.Combine(DataFolder, "resources.xml");
+            }
+        }
+
+        public string ResourceTypesFile
+        {
+            get
+            {
+                /// same location as executable of SNAP
+                return System.IO.Path.Combine(DataFolder, "resources.types.xml");
+            }
         }
     }
 }

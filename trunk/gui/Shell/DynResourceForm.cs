@@ -25,7 +25,7 @@ namespace SNAP
         {
             InitializeComponent();
 
-            foreach (ResourceType type in ResourceType.LoadTypes(Program.CurrentOptions.ResourceTypesFile).Values)
+            foreach (ResourceType type in ResourceType.LoadTypes(Controller.ResourceTypesFile).Values)
             {
                 this.cmbResourceType.Items.Add(type);
             }

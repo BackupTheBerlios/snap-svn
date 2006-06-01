@@ -615,14 +615,14 @@ namespace SNAP
                 /// clear old DB and load resource types
                 _resourceList.Clear();
                 _resourceTypes = SNAP.Resources.ResourceType.LoadTypes(
-                    Program.CurrentOptions.ResourceTypesFile);
+                    Controller.ResourceTypesFile);
 
                 /// create the root resource
                 Root = new Resource(new Guid (), _resourceTypes ["Family"], "general");
                 _resourceList.Add (Root.QualifiedName, Root);
 
                 /// load the actual resources
-                LoadAdditionalResources(Program.CurrentOptions.ResourcesFile, true);
+                LoadAdditionalResources(Controller.ResourcesFile, true);
 
                 ///
                 Root.ResourceAdded += new ResourceEvent(Root_ResourceAdded);
@@ -721,7 +721,7 @@ namespace SNAP
 
             public void SaveResources()
             {
-                using (System.Xml.XmlTextWriter writer = new System.Xml.XmlTextWriter(Program.CurrentOptions.ResourcesFile, Encoding.UTF8))
+                using (System.Xml.XmlTextWriter writer = new System.Xml.XmlTextWriter(Controller.ResourcesFile, Encoding.UTF8))
                 {
                     writer.Formatting = System.Xml.Formatting.Indented;
                     writer.WriteStartDocument();

@@ -38,7 +38,7 @@ namespace SNAP {
             DynResourceForm resourceForm = new DynResourceForm();
             resourceForm.Family = ((Resources.Resource)treeView1.SelectedNode.Tag);
             if (resourceForm.ShowDialog() == DialogResult.OK) {
-                Program.CurrentResources.AddResource (
+                Controller.CurrentResources.AddResource(
                     resourceForm.SelectedResourceParent, resourceForm.SelectedResource);
 
                 // TODO: do this more economically, by adding only the new items
@@ -48,7 +48,7 @@ namespace SNAP {
 
         private void BuildTree() {
             treeView1.Nodes.Clear();
-            BuildTree(null, Program.CurrentResources.Root);
+            BuildTree(null, Controller.CurrentResources.Root);
         }
 
         private void BuildTree(System.Windows.Forms.TreeNode parent, SNAP.Resources.Resource resource) 
@@ -96,7 +96,7 @@ namespace SNAP {
         }
 
         private void button5_Click(object sender, EventArgs e) {
-            Program.CurrentResources.LoadResources();
+            Controller.CurrentResources.LoadResources();
             BuildTree();
         }
 
@@ -129,8 +129,8 @@ namespace SNAP {
                 parent = (Resources.Resource)this.treeView1.Nodes[0].Tag;
 
             Resources.Resource resource = new Resources.Resource (
-                Guid.NewGuid (), 
-                Program.CurrentResources.ResourceTypes ["Family"],
+                Guid.NewGuid (),
+                Controller.CurrentResources.ResourceTypes["Family"],
                 "new family");
             int attempt = 2;
             while(parent.Children[resource.Name] != null) {
@@ -189,7 +189,7 @@ namespace SNAP {
             DynResourceForm form = new DynResourceForm(resource);
             if (form.ShowDialog() == DialogResult.OK)
             {
-                Program.CurrentResources.SaveResources();
+                Controller.CurrentResources.SaveResources();
                 
                 // TODO: do this more economically, since only one resource has to be updated
                 BuildTree();
