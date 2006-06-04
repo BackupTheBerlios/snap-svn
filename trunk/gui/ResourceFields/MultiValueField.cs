@@ -8,7 +8,7 @@ using System.Windows.Forms;
 
 namespace SNAP.ResourceFields
 {
-    public partial class MultiValueField : UserControl, AbstractField
+    public partial class MultiValueField : AbstractField
     {
         private List<MultiValueFieldElement> _elements = new List<MultiValueFieldElement>();
         private Resources.FieldType _fieldType = null;
@@ -43,7 +43,7 @@ namespace SNAP.ResourceFields
             }
         }
 
-        public string FieldName
+        public override string FieldName
         {
             get
             {
@@ -55,7 +55,7 @@ namespace SNAP.ResourceFields
             }
         }
 
-        public bool Readonly
+        public override bool Readonly
         {
             get
             {
@@ -67,7 +67,7 @@ namespace SNAP.ResourceFields
             }
         }
 
-        public string FieldText
+        public override string FieldText
         {
             get
             {
@@ -79,7 +79,7 @@ namespace SNAP.ResourceFields
             }
         }
 
-        public bool FieldNameVisible
+        public override bool FieldNameVisible
         {
             get
             {
@@ -90,7 +90,7 @@ namespace SNAP.ResourceFields
             }
         }
 
-        public void LoadFromFieldValue(SNAP.Resources.FieldValue value)
+        public override void LoadFromFieldValue(SNAP.Resources.FieldValue value)
         {
             for (int i = 0; i < value.Values.Count; ++i)
             {
@@ -104,7 +104,7 @@ namespace SNAP.ResourceFields
             }
         }
 
-        public void SaveToFieldValue(SNAP.Resources.FieldValue value)
+        public override void SaveToFieldValue(SNAP.Resources.FieldValue value)
         {
             foreach (MultiValueFieldElement element in _elements) {
                 element.SaveToFieldValue (value);
@@ -121,6 +121,8 @@ namespace SNAP.ResourceFields
             fieldElement.ElementIndex = _elements.Count;
             fieldElement.RemoveVisible = canRemove;
             fieldElement.RemoveClick += new EventHandler(fieldElement_RemoveClick);
+            fieldElement.UpClick += new EventHandler(fieldElement_UpClick);
+            fieldElement.DownClick += new EventHandler(fieldElement_DownClick);
             fieldElement.Dock = DockStyle.Top;
             
             panelFields.Controls.Add(fieldElement);
@@ -194,6 +196,20 @@ namespace SNAP.ResourceFields
             //panelField.PerformLayout();
             //ResumeLayout(false);
              */
+        }
+
+        void fieldElement_DownClick(object sender, EventArgs e)
+        {
+            int index = panelFields.Controls.IndexOf((Control)sender);
+            if (index > 0)
+                panelFields.Controls.SetChildIndex((Control)sender, index - 1);
+        }
+
+        void fieldElement_UpClick(object sender, EventArgs e)
+        {
+            int index = panelFields.Controls.IndexOf((Control)sender);
+            if (index < panelFields.Controls.Count)
+                panelFields.Controls.SetChildIndex((Control)sender, index + 1);
         }
 
         void fieldElement_RemoveClick(object sender, EventArgs e)

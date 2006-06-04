@@ -90,6 +90,7 @@ namespace SNAP.ResourceFields
                 (this.field as Control).Size = new System.Drawing.Size(157, 26);
 
                 this.Controls.Add ( (Control) this.field);
+                this.Controls.SetChildIndex (this.field, 0);
             }
         }
 
@@ -121,5 +122,19 @@ namespace SNAP.ResourceFields
         }
 
         #endregion Implementation
+
+        private void btnDown_Click(object sender, EventArgs e)
+        {
+            EventHandler downClick = DownClick;
+            if (downClick != null)
+                downClick(this, e);
+        }
+
+        private void btnUp_Click(object sender, EventArgs e)
+        {
+            EventHandler upClick = UpClick;
+            if (upClick != null)
+                upClick(this, e);
+        }
     }
 }

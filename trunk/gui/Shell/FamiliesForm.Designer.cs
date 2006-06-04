@@ -23,20 +23,20 @@ namespace SNAP {
         /// the contents of this method with the code editor.
         /// </summary>
         private void InitializeComponent() {
-            System.Windows.Forms.TreeNode treeNode8 = new System.Windows.Forms.TreeNode("Yeast");
-            System.Windows.Forms.TreeNode treeNode9 = new System.Windows.Forms.TreeNode("Young Clean");
-            System.Windows.Forms.TreeNode treeNode10 = new System.Windows.Forms.TreeNode("Fungi", new System.Windows.Forms.TreeNode[] {
-            treeNode8,
-            treeNode9});
-            System.Windows.Forms.TreeNode treeNode11 = new System.Windows.Forms.TreeNode("Plant");
-            System.Windows.Forms.TreeNode treeNode12 = new System.Windows.Forms.TreeNode("Vertebrate");
-            System.Windows.Forms.TreeNode treeNode13 = new System.Windows.Forms.TreeNode("Invertebrate");
-            System.Windows.Forms.TreeNode treeNode14 = new System.Windows.Forms.TreeNode("General", new System.Windows.Forms.TreeNode[] {
-            treeNode10,
-            treeNode11,
-            treeNode12,
-            treeNode13});
-            this.button1 = new System.Windows.Forms.Button();
+            System.Windows.Forms.TreeNode treeNode1 = new System.Windows.Forms.TreeNode("Yeast");
+            System.Windows.Forms.TreeNode treeNode2 = new System.Windows.Forms.TreeNode("Young Clean");
+            System.Windows.Forms.TreeNode treeNode3 = new System.Windows.Forms.TreeNode("Fungi", new System.Windows.Forms.TreeNode[] {
+            treeNode1,
+            treeNode2});
+            System.Windows.Forms.TreeNode treeNode4 = new System.Windows.Forms.TreeNode("Plant");
+            System.Windows.Forms.TreeNode treeNode5 = new System.Windows.Forms.TreeNode("Vertebrate");
+            System.Windows.Forms.TreeNode treeNode6 = new System.Windows.Forms.TreeNode("Invertebrate");
+            System.Windows.Forms.TreeNode treeNode7 = new System.Windows.Forms.TreeNode("General", new System.Windows.Forms.TreeNode[] {
+            treeNode3,
+            treeNode4,
+            treeNode5,
+            treeNode6});
+            this.btnSelect = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.btnCancel = new System.Windows.Forms.Button();
             this.comboBox1 = new System.Windows.Forms.ComboBox();
@@ -65,15 +65,15 @@ namespace SNAP {
             this.groupBox3.SuspendLayout();
             this.SuspendLayout();
             // 
-            // button1
+            // btnSelect
             // 
-            this.button1.Location = new System.Drawing.Point(285, 16);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
-            this.button1.TabIndex = 1;
-            this.button1.Text = "Select";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
+            this.btnSelect.Location = new System.Drawing.Point(285, 16);
+            this.btnSelect.Name = "btnSelect";
+            this.btnSelect.Size = new System.Drawing.Size(75, 23);
+            this.btnSelect.TabIndex = 1;
+            this.btnSelect.Text = "Select";
+            this.btnSelect.UseVisualStyleBackColor = true;
+            this.btnSelect.Click += new System.EventHandler(this.btnSelect_Click);
             // 
             // groupBox1
             // 
@@ -84,7 +84,7 @@ namespace SNAP {
             this.groupBox1.Controls.Add(this.linkLabel2);
             this.groupBox1.Controls.Add(this.txtFamilyName);
             this.groupBox1.Controls.Add(this.linkLabel1);
-            this.groupBox1.Controls.Add(this.button1);
+            this.groupBox1.Controls.Add(this.btnSelect);
             this.groupBox1.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.groupBox1.Location = new System.Drawing.Point(0, 242);
             this.groupBox1.Name = "groupBox1";
@@ -143,10 +143,10 @@ namespace SNAP {
             this.btnResourceAdd.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.btnResourceAdd.BackColor = System.Drawing.Color.Lavender;
             this.btnResourceAdd.Dock = System.Windows.Forms.DockStyle.Top;
-            this.btnResourceAdd.Font = new System.Drawing.Font("Franklin Gothic Heavy", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnResourceAdd.Location = new System.Drawing.Point(0, 42);
+            this.btnResourceAdd.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnResourceAdd.Location = new System.Drawing.Point(0, 40);
             this.btnResourceAdd.Name = "btnResourceAdd";
-            this.btnResourceAdd.Size = new System.Drawing.Size(74, 42);
+            this.btnResourceAdd.Size = new System.Drawing.Size(74, 40);
             this.btnResourceAdd.TabIndex = 2;
             this.btnResourceAdd.Text = "+\nResource";
             this.btnResourceAdd.UseVisualStyleBackColor = false;
@@ -211,7 +211,7 @@ namespace SNAP {
             this.panel1.Location = new System.Drawing.Point(3, 16);
             this.panel1.MinimumSize = new System.Drawing.Size(74, 108);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(74, 126);
+            this.panel1.Size = new System.Drawing.Size(74, 120);
             this.panel1.TabIndex = 11;
             // 
             // btnRemove
@@ -220,10 +220,10 @@ namespace SNAP {
             this.btnRemove.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.btnRemove.BackColor = System.Drawing.Color.Lavender;
             this.btnRemove.Dock = System.Windows.Forms.DockStyle.Top;
-            this.btnRemove.Font = new System.Drawing.Font("Franklin Gothic Heavy", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnRemove.Location = new System.Drawing.Point(0, 84);
+            this.btnRemove.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnRemove.Location = new System.Drawing.Point(0, 80);
             this.btnRemove.Name = "btnRemove";
-            this.btnRemove.Size = new System.Drawing.Size(74, 42);
+            this.btnRemove.Size = new System.Drawing.Size(74, 40);
             this.btnRemove.TabIndex = 11;
             this.btnRemove.Text = "-\nRemove";
             this.btnRemove.UseVisualStyleBackColor = false;
@@ -235,10 +235,10 @@ namespace SNAP {
             this.btnFamilyAdd.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.btnFamilyAdd.BackColor = System.Drawing.Color.Lavender;
             this.btnFamilyAdd.Dock = System.Windows.Forms.DockStyle.Top;
-            this.btnFamilyAdd.Font = new System.Drawing.Font("Franklin Gothic Heavy", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnFamilyAdd.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnFamilyAdd.Location = new System.Drawing.Point(0, 0);
             this.btnFamilyAdd.Name = "btnFamilyAdd";
-            this.btnFamilyAdd.Size = new System.Drawing.Size(74, 42);
+            this.btnFamilyAdd.Size = new System.Drawing.Size(74, 40);
             this.btnFamilyAdd.TabIndex = 9;
             this.btnFamilyAdd.Text = "+\nFamily";
             this.btnFamilyAdd.UseVisualStyleBackColor = false;
@@ -302,25 +302,25 @@ namespace SNAP {
             this.treeView1.LabelEdit = true;
             this.treeView1.Location = new System.Drawing.Point(0, 24);
             this.treeView1.Name = "treeView1";
-            treeNode8.BackColor = System.Drawing.Color.Bisque;
-            treeNode8.Name = "General.Fungi.Yeast";
-            treeNode8.Text = "Yeast";
-            treeNode9.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(255)))));
-            treeNode9.ForeColor = System.Drawing.Color.MidnightBlue;
-            treeNode9.Name = "Node0";
-            treeNode9.Text = "Young Clean";
-            treeNode10.Name = "General.Fungi";
-            treeNode10.Text = "Fungi";
-            treeNode11.Name = "Node3";
-            treeNode11.Text = "Plant";
-            treeNode12.Name = "Node4";
-            treeNode12.Text = "Vertebrate";
-            treeNode13.Name = "Node5";
-            treeNode13.Text = "Invertebrate";
-            treeNode14.Name = "General";
-            treeNode14.Text = "General";
+            treeNode1.BackColor = System.Drawing.Color.Bisque;
+            treeNode1.Name = "General.Fungi.Yeast";
+            treeNode1.Text = "Yeast";
+            treeNode2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(255)))));
+            treeNode2.ForeColor = System.Drawing.Color.MidnightBlue;
+            treeNode2.Name = "Node0";
+            treeNode2.Text = "Young Clean";
+            treeNode3.Name = "General.Fungi";
+            treeNode3.Text = "Fungi";
+            treeNode4.Name = "Node3";
+            treeNode4.Text = "Plant";
+            treeNode5.Name = "Node4";
+            treeNode5.Text = "Vertebrate";
+            treeNode6.Name = "Node5";
+            treeNode6.Text = "Invertebrate";
+            treeNode7.Name = "General";
+            treeNode7.Text = "General";
             this.treeView1.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
-            treeNode14});
+            treeNode7});
             this.treeView1.Size = new System.Drawing.Size(354, 218);
             this.treeView1.TabIndex = 9;
             this.treeView1.NodeMouseDoubleClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.treeView1_NodeMouseDoubleClick);
@@ -360,7 +360,7 @@ namespace SNAP {
 
         #endregion
 
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button btnSelect;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.LinkLabel linkLabel1;
         private System.Windows.Forms.Button btnCancel;

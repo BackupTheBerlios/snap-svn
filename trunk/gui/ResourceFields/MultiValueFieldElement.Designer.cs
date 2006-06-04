@@ -62,6 +62,7 @@ namespace SNAP.ResourceFields
             this.btnDown.Name = "btnDown";
             this.btnDown.Size = new System.Drawing.Size(26, 26);
             this.btnDown.TabIndex = 4;
+            this.btnDown.Click += new System.EventHandler(this.btnDown_Click);
             // 
             // btnUp
             // 
@@ -72,6 +73,7 @@ namespace SNAP.ResourceFields
             this.btnUp.Name = "btnUp";
             this.btnUp.Size = new System.Drawing.Size(26, 26);
             this.btnUp.TabIndex = 5;
+            this.btnUp.Click += new System.EventHandler(this.btnUp_Click);
             // 
             // btnRemove
             // 
@@ -87,21 +89,21 @@ namespace SNAP.ResourceFields
             // 
             // field
             // 
-            (this.field as Control).Dock = System.Windows.Forms.DockStyle.Fill;
+            this.field.Dock = System.Windows.Forms.DockStyle.Fill;
             this.field.FieldName = "File";
             this.field.FieldNameVisible = false;
             this.field.FieldText = "";
-            (this.field as Control).Location = new System.Drawing.Point(78, 0);
-            (this.field as Control).Name = "field";
+            this.field.Location = new System.Drawing.Point(78, 0);
+            this.field.Name = "field";
             this.field.Readonly = false;
-            (this.field as Control).Size = new System.Drawing.Size(157, 26);
-            (this.field as Control).TabIndex = 2;
+            this.field.Size = new System.Drawing.Size(157, 26);
+            this.field.TabIndex = 2;
             // 
             // MultiValueFieldElement
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add( (Control) this.field);
+            this.Controls.Add(this.field);
             this.Controls.Add(this.panel1);
             this.Name = "MultiValueFieldElement";
             this.Size = new System.Drawing.Size(235, 26);

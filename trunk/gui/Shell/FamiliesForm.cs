@@ -29,7 +29,7 @@ namespace SNAP {
 
         #region Implementation
 
-        private void button1_Click(object sender, EventArgs e) {
+        private void btnSelect_Click(object sender, EventArgs e) {
             this.DialogResult = DialogResult.OK;
             this.Close();
         }

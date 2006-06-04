@@ -8,7 +8,7 @@ using System.Windows.Forms;
 
 namespace SNAP.ResourceFields
 {
-    public interface AbstractField
+    public interface IAbstractField
     {
         /// <summary>
         /// Gets or sets the name of the field.
@@ -64,7 +64,7 @@ namespace SNAP.ResourceFields
     }
 
 
-    public partial class TextField : UserControl, AbstractField
+    public partial class TextField : AbstractField
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="T:TextField"/> class.
@@ -78,7 +78,7 @@ namespace SNAP.ResourceFields
         /// Gets or sets the name of the field.
         /// </summary>
         /// <value>The name of the field.</value>
-        public string FieldName
+        public override string FieldName
         {
             get
             {
@@ -93,7 +93,7 @@ namespace SNAP.ResourceFields
         /// Gets or sets a value indicating whether [show field name].
         /// </summary>
         /// <value><c>true</c> if [show field name]; otherwise, <c>false</c>.</value>
-        public bool FieldNameVisible
+        public override bool FieldNameVisible
         {
             get
             {
@@ -108,7 +108,7 @@ namespace SNAP.ResourceFields
         /// Gets or sets the field text.
         /// </summary>
         /// <value>The field text.</value>
-        public string FieldText
+        public override string FieldText
         {
             get
             {
@@ -124,7 +124,7 @@ namespace SNAP.ResourceFields
         /// Gets or sets a value indicating whether this <see cref="T:TextField"/> is readonly.
         /// </summary>
         /// <value><c>true</c> if readonly; otherwise, <c>false</c>.</value>
-        public bool Readonly
+        public override bool Readonly
         {
             get
             {
@@ -136,12 +136,12 @@ namespace SNAP.ResourceFields
             }
         }
 
-        public void LoadFromFieldValue(SNAP.Resources.FieldValue value)
+        public override void LoadFromFieldValue(SNAP.Resources.FieldValue value)
         {
             FieldText = value.Values[0].ToString ();
         }
 
-        public void SaveToFieldValue(SNAP.Resources.FieldValue field)
+        public override void SaveToFieldValue(SNAP.Resources.FieldValue field)
         {
             field.Values.Add(FieldText);
         }

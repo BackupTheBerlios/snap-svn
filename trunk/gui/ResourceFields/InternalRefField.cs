@@ -8,7 +8,7 @@ using System.Windows.Forms;
 
 namespace SNAP.ResourceFields
 {
-    public partial class InternalRefField : UserControl, AbstractField
+    public partial class InternalRefField : AbstractField
     {
         private SNAP.Resources.Resource _selectedResource;
 
@@ -24,7 +24,7 @@ namespace SNAP.ResourceFields
         /// Gets or sets the name of the field.
         /// </summary>
         /// <value>The name of the field.</value>
-        public string FieldName
+        public override string FieldName
         {
             get
             {
@@ -39,7 +39,7 @@ namespace SNAP.ResourceFields
         /// Gets or sets the field text.
         /// </summary>
         /// <value>The field text.</value>
-        public string FieldText
+        public override string FieldText
         {
             get
             {
@@ -79,7 +79,7 @@ namespace SNAP.ResourceFields
         /// Gets or sets a value indicating whether this <see cref="T:InternalRefField"/> is readonly.
         /// </summary>
         /// <value><c>true</c> if readonly; otherwise, <c>false</c>.</value>
-        public bool Readonly
+        public override bool Readonly
         {
             get
             {
@@ -95,7 +95,7 @@ namespace SNAP.ResourceFields
         /// Gets or sets a value indicating whether [show field name].
         /// </summary>
         /// <value><c>true</c> if [show field name]; otherwise, <c>false</c>.</value>
-        public bool FieldNameVisible
+        public override bool FieldNameVisible
         {
             get
             {
@@ -107,12 +107,12 @@ namespace SNAP.ResourceFields
             }
         }
 
-        public void LoadFromFieldValue(SNAP.Resources.FieldValue value)
+        public override void LoadFromFieldValue(SNAP.Resources.FieldValue value)
         {
             SelectedResource = (SNAP.Resources.Resource) value.Values[0];
         }
 
-        public void SaveToFieldValue(SNAP.Resources.FieldValue value)
+        public override void SaveToFieldValue(SNAP.Resources.FieldValue value)
         {
             if (SelectedResource == null)
                 throw new System.InvalidOperationException("A required field has not been filled out");
