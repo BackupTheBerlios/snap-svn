@@ -46,7 +46,9 @@
 #include <sstream>
 #include <time.h>
 #include <stdio.h>
+
 #include <boost/filesystem/path.hpp>
+#include <boost/filesystem/convenience.hpp>
 
 using namespace std;
 using namespace Persistance;
@@ -273,6 +275,7 @@ static void mainRoutine (int argc,
 int cpp_main(int argc, char* argv [])
 {
 int exit_value = 0;
+try {
    try {
 	   Argv anArgv;
       StatusReportManager::Sentry report( argc, argv, anArgv );
@@ -289,6 +292,9 @@ int exit_value = 0;
       }
 
       StatusReportManager::setJobDone ();
+
+		std::string s;
+		cin >> s;
    }
    catch (const BaseStatusReporter::CancelledException&) {
 		try {
@@ -319,6 +325,13 @@ int exit_value = 0;
       }
       throw;
    }
+}
+catch (...)
+{
+		std::string s;
+		cin >> s;
+		throw;
+}
 
    return exit_value;
 }
@@ -336,7 +349,7 @@ protected:
       DLOG << DLOG.EOL () << DLOG.EOL ();
       DLOG << "Performing search";
       if (!nextParameters.name ().empty ()) {
-         boost::filesystem::path leaf (nextParameters.name ().getChars ());
+         boost::filesystem::path leaf (nextParameters.name ().getChars (), boost::filesystem::native);
          DLOG << ' ' << Str(leaf.leaf ());
       }
 
@@ -482,7 +495,7 @@ void ApplicationMain::printSeedFile (TextTableReport::TextOutput& seedsFile,
 					     index, fileStub, names [i]);
 
 			/// report about the file generation in the seeds file
-         boost::filesystem::path leaf (filenameBuffer);
+         boost::filesystem::path leaf (filenameBuffer, boost::filesystem::native);
          seedsFile << Str (leaf.leaf ()) << '\t';
 
 			/// report about the file generation in the summary file
@@ -606,6 +619,18 @@ static void mainRoutine (int argc,
    if(numOfFileArgs < RequiredParams)
       parser.usage ("Missing arguments");
 
+	//
+	// create the parent directory of the stub
+	boost::filesystem::path jobFolder (argv [parser.__firstFileArg + StubFileIndex], boost::filesystem::native);
+	if (!boost::filesystem::is_empty (jobFolder.branch_path ())) {
+		if (!boost::filesystem::exists (jobFolder.branch_path ())) {
+			boost::filesystem::create_directory (jobFolder.branch_path ());
+		}
+		else {
+			mmustbe (boost::filesystem::is_directory (jobFolder.branch_path ()), "The specified stub path is not a directory");
+		}
+	}
+
    //
    // create the preprocessor and other initial data
    confParamaters.setup (  argv [parser.__firstFileArg + SeqFileIndex],
@@ -614,7 +639,7 @@ static void mainRoutine (int argc,
 
    //
    // this takes care of all searching and printing of seeds
-	boost::filesystem::path jobFolder (argv [parser.__firstFileArg + StubFileIndex]);
+	
 	ApplicationMain application (jobFolder.branch_path ());
    application.search (confParamaters);
 

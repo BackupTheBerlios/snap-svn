@@ -624,7 +624,7 @@ void TextTableReport::Data::writeInto (OutputStream& outputBuffer) const
     int width;
     int offset;
 	 int length;
-    Field* field;
+    Field* field = NULL;
     ArrayAutoPtr <Iterator> pIterators = new Iterator [_format.fields()];
     Iterator* iterators = pIterators.get ();
 

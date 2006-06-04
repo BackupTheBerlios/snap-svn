@@ -93,40 +93,6 @@ static void checkup (SequenceDB& db, const char* seqFileName)
    */
 }
 
-static void readWeights(string const & fname, map<StrBuffer,double> & weights)
-{
-   ifstream in (fname.c_str());
-   if (! in.is_open())
-      Err(string("unable to open weight file ")+ fname);
-   
-   string name, s;
-   while (true) {
-      s.resize (0);
-      name.resize (0);
-      
-      bool ok = true;
-      double val;
-      while (ok && s.size()==0) {
-         std::istream::sentry _ok(in);
-         if (ok = _ok)
-            in>>s;// skip empty lines;
-      }
-
-      if (!ok)
-         break;    
-
-      // here we handle cases in which the ">" is/is'nt seperated from the name of the gene.
-      if (s ==">")
-         in>>name;
-      else {
-         assert(s[0]=='>');    
-         name = s.substr(1);
-      }
-      
-      in>>val;
-      weights[Str (name)] = val;
-   }
-}
 
 static void readName (istream& in, string& name, const string& s)
 {

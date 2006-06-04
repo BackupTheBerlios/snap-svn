@@ -568,7 +568,7 @@ bool ConfReaderWrapper::get(Key inKey, StrBuffer& outString) {
 }
 void ConfReaderWrapper::set(Key inKey, int inNumber) {
 	char buffer[32];
-	sprintf(buffer, "%ld", inNumber);
+	sprintf(buffer, "%d", inNumber);
 	set(inKey, Str(buffer));
 }
 
@@ -783,9 +783,9 @@ void ConfReaderWrapper::readFromFile(const Str& inConfigFile,
     // include mechanism:
     // first we try to find the included file from 
     // the path of the including file
-    boost::filesystem::path embConfigPath (fileName);
+	 boost::filesystem::path embConfigPath (fileName, boost::filesystem::native);
     embConfigPath = embConfigPath.branch_path () / 
-      boost::filesystem::path (embConfigFile);
+      boost::filesystem::path (embConfigFile, boost::filesystem::native);
 
     if (boost::filesystem::exists (embConfigPath)) {
       //
@@ -796,7 +796,7 @@ void ConfReaderWrapper::readFromFile(const Str& inConfigFile,
       //
       // try to find the file in the absolute path 
       // (or relative to current directory)
-      embConfigPath = boost::filesystem::path (embConfigFile);
+      embConfigPath = boost::filesystem::path (embConfigFile, boost::filesystem::native);
       if (boost::filesystem::exists (embConfigPath)){
 	embConfigFile = embConfigPath.string ();
       }

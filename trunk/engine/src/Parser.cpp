@@ -748,17 +748,6 @@ void Parser::restoreDefaults ()
    );
 }
 
-static const char* outputTypeName (Parser::OutputType t) {
-   switch (t) {
-      case Parser::_out_all_: return "all"; break;
-      case Parser::_out_pos_: return "pos"; break;
-      case Parser::_out_none_: return "off"; break;
-      default: mustfail ();
-      return NULL;
-   }
-}
-
-
 void Parser::logParams (Persistance::TextWriter& out) const
 {
    Argv params;

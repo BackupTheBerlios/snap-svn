@@ -656,10 +656,7 @@ tRandomGenerator::sampleMulti( tMultinomial const & m ) {
 }
 
 
-
-std::vector<int>
-
-tRandomGenerator::sampleGroup(int size,int groupSize)
+std::vector<int> tRandomGenerator::sampleGroup(int size,int groupSize)
 {
   assert(groupSize<=size);
   std::vector<int> group;
@@ -688,24 +685,6 @@ tRandomGenerator::sampleGroup(int size,int groupSize)
   std::sort(group.begin(),group.end());
   return group;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -36,7 +36,7 @@ namespace Scores {
 			void constraints() {
 				// must support a counting type
 				// which allows adding and multiplying
-				typename PositionWeighterT::counter a = PositionWeighterT::counter ();
+				typename PositionWeighterT::counter a = typename PositionWeighterT::counter ();
 				a += a;
 				a = a * a;
 				// must support a round method
