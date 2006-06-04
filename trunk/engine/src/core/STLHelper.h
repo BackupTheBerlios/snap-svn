@@ -101,14 +101,15 @@ public:
 
    //
    // Copy Ctor & operator =
-   inline IteratorWrapperBase () : _current (), _end () {
+   inline IteratorWrapperBase () : _init (false), _current (), _end () {
 	   _current = _end;
    }
-   inline IteratorWrapperBase (iterator begin, iterator end) : _current (begin), _end (end) {
+   inline IteratorWrapperBase (iterator begin, iterator end) : _init (true), _current (begin), _end (end) {
    }
-   inline IteratorWrapperBase (const IteratorWrapperBase& i) : _current (i._current), _end (i._end) {
+   inline IteratorWrapperBase (const IteratorWrapperBase& i) : _init (true), _current (i._current), _end (i._end) {
    }
    inline IteratorWrapperBase& operator = (const IteratorWrapperBase& i) {
+		_init = i._init;
       _current = i._current;
       _end = i._end;
       return *this;
@@ -134,14 +135,14 @@ public:
    //
    // iteration methods
    inline bool hasNext () const {
-      return _current != _end;
+      return _init && (_current != _end);
    }
    inline void next () {
-      debug_mustbe (_current != _end);
+      debug_mustbe (hasNext ());
       ++_current; 
    }
    inline const value_type& get () const {
-      debug_mustbe (_current != _end);
+      debug_mustbe (hasNext ());
       return *_current;
    }
    inline value_type const& operator * () const {
@@ -155,6 +156,7 @@ public:
    }
 
 protected:
+	bool _init;
    iterator _current;
    iterator _end;
 };

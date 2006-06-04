@@ -78,7 +78,12 @@ static void disallowFileArgs (Parser& parser)
    }
 }
 
-SeedConfList::SeedConfList (int argc, char* argv [])
+SeedConfList::SeedConfList (int argc, const char* argv [])
+{
+   _init.parse (argc, argv);
+}
+
+SeedConfList::SeedConfList (int argc, char* const * argv)
 {
    _init.parse (argc, argv);
 }

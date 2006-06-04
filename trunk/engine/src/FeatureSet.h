@@ -27,7 +27,7 @@
 
 #include "Feature.h"
 #include <set>
-#include <boost/functional.hpp>
+//#include <boost/functional.hpp>
 
 //
 // does looks at the value at it1

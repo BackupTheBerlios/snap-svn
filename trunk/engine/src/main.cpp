@@ -37,6 +37,7 @@
 #include "core/AutoPtr.h"
 #include "persistance/StdInputStream.h"
 #include "persistance/StrOutputStream.h"
+#include "Persistance/xmlwriter.h"
 
 #include "status_reporter/BaseStatusReporter.hpp"
 
@@ -68,6 +69,121 @@ enum {
    TestWgtFileIndex = 3,
 };
 
+
+
+class OutputSummary 
+{
+public:
+	OutputSummary (const char* outputFile)
+		: _stream (outputFile), _xml (_stream)
+	{
+		/// write headers
+		_xml << prolog ();
+		_xml << tag ("resources");
+	}
+	void seedsOutput (const char* filename)
+	{
+		if (!shouldReport (filename))
+			return;
+
+		_xml	<< tag ("resource")
+					<< attr ("type") << "SNAP Seeds file"
+					<< tag ("field") 
+						<< attr ("name") << "File"
+						<< chardata () << filename
+					<< endtag ()
+				<< endtag ();
+	}
+
+	void matrixOutput (const char* filename)
+	{
+		if (!shouldReport (filename))
+			return;
+
+		_xml	<< tag ("resource")
+					<< attr ("type") << "SNAP Matrix file"
+					<< tag ("field") 
+						<< attr ("name") << "File"
+						<< chardata () << filename
+					<< endtag ()
+				<< endtag ();
+	}
+
+	void logOutput (const char* filename)
+	{
+		if (!shouldReport (filename))
+			return;
+
+		_xml	<< tag ("resource")
+					<< attr ("type") << "SNAP Log file"
+					<< tag ("field") 
+						<< attr ("name") << "File"
+						<< chardata () << filename
+					<< endtag ()
+				<< endtag ();
+	}
+
+	void samplesOutput (const char* filename)
+	{
+		if (!shouldReport (filename))
+			return;
+
+		_xml	<< tag ("resource")
+					<< attr ("type") << "SNAP samples file"
+					<< tag ("field") 
+						<< attr ("name") << "File"
+						<< chardata () << filename
+					<< endtag ()
+				<< endtag ();
+	}
+
+	void pssmOutput (const char* filename)
+	{
+		if (!shouldReport (filename))
+			return;
+
+		_xml	<< tag ("resource")
+					<< attr ("type") << "SNAP PSSM file"
+					<< tag ("field") 
+						<< attr ("name") << "File"
+						<< chardata () << filename
+					<< endtag ()
+				<< endtag ();
+	}
+
+	void motifsOutput (const char* filename)
+	{
+		if (!shouldReport (filename))
+			return;
+
+		_xml	<< tag ("resource")
+					<< attr ("type") << "SNAP motifs file"
+					<< tag ("field") 
+						<< attr ("name") << "File"
+						<< chardata () << filename
+					<< endtag ()
+				<< endtag ();
+	}
+
+	bool shouldReport (const char* filename) 
+	{
+		if (_files.find (filename) != _files.end ()) {
+			/// we aleady reported about this file
+			return false;
+		}
+		else {
+			_files.insert (filename);
+			return true;
+		}
+	}
+
+private:
+	std::ofstream _stream;
+	Persistance::XmlStream _xml;
+	
+	typedef std::set <std::string> FileNameSet;
+	FileNameSet _files;
+};
 
 
 
@@ -207,14 +323,141 @@ int exit_value = 0;
    return exit_value;
 }
 
+
+class ApplicationMain : public SeedSearcherMain {
+public:
+	ApplicationMain (const boost::filesystem::path& outputDirectory) :
+		_outputSummary ( (outputDirectory / "summary.xml").string ().c_str ())
+	{
+	}
+
+protected:
+   virtual void beforeSearch (Parameters& nextParameters) {
+      DLOG << DLOG.EOL () << DLOG.EOL ();
+      DLOG << "Performing search";
+      if (!nextParameters.name ().empty ()) {
+         boost::filesystem::path leaf (nextParameters.name ().getChars ());
+         DLOG << ' ' << Str(leaf.leaf ());
+      }
+
+      DLOG << ':' << DLOG.EOL();
+      DLOG.flush ();
+   }
+   //
+   // prints results after a search 
+   virtual void afterSearch (Results& results) {
+      SeedSearcherMain::afterSearch (results);
+
+      SeedSearcherMain::CmdLineParameters& params =
+         *safe_cast (CmdLineParameters*, &results.getParameters ());
+
+      Parser::OutputType gPSSM = params.parser ().__generatePSSM;
+      Parser::OutputType gMotif = params.parser ().__generateMotif;
+      Parser::OutputType gBayesian = params.parser ().__generateBayesian;
+		Parser::OutputType gSeedlog = params.parser ().__generateSeedlog;
+
+      //
+      // should we generate a file that contains only the seeds?
+      bool gSeeds =  (gMotif  != Parser::_out_none_)  ||
+         (gPSSM   != Parser::_out_none_)  ||
+         (gBayesian != Parser::_out_none_) ||
+			(gSeedlog != Parser::_out_none_);
+
+      if (!gSeeds)
+         return;
+
+		//
+		// get features without any redundancies
+      FeatureSet_ptr bestFeatures =
+			SeedSearcherMain::FeatureSetManager::removeRedundancies (
+				*params.bestFeatures ().getArray(), params);
+
+      FeatureInvestigator printer ( params                     ,
+                                    params.parser ().__statfix_t,
+												params.parser ().__seed_o
+                                    );
+
+		/// beign or continue reporting the seeds file
+      FixedStrBuffer <4096> seedsFileName;
+		StrBuffer fileStub (params.name ());
+      TextTableReport::TextOutput seedsFile (
+         main_definitions::openFile (true, -1, fileStub, main_definitions::SEEDS_FILE_STUB, seedsFileName)
+      );
+      seedsFile.skipHeader ();
+      seedsFile.noNewlineAfterRecord ();
+
+		/// report the generation of this seeds files
+		_outputSummary.seedsOutput (seedsFileName);
+
+
+      //
+      // we print the results to the log
+      PositionVector pos;	pos.reserve(1024);
+      PositionVector neg;	neg.reserve(1024);
+      Persistance::TextTableReport::TextOutput dlog (DLOG);
+		FeatureSet::Iterator feature_it = bestFeatures->getIterator();
+      for (int i=0; feature_it.hasNext() ; feature_it.next(), ++i) {
+
+         Feature& feature = *(feature_it.get ());
+
+         //
+         // first we find the positive and negative positions
+         // of this feature
+			reserveClear(pos);
+			reserveClear(neg);
+         printer.addPositions (feature, pos, neg);
+         debug_mustbe (feature.cluster ().hasPositions ());
+
+         main_definitions::printMotif (
+                  params.parser ().__score_partial,
+                  dlog, printer,
+                  gPSSM, gMotif, gBayesian,
+                  pos, neg,
+                  fileStub, feature, i
+         );
+         dlog.writeln ();
+         printSeedFile (seedsFile, printer,
+			   gPSSM, gMotif, gBayesian,
+			   pos, neg,
+			   fileStub, feature, i
+			);
+      }
+
+      printSeqMatrix (*bestFeatures, results.getParameters ());
+   }
+
+	void printSeqMatrix (FeatureSet& bestFeatures,
+                            SeedSearcherMain::Parameters& parameters);
+
+	void printSeedFile (TextTableReport::TextOutput& seedsFile,
+                           FeatureInvestigator& printer,
+                           Parser::OutputType gPSSM,
+                           Parser::OutputType gMotif,
+                           Parser::OutputType gSample,
+                           PositionVector pos,
+                           PositionVector neg,
+                           const char* fileStub,
+                           Feature& feature,
+                           int index);
+
+protected:
+	OutputSummary _outputSummary;
+};
+
+
+
+
 const char main_definitions::MOTIF_FILE_STUB[] = "motifs";
 const char main_definitions::PSSM_FILE_STUB[] = "pssm";
 const char main_definitions::SAMPLE_FILE_STUB[] = "sample";
 const char main_definitions::SEEDS_FILE_STUB[] = "seeds";
 const char main_definitions::MATRIX_FILE_STUB[] = "matrix";
 
-
-static void printSeedFile (TextTableReport::TextOutput& seedsFile,
+/// print the .seeds file, which lists in a user-fiendly tabular form the files
+/// generated from the run of the program.
+///
+/// additionally, it outputs an xml-format file which lists the same information
+void ApplicationMain::printSeedFile (TextTableReport::TextOutput& seedsFile,
                            FeatureInvestigator& printer,
                            Parser::OutputType gPSSM,
                            Parser::OutputType gMotif,
@@ -233,11 +476,31 @@ static void printSeedFile (TextTableReport::TextOutput& seedsFile,
 
    for (int i=0 ; i<3; i++) {
       if (outputs[i] != Parser::_out_none_)  {
-         char buffer [8096];
-         main_definitions::getOutputFileName(buffer, true,
+         /// get the file name
+			FixedStrBuffer <4096> filenameBuffer;
+         main_definitions::getOutputFileName(filenameBuffer, true,
 					     index, fileStub, names [i]);
-         boost::filesystem::path leaf (buffer);
+
+			/// report about the file generation in the seeds file
+         boost::filesystem::path leaf (filenameBuffer);
          seedsFile << Str (leaf.leaf ()) << '\t';
+
+			/// report about the file generation in the summary file
+			switch (i) {
+				case 0:
+					_outputSummary.motifsOutput (filenameBuffer);
+					break;
+
+				case 1:
+					_outputSummary.pssmOutput (filenameBuffer);
+					break;
+
+				case 2:
+					_outputSummary.samplesOutput (filenameBuffer);
+					break;
+
+			}
+			
       }
       else {
          seedsFile << "-----" << '\t';
@@ -248,13 +511,20 @@ static void printSeedFile (TextTableReport::TextOutput& seedsFile,
    seedsFile.flush();
 }
 
-static void printSeqMatrix (FeatureSet& bestFeatures,
+void ApplicationMain::printSeqMatrix (FeatureSet& bestFeatures,
                             SeedSearcherMain::Parameters& parameters)
 {
+	/// create or continue the matrix file
+	FixedStrBuffer <4096> matrixFileName;
    TextTableReport::TextOutput matrixFile (
       main_definitions::openFile (true, -1,
                                  StrBuffer (parameters.name ()),
-                                 main_definitions::MATRIX_FILE_STUB));
+                                 main_definitions::MATRIX_FILE_STUB,
+											matrixFileName));
+
+	/// report the generation of the matrix file
+	_outputSummary.matrixOutput (matrixFileName);
+
    //
    // create the format of the table
    // the first column is the name of the sequence
@@ -309,97 +579,11 @@ static void printSeqMatrix (FeatureSet& bestFeatures,
 }
 
 
-class ApplicationMain : public SeedSearcherMain {
-public:
-protected:
-   virtual void beforeSearch (Parameters& nextParameters) {
-      DLOG << DLOG.EOL () << DLOG.EOL ();
-      DLOG << "Performing search";
-      if (!nextParameters.name ().empty ()) {
-         boost::filesystem::path leaf (nextParameters.name ().getChars ());
-         DLOG << ' ' << Str(leaf.leaf ());
-      }
 
-      DLOG << ':' << DLOG.EOL();
-      DLOG.flush ();
-   }
-   //
-   // prints results after a search 
-   virtual void afterSearch (Results& results) {
-      SeedSearcherMain::afterSearch (results);
 
-      SeedSearcherMain::CmdLineParameters& params =
-         *safe_cast (CmdLineParameters*, &results.getParameters ());
 
-      Parser::OutputType gPSSM = params.parser ().__generatePSSM;
-      Parser::OutputType gMotif = params.parser ().__generateMotif;
-      Parser::OutputType gBayesian = params.parser ().__generateBayesian;
-		Parser::OutputType gSeedlog = params.parser ().__generateSeedlog;
 
-      //
-      // should we generate a file that contains only the seeds?
-      bool gSeeds =  (gMotif  != Parser::_out_none_)  ||
-         (gPSSM   != Parser::_out_none_)  ||
-         (gBayesian != Parser::_out_none_) ||
-			(gSeedlog != Parser::_out_none_);
 
-      if (!gSeeds)
-         return;
-
-		//
-		// get features without any redundancies
-      FeatureSet_ptr bestFeatures =
-			SeedSearcherMain::FeatureSetManager::removeRedundancies (
-				*params.bestFeatures ().getArray(), params);
-
-      FeatureInvestigator printer ( params                     ,
-                                    params.parser ().__statfix_t,
-												params.parser ().__seed_o
-                                    );
-
-      StrBuffer fileStub (params.name ());
-      TextTableReport::TextOutput seedsFile (
-         main_definitions::openFile (true, -1, fileStub, main_definitions::SEEDS_FILE_STUB)
-      );
-      seedsFile.skipHeader ();
-      seedsFile.noNewlineAfterRecord ();
-
-      //
-      // we print the results to the log
-      PositionVector pos;	pos.reserve(1024);
-      PositionVector neg;	neg.reserve(1024);
-      Persistance::TextTableReport::TextOutput dlog (DLOG);
-		FeatureSet::Iterator feature_it = bestFeatures->getIterator();
-      for (int i=0; feature_it.hasNext() ; feature_it.next(), ++i) {
-
-         Feature& feature = *(feature_it.get ());
-
-         //
-         // first we find the positive and negative positions
-         // of this feature
-			reserveClear(pos);
-			reserveClear(neg);
-         printer.addPositions (feature, pos, neg);
-         debug_mustbe (feature.cluster ().hasPositions ());
-
-         main_definitions::printMotif (
-                  params.parser ().__score_partial,
-                  dlog, printer,
-                  gPSSM, gMotif, gBayesian,
-                  pos, neg,
-                  fileStub, feature, i
-         );
-         dlog.writeln ();
-         printSeedFile (seedsFile, printer,
-			   gPSSM, gMotif, gBayesian,
-			   pos, neg,
-			   fileStub, feature, i
-			);
-      }
-
-      printSeqMatrix (*bestFeatures, results.getParameters ());
-   }
-};
 
 static void mainRoutine (int argc,
                         char* argv [])
@@ -430,7 +614,8 @@ static void mainRoutine (int argc,
 
    //
    // this takes care of all searching and printing of seeds
-   ApplicationMain application;
+	boost::filesystem::path jobFolder (argv [parser.__firstFileArg + StubFileIndex]);
+	ApplicationMain application (jobFolder.branch_path ());
    application.search (confParamaters);
 
    finish = time(NULL);

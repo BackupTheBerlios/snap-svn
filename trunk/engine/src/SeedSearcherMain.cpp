@@ -209,7 +209,7 @@ void SeedSearcherMain::search (ParameterIterator& it)
 
 
 
-void SeedSearcherMain::CmdLineParameters::secondarySetup (int argc, char** argv)
+void SeedSearcherMain::CmdLineParameters::secondarySetup (int argc, char* const* argv)
 {
    secondarySetup (Parser (argc, argv));
 }
@@ -555,7 +555,7 @@ Preprocessor*
 
 #include "SeedConf.h"
 
-ConfParameterIterator::ConfParameterIterator (int argc, char* argv [])
+ConfParameterIterator::ConfParameterIterator (int argc, char* const * argv)
 : _optList (argc, argv), _useInitParameters (true), _updated(false)
 {
    Parser parser (argc, argv);

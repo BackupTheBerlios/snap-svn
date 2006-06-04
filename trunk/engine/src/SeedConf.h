@@ -47,7 +47,8 @@ class SeedConfList : public SeedConf {
    //
    // makes sure a conf file is valid
 public:
-   SeedConfList (int argc, char* argv []);
+   SeedConfList (int argc, const char* argv []);
+	SeedConfList (int argc, char* const * argv);
    ~SeedConfList () {
       while (!_optionList.empty ()) {
          Options* o = _optionList.back (); _optionList.pop_back ();

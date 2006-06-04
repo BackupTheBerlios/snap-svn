@@ -31,11 +31,15 @@
 #include "core/GetOptParser.h"
 #include "persistance/TextWriter.h"
 
-
 class Parser {
 public:
    Parser ();
-   Parser (int argc, char* argv []) {
+	Parser (int argc, char* const *argv) {
+		*this = Parser ();
+		parse (argc, argv);
+	}
+
+   Parser (int argc, const char* argv []) {
       *this = Parser ();
       parse (argc, argv);
    }
@@ -51,7 +55,11 @@ public:
       __argv = argv;
       internalParse ();
    }
-   void parse (int argc, char* argv[]){
+   void parse (int argc, const char* argv []){
+      __argv.set(argc, const_cast <char* const * const> (argv));
+      internalParse();
+   }
+   void parse (int argc, char* const * argv){
       __argv.set(argc, argv);
       internalParse();
    }

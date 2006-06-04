@@ -395,6 +395,10 @@
 				RelativePath="..\persistance\TFactory.h"
 				>
 			</File>
+			<File
+				RelativePath="..\persistance\xmlwriter.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"

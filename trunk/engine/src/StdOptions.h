@@ -34,7 +34,7 @@
 #include "persistance/Defs.h"
 #include "persistance/TextWriter.h"
 
-#include <boost/cast.hpp>
+//#include <boost/cast.hpp>
 
 //
 // this header contains the standard definitions used for SeedSearcher

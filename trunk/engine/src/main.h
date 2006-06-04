@@ -48,7 +48,7 @@ struct main_definitions {
 
 
 
-   static const char* getOutputFileName (char* motifFileName,
+   static const char* getOutputFileName (FixedStr& outFilename,
       bool isPositives,
       int index,
       const char* fileStub,
@@ -56,22 +56,18 @@ struct main_definitions {
    {
       if (index >= 0) {
          if (isPositives)
-            sprintf (motifFileName, "%s.%d.%s",
-            fileStub, (index+1), typeStub);
+				outFilename.set_va ("%s.%d.%s", fileStub, (index+1), typeStub);
          else
-            sprintf (motifFileName, "%s.%d.neg.%s",
-            fileStub, (index+1), typeStub);
+            outFilename.set_va ("%s.%d.neg.%s", fileStub, (index+1), typeStub);
       }
       else {
          if (isPositives)
-            sprintf (motifFileName, "%s.%s",
-            fileStub, typeStub);
+            outFilename.set_va("%s.%s", fileStub, typeStub);
          else
-            sprintf (motifFileName, "%s.neg.%s",
-            fileStub, typeStub);
+            outFilename.set_va("%s.neg.%s", fileStub, typeStub);
       }
 
-      return motifFileName;
+      return outFilename.getChars ();
    }
 
    //
@@ -84,9 +80,21 @@ struct main_definitions {
    {
       //
       // create the motif file name
-      char motifFileName [1024];
+      FixedStrBuffer <4096> motifFileName;
       return openFile (
          getOutputFileName (motifFileName, isPositives, index, fileStub, typeStub)
+         );
+   }
+
+   static Persistance::OutputStream* openFile (
+      bool isPositives,
+      int index,
+      const char* fileStub,
+      const char* typeStub,
+		FixedStr& outFileName)
+   {
+      return openFile (
+         getOutputFileName (outFileName, isPositives, index, fileStub, typeStub)
          );
    }
 

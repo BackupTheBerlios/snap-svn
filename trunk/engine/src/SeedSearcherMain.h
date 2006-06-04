@@ -237,7 +237,7 @@ class SeedSearcherMain::CmdLineParameters : public SeedSearcherMain::Parameters 
 public:
    CmdLineParameters () {
    }
-   CmdLineParameters (int argc, char** argv) {
+   CmdLineParameters (int argc, char* const * const argv) {
       _parser.parse (argc, argv);
    }
    CmdLineParameters (const Parser& inParser) : _parser (inParser) {
@@ -273,7 +273,7 @@ public:
    //
    // Changable parameters:
    //    ScoreFunctions, Projections, SearchParameters
-   void secondarySetup (int argc, char** argv);
+   void secondarySetup (int argc, char* const * argv);
    void secondarySetup (const Parser&);
 
    virtual void setupParameters ();
@@ -323,7 +323,7 @@ struct SeedSearcherMain::PreprocessorFactory {
 
 class ConfParameterIterator : public SeedSearcherMain::ParameterIterator {
 public:
-   ConfParameterIterator (int argc, char* argv []);
+	ConfParameterIterator (int argc, char* const * argv);
    virtual ~ConfParameterIterator ();
 
    //

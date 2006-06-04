@@ -11,6 +11,9 @@ class Argv{
    //
    // utlitity class for argv
 public:
+	typedef const char* CStyleString;
+	typedef CStyleString* CStyleStringArray;
+
    Argv () : _argc (0), _argv (NULL) {
    }
    Argv (int argc) : _argc (argc) {
@@ -18,7 +21,7 @@ public:
       for (int i=0 ; i<_argc ; i++)
          _argv [i] = NULL;
    }
-   Argv (int argc, char** argv) : _argc (0), _argv (NULL) {
+   Argv (int argc, char* const* const argv) : _argc (0), _argv (NULL) {
       set (argc, argv);
    }
    Argv (const Argv& in) : _argc (0), _argv (NULL) {
@@ -43,9 +46,9 @@ public:
    void set (const Str& prefix, const Str&);
 
    void set (const Argv& in) {
-      set (in._argc, in._argv);
+      set (in._argc, in.argv ());
    }
-   void set (int argc, char** argv) {
+   void set (int argc, char* const * const argv) {
       mustbe (argc >= 0);
       clear ();
       _argc = argc;
@@ -53,7 +56,7 @@ public:
       for (int i=0 ; i<_argc ; i++)
          _argv [i] = dup (argv [i]);
    }
-   void set (const Str& prefix, int argc, char** argv)  {
+   void set (const Str& prefix, int argc, char* const* const argv)  {
       mustbe (argc >= 0);
       clear ();
       _argc = argc + 1;
@@ -77,7 +80,10 @@ public:
    int argc () const {
       return _argc;
    }
-   char ** argv () const {
+   char** const argv () {
+      return _argv;
+   }
+   char* const* const argv () const {
       return _argv;
    }
    bool empty () const {

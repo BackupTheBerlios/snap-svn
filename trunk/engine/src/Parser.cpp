@@ -740,6 +740,8 @@ void Parser::internalParse ()
 void Parser::restoreDefaults ()
 {
    _impl.restoreDefaults (__options._list, this);
+	__expLossPos = 2;
+	__expLossNeg = 2;
 
    USELESS (
       __proj_i; // need to be initialized in main

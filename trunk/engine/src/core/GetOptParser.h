@@ -234,7 +234,7 @@ public:
          output.writeln ();
       }
    }
-   void parse (int argc, char* argv [], 
+	void parse (int argc, const Argv::CStyleString* argv , 
                OptionList& opt, void* ctx,
                Option& unknown) 
    {
@@ -249,7 +249,8 @@ public:
       char c;
       int opt_ind;
       int numOfOptions = opt.length ();
-      while ((c = _getopt.getopt_long (argc, argv, "", internal, &opt_ind))!=EOF) {
+		char* const * _argv = const_cast <char* const *> (argv);
+      while ((c = _getopt.getopt_long (argc, _argv, "", internal, &opt_ind))!=EOF) {
          if ((c != '?') && (opt_ind >= 0) && (opt_ind < numOfOptions)) {
             opt.execute (opt_ind, _getopt.optarg, ctx);
          }
