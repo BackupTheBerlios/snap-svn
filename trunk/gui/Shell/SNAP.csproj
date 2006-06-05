@@ -56,12 +56,6 @@
     <Compile Include="CalcForm.Designer.cs">
       <DependentUpon>CalcForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="ConfiGenForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="ConfiGenForm.Designer.cs">
-      <DependentUpon>ConfiGenForm.cs</DependentUpon>
-    </Compile>
     <Compile Include="DynResourceForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -79,6 +73,12 @@
     </Compile>
     <Compile Include="FamiliesForm.Designer.cs">
       <DependentUpon>FamiliesForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="RunProcessForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="RunProcessForm.Designer.cs">
+      <DependentUpon>RunProcessForm.cs</DependentUpon>
     </Compile>
     <Compile Include="SeedSearchForm.cs">
       <SubType>Form</SubType>
@@ -101,10 +101,6 @@
       <SubType>Designer</SubType>
       <DependentUpon>CalcForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ConfiGenForm.resx">
-      <SubType>Designer</SubType>
-      <DependentUpon>ConfiGenForm.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="DynResourceForm.resx">
       <SubType>Designer</SubType>
       <DependentUpon>DynResourceForm.cs</DependentUpon>
@@ -116,6 +112,10 @@
     <EmbeddedResource Include="FamiliesForm.resx">
       <SubType>Designer</SubType>
       <DependentUpon>FamiliesForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="RunProcessForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>RunProcessForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="SeedSearchForm.resx">
       <SubType>Designer</SubType>

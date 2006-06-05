@@ -10,6 +10,29 @@ namespace SNAP.ConfEditor {
     public partial class ConfiGenForm : Form {
 
         private SNAP.Engine.Conf _conf = null;
+        private SortedDictionary<string, ToolStripItem> _items = new SortedDictionary<string, ToolStripItem>();
+        private ToolStripSplitButton _activeButton;
+
+        public ToolStripSplitButton ActiveButton
+        {
+            get
+            {
+                return _activeButton;
+            }
+            set
+            {
+                if (_activeButton == value)
+                    return;
+
+                if (_activeButton != null)
+                {
+                    _activeButton.ForeColor = _activeButton.Owner.ForeColor;
+                }
+
+                _activeButton = value;
+                _activeButton.ForeColor = Color.Goldenrod;
+            }
+        }
 
         public SNAP.Engine.Conf Conf {
             set {
@@ -19,27 +42,26 @@ namespace SNAP.ConfEditor {
                 _conf = value;
                 
                 /// remove all buttons from panel
-                
-                bool moreItems;
-                do
+                foreach (System.Windows.Forms.ToolStripItem item in _items.Values)
                 {
-                    moreItems = false;
-                    foreach (System.Windows.Forms.ToolStripItem item in toolStrip1.Items)
-                    {
-                        if (item is ToolStripSplitButton)
-                        {
-                            toolStrip1.Items.Remove(item);
-                            moreItems = true;
-                            break;
-                        }
-                    }
+                    toolStrip1.Items.Remove (item);
                 }
-                while (moreItems);
+                _items.Clear ();
 
+                /// add the new sections
                 foreach (SNAP.Engine.Conf.Section section in _conf.Sections.Values)
                 {
                     AddSection(section);
-                }                
+                }
+
+                if (_conf.Sections.Count > 0)
+                {
+                    /// load the first section
+                    IEnumerator<KeyValuePair <string, SNAP.Engine.Conf.Section>> i = _conf.Sections.GetEnumerator();
+                    i.MoveNext ();
+                    string name = i.Current.Value.Name;
+                    sectionButton_Click(_items[name], new EventArgs());
+                }
             }
         }
 
@@ -60,12 +82,14 @@ namespace SNAP.ConfEditor {
             ToolStripSplitButton sectionButton = new ToolStripSplitButton (section.Name);
             sectionButton.Click += new EventHandler(sectionButton_Click);
             toolStrip1.Items.Add (sectionButton);
+            _items.Add(section.Name, sectionButton);
         }
 
         void sectionButton_Click(object sender, EventArgs e)
         {
             ToolStripSplitButton sectionButton = (ToolStripSplitButton)sender;
             LoadParameters(_conf.Sections[sectionButton.Text].Settings);
+            ActiveButton = sectionButton;
         }
 
         public void LoadParameters (SNAP.Engine.Parser parser)

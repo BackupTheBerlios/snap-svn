@@ -23,13 +23,38 @@ namespace SNAP.Resources
                 DirectoryInfo executionFolder = Directory.CreateDirectory(GetExecutionFolder (name, resource));
 
                 /// run the job
-                System.Diagnostics.Process.Start(execType.Bin, parameters);
-
-                /// process the dynamic output files
-                foreach (string filename in execType.DynamicOutputFiles)
+                System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo(execType.Bin, parameters);
+                startInfo.WorkingDirectory = SNAP.Controller.JobFolder;
+                
+                startInfo.FileName = execType.Bin;
+                if (!System.IO.Path.IsPathRooted(startInfo.FileName))
                 {
-                    Controller.CurrentResources.LoadAdditionalResources (
-                        Path.Combine (executionFolder.FullName, filename));
+                    /// it is a path relative to the bin directory of SNAP
+                    if (File.Exists (System.IO.Path.Combine(SNAP.Controller.BinFolder, startInfo.FileName ))) {
+                        startInfo.FileName = System.IO.Path.Combine(SNAP.Controller.BinFolder, startInfo.FileName);
+                    }
+                }
+
+                startInfo.UseShellExecute = false;
+                startInfo.RedirectStandardError = true;
+                startInfo.RedirectStandardOutput = true;
+                System.Diagnostics.Process process = 
+                    System.Diagnostics.Process.Start(startInfo);
+
+                // TODO: show a message that work is in progress
+                Controller.WaitForExit(process);
+                if (process.ExitCode == 0)
+                {
+                    /// process the dynamic output files
+                    foreach (string filename in execType.DynamicOutputFiles)
+                    {
+                        Controller.CurrentResources.LoadAdditionalResources(
+                            Path.Combine(executionFolder.FullName, filename));
+                    }
+                }
+                else
+                {
+                    /// the process didnt work
                 }
             }
         }
@@ -57,17 +82,40 @@ namespace SNAP.Resources
             do
             {
                 System.Text.RegularExpressions.Match match =
-                    System.Text.RegularExpressions.Regex.Match(result, @"\$([a-zA-Z0-9]*)\$");
+                    System.Text.RegularExpressions.Regex.Match(result,
+                        @"\$([a-zA-Z0-9 ]+(?:\.[a-zA-Z0-9 ]+)*)"
+                        );
 
                 if (match == null || !match.Success)
                     break;
 
-                string varName = match.Groups[1].Captures[0].Value;
+              
+                /// break the variable name into its inner structure
+                /// For instance: Sequence File.File
+                string completeVarName = match.Groups[1].Captures[0].Value;
+                string[] varNameParts = completeVarName.Split('.');
+
+                /// follow the inner structure to the last internal reference
+                Resource currentResource = resource;
+                for (int i = 0 ; i <varNameParts.Length - 1 ; ++i) {
+                    /// this field must exists, and it must be an internal_ref, and it has to have more than one value
+                    System.Diagnostics.Trace.Assert (currentResource.Fields.ContainsKey (varNameParts [i]));
+                    System.Diagnostics.Trace.Assert (currentResource.Fields [varNameParts [i]].Type.Type.Equals ("internal_ref"));
+                    System.Diagnostics.Trace.Assert (currentResource.Fields [varNameParts [i]].Values.Count > 0);
+
+                    object value = currentResource.Fields [varNameParts [i]].Values [0];
+                    if (value is string)
+                        currentResource = Controller.CurrentResources.FindResource((string)value);
+                    else
+                        currentResource = (SNAP.Resources.Resource)value;
+                }
+
+                string varName = varNameParts[varNameParts.Length - 1];
                 string varValue = null;
-                if (resource.Fields.ContainsKey(varName))
+                if (currentResource.Fields.ContainsKey(varName))
                 {
                     /// this is a user-defined field
-                    varValue = resource.Fields[varName].Values[0].ToString();
+                    varValue = currentResource.Fields[varName].Values[0].ToString();
                 }
                 else
                 {
@@ -102,7 +150,7 @@ namespace SNAP.Resources
                 }
                 
                 result = System.Text.RegularExpressions.Regex.Replace(
-                    result, @"\$" + varName + @"\$", varValue);
+                    result, @"\$" + completeVarName + @"\$", varValue);
             }
             while (true);
 

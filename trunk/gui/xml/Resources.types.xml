@@ -4,27 +4,28 @@
   <resource_type name="Notes" help="Miscellanious notes">
     <text name="Notes" help="Free text that the user can maintain"/>
   </resource_type >
-
-  <resource_type name="File Resource" help="Links to an external file">
-    <base name="Notes"/>
-    <text name="Notes" help="Free text that the user can maintain"/>
-    <external_ref name="File" help="Path to the sequence on local computer"/>
-  </resource_type>
   
   <resource_type name="Sequence File" help="Fasta sequence file">
     <base name="Notes"/>
     <text name="Notes" help="Free text that the user can maintain"/>
     <external_ref name="File" help="Path to the sequence on local computer" mask="Sequence Files (*.seq) | *.seq"/>
+    <execute name="View" help="Open the file in notepad" bin="notepad.exe" params="$File$"/>
   </resource_type>
 
   <resource_type name="Weight File" help="Weight file">
     <base name="Notes"/>
     <text name="Notes" help="Free text that the user can maintain"/>
     <external_ref name="File" help="Path to the sequence on local computer" mask="Weight Files (*.wgt) | *.wgt"/>
-    <execute name="View" help="Open the file in notepad" bin="notepad" params="$File$">
-    </execute>
-      
+    <execute name="View" help="Open the file in notepad" bin="notepad.exe" params="$File$"/>
   </resource_type>
+
+  <resource_type name="Conf File" help="Conf file">
+    <base name="Notes"/>
+    <text name="Notes" help="Free text that the user can maintain"/>
+    <external_ref name="File" help="Path to the conf file on local computer" mask="Conf Files (*.conf) | *.conf"/>
+    <execute name="View/Edit in notepad" help="Open the file in notepad" bin="notepad.exe" params="$File$"/>
+    <execute name="View/Edit in Conf Editor" help="Open the file in Conf Editor" bin="SNAP.ConfEditor.exe" params="$File$"/>
+  </resource_type>  
 
   <resource_type name="Family" help="">
     <base name="Notes"/>
@@ -36,7 +37,7 @@
     <internal_ref name="Sequence File" help="" mask="Sequence File"/>
     <internal_ref name="Weight File" help="" mask="Weight File"/>
     <internal_ref name="Conf File" help="" mask="Conf File"/>
-    <execute name="run" help="" bin="D:\Aviad\Dev\SNAP\trunk\engine\src\vc.net\Release\SeedSearcher" params="--Sconf $Conf File$ $Sequence File$ $Weight File$ $JobFolder$/$Name$">
+    <execute name="run" help="" bin="D:\Aviad\Dev\SNAP\trunk\engine\src\vc.net\Release\SeedSearcher" params="--Sconf $Conf File.File$ $Sequence File.File$ $Weight File.File$ $ExecutionFolder$/$Name$">
       <dynamic_output name="summary.xml"/>
     </execute>
       

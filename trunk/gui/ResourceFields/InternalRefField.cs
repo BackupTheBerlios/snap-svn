@@ -109,7 +109,19 @@ namespace SNAP.ResourceFields
 
         public override void LoadFromFieldValue(SNAP.Resources.FieldValue value)
         {
-            SelectedResource = (SNAP.Resources.Resource) value.Values[0];
+            object v = value.Values[0];
+            if (v is string)
+            {
+                SelectedResource = Controller.CurrentResources.FindResource((string)value.Values[0]);
+            }
+            else if (v is SNAP.Resources.Resource)
+            {
+                SelectedResource = (SNAP.Resources.Resource)value.Values[0];
+            }
+            else
+            {
+                System.Diagnostics.Trace.Fail("Unusable file value type " + v.GetType().FullName);
+            }
         }
 
         public override void SaveToFieldValue(SNAP.Resources.FieldValue value)
@@ -117,7 +129,7 @@ namespace SNAP.ResourceFields
             if (SelectedResource == null)
                 throw new System.InvalidOperationException("A required field has not been filled out");
 
-            value.Values.Add(SelectedResource);
+            value.Values.Add(SelectedResource.QualifiedName);
         }
 
         private void button1_Click_1(object sender, EventArgs e)

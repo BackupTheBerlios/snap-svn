@@ -117,11 +117,13 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				PreprocessorDefinitions="WIN32;NDEBUG"
+				AdditionalIncludeDirectories="D:\Aviad\Dev\SNAP\trunk\engine\src"
+				PreprocessorDefinitions="WIN32;NDEBUG,_CRT_SECURE_NO_DEPRECATE"
 				RuntimeLibrary="2"
-				UsePrecompiledHeader="2"
+				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				DebugInformationFormat="3"
+				DisableSpecificWarnings="4561,4793"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -238,10 +240,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\engine\src\legacy\Getopt.h"
-					>
-				</File>
-				<File
 					RelativePath="..\..\engine\src\core\GetOptParser.h"
 					>
 				</File>
@@ -309,10 +307,6 @@
 				</File>
 				<File
 					RelativePath="..\..\engine\src\core\FixedStr.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\getopt.cpp"
 					>
 				</File>
 				<File

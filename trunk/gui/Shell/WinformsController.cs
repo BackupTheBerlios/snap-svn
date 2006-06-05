@@ -48,6 +48,20 @@ namespace SNAP
             //txtFilename.Text = openFileDialog1.FileName;
             //txtDisplayName.Text = System.IO.Path.GetFileNameWithoutExtension(Filename);
         }
+        public int WaitForExit(System.Diagnostics.Process process)
+        {
+            RunProcessForm form = new RunProcessForm(process);
+            form.ShowDialog();
+            return process.ExitCode;
+        }
+
+        public string BinFolder
+        {
+            get
+            {
+                return System.IO.Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath);
+            }
+        }
 
         public string SeqFolder
         {
@@ -68,7 +82,7 @@ namespace SNAP
             get
             {
                 /// same location as executable of SNAP
-                return System.IO.Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath);
+                return BinFolder;
             }
         }
         public string ResourcesFile

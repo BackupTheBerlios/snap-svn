@@ -43,9 +43,10 @@ namespace SNAP {
         }
 
         private void toolStripButton4_Click(object sender, EventArgs e) {
-            ConfiGenForm form = new ConfiGenForm();
-            form.MdiParent = this;
-            form.Show();
+            // TODO: launch external program?
+            //ConfiGenForm form = new ConfiGenForm();
+            //form.MdiParent = this;
+            //form.Show();
         }
 
         private void MainForm_Load(object sender, EventArgs e) {

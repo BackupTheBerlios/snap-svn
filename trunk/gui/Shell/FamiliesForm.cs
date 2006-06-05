@@ -21,7 +21,15 @@ namespace SNAP {
         /// <value>The selected resource.</value>
         internal Resources.Resource SelectedResource {
             get {
+                if (treeView1.SelectedNode == null)
+                    return null;
+
                 return (Resources.Resource) treeView1.SelectedNode.Tag;
+            }
+            set {
+                TreeNode [] nodes = treeView1.Nodes.Find(value.QualifiedName, true);
+                treeView1.SelectedNode = (nodes.Length > 0) ? nodes[0] : null;
+                    
             }
         }
 
@@ -30,6 +38,13 @@ namespace SNAP {
         #region Implementation
 
         private void btnSelect_Click(object sender, EventArgs e) {
+            if (SelectedResource == null)
+            {
+                SelectedResource = Controller.CurrentResources.FindResource(this.txtFamilyName.Text);
+                if (SelectedResource == null) 
+                    return;
+            }
+
             this.DialogResult = DialogResult.OK;
             this.Close();
         }
@@ -65,7 +80,7 @@ namespace SNAP {
 
         private TreeNode CreateTreeNode(Resources.Resource resource) {
             TreeNode treeNode = new TreeNode(resource.Name);
-            treeNode.Name = resource.Name;
+            treeNode.Name = resource.QualifiedName;
             treeNode.Tag = resource;
             switch (resource.GetType().Name) {
                 case "CompositeResource":

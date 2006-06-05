@@ -654,6 +654,18 @@ namespace SNAP
                 //_resourceList.Add (resource.QualifiedName, resource);
             }
 
+            /// <summary>
+            /// Finds the resource.
+            /// </summary>
+            /// <param name="qualifiedName">Qualified Name of the resource.</param>
+            /// <returns></returns>
+            public Resource FindResource(string qualifiedName)
+            {
+                if (this._resourceList.ContainsKey(qualifiedName))
+                    return this._resourceList[qualifiedName];
+                return null;
+            }
+
             #endregion Methods
 
             #region Implementation

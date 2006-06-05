@@ -200,25 +200,45 @@ namespace SNAP
 
         void execButton_Click(object sender, EventArgs e)
         {
-            Button execButton = (Button)sender;
-            ExecutionType execType = SelectedResource.ResourceType.Executions [execButton.Name];
+            try
+            {
+                UpdateResource();
 
-            string result = execType.Params;
-            do {
-                System.Text.RegularExpressions.Match match = 
-                    System.Text.RegularExpressions.Regex.Match (result, @"\$([a-zA-Z0-9]*)\$");
-                
-                if (match == null || !match.Success )
-                    break;
-
-                string varName = match.Groups [1].Captures [0].Value;
-                string varValue = SelectedResource.Fields [varName].Values[0].ToString ();
-                result = System.Text.RegularExpressions.Regex.Replace (
-                    result, @"\$" + varName + @"\$", varValue);
+                Button execButton = (Button)sender;
+                ExecutionType execType = SelectedResource.ResourceType.Executions[execButton.Name];
+                SNAP.Resources.Execution.Run(execType.Name, SelectedResource);
             }
-            while (true);
+            catch (Exception x)
+            {
+                Controller.ShowException(x);
+            }
+        }
 
-            System.Diagnostics.Process.Start(execType.Bin, result);
+        public void UpdateResource()
+        {
+            System.Diagnostics.Debug.Assert(SelectedResource != null);
+
+            SelectedResource.Name = fieldName.FieldText;
+
+            /// fill in additional fields
+            foreach (SNAP.ResourceFields.AbstractField fieldControl in this.Fields.Values)
+            {
+                FieldValue fieldValue = null;
+                if (!SelectedResource.Fields.ContainsKey(fieldControl.FieldName))
+                {
+                    // TODO: make this simpler
+                    fieldValue =
+                        new FieldValue(SelectedResource.ResourceType.Fields[fieldControl.FieldName]);
+                    SelectedResource.Fields[fieldControl.FieldName] = fieldValue;
+                }
+                else
+                {
+                    fieldValue = SelectedResource.Fields[fieldControl.FieldName];
+                }
+
+                fieldValue.Values.Clear();
+                fieldControl.SaveToFieldValue(fieldValue);
+            }
         }
 
         /// <summary>
@@ -230,30 +250,7 @@ namespace SNAP
         {
             try
             {
-                System.Diagnostics.Debug.Assert(SelectedResource != null);
-
-                SelectedResource.Name = fieldName.FieldText;
-
-                /// fill in additional fields
-                foreach (SNAP.ResourceFields.AbstractField fieldControl in this.Fields.Values)
-                {
-                    FieldValue fieldValue = null;
-                    if (!SelectedResource.Fields.ContainsKey(fieldControl.FieldName))
-                    {
-                        // TODO: make this simpler
-                        fieldValue =
-                            new FieldValue(SelectedResource.ResourceType.Fields[fieldControl.FieldName]);
-                        SelectedResource.Fields[fieldControl.FieldName] = fieldValue;
-                    }
-                    else
-                    {
-                        fieldValue = SelectedResource.Fields[fieldControl.FieldName];
-                    }
-
-                    fieldValue.Values.Clear();
-                    fieldControl.SaveToFieldValue (fieldValue);
-                }
-                
+                UpdateResource();
                 this.DialogResult = DialogResult.OK;
                 this.Close();
             }

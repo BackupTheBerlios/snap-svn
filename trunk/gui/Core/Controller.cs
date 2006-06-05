@@ -19,7 +19,19 @@ namespace SNAP {
         {
             return Implementation.ChooseFile(mask, out path);
         }
+        public static int WaitForExit(System.Diagnostics.Process process)
+        {
+            return Implementation.WaitForExit(process);
+        }
 
+
+        public static string BinFolder
+        {
+            get
+            {
+                return Implementation.BinFolder;
+            }
+        }
         public static string SeqFolder
         {
             get
@@ -65,7 +77,12 @@ namespace SNAP {
             void ShowException(System.Exception x);
             bool ChooseResource(string mask, out SNAP.Resources.Resource resource);
             bool ChooseFile(string mask, out string path);
+            int WaitForExit(System.Diagnostics.Process process);
 
+            string BinFolder
+            {
+                get;
+            }
             string SeqFolder
             {
                 get;
