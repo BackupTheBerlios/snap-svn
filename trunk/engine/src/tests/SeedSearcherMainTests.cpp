@@ -175,3 +175,12 @@ BOOST_AUTO_UNIT_TEST(test_SeedSearcherMain)
 	BOOST_REQUIRE (score);
 	BOOST_CHECK_CLOSE (score->log10Score (), double (-1.748), 1);
 }
+
+extern int cpp_main(int argc, char* argv []);
+
+BOOST_AUTO_UNIT_TEST(test_cpp_main)
+{
+	int argc = 6;
+	char* argv [] = { "seed.test", "--Sconf", "tests/data/nimble.conf", "tests/data/test.seq", "tests/data/test.wgt", "tests/output/test_cpp_main" };
+	cpp_main (argc, argv);
+}

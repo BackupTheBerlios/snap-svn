@@ -275,7 +275,6 @@ static void mainRoutine (int argc,
 int cpp_main(int argc, char* argv [])
 {
 int exit_value = 0;
-try {
    try {
 	   Argv anArgv;
       StatusReportManager::Sentry report( argc, argv, anArgv );
@@ -292,9 +291,6 @@ try {
       }
 
       StatusReportManager::setJobDone ();
-
-		std::string s;
-		cin >> s;
    }
    catch (const BaseStatusReporter::CancelledException&) {
 		try {
@@ -325,13 +321,6 @@ try {
       }
       throw;
    }
-}
-catch (...)
-{
-		std::string s;
-		cin >> s;
-		throw;
-}
 
    return exit_value;
 }
@@ -622,7 +611,8 @@ static void mainRoutine (int argc,
 	//
 	// create the parent directory of the stub
 	boost::filesystem::path jobFolder (argv [parser.__firstFileArg + StubFileIndex], boost::filesystem::native);
-	if (!boost::filesystem::is_empty (jobFolder.branch_path ())) {
+	
+	if (!jobFolder.branch_path ().empty ()) {
 		if (!boost::filesystem::exists (jobFolder.branch_path ())) {
 			boost::filesystem::create_directory (jobFolder.branch_path ());
 		}
@@ -650,15 +640,7 @@ static void mainRoutine (int argc,
 }
 
 
-#ifdef _MSC_VER
-#	pragma warning(disable : 4244)
-#endif
 
-#include <boost/test/included/prg_exec_monitor.hpp> 
-
-#ifdef _MSC_VER
-#	pragma warning(default: 4244)
-#endif
 
 
 

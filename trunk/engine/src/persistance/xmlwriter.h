@@ -22,8 +22,6 @@
 #pragma warning( disable : 4514 )
 #endif
 
-#include "core/Defs.h"
-
 #include	<stack>
 #include	<string>
 #include	<sstream>
@@ -115,7 +113,6 @@ public:
 
 			default:
 				/// not handled in original implementation. if we get here, is it a bug?
-				debug_mustfail ();
 				break;
 			}
 
@@ -173,7 +170,6 @@ private:
 
 		default:
 			/// not handled in original implementation. if we get here, is it a bug?
-			debug_mustfail ();
 			break;
 		}
 	}

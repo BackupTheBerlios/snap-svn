@@ -92,7 +92,7 @@
 			IntermediateDirectory="Release"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
-			CharacterSet="0"
+			CharacterSet="2"
 			WholeProgramOptimization="1"
 			>
 			<Tool
@@ -116,7 +116,7 @@
 				Optimization="3"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
-				FavorSizeOrSpeed="1"
+				FavorSizeOrSpeed="0"
 				OmitFramePointers="false"
 				AdditionalIncludeDirectories=".."
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB,_CRT_SECURE_NO_DEPRECATE"
@@ -195,6 +195,7 @@
 				Optimization="3"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories=".."
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB,_CRT_SECURE_NO_DEPRECATE"

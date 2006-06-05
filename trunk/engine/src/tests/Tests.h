@@ -53,7 +53,7 @@ public:
 	{
 		std::string filename;
 		write (tmpFilePrefix, data, filename);
-		return new std::ifstream (filename.c_str ());
+		return std::auto_ptr<std::ifstream> (new std::ifstream (filename.c_str ()));
 	}
 };
 

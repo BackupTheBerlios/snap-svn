@@ -36,6 +36,46 @@ BOOST_AUTO_UNIT_TEST (testStr)
 	mustbe(oneByOne.indexOf(atOnce)==0);
 }
 
+
+namespace StrTest{
+	class Check1 {
+	public:
+		Check1 (const Str& s) : _buffer (s)
+		{
+		}
+
+		StrBuffer _buffer;
+	};
+
+	class Check2 {
+	public:
+		Check2 (const Str& s)
+		{
+			_buffer.set (s);
+		}
+
+		StrBuffer _buffer;
+	};
+}
+
+
+BOOST_AUTO_UNIT_TEST (testStr_basic_string_integration)
+{
+	std::string s ("hello world");
+	std::string buffer;
+	BOOST_CHECK (s == Str(s).getCString (buffer));
+	BOOST_CHECK (s == Str(s).getChars());
+	BOOST_CHECK (s == StrBuffer(s.c_str ()).getCString ());
+	BOOST_CHECK (s == StrBuffer(Str (s)).getCString ());
+	BOOST_CHECK (s == std::string (StrBuffer(Str (s))));
+
+	StrTest::Check1 c1 = StrTest::Check1 (Str (s));
+	BOOST_CHECK (s == c1._buffer.getCString ());
+
+	StrTest::Check2 c2 = StrTest::Check2 (Str (s));
+	BOOST_CHECK (s == c2._buffer.getCString ());
+}
+
 //
 // Argv Unit test
 //

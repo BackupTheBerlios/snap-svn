@@ -132,7 +132,7 @@
 				Optimization="3"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
-				FavorSizeOrSpeed="1"
+				FavorSizeOrSpeed="0"
 				OmitFramePointers="false"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories=".."
@@ -170,8 +170,8 @@
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
 				SubSystem="1"
-				OptimizeReferences="2"
-				EnableCOMDATFolding="2"
+				OptimizeReferences="0"
+				EnableCOMDATFolding="0"
 				OptimizeForWindows98="1"
 				TargetMachine="1"
 				Profile="false"
@@ -232,6 +232,7 @@
 				Optimization="3"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories=".."
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE,_CRT_SECURE_NO_DEPRECATE"
@@ -302,11 +303,7 @@
 	</References>
 	<Files>
 		<File
-			RelativePath="..\main.cpp"
-			>
-		</File>
-		<File
-			RelativePath="..\main.h"
+			RelativePath="..\entry_point.cpp"
 			>
 		</File>
 		<File

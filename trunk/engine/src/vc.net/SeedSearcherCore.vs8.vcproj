@@ -93,7 +93,7 @@
 			IntermediateDirectory="Release"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
-			CharacterSet="0"
+			CharacterSet="2"
 			WholeProgramOptimization="1"
 			>
 			<Tool
@@ -117,14 +117,14 @@
 				Optimization="3"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
-				FavorSizeOrSpeed="1"
+				FavorSizeOrSpeed="0"
 				OmitFramePointers="false"
 				AdditionalIncludeDirectories=".."
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB,_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				ExceptionHandling="2"
 				RuntimeLibrary="0"
-				BufferSecurityCheck="false"
+				BufferSecurityCheck="true"
 				EnableFunctionLevelLinking="false"
 				EnableEnhancedInstructionSet="2"
 				ForceConformanceInForLoopScope="true"
@@ -196,6 +196,7 @@
 				Optimization="3"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories=".."
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB,_CRT_SECURE_NO_DEPRECATE"
@@ -492,6 +493,14 @@
 				>
 			</File>
 		</Filter>
+		<File
+			RelativePath="..\main.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\main.h"
+			>
+		</File>
 	</Files>
 	<Globals>
 	</Globals>

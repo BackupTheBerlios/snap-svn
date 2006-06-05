@@ -58,12 +58,12 @@ public:
    }
 
    T& operator [] (unsigned int i) {
-      debug_mustbe (i>=0 && i<size ());
+      debug_mustbe (i>=0 && i<this->Super::size ());
       return Super::operator [] (i);
    }
 
    const T& operator [] (unsigned int i) const{
-      debug_mustbe (i>=0 && i<size ());
+      debug_mustbe (i>=0 && i<this->Super::size ());
       return Super::operator [] (i);
    }
 };

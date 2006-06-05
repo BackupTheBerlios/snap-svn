@@ -234,7 +234,7 @@ void SeedSearcherMain::CmdLineParameters::secondarySetup (const Parser& inParser
    // create the hyper-geometric scoring scheme
    setupScoreFunc ();
 }
-
+#include <stdio.h>
 void SeedSearcherMain::CmdLineParameters::setup (const Str& seq, const Str& wgt)
 {
    this->_seqFilename = seq;
@@ -246,11 +246,9 @@ void SeedSearcherMain::CmdLineParameters::setup (const Str& seq, const Str& wgt)
    _useSpecialization = _parser.__proj_spec;
    _useReverse = _parser.__count_reverse;
 
-
    //
    //
    setupParameters ();
-
    //
    //
    setupLangauge ();
