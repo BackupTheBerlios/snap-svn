@@ -89,6 +89,7 @@ public:
 			return;
 
 		_xml	<< tag ("resource")
+					<< attr ("name") << boost::filesystem::path(filename, boost::filesystem::native).leaf ()
 					<< attr ("type") << "SNAP Seeds file"
 					<< tag ("field") 
 						<< attr ("name") << "File"
@@ -103,7 +104,8 @@ public:
 			return;
 
 		_xml	<< tag ("resource")
-					<< attr ("type") << "SNAP Matrix file"
+				<< attr ("name") << boost::filesystem::path(filename, boost::filesystem::native).leaf ()		
+				<< attr ("type") << "SNAP Matrix file"
 					<< tag ("field") 
 						<< attr ("name") << "File"
 						<< chardata () << filename
@@ -117,6 +119,7 @@ public:
 			return;
 
 		_xml	<< tag ("resource")
+					<< attr ("name") << boost::filesystem::path(filename, boost::filesystem::native).leaf ()
 					<< attr ("type") << "SNAP Log file"
 					<< tag ("field") 
 						<< attr ("name") << "File"
@@ -131,7 +134,8 @@ public:
 			return;
 
 		_xml	<< tag ("resource")
-					<< attr ("type") << "SNAP samples file"
+					<< attr ("name") << boost::filesystem::path(filename, boost::filesystem::native).leaf ()
+					<< attr ("type") << "SNAP Samples file"
 					<< tag ("field") 
 						<< attr ("name") << "File"
 						<< chardata () << filename
@@ -145,6 +149,7 @@ public:
 			return;
 
 		_xml	<< tag ("resource")
+					<< attr ("name") << boost::filesystem::path(filename, boost::filesystem::native).leaf ()
 					<< attr ("type") << "SNAP PSSM file"
 					<< tag ("field") 
 						<< attr ("name") << "File"
@@ -159,7 +164,8 @@ public:
 			return;
 
 		_xml	<< tag ("resource")
-					<< attr ("type") << "SNAP motifs file"
+					<< attr ("name") << boost::filesystem::path(filename, boost::filesystem::native).leaf ()
+					<< attr ("type") << "SNAP Motifs file"
 					<< tag ("field") 
 						<< attr ("name") << "File"
 						<< chardata () << filename
