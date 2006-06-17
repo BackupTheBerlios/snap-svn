@@ -553,7 +553,7 @@ Preprocessor*
 
 #include "SeedConf.h"
 
-ConfParameterIterator::ConfParameterIterator (int argc, char* const * argv)
+ConfParameterIterator::ConfParameterIterator (int argc, char const * const* argv)
 : _optList (argc, argv), _useInitParameters (true), _updated(false)
 {
    Parser parser (argc, argv);

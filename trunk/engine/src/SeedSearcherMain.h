@@ -323,7 +323,7 @@ struct SeedSearcherMain::PreprocessorFactory {
 
 class ConfParameterIterator : public SeedSearcherMain::ParameterIterator {
 public:
-	ConfParameterIterator (int argc, char* const * argv);
+	ConfParameterIterator (int argc, char const * const * argv);
    virtual ~ConfParameterIterator ();
 
    //

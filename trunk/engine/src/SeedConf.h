@@ -47,8 +47,7 @@ class SeedConfList : public SeedConf {
    //
    // makes sure a conf file is valid
 public:
-   SeedConfList (int argc, const char* argv []);
-	SeedConfList (int argc, char* const * argv);
+   SeedConfList (int argc, char const* const *argv);
    ~SeedConfList () {
       while (!_optionList.empty ()) {
          Options* o = _optionList.back (); _optionList.pop_back ();
@@ -62,11 +61,12 @@ public:
    virtual void done ();
 
    struct Options {
-      Options (const Str& inName, bool inReset, const Parser& inParser)
-         : _name (inName), _resetSeeds (inReset), _parser (inParser) {
+      Options (const Str& inName, const Str& parameters, bool inReset, const Parser& inParser)
+         : _name (inName), _parameters (parameters), _resetSeeds (inReset), _parser (inParser) {
       }
 
       StrBuffer _name;
+		StrBuffer _parameters;
       bool _resetSeeds;
       Parser _parser;
    };
@@ -86,14 +86,18 @@ public:
       return OptionIterator (_optionList.begin (), _optionList.end ());
    }
    const Parser& getInitParser () const {
-      return _init;
+      //return _init;
+		return _init->_parser;
    }
+	const Options& getInitOptions () const {
+		return *_init;
+	}
    bool empty () const {
       return _optionList.empty ();
    }
 
 private:
-   Parser _init;
+	std::auto_ptr <Options> _init;
    OptionList _optionList;
 };
 

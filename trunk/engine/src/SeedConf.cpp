@@ -78,15 +78,16 @@ static void disallowFileArgs (Parser& parser)
    }
 }
 
-SeedConfList::SeedConfList (int argc, const char* argv [])
+SeedConfList::SeedConfList (int argc, char const * const* argv)
 {
-   _init.parse (argc, argv);
+	Argv args (argc, argv);
+	Parser parser;
+   parser.parse (argc, argv);
+
+	StrBuffer buffer;
+	_init.reset (new Options ("Init", args.get (buffer), false, parser));
 }
 
-SeedConfList::SeedConfList (int argc, char* const * argv)
-{
-   _init.parse (argc, argv);
-}
 
 void SeedConfList::init (ConfReader& conf) {
    DLOG << "Checking correctness of " << conf.source () << ':' << DLOG.EOL ();
@@ -106,16 +107,27 @@ void SeedConfList::initArgs (const Str& args) {
    //
    // parse the conf arguments
    Parser temp;
-   temp.parse(Argv (_init.__argv.argv () [0], args));
+   temp.parse(Argv (_init->_parser.__argv.argv () [0], args));
 
    //
    // we dont allow unrecognized switches in conf
    disallowFileArgs (temp);
 
-   //
+	//
    // reapply cmdline arguments
-   temp.parse (_init.__argv);
-   _init = temp;
+   temp.parse (_init->_parser.__argv);
+   
+	StrBuffer params;
+	params += _init->_parameters;
+	params += " ";
+	params += args;
+				
+	_init.reset (new Options (
+		_init->_name, 
+		params,
+		_init->_resetSeeds,
+		temp)
+		);
 }
 
 void SeedConfList::runArgs (bool resetArgs, bool resetSeeds,
@@ -129,25 +141,25 @@ void SeedConfList::runArgs (bool resetArgs, bool resetSeeds,
    if (resetArgs) {
       //
       // revert to the initial arguments
-      options = new Options ( runName, resetSeeds, _init);
+      options = new Options ( runName, args, resetSeeds, _init->_parser);
    }
    else if (_optionList.size () > 0) {
       //
       // arguments are carried over from the last run
-      options = new Options (  runName, resetSeeds, 
+      options = new Options (  runName, args, resetSeeds, 
                                     _optionList.back ()->_parser);
    }
    else {
-      options = new Options (  runName, resetSeeds, _init);
+      options = new Options (  runName, args, resetSeeds, _init->_parser);
    }
 
    //
    // update with the specific run args
-   options->_parser.parse (Argv (_init.__argv.argv () [0], args));
+   options->_parser.parse (Argv (_init->_parser.__argv.argv () [0], args));
 
    //
    // make sure we can continue to the next configuration
-   _init.checkCompatibility (options->_parser);
+   _init->_parser.checkCompatibility (options->_parser);
 
    //
    // make sure there are no undefined parameters

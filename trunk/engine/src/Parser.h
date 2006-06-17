@@ -34,7 +34,7 @@
 class Parser {
 public:
    Parser ();
-	Parser (int argc, char* const *argv) {
+	Parser (int argc, char const * const *argv) {
 		*this = Parser ();
 		parse (argc, argv);
 	}
@@ -59,7 +59,7 @@ public:
       __argv.set(argc, const_cast <char* const * const> (argv));
       internalParse();
    }
-   void parse (int argc, char* const * argv){
+   void parse (int argc, char const* const * argv){
       __argv.set(argc, argv);
       internalParse();
    }
