@@ -128,10 +128,10 @@ class GetOptParser {
 public:
    class OptionBase {
    public:
-      virtual const char* name ()   { return NULL; }
-      virtual const char* desc ()   { return NULL; }
-      virtual const char* def ()    { return NULL; }
-      virtual int argument ()       { return GetOptWrapper::_no_argument_;   }
+      virtual const char* name ()   const	{ return NULL; }
+      virtual const char* desc ()   const	{ return NULL; }
+      virtual const char* def ()    const	{ return NULL; }
+      virtual int argument ()       const	{ return GetOptWrapper::_no_argument_;   }
 
       virtual void param (StrBuffer&, void* ctx) = 0;
       virtual void execute (const char* optarg, void* ctx) = 0;
@@ -142,10 +142,10 @@ public:
          : _name (n), _desc (dsc), _def (def), _arg (arg) {
       }
 
-      virtual const char* name ()   { return _name;   }
-      virtual const char* desc ()   { return _desc;   }
-      virtual const char* def ()    { return _def;    }
-      virtual int argument ()       { return _arg;    }
+      virtual const char* name ()   const	{ return _name;   }
+      virtual const char* desc ()   const	{ return _desc;   }
+      virtual const char* def ()    const	{ return _def;    }
+      virtual int argument ()       const	{ return _arg;    }
 
       const char * _name, * _desc, * _def;
       int _arg;
@@ -234,7 +234,7 @@ public:
          output.writeln ();
       }
    }
-	void parse (int argc, const Argv::CStyleString* argv , 
+	void parse (int argc, char const * const * argv , 
                OptionList& opt, void* ctx,
                Option& unknown) 
    {

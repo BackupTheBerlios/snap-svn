@@ -11,9 +11,6 @@ class Argv{
    //
    // utlitity class for argv
 public:
-	typedef const char* CStyleString;
-	typedef CStyleString* CStyleStringArray;
-
    Argv () : _argc (0), _argv (NULL) {
    }
    Argv (int argc) : _argc (argc) {
@@ -21,7 +18,7 @@ public:
       for (int i=0 ; i<_argc ; i++)
          _argv [i] = NULL;
    }
-   Argv (int argc, char* const* const argv) : _argc (0), _argv (NULL) {
+   Argv (int argc, char const* const* argv) : _argc (0), _argv (NULL) {
       set (argc, argv);
    }
    Argv (const Argv& in) : _argc (0), _argv (NULL) {
@@ -48,7 +45,7 @@ public:
    void set (const Argv& in) {
       set (in._argc, in.argv ());
    }
-   void set (int argc, char* const * const argv) {
+   void set (int argc, char const* const* argv) {
       mustbe (argc >= 0);
       clear ();
       _argc = argc;
@@ -65,6 +62,14 @@ public:
       for (int i=0 ; i<_argc ; i++)
          _argv [i+1] = dup (argv [i]);
    }
+	StrBuffer& get (StrBuffer& outString)
+	{
+		outString.setLength (0);
+		for (int i=0 ; i<_argc ; ++i) {
+			outString += _argv [i];
+		}
+		return outString;
+	}
 
    void clear () {
       if (_argv != NULL) {
