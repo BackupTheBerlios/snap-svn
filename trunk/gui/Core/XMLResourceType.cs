@@ -14,7 +14,7 @@ namespace SNAP.Resources
         private string _name;
         private string _help;
         private readonly System.Collections.Generic.Dictionary <string, FieldType> _fields = new Dictionary <string, FieldType>();
-        private readonly System.Collections.Generic.Dictionary<string, ExecutionType> _executions = new Dictionary<string, ExecutionType>();
+        private readonly System.Collections.Generic.Dictionary<string, Script> _executions = new Dictionary<string, Script>();
 
         #endregion Privates
 
@@ -61,7 +61,7 @@ namespace SNAP.Resources
             }
         }
 
-        public IDictionary<string, ExecutionType> Executions
+        public IDictionary<string, Script> Executions
         {
             get
             {
@@ -164,18 +164,96 @@ namespace SNAP.Resources
             return null;
         }
 
-        private static ExecutionType LoadResourceExecution(System.Xml.XmlNode node)
+        private static Script.IStep LoadExportStep(System.Xml.XmlNode exportNode)
+        {
+            System.Diagnostics.Debug.Assert(exportNode.Name.Equals("export"));
+            string type = exportNode.Attributes["type"].Value;
+
+            Script.IExport export = null;
+            switch (type)
+            {
+                case "params":
+                    {
+                        string filename = exportNode.Attributes["name"].Value;
+                        export = new Script.ParamsExport(filename);
+                    }
+                    break;
+
+                default:
+                    throw new System.ArgumentException("The export type " + type + " is invalid");
+            }
+
+            foreach (XmlNode fieldNode in exportNode.ChildNodes)
+            {
+                switch (fieldNode.Name)
+                {
+                    case "path":
+                        {
+                            string name = fieldNode.Attributes["name"].Value;
+                            string value = fieldNode.Attributes["value"].Value;
+                            Script.PathExportField field = new Script.PathExportField(
+                                name,
+                                value);
+
+                            export.Fields.Add(field);
+                        }
+                        break;
+
+                    case "text":
+                        {
+                            string name = fieldNode.Attributes["name"].Value;
+                            string value = fieldNode.Attributes["value"].Value;
+                            Script.TextExportField field = new Script.TextExportField(
+                                name,
+                                value);
+
+                            export.Fields.Add(field);
+                        }
+                        break;
+
+                    default:
+                        throw new System.ArgumentException("The export type " + fieldNode.Name + " is invalid");
+                }
+            }
+
+            return export;
+        }
+
+        private static Script LoadResourceExecution(System.Xml.XmlNode node)
         {
             System.Diagnostics.Debug.Assert(node.Name == "execute");
             string name = node.Attributes["name"].Value;
             string help = node.Attributes["help"].Value;
-            string bin = node.Attributes["bin"].Value;
-            string parameters = node.Attributes["params"].Value;
 
-            ExecutionType execType = new ExecutionType(name, help, bin, parameters);
-            foreach (XmlNode output in node.SelectNodes("dynamic_output"))
+            Script execType = new Script(name, help);
+            foreach (XmlNode stepNode in node.ChildNodes)
             {
-                execType.DynamicOutputFiles.Add (output.Attributes ["name"].Value);
+                switch (stepNode.Name)
+                {
+                    case "run":
+                        {
+                            string bin = stepNode.Attributes["bin"].Value;
+                            string parameters = stepNode.Attributes["params"].Value;
+                            execType.Steps.Add(new Script.ExecuteStep(bin, parameters));
+                        }
+                        break;
+
+                    case "import":
+                        {
+                            string filename = stepNode.Attributes["name"].Value;
+                            execType.Steps.Add(new Script.ImportStep(filename));
+                        }
+                        break;
+
+                    case "export":
+                        {
+                            execType.Steps.Add(LoadExportStep(stepNode));
+                        }
+                        break;
+
+                    default:
+                        throw new System.ArgumentException("The step type " + stepNode.Name + " is invalid");
+                }
             }
 
             return execType;
@@ -203,7 +281,7 @@ namespace SNAP.Resources
 
                     case "execute":
                     {
-                        ExecutionType executionType = LoadResourceExecution (node);
+                        Script executionType = LoadResourceExecution (node);
                         resourceType.Executions.Add (executionType.Name, executionType);
                     }
                     break;
@@ -293,39 +371,4 @@ namespace SNAP.Resources
     #endregion InternalRefField
 
     #endregion FieldTypes
-
-    #region ExecutionType
-
-    public class ExecutionType
-    {
-        public ExecutionType (string name, string help, string bin, string parameters)
-        {
-            Name = name;
-            Help = help;
-            Bin = bin;
-            Params = parameters;
-        }
-
-        public readonly string Name;
-        public readonly string Help;
-        public readonly string Bin;
-        public readonly string Params;
-
-        /// <summary>
-        /// Gets a value indicating whether [create folder].
-        /// </summary>
-        /// <value><c>true</c> if [create folder]; otherwise, <c>false</c>.</value>
-        public bool CreateFolder
-        {
-            get
-            {
-                return DynamicOutputFiles.Count > 0;
-            }
-        }
-        
-        // TODO: make this imutable
-        public readonly List<string> DynamicOutputFiles = new List<string>();
-    }
-
-    #endregion ExecutionType
 }

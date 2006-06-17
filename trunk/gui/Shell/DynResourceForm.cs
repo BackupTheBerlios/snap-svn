@@ -55,7 +55,7 @@ namespace SNAP
             textField1.FieldText = resource.ID.ToString();
 
             /// now fill in the field values 
-            foreach (FieldValue fieldValue in SelectedResource.Fields.Values)
+            foreach (FieldValueList fieldValue in SelectedResource.Fields.Values)
             {
                 this.Fields[fieldValue.Type.Name].LoadFromFieldValue(fieldValue);
             }
@@ -181,7 +181,7 @@ namespace SNAP
 
             /// display on the gui all the available executions
             panelExecutions.Visible = type.Executions.Count > 0;
-            foreach (SNAP.Resources.ExecutionType execType in type.Executions.Values)
+            foreach (SNAP.Resources.Script execType in type.Executions.Values)
             {
                 Button execButton = new Button();
                 execButton.Name = execType.Name;
@@ -205,8 +205,9 @@ namespace SNAP
                 UpdateResource();
 
                 Button execButton = (Button)sender;
-                ExecutionType execType = SelectedResource.ResourceType.Executions[execButton.Name];
-                SNAP.Resources.Execution.Run(execType.Name, SelectedResource);
+                Script execType = SelectedResource.ResourceType.Executions[execButton.Name];
+                execType.Execute(SelectedResource);
+                //SNAP.Resources.Execution.Run(execType.Name, SelectedResource);
             }
             catch (Exception x)
             {
@@ -223,12 +224,12 @@ namespace SNAP
             /// fill in additional fields
             foreach (SNAP.ResourceFields.AbstractField fieldControl in this.Fields.Values)
             {
-                FieldValue fieldValue = null;
+                FieldValueList fieldValue = null;
                 if (!SelectedResource.Fields.ContainsKey(fieldControl.FieldName))
                 {
                     // TODO: make this simpler
                     fieldValue =
-                        new FieldValue(SelectedResource.ResourceType.Fields[fieldControl.FieldName]);
+                        new FieldValueList(SelectedResource.ResourceType.Fields[fieldControl.FieldName]);
                     SelectedResource.Fields[fieldControl.FieldName] = fieldValue;
                 }
                 else

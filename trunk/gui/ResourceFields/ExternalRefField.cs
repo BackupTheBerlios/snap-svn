@@ -80,17 +80,17 @@ namespace SNAP.ResourceFields
             }
         }
 
-        public override void LoadFromFieldValue(SNAP.Resources.FieldValue value)
+        public override void LoadFromFieldValue(SNAP.Resources.FieldValueList value)
         {
             FieldText = value.Values[0].ToString();
         }
 
-        public override void SaveToFieldValue(SNAP.Resources.FieldValue value)
+        public override void SaveToFieldValue(SNAP.Resources.FieldValueList value)
         {
             if (FieldText == null || FieldText.Length == 0)
                 throw new System.InvalidOperationException("A required field has not been filled out");
 
-            value.Values.Add(FieldText);
+            value.Values.Add(new SNAP.Resources.ExternalRefValue (FieldText));
         }
 
         private void button1_Click(object sender, EventArgs e)

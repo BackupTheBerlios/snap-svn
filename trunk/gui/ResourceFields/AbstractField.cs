@@ -39,11 +39,11 @@ namespace SNAP.ResourceFields
             }
         }
 
-        public virtual void LoadFromFieldValue(SNAP.Resources.FieldValue value)
+        public virtual void LoadFromFieldValue(SNAP.Resources.FieldValueList value)
         {
         }
 
-        public virtual void SaveToFieldValue(SNAP.Resources.FieldValue value)
+        public virtual void SaveToFieldValue(SNAP.Resources.FieldValueList value)
         {
         }
 

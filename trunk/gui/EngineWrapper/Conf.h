@@ -1,21 +1,26 @@
+class SeedConfList;
+
 namespace SNAP{
 	namespace Engine {
-		ref class Parser;
-
+		ref class Settings;
 
 		public ref class Conf 
 		{
 		public:
-			Conf () {
-				_sections = gcnew System::Collections::Generic::SortedDictionary <System::String^, Section^> ();
-			}
+			ref class Section;
+			typedef SNAP::Util::IndexedSortedList <System::String^, Section^> SectionList;
+
+		public:
+			Conf ();
+			//Conf (ISectionList^ list);
 
 			static Conf^ LoadFile (System::String^ filename);
+			//static Conf^ LoadFile (SectionList^ list, System::String^ filename);
 
 			/// 
 			ref class Section {
 			public:
-				Section (System::String^ name, Parser^ settings);
+				Section (System::String^ name, System::String^ parameters, Settings^ settings);
 				///
 				property System::String^ Name
 				{
@@ -23,25 +28,39 @@ namespace SNAP{
 					//void set (System::String^);
 				}
 
-				property Parser^ Settings {
-					Parser^ get ();
+				property SNAP::Engine::Settings^ Settings {
+					SNAP::Engine::Settings^ get ();
 				}
 
+				property System::String^ Parameters {
+					System::String^ get () {
+						return _parameters;
+					}
+				}
+				property bool Active {
+					bool get ()
+					{
+						return _active;
+					}
+				}
+
+				//bool IsOverriden (System::String^ optionName);
+
 			private:
-				Parser^ _settings;
+				bool _active;
+				SNAP::Engine::Settings^ _settings;
 				System::String^ _name;
+				System::String^ _parameters;
 			};
 			
-			typedef System::Collections::Generic::IDictionary<System::String^, Section^> SectionMap;
-			
-			property SectionMap^ Sections {
-				SectionMap^ get () {
+			property SectionList^ Sections {
+				SectionList^ get () {
 					return _sections;
 				}
 			}
 
 		private:
-			SectionMap^ _sections;
+			SectionList^ _sections;
 		};
 	}
 }

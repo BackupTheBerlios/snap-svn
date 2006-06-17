@@ -176,6 +176,10 @@
       <Project>{F6A52450-297C-40BE-90F7-C7B12AF9ACF4}</Project>
       <Name>SNAP.ResourceFields</Name>
     </ProjectReference>
+    <ProjectReference Include="..\SNAP.Util\SNAP.Util.csproj">
+      <Project>{00616E92-3691-4A53-A7AF-58E81890E7F6}</Project>
+      <Name>SNAP.Util</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

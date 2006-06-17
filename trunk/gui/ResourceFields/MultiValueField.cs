@@ -90,7 +90,7 @@ namespace SNAP.ResourceFields
             }
         }
 
-        public override void LoadFromFieldValue(SNAP.Resources.FieldValue value)
+        public override void LoadFromFieldValue(SNAP.Resources.FieldValueList value)
         {
             for (int i = 0; i < value.Values.Count; ++i)
             {
@@ -98,13 +98,13 @@ namespace SNAP.ResourceFields
                     AddElement(true);
 
                 // TODO: fix the HACK here
-                SNAP.Resources.FieldValue itemFieldValue = new SNAP.Resources.FieldValue(value.Type);
+                SNAP.Resources.FieldValueList itemFieldValue = new SNAP.Resources.FieldValueList(value.Type);
                 itemFieldValue.Values.Add(value.Values[i]);
                 _elements[i].LoadFromFieldValue(itemFieldValue);
             }
         }
 
-        public override void SaveToFieldValue(SNAP.Resources.FieldValue value)
+        public override void SaveToFieldValue(SNAP.Resources.FieldValueList value)
         {
             foreach (MultiValueFieldElement element in _elements) {
                 element.SaveToFieldValue (value);

@@ -1,3 +1,5 @@
+#include "core/GetOptParser.h"
+
 class Parser;
 
 namespace SNAP {
@@ -71,19 +73,82 @@ namespace SNAP {
 			_out_none_,
 		};
 
-		public ref class Parser
+		public ref class SettingType {
+		private:
+			const GetOptParser::OptionBase* _setting;
+
+		public:
+			SettingType (const GetOptParser::OptionBase* setting) : _setting (setting)
+			{
+			}
+
+			property System::String^ Name{
+				System::String^ get () {
+					return gcnew System::String (_setting->name ());
+				}
+			}
+
+			property System::String^ DisplayName{
+				System::String^ get () {
+					// TODO: add support for display name in GetOptParser::OptionBase
+					return gcnew System::String (_setting->name ());
+				}
+			}
+
+			property System::String^ Help {
+				System::String^ get () {
+					return gcnew System::String (_setting->desc ());
+				}
+			}
+		};
+
+		template <typename TType>
+		public ref class SettingValue : SettingType {
+		public:
+			property TType DefaultValue {
+				TType get () {
+					return _defaultValue;
+				}
+				void set (TType in) {
+					_defaultValue = in;
+				}
+			}
+
+			property TType Value
+			{
+				TType get () {
+					return _value;
+				}
+				void set (TType in) {
+					_value = in;
+				}
+			}
+
+		private:
+			TType _defaultValue;
+			TType _value;
+		};
+
+
+		public ref class Settings
 		{
 		private:
 			::Parser* _parser;
 
 		public:
-			Parser ();
-			Parser (const ::Parser&);
-			Parser (array <System::String^>^ argv);
-			virtual ~Parser ();
+			Settings ();
+			Settings (const ::Parser&);
+			Settings (array <System::String^>^ argv);
+			virtual ~Settings ();
 
 			//
 			// exhaustive projections
+			/*
+			property SettingValue <bool>^ __proj_e {
+				SettingValue <bool>^ get ();
+				//void set (bool);
+			}
+			*/
 			property bool __proj_e {
 				bool get ();
 				void set (bool);
@@ -309,6 +374,12 @@ namespace SNAP {
 			//
 			//
 			//int __firstFileArg;
+		
+			bool IsOverriden (System::String^ settingName)
+			{
+				return false;
+			}
 		};
+
 	}
 }

@@ -33,14 +33,67 @@
     <internal_ref name="Child" help="" minOccurs="0" maxOccurs="unbounded"/>
   </resource_type>
 
+  <resource_type name="SNAP Seeds file" help="">
+    <external_ref name="File" help="" mask="SNAP Seeds file (*.seeds) | *.seeds"/>
+    <execute name="View/Edit in notepad" help="Open the file in notepad" bin="notepad.exe" params="$File$"/>
+  </resource_type>
+
+  <resource_type name="SNAP Motifs file" help="">
+    <external_ref name="File" help="" mask="SNAP Matrix file (*.motifs) | *.motifs"/>
+    <execute name="View/Edit in notepad" help="Open the file in notepad" bin="notepad.exe" params="$File$"/>
+  </resource_type>
+
+  <resource_type name="SNAP PSSM file" help="">
+    <external_ref name="File" help="" mask="SNAP Matrix file (*.pssm) | *.pssm"/>
+    <execute name="View/Edit in notepad" help="Open the file in notepad" bin="notepad.exe" params="$File$"/>
+  </resource_type>
+
+  <resource_type name="SNAP Matrix file" help="">
+    <external_ref name="File" help="" mask="SNAP Matrix file (*.matrix) | *.matrix"/>
+    <execute name="View/Edit in notepad" help="Open the file in notepad" bin="notepad.exe" params="$File$"/>
+  </resource_type>  
+
   <resource_type name="Ab-inito motif search" help="Uses the seed searcher program to look for...">
     <internal_ref name="Sequence File" help="" mask="Sequence File"/>
     <internal_ref name="Weight File" help="" mask="Weight File"/>
     <internal_ref name="Conf File" help="" mask="Conf File"/>
-    <execute name="run" help="" bin="D:\Aviad\Dev\SNAP\trunk\engine\src\vc.net\Release\SeedSearcher" params="--Sconf $Conf File.File$ $Sequence File.File$ $Weight File.File$ $ExecutionFolder$/$Name$">
-      <dynamic_output name="summary.xml"/>
+    <execute name="run" help="">
+      <step 
+        dynamic_output="summary.xml"
+        bin="D:\Aviad\Dev\SNAP\trunk\engine\src\vc.net\Release\SeedSearcher" 
+        params="--Sconf $Conf File.File$ $Sequence File.File$ $Weight File.File$ $ExecutionFolder$/$Name$">
+      </step>
     </execute>
-      
   </resource_type>
+
+  <resource_type name="Compute Target Overlap" help="">
+    <internal_ref name="Seeds file" help="" mask="Seeds File"/>
+    
+    <execute name="run" help="">
+      <export type="params" name="ComputeTargetOverlap.parmas">
+        <path name="-seedFile" value="$Seeds file.File"/>
+        <path name="-dataDir" value="$Seeds file.File.Folder"/>
+        <path name="-outDir" value="$ExecutionFolder$"/>
+      </export> 
+      
+      step run="SNAP.Export -seedsFile $Seeds file.File"/>
+      <step run="SNAP.Export -dataDir $Seeds file.File.Folder"/>
+      
+        
+        bin="SNAP.ScriptHelper.bat"
+        params="-seedsFile $Seeds file.File.Relative$ -
+-dataDir
+../Job1/Seeds
+-out
+ComputeTargetOverlap/Test
+      </step>      
+      <step 
+        bin="c:\cygwin\bin\perl.exe"
+        params="D:\Aviad\Dev\SNAP\StandAlone\Scripts\ComputeTargetOverlap.pl">
+      </step>
+    </execute>    
+    
+  </resource_type>
+  
 </resource_types>
 

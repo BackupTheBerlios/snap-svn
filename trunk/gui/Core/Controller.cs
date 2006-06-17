@@ -29,6 +29,8 @@ namespace SNAP {
         {
             get
             {
+                if (Implementation == null)
+                    return System.Environment.CurrentDirectory;
                 return Implementation.BinFolder;
             }
         }
@@ -36,6 +38,9 @@ namespace SNAP {
         {
             get
             {
+                if (Implementation == null)
+                    return System.Environment.CurrentDirectory;
+
                 return Implementation.SeqFolder;
             }
         }
@@ -44,6 +49,9 @@ namespace SNAP {
         {
             get
             {
+                if (Implementation == null)
+                    return System.Environment.CurrentDirectory;
+
                 return Implementation.JobFolder;
             }
         }
@@ -51,6 +59,9 @@ namespace SNAP {
         {
             get
             {
+                if (Implementation == null)
+                    return System.Environment.CurrentDirectory;
+
                 return Implementation.DataFolder;
             }
         }

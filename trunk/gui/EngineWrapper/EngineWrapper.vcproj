@@ -180,6 +180,10 @@
 			RelativePath="System.XML.dll"
 			AssemblyName="System.Xml, Version=2.0.0.0, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL"
 		/>
+		<ProjectReference
+			ReferencedProjectIdentifier="{00616E92-3691-4A53-A7AF-58E81890E7F6}"
+			RelativePathToProject=".\SNAP.Util\SNAP.Util.csproj"
+		/>
 	</References>
 	<Files>
 		<Filter

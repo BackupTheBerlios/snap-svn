@@ -15,7 +15,7 @@ namespace SNAP.ConfEditor
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             
-            //SNAP.Engine.Parser parser = new SNAP.Engine.Parser (argv);
+            //SNAP.Engine.Settings parser = new SNAP.Engine.Settings (argv);
             SNAP.Engine.Setup.ProgramName = System.Windows.Forms.Application.ProductName;
             if (argv.Length > 0)
             {

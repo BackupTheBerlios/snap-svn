@@ -34,13 +34,13 @@ namespace SNAP.ResourceFields
         /// Updates the field.
         /// </summary>
         /// <param name="value">The value.</param>
-        void LoadFromFieldValue(SNAP.Resources.FieldValue value);
+        void LoadFromFieldValue(SNAP.Resources.FieldValueList value);
 
         /// <summary>
         /// Updates the field.
         /// </summary>
         /// <param name="value">The value.</param>
-        void SaveToFieldValue(SNAP.Resources.FieldValue value);
+        void SaveToFieldValue(SNAP.Resources.FieldValueList value);
 
         /// <summary>
         /// Gets or sets the field text.
@@ -136,14 +136,14 @@ namespace SNAP.ResourceFields
             }
         }
 
-        public override void LoadFromFieldValue(SNAP.Resources.FieldValue value)
+        public override void LoadFromFieldValue(SNAP.Resources.FieldValueList value)
         {
             FieldText = value.Values[0].ToString ();
         }
 
-        public override void SaveToFieldValue(SNAP.Resources.FieldValue field)
+        public override void SaveToFieldValue(SNAP.Resources.FieldValueList field)
         {
-            field.Values.Add(FieldText);
+            field.Values.Add(new SNAP.Resources.TextValue (FieldText));
         }
     }
 }

@@ -33,12 +33,12 @@ namespace SNAP.ResourceFields
 
         #endregion Events
 
-        public void LoadFromFieldValue(SNAP.Resources.FieldValue value)
+        public void LoadFromFieldValue(SNAP.Resources.FieldValueList value)
         {
             field.LoadFromFieldValue(value);
         }
         
-        public void SaveToFieldValue(SNAP.Resources.FieldValue value)
+        public void SaveToFieldValue(SNAP.Resources.FieldValueList value)
         {
             field.SaveToFieldValue(value);
         }

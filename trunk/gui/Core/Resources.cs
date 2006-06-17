@@ -34,17 +34,172 @@ namespace SNAP
         #endregion Events
 
         #region FieldValue
- 
-        public class FieldValue
+
+        public interface IScriptableValue
         {
-            public FieldValue(FieldType type)
+            /// <summary>
+            /// Gets the <see cref="T:FieldValue"/> with the specified variable name.
+            /// </summary>
+            /// <value></value>
+            IScriptableValue this[string variableName]
+            {
+                get;
+            }
+        }
+
+        public class InternalRefValue : IScriptableValue
+        {
+            public readonly string ResourceName;
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="T:InternalRefScriptableValue"/> class.
+            /// </summary>
+            /// <param name="resourceName">Name of the resource.</param>
+            public InternalRefValue(string resourceName)
+            {
+                ResourceName = resourceName;
+            }
+
+            /// <summary>
+            /// Gets my resource.
+            /// </summary>
+            /// <value>My resource.</value>
+            public SNAP.Resources.Resource MyResource
+            {
+                get
+                {
+                    return SNAP.Controller.CurrentResources.FindResource(ResourceName);                        
+                }
+            }
+
+            /// <summary>
+            /// Implicit operators the specified value.
+            /// </summary>
+            /// <param name="value">The value.</param>
+            /// <returns></returns>
+            public static explicit operator SNAP.Resources.Resource (InternalRefValue value)
+            {
+                return value.MyResource;
+            }
+
+            /// <summary>
+            /// Gets the <see cref="T:FieldValue"/> with the specified variable name.
+            /// </summary>
+            /// <value></value>
+            public IScriptableValue this[string variableName]
+            {
+                get
+                {
+                    return ((Resource) this)[variableName];
+                }
+            }
+
+            /// <summary>
+            /// Returns a <see cref="T:System.String"></see> that represents the current <see cref="T:System.Object"></see>.
+            /// </summary>
+            /// <returns>
+            /// A <see cref="T:System.String"></see> that represents the current <see cref="T:System.Object"></see>.
+            /// </returns>
+            public override string ToString()
+            {
+                return ResourceName;
+            }
+        }
+
+        public class ExternalRefValue : IScriptableValue
+        {
+            public readonly string Path;
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="T:ExternalRefValue"/> class.
+            /// </summary>
+            /// <param name="path">The path.</param>
+            public ExternalRefValue(string path)
+            {
+                Path = path;
+            }
+
+            /// <summary>
+            /// Gets the <see cref="T:FieldValue"/> with the specified variable name.
+            /// </summary>
+            /// <value></value>
+            public IScriptableValue this[string variableName]
+            {
+                get
+                {
+                    switch (variableName)
+                    {
+                        case "Folder":
+                            return new ExternalRefValue (System.IO.Path.GetDirectoryName (Path));
+
+                        default:
+                            throw new System.ArgumentException ("The variable " + variableName + " is invalid for an ExternalRef Field");
+                    }
+                }
+            }
+
+                /// <summary>
+                /// Returns a <see cref="T:System.String"></see> that represents the current <see cref="T:System.Object"></see>.
+                /// </summary>
+                /// <returns>
+                /// A <see cref="T:System.String"></see> that represents the current <see cref="T:System.Object"></see>.
+                /// </returns>
+            public override string ToString()
+            {
+                return Path;
+            }
+        }
+
+        public class TextValue : IScriptableValue
+        {
+            public readonly string Text;
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="T:TextFieldValue"/> class.
+            /// </summary>
+            /// <param name="text">The text.</param>
+            public TextValue(string text)
+            {
+                Text = text;
+            }
+
+            /// <summary>
+            /// Gets the <see cref="T:FieldValue"/> with the specified variable name.
+            /// </summary>
+            /// <value></value>
+            public IScriptableValue this[string variableName]
+            {
+                get
+                {
+                    throw new System.ArgumentException ("The variable " + variableName + " is invalid for a Text Field");
+                }
+            }
+
+            /// <summary>
+            /// Returns a <see cref="T:System.String"></see> that represents the current <see cref="T:System.Object"></see>.
+            /// </summary>
+            /// <returns>
+            /// A <see cref="T:System.String"></see> that represents the current <see cref="T:System.Object"></see>.
+            /// </returns>
+            public override string ToString()
+            {
+                return Text;
+            }
+
+        }
+ 
+        public class FieldValueList
+        {
+            public FieldValueList(FieldType type)
             {
                 Type = type;
             }
 
             public readonly FieldType Type;
-            public readonly List<object> Values = new List<object> ();
+            public readonly List<IScriptableValue> Values = new List<IScriptableValue>();
         }
+
+
 
         #endregion FieldValue
 
@@ -162,7 +317,7 @@ namespace SNAP
 
         #endregion ResourceChildren
 
-        public class Resource
+        public class Resource : IScriptableValue
         {
             #region Constructors
 
@@ -187,7 +342,7 @@ namespace SNAP
             protected string _name;
             protected readonly System.Guid _id;
             internal readonly SortedDictionary<string, Resource> _resourceDictionary = new SortedDictionary<string, Resource>();
-            public readonly SortedDictionary<string, FieldValue> Fields = new SortedDictionary<string, FieldValue> ();
+            public readonly SortedDictionary<string, FieldValueList> Fields = new SortedDictionary<string, FieldValueList> ();
 
             #endregion
 
@@ -327,7 +482,7 @@ namespace SNAP
                 writer.WriteAttributeString("id", ID.ToString());
                 writer.WriteElementString("family", (Parent != null) ? Parent.QualifiedName : "");
 
-                foreach (FieldValue fieldValues in this.Fields.Values)
+                foreach (FieldValueList fieldValues in this.Fields.Values)
                 {
                     foreach (object v in fieldValues.Values)
                     {
@@ -536,6 +691,41 @@ namespace SNAP
             #endregion
 
             #endregion Methods
+
+            #region IScriptableValue Members
+
+            public IScriptableValue this[string variableName]
+            {
+                get
+                {
+                    if (Fields.ContainsKey(variableName))
+                        return Fields[variableName].Values[0];
+                    else
+                    {
+                        switch (variableName)
+                        {
+                            case "Name":
+                                return new TextValue (this.Name);
+
+                            case "ID":
+                                return new TextValue (this.ID.ToString());
+
+                            case "Family":
+                                return new InternalRefValue (this.Parent.QualifiedName);
+
+                            case "Folder":
+                                // TODO: return the folder of the resource
+                                throw new System.NotImplementedException();
+
+                            default:
+                                // TODO: give a more thoughtful error message
+                                throw new System.ArgumentException ("the variable " + variableName + " is invalid for a Resource");
+                        }
+                    }
+                }
+            }
+
+            #endregion
         }
 
         #endregion Resource
@@ -576,12 +766,16 @@ namespace SNAP
             /// </summary>
             /// <param name="root">The root.</param>
             /// <param name="filename">The filename.</param>
-            public void LoadAdditionalResources(string filename)
+            public void LoadAdditionalResources(Resource root, string filename)
             {
-                LoadAdditionalResources(filename, false);
+                LoadAdditionalResources(root, filename, false);
             }
 
             private void LoadAdditionalResources(string filename, bool addToList)
+            {
+                LoadAdditionalResources(null, filename, addToList);
+            }
+            private void LoadAdditionalResources(Resource root, string filename, bool addToList)
             {
                 /// load the XML file that contains all the resources
                 System.Xml.XmlDocument document = new System.Xml.XmlDocument();
@@ -595,7 +789,7 @@ namespace SNAP
                     {
                         if (node.Name == "resource")
                         {
-                            Resource resource = LoadResource(node);
+                            Resource resource = LoadResource(node, root);
                             if (addToList)
                                 _resourceList.Add(resource.QualifiedName, resource);
                         }
@@ -681,7 +875,7 @@ namespace SNAP
                 SaveResources();
             }
 
-            private Resource LoadResource(System.Xml.XmlNode node)
+            private Resource LoadResource(System.Xml.XmlNode node, Resource parent)
             {
                 System.Diagnostics.Debug.Assert(node.Name == "resource");
 
@@ -693,7 +887,10 @@ namespace SNAP
                 string resourceName = node.Attributes["name"].Value;
 
                 /// get resource id
-                Guid guid = new Guid(node.Attributes["id"].Value);
+                /// if the id is not available (for instance when importing an externallay generated resource)
+                /// generate a new one instead
+                Guid guid = (node.Attributes["id"] != null) ?
+                    (new Guid(node.Attributes["id"].Value)) : (Guid.NewGuid());
 
                 /// create the new resource
                 Resource resource = new Resource(guid, resourceType, resourceName);
@@ -703,10 +900,10 @@ namespace SNAP
                 {
                     string fieldName = fieldNode.Attributes["name"].Value;
                     FieldType fieldType = resource.ResourceType.Fields[fieldName];
-                    FieldValue fieldValue = null;
+                    FieldValueList fieldValue = null;
                     if (!resource.Fields.ContainsKey(fieldName))
                     {
-                        fieldValue = new FieldValue(fieldType);
+                        fieldValue = new FieldValueList(fieldType);
                         resource.Fields.Add(fieldName, fieldValue);
                     }
                     else
@@ -714,16 +911,42 @@ namespace SNAP
                         fieldValue = resource.Fields[fieldName];
                     }
 
-                    // TODO: use specialized class?
-                    fieldValue.Values.Add(fieldNode.InnerText);
+                    IScriptableValue value = null;
+                    switch (fieldType.Type)
+                    {
+                        case "internal_ref":
+                            value = new InternalRefValue (fieldNode.InnerText);
+                            break;
+
+                        case "external_ref":
+                            value = new ExternalRefValue (fieldNode.InnerText);
+                            break;
+
+                        case "text":
+                            value = new TextValue (fieldNode.InnerText);
+                            break;
+
+                        default:
+                            System.Diagnostics.Debug.Fail (fieldType.Type + " is not a recognized field type");
+                            break;
+                    }
+
+                    fieldValue.Values.Add(value);
                 }
 
                 /// add this node to it's parent
-                string family = node["family"].InnerText;
-                Resource parent = _resourceList[family];
+                if (parent == null)
+                {
+                    string family = node["family"].InnerText;
+                    parent = _resourceList[family];
+                }
                 parent.Children.Add(resource);
-
                 return resource;
+            }
+
+            private Resource LoadResource(System.Xml.XmlNode node)
+            {
+                return LoadResource(node, null);
             }
             void Root_ResourceRemoved(object sender, Resources.ResourceEventArgs args)
             {
@@ -759,332 +982,3 @@ namespace SNAP
         #endregion DB
     }
 }
-
-#if false
-
-    namespace Resources
-    {
-
-
-
-
-
-        #region Resource
-
-        public abstract class Resource
-        {
-
-            // Name, Guid, Parent, Type
-
-            #region Privates
-
-            protected CompositeResource _parent;
-            protected string _name;
-            protected string _notes;
-            protected System.Guid _id;
-
-            #endregion Privates
-
-            #region Constructors
-
-            /// <summary>
-            /// Initializes a new instance of the <see cref="T:Resource"/> class.
-            /// </summary>
-            /// <param name="name">The name.</param>
-            public Resource(string name)
-            {
-                _name = name;
-                _id = Guid.NewGuid();
-            }
-
-            /// <summary>
-            /// Initializes a new instance of the <see cref="T:Resource"/> class.
-            /// </summary>
-            /// <param name="id">The id.</param>
-            /// <param name="name">The name.</param>
-            public Resource(System.Guid id, string name)
-            {
-                _name = name;
-                _id = id;
-            }
-
-            /// <summary>
-            /// Initializes a new instance of the <see cref="T:Resource"/> class.
-            /// </summary>
-            /// <param name="xmlnode">The xmlnode.</param>
-            public Resource(System.Xml.XmlNode xmlnode)
-            {
-                _name = xmlnode.Attributes["name"].Value;
-                _id = new Guid(xmlnode["id"].InnerText);
-                _notes = xmlnode["notes"].InnerText;
-            }
-
-            public Resource()
-            {
-            }
-
-            #endregion
-
-            #region IResource Members
-
-            public readonly SNAP.Core.XMLResourceType ResourceType;
-
-            /// <summary>
-            /// Gets or sets the name.
-            /// </summary>
-            /// <value>The name.</value>
-            public string Name
-            {
-                get
-                {
-                    return _name;
-                }
-                set
-                {
-                    CompositeResource parent = Parent;
-                    Remove();
-                    _name = value;
-                    if (parent != null)
-                        parent.Add(this);
-                }
-            }
-
-            /// <summary>
-            /// Gets or sets the notes.
-            /// </summary>
-            /// <value>The notes.</value>
-            public string Notes
-            {
-                get
-                {
-                    return _notes;
-                }
-                set
-                {
-                    _notes = value;
-                }
-            }
-
-            /// <summary>
-            /// Gets the ID.
-            /// </summary>
-            /// <value>The ID.</value>
-            public Guid ID
-            {
-                get
-                {
-                    return _id;
-                }
-            }
-
-            /// <summary>
-            /// Gets or sets the parent.
-            /// </summary>
-            /// <value>The parent.</value>
-            public CompositeResource Parent
-            {
-                get
-                {
-                    return _parent;
-                }
-                internal set
-                {
-                    _parent = value;
-                }
-            }
-
-            /// <summary>
-            /// Gets the name of the qualified.
-            /// </summary>
-            /// <value>The name of the qualified.</value>
-            public string QualifiedName
-            {
-                get
-                {
-                    if (_parent == null)
-                        return Name;
-                    else
-                        return _parent.QualifiedName + "." + Name;
-                }
-            }
-
-            /// <summary>
-            /// Removes the node from it's parent
-            /// </summary>
-            public void Remove()
-            {
-                if (Parent != null)
-                    Parent.Remove(Name);
-            }
-
-            /// <summary>
-            /// Writes the XML.
-            /// </summary>
-            /// <param name="writer">The writer.</param>
-            public void WriteXML(System.Xml.XmlTextWriter writer)
-            {
-                writer.WriteStartElement("resource");
-                WriteXMLElement(writer);
-                writer.WriteEndElement();
-            }
-
-            /// <summary>
-            /// Writes the XML element.
-            /// </summary>
-            /// <param name="writer">The writer.</param>
-            virtual protected void WriteXMLElement(System.Xml.XmlTextWriter writer)
-            {
-                writer.WriteAttributeString("type", GetType().FullName);
-                writer.WriteAttributeString("name", _name);
-                writer.WriteElementString("family", (Parent != null) ? Parent.QualifiedName : "");
-                writer.WriteElementString("notes", Notes);
-                writer.WriteElementString("id", ID.ToString());
-            }
-
-            public abstract string Typename
-            {
-                get;
-            }
-
-            /// <summary>
-            /// throws an exception if the resource is not properly initialized
-            /// TODO: perhaps provide a more structured way to do this
-            /// </summary>
-            public abstract void Validate();
-
-
-
-            #endregion
-        }
-
-        #endregion Resource
-
-        #region Events
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public class ResourceEventArgs : System.EventArgs
-        {
-            public ResourceEventArgs(CompositeResource parent, Resource resource)
-            {
-                Parent = parent;
-                Resource = resource;
-            }
-
-            public readonly CompositeResource Parent;
-            public readonly Resource Resource;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="args"></param>
-        public delegate void ResourceEvent(object sender, ResourceEventArgs args);
-
-        #endregion Events
-
-        
-    }
-}
-
-#region obsolete
-
-#if false
-
-#region IResource
-/*
-        internal interface Resource {
-            /// <summary>
-            /// Gets or sets the name.
-            /// </summary>
-            /// <value>The name.</value>
-            string Name {
-                get;
-                set;
-            }
-
-            /// <summary>
-            /// Gets or sets the notes.
-            /// </summary>
-            /// <value>The notes.</value>
-            string Notes {
-                get;
-                set;
-            }
-            /// <summary>
-            /// Gets the ID.
-            /// </summary>
-            /// <value>The ID.</value>
-            System.Guid ID {
-                get;
-            }
-
-            /// <summary>
-            /// Gets the parent.
-            /// </summary>
-            /// <value>The parent.</value>
-            ICompositeResource Parent {
-                get;
-            }
-
-            /// <summary>
-            /// Gets the name of the qualified.
-            /// </summary>
-            /// <value>The name of the qualified.</value>
-            string QualifiedName {
-                get;
-            }
-
-            /// <summary>
-            /// Writes the XML.
-            /// </summary>
-            /// <param name="writer">The writer.</param>
-            void WriteXML(System.Xml.XmlTextWriter writer);
-        }
-         */
-
-#endregion IResource
-
-#region IFileResource
-/*
-        internal interface IFileResource {
-            string Filename {
-                get;
-            }
-        }
-         */
-
-#endregion IFileResource
-
-#region ICompositeResource
-
-
-/*
-/// <summary>
-/// 
-/// </summary>
-internal interface ICompositeResource : Resource, System.Collections.Generic.IDictionary<string, Resource> {
-    /// <summary>
-    /// Adds the specified resource.
-    /// </summary>
-    /// <param name="resource">The resource.</param>
-    void Add(Resource resource);
-
-    /// <summary>
-    /// Raised when a resource is added.
-    /// events are also propagated up the tree
-    /// </summary>
-    event CompositeResourceEvent ResourceAdded;
-}
- */
-
-#endregion ICompositeResource
-
-#endif
-
-
-
-#endregion obsolete
-#endif

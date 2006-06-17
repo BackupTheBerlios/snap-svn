@@ -4,25 +4,26 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.50727</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{E60FDC1B-CC56-43F8-9517-C7FB77F42F0A}</ProjectGuid>
-    <OutputType>WinExe</OutputType>
+    <ProjectGuid>{ABADAA93-F450-4158-87A7-862914C056FA}</ProjectGuid>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ConfEditor</RootNamespace>
-    <AssemblyName>ConfEditor</AssemblyName>
+    <RootNamespace>SNAP.ConfEditor.Controls</RootNamespace>
+    <AssemblyName>SNAP.ConfEditor.Controls</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\debug\</OutputPath>
+    <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <UseVSHostingProcess>true</UseVSHostingProcess>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\release\</OutputPath>
+    <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -30,59 +31,31 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Deployment" />
+    <Reference Include="System.Design" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ConfiGenForm.cs">
-      <SubType>Form</SubType>
+    <Compile Include="OptionPanel.cs">
+      <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="ConfiGenForm.Designer.cs">
-      <DependentUpon>ConfiGenForm.cs</DependentUpon>
+    <Compile Include="OptionPanel.Designer.cs">
+      <DependentUpon>OptionPanel.cs</DependentUpon>
     </Compile>
-    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="ConfiGenForm.resx">
-      <DependentUpon>ConfiGenForm.cs</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-      <DesignTime>True</DesignTime>
-    </Compile>
-    <None Include="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
-    <Compile Include="Properties\Settings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-    </Compile>
+    <Service Include="{94E38DFF-614B-4cbd-B67C-F211BB35CE8B}" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\PSSM.png" />
+    <EmbeddedResource Include="OptionPanel.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>OptionPanel.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\EngineWrapper\EngineWrapper.vcproj">
       <Project>{281B31C5-D8D5-4B9D-B6A4-6B2A5B769A16}</Project>
       <Name>SNAP.EngineWrapper</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SNAP.ConfEditor.Controls\SNAP.ConfEditor.Controls.csproj">
-      <Project>{ABADAA93-F450-4158-87A7-862914C056FA}</Project>
-      <Name>SNAP.ConfEditor.Controls</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SNAP.Util\SNAP.Util.csproj">
-      <Project>{00616E92-3691-4A53-A7AF-58E81890E7F6}</Project>
-      <Name>SNAP.Util</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
