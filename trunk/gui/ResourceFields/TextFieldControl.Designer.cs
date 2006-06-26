@@ -1,6 +1,6 @@
 namespace SNAP.ResourceFields
 {
-    partial class TextField
+    partial class TextFieldControl
     {
         /// <summary> 
         /// Required designer variable.
@@ -29,35 +29,26 @@ namespace SNAP.ResourceFields
         private void InitializeComponent()
         {
             this.textBox1 = new System.Windows.Forms.TextBox();
-            this.linkLabel1 = new System.Windows.Forms.LinkLabel();
             this.SuspendLayout();
             // 
             // textBox1
             // 
             this.textBox1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.textBox1.Location = new System.Drawing.Point(114, 0);
+            this.textBox1.Location = new System.Drawing.Point(0, 0);
             this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(176, 20);
+            this.textBox1.Size = new System.Drawing.Size(150, 20);
             this.textBox1.TabIndex = 8;
             // 
-            // linkLabel1
-            // 
-            this.linkLabel1.Dock = System.Windows.Forms.DockStyle.Left;
-            this.linkLabel1.Location = new System.Drawing.Point(0, 0);
-            this.linkLabel1.Name = "linkLabel1";
-            this.linkLabel1.Size = new System.Drawing.Size(114, 25);
-            this.linkLabel1.TabIndex = 7;
-            this.linkLabel1.TabStop = true;
-            this.linkLabel1.Text = "Family";
-            // 
-            // TextField
+            // TextFieldControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoSize = true;
+            this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.Controls.Add(this.textBox1);
-            this.Controls.Add(this.linkLabel1);
-            this.Name = "TextField";
-            this.Size = new System.Drawing.Size(290, 25);
+            this.MinimumSize = new System.Drawing.Size(150, 24);
+            this.Name = "TextFieldControl";
+            this.Size = new System.Drawing.Size(150, 24);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -66,7 +57,6 @@ namespace SNAP.ResourceFields
         #endregion
 
         private System.Windows.Forms.TextBox textBox1;
-        private System.Windows.Forms.LinkLabel linkLabel1;
 
 
     }

@@ -5,9 +5,11 @@ using System.Drawing;
 using System.Data;
 using System.Text;
 using System.Windows.Forms;
+using SNAP.Resources;
 
 namespace SNAP.ResourceFields
 {
+    /*
     public interface IAbstractField
     {
         /// <summary>
@@ -34,13 +36,13 @@ namespace SNAP.ResourceFields
         /// Updates the field.
         /// </summary>
         /// <param name="value">The value.</param>
-        void LoadFromFieldValue(SNAP.Resources.FieldValueList value);
+        void LoadFromFieldValue(SNAP.Resources.IResourceValue value);
 
         /// <summary>
         /// Updates the field.
         /// </summary>
         /// <param name="value">The value.</param>
-        void SaveToFieldValue(SNAP.Resources.FieldValueList value);
+        void SaveToFieldValue(SNAP.Resources.IResourceValue value);
 
         /// <summary>
         /// Gets or sets the field text.
@@ -62,53 +64,32 @@ namespace SNAP.ResourceFields
             set;
         }
     }
+     */
 
 
-    public partial class TextField : AbstractField
+    public partial class TextFieldControl : UserControl, IResourceWinformsUI
     {
+        private TextFieldValue _value;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="T:TextField"/> class.
         /// </summary>
-        public TextField()
+        public TextFieldControl()
         {
             InitializeComponent();
         }
 
-        /// <summary>
-        /// Gets or sets the name of the field.
-        /// </summary>
-        /// <value>The name of the field.</value>
-        public override string FieldName
+        public TextFieldControl(TextFieldValue value)
+            : this ()
         {
-            get
-            {
-                return this.linkLabel1.Text;
-            }
-            set
-            {
-                this.linkLabel1.Text = value;
-            }
+            LoadFromFieldValue(value);
         }
-        /// <summary>
-        /// Gets or sets a value indicating whether [show field name].
-        /// </summary>
-        /// <value><c>true</c> if [show field name]; otherwise, <c>false</c>.</value>
-        public override bool FieldNameVisible
-        {
-            get
-            {
-                return linkLabel1.Visible;
-            }
-            set
-            {
-                linkLabel1.Visible = value;
-            }
-        }
+
         /// <summary>
         /// Gets or sets the field text.
         /// </summary>
         /// <value>The field text.</value>
-        public override string FieldText
+        public  string FieldText
         {
             get
             {
@@ -120,31 +101,65 @@ namespace SNAP.ResourceFields
             }
         }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="T:TextField"/> is readonly.
-        /// </summary>
-        /// <value><c>true</c> if readonly; otherwise, <c>false</c>.</value>
-        public override bool Readonly
+        #region IResourceUI Members
+
+        public SNAP.Resources.IResourceValue MyValue
+        {
+            get {
+                return _value;
+            }
+        }
+
+        void IResourceUI.LoadFromFieldValue(SNAP.Resources.IResourceValue value)
+        {
+            LoadFromFieldValue((TextFieldValue)value);
+        }
+
+        public void LoadFromFieldValue(SNAP.Resources.TextFieldValue value)
+        {
+            _value = value;
+            FieldText = value.ToString();
+        }
+
+        void IResourceUI.SaveToFieldValue(SNAP.Resources.IResourceValue value)
+        {
+            SaveToValue((TextFieldValue)value);
+        }
+
+        public void SaveToValue(TextFieldValue value)
+        {
+            value.Text = FieldText;
+        }
+
+        #endregion
+
+        #region IResourceWinformsUI Members
+
+        public Control MyControl
+        {
+            get {
+                return this;
+            }
+        }
+
+        #endregion
+
+        #region IResourceUI Members
+
+
+        public bool Readonly
         {
             get
             {
-                return textBox1.ReadOnly;
+                return textBox1.Enabled;
             }
             set
             {
-                textBox1.ReadOnly = value;
+                textBox1.Enabled = value;
             }
         }
 
-        public override void LoadFromFieldValue(SNAP.Resources.FieldValueList value)
-        {
-            FieldText = value.Values[0].ToString ();
-        }
-
-        public override void SaveToFieldValue(SNAP.Resources.FieldValueList field)
-        {
-            field.Values.Add(new SNAP.Resources.TextValue (FieldText));
-        }
+        #endregion
     }
 }
 
