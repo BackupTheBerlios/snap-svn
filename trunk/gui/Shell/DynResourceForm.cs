@@ -12,57 +12,69 @@ namespace SNAP
 {
     public partial class DynResourceForm : Form
     {
-        #region Privates
-
-        private readonly SortedDictionary<string, SNAP.ResourceFields.AbstractField> Fields = new SortedDictionary<string,SNAP.ResourceFields.AbstractField> ();
-        private Resource _selectedResource = null;
-
-        #endregion Privates
-
         #region Constructors
 
         public DynResourceForm()
         {
             InitializeComponent();
+            InitStaticFields(string.Empty, string.Empty);
 
             foreach (ResourceType type in ResourceType.LoadTypes(Controller.ResourceTypesFile).Values)
             {
                 this.cmbResourceType.Items.Add(type);
             }
 
-            textField1.FieldText = Guid.NewGuid().ToString ();
+
+            //textField1.FieldText = Guid.NewGuid().ToString ();
         }
+
 
         public DynResourceForm(Resources.Resource resource)
         {
             InitializeComponent();
+            InitStaticFields(resource.Name, resource.Parent.QualifiedName);
 
-            this.cmbResourceType.Items.Add(resource.ResourceType);
+            this.cmbResourceType.Items.Add(resource.MyType);
             cmbResourceType.SelectedIndex = 0;
-            
+
             /// this must be after the combobox item is changed
             /// because the combobox item change deletes the current resource
             /// and generates a new default resource of the given type
             SelectedResource = resource;
 
-            fieldFamily.Readonly = true;
-            fieldFamily.SelectedResource = resource.Parent;
+            //fieldFamily.Readonly = true;
+            //fieldName.Readonly = true;
+            //fieldParent.Readonly = true;
+            //fieldName.Readonly = true;
 
-            fieldName.Readonly = true;
-            fieldName.FieldText = resource.Name;
+            //textField1.Readonly = true;
+            //textField1.FieldText = resource.ID.ToString();
+        }
 
-            textField1.Readonly = true;
-            textField1.FieldText = resource.ID.ToString();
 
-            /// now fill in the field values 
-            foreach (FieldValueList fieldValue in SelectedResource.Fields.Values)
-            {
-                this.Fields[fieldValue.Type.Name].LoadFromFieldValue(fieldValue);
-            }
 
+        private void InitStaticFields(string name, string parent)
+        {
+            TextFieldType nameField = new TextFieldType(
+                "Name",
+                "The name of the resource"
+                );
+
+            InternalRefFieldType familyField = new InternalRefFieldType(
+                "Parent name",
+                "The fully qualified name of parent of this resource"
+                );
+
+            this.fieldName.Content = (SNAP.ResourceFields.IResourceWinformsUI)
+                Controller.CreateResourceUI(new TextFieldValue(name, nameField));
+
+            this.fieldParent.Content = (SNAP.ResourceFields.IResourceWinformsUI)
+                Controller.CreateResourceUI(new InternalRefFieldValue(parent, familyField));
         }
 
         #endregion Constructors
+
+        private SNAP.Resources.Resource _resource;
 
         #region Properties
 
@@ -74,11 +86,12 @@ namespace SNAP
         {
             get
             {
-                return _selectedResource;
+                return _resource;
             }
             set
             {
-                _selectedResource = value;
+                _resource = value;
+                panelFields.SubValues = _resource.SubValues;
             }
         }
 
@@ -90,27 +103,14 @@ namespace SNAP
         {
             get
             {
-                return fieldFamily.SelectedResource;
+                //return fieldFamily.SelectedResource;
+                return ((SNAP.Resources.InternalRefFieldValue)fieldParent.MyValue).MyResource;
             }
             set
             {
-                fieldFamily.SelectedResource = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the family.
-        /// </summary>
-        /// <value>The family.</value>
-        public Resources.Resource Family
-        {
-            get
-            {
-                return fieldFamily.SelectedResource;
-            }
-            set
-            {
-                fieldFamily.SelectedResource = value;
+                //fieldFamily.SelectedResource = value;
+                ((SNAP.Resources.InternalRefFieldValue)fieldParent.MyValue).ResourceName = value.QualifiedName;
+                fieldParent.LoadFromFieldValue(fieldParent.MyValue);
             }
         }
 
@@ -120,64 +120,9 @@ namespace SNAP
 
         private void cmbResourceType_SelectedIndexChanged(object sender, EventArgs e)
         {
-            foreach (SNAP.ResourceFields.AbstractField field in Fields.Values)
-            {
-                groupFields.Controls.Remove((Control)field);
-            }
-            this.Fields.Clear();
             panelExecutions.Controls.Clear();
-
             ResourceType type = (ResourceType)cmbResourceType.SelectedItem;
-            
             SelectedResource = new Resource(Guid.NewGuid(), type, "");
-
-            /// display on the gui all the available fields
-            groupFields.Visible = type.Fields.Values.Count > 0;
-            foreach (FieldType field in type.Fields.Values)
-            {
-                if (field.MinOccurs != 1 || field.MaxOccurs != 1)
-                {
-                    SNAP.ResourceFields.MultiValueField newField = new SNAP.ResourceFields.MultiValueField();
-                    newField.FieldType = field;
-                    newField.Dock = DockStyle.Top;
-                    this.groupFields.Controls.Add(newField);
-                    this.toolTip1.SetToolTip(newField, field.Help);
-                    
-                    /// add this field to the list of fields
-                    this.Fields.Add (field.Name, newField);
-                }
-                else
-                {
-                    SNAP.ResourceFields.AbstractField newField = null;
-                    switch (field.Type)
-                    {
-                        case "text":
-                            newField = new SNAP.ResourceFields.TextField();
-                            break;
-
-                        case "internal_ref":
-                            newField = new SNAP.ResourceFields.InternalRefField ();
-                            break;
-                        case "external_ref":
-                            newField = new SNAP.ResourceFields.ExternalRefField();
-                            (newField as SNAP.ResourceFields.ExternalRefField).Mask = 
-                                (field as ExternalRefFieldType).Mask;
-                            break;
-
-                        default:
-                            break;
-                    }
-
-                    newField.FieldName = field.Name;
-                    newField.FieldText = "";
-                    (newField as Control).Dock = DockStyle.Top;
-                    this.groupFields.Controls.Add( (Control) newField);
-                    this.toolTip1.SetToolTip((Control)newField, field.Help);
-
-                    /// add this field to the list of fields
-                    this.Fields.Add(field.Name, newField);
-                }
-            }
 
             /// display on the gui all the available executions
             panelExecutions.Visible = type.Executions.Count > 0;
@@ -187,13 +132,13 @@ namespace SNAP
                 execButton.Name = execType.Name;
                 execButton.Text = execType.Name;
                 toolTip1.SetToolTip(execButton, execType.Help);
-                
+
                 execButton.AutoSize = true;
                 execButton.AutoSizeMode = AutoSizeMode.GrowAndShrink;
                 execButton.Click += new EventHandler(execButton_Click);
                 execButton.BackColor = Color.LightBlue;
                 execButton.FlatStyle = FlatStyle.Popup;
-                
+
                 panelExecutions.Controls.Add(execButton);
             }
         }
@@ -205,7 +150,7 @@ namespace SNAP
                 UpdateResource();
 
                 Button execButton = (Button)sender;
-                Script execType = SelectedResource.ResourceType.Executions[execButton.Name];
+                Script execType = SelectedResource.MyType.Executions[execButton.Name];
                 execType.Execute(SelectedResource);
                 //SNAP.Resources.Execution.Run(execType.Name, SelectedResource);
             }
@@ -217,29 +162,10 @@ namespace SNAP
 
         public void UpdateResource()
         {
-            System.Diagnostics.Debug.Assert(SelectedResource != null);
+            //SelectedResource.Name = fieldName.FieldText;
+            SelectedResource.Name = fieldName.MyValue.ToString();
 
-            SelectedResource.Name = fieldName.FieldText;
-
-            /// fill in additional fields
-            foreach (SNAP.ResourceFields.AbstractField fieldControl in this.Fields.Values)
-            {
-                FieldValueList fieldValue = null;
-                if (!SelectedResource.Fields.ContainsKey(fieldControl.FieldName))
-                {
-                    // TODO: make this simpler
-                    fieldValue =
-                        new FieldValueList(SelectedResource.ResourceType.Fields[fieldControl.FieldName]);
-                    SelectedResource.Fields[fieldControl.FieldName] = fieldValue;
-                }
-                else
-                {
-                    fieldValue = SelectedResource.Fields[fieldControl.FieldName];
-                }
-
-                fieldValue.Values.Clear();
-                fieldControl.SaveToFieldValue(fieldValue);
-            }
+            panelFields.UpdateResource();
         }
 
         /// <summary>
@@ -260,7 +186,6 @@ namespace SNAP
                 Controller.ShowException(x);
             }
         }
-
         #endregion Implementation
     }
 }

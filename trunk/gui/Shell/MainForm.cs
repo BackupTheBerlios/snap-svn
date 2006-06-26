@@ -12,11 +12,11 @@ namespace SNAP {
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
-        static void Main() {
+        static void Main(string [] argv) {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             
-            SNAP.Controller.Implementation = new WinformsController();
+            SNAP.Controller.Implementation = (argv.Length > 0)? new WinformsController(argv[0]) : new WinformsController();
 
             Controller.CurrentResources.LoadResources();
             Application.Run(new MainForm());

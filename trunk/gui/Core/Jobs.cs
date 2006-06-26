@@ -159,6 +159,8 @@ namespace SNAP.Resources
                 string fullFilename = System.IO.Path.Combine(
                     Util.GetExecutionFolder(this.MyParent.Name, resource), Filename);
 
+                System.IO.Directory.GetParent(fullFilename).Create();
+
                 /// create the file
                 using (StreamWriter writer = new StreamWriter(fullFilename))
                 {
@@ -611,10 +613,6 @@ namespace SNAP.Resources
                     DirectoryInfo executionFolder = Directory.CreateDirectory(GetExecutionFolder(execType.Name, resource));
 
                     /// run the job
-                    System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo(step.Bin, parameters);
-                    startInfo.WorkingDirectory = SNAP.Controller.JobFolder;
-
-                    startInfo.FileName = step.Bin;
                     Process process = Run(step.Bin, parameters, step.OutputRedirectionFile, executionFolder);
                     int exitCode = process.ExitCode;
 
@@ -623,6 +621,7 @@ namespace SNAP.Resources
                     }
                     else
                     {
+                        Controller.ShowException(new System.Exception("The process returned an exit code of " + exitCode));
                         /// the process didnt work
                     }
                 }
@@ -648,6 +647,9 @@ namespace SNAP.Resources
                     {
                         binFile = System.IO.Path.Combine(SNAP.Controller.BinFolder, binFile);
                     }
+                    else if (File.Exists (System.IO.Path.Combine(SNAP.Controller.PluginFolder, binFile))) {
+                        binFile = System.IO.Path.Combine(SNAP.Controller.PluginFolder, binFile);
+                    }
                 }
 
                 System.Diagnostics.ProcessStartInfo startInfo;
@@ -663,7 +665,12 @@ namespace SNAP.Resources
                         );
                 }
 
-                //startInfo.WorkingDirectory = executionFolder.FullName;
+                startInfo.WorkingDirectory = executionFolder.FullName;
+                startInfo.UseShellExecute = false;
+                /// TODO: remove hack that uses a hard-coded path to cygwin
+                startInfo.EnvironmentVariables["path"] =
+                    @"c:\cygwin\bin;c:\cygwin\usr\bin;c:\cygwin\usr\X11R6\bin;" +
+                    startInfo.EnvironmentVariables["path"]; 
 
                 System.Diagnostics.Process process =
                     System.Diagnostics.Process.Start(startInfo);
@@ -709,23 +716,47 @@ namespace SNAP.Resources
                     /// For instance: Sequence File.File
                     string varValue = null;
                     string completeVarName = match.Groups[1].Captures[0].Value;
-                    if (completeVarName.Equals("ExecutionFolder"))
+
+                    switch (completeVarName)
                     {
-                        varValue = GetExecutionFolder(executionName, resource);
-                    }
-                    else
-                    {
+                        case "ExecutionFolder":
+                            varValue = GetExecutionFolder(executionName, resource);
+                            varValue = varValue.TrimEnd('/');
+                            break;
 
-                        string[] varNameParts = completeVarName.Split('.');
+                        case "PluginFolder":
+                            varValue = Controller.PluginFolder;
+                            varValue = varValue.TrimEnd('/');
+                            break;
 
-                        /// follow the inner structure to the last internal reference
-                        IScriptableValue currentResource = resource;
-                        for (int i = 0; i < varNameParts.Length; ++i)
-                        {
-                            currentResource = currentResource[varNameParts[i]];
-                        }
+                            /// TODO: make this more general
+                        case "PluginFolder.Unix":
+                            varValue = Controller.PluginFolder;
+                            varValue = varValue.Replace('\\', '/');
+                            varValue = varValue.Replace(" ", @"\ ");
+                            varValue = varValue.TrimEnd('/');
+                            break;
 
-                        varValue = currentResource.ToString();
+                        case "ExecutionFolder.Unix":
+                            varValue = GetExecutionFolder(executionName, resource);
+                            varValue = varValue.Replace('\\', '/');
+                            varValue = varValue.Replace(" ", @"\ ");
+                            varValue = varValue.TrimEnd('/');
+                            break;
+
+                        default:    {
+                                string[] varNameParts = completeVarName.Split('.');
+
+                                /// follow the inner structure to the last internal reference
+                                IResourceValue currentResource = resource;
+                                for (int i = 0; i < varNameParts.Length; ++i)
+                                {
+                                    currentResource = currentResource.GetDynamicProperty (varNameParts[i]);
+                                }
+
+                                varValue = currentResource.ToString();
+                            }
+                            break;
                     }
 
                     /// replace the $variable$ with the value

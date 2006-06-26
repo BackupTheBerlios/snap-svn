@@ -8,7 +8,8 @@ namespace SNAP{
 		{
 		public:
 			ref class Section;
-			typedef SNAP::Util::IndexedSortedList <System::String^, Section^> SectionList;
+			typedef System::Collections::Generic::SortedList <System::String^, Section^> SectionList;
+//				SNAP::Util::IndexedSortedList <
 
 		public:
 			Conf ();

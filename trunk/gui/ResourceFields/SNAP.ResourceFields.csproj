@@ -30,28 +30,43 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Design" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AbstractField.cs">
+    <Compile Include="Copy of FieldDecoratorControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="AbstractField.Designer.cs">
-      <DependentUpon>AbstractField.cs</DependentUpon>
+    <Compile Include="Copy of FieldDecoratorControl.Designer.cs">
+      <DependentUpon>Copy of FieldDecoratorControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="ExternalRefField.cs">
+    <Compile Include="Interfaces.cs">
+    </Compile>
+    <Compile Include="EnumFieldControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="ExternalRefField.Designer.cs">
-      <DependentUpon>ExternalRefField.cs</DependentUpon>
+    <Compile Include="EnumFieldControl.Designer.cs">
+      <DependentUpon>EnumFieldControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="InternalRefField.cs">
+    <Compile Include="ExternalRefFieldControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="InternalRefField.Designer.cs">
-      <DependentUpon>InternalRefField.cs</DependentUpon>
+    <Compile Include="ExternalRefFieldControl.Designer.cs">
+      <DependentUpon>ExternalRefFieldControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ResourceFieldsControl.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="ResourceFieldsControl.Designer.cs">
+      <DependentUpon>ResourceFieldsControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="InternalRefFieldControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="InternalRefFieldControl.Designer.cs">
+      <DependentUpon>InternalRefFieldControl.cs</DependentUpon>
     </Compile>
     <Compile Include="MultiValueField.cs">
       <SubType>UserControl</SubType>
@@ -65,27 +80,63 @@
     <Compile Include="MultiValueFieldElement.Designer.cs">
       <DependentUpon>MultiValueFieldElement.cs</DependentUpon>
     </Compile>
+    <Compile Include="NumericFieldControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="NumericFieldControl.Designer.cs">
+      <DependentUpon>NumericFieldControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FieldDecoratorControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="FieldDecoratorControl.Designer.cs">
+      <DependentUpon>FieldDecoratorControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="TextField.cs">
+    <Compile Include="TextFieldControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="TextField.Designer.cs">
-      <DependentUpon>TextField.cs</DependentUpon>
+    <Compile Include="TextFieldControl.Designer.cs">
+      <DependentUpon>TextFieldControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="VerticalFlowLayoutGroupBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="VerticalFlowLayoutGroupBox.Designer.cs">
+      <DependentUpon>VerticalFlowLayoutGroupBox.cs</DependentUpon>
+    </Compile>
+    <Compile Include="VerticalFlowLayoutPanel.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="VerticalFlowLayoutPanel.Designer.cs">
+      <DependentUpon>VerticalFlowLayoutPanel.cs</DependentUpon>
     </Compile>
     <Service Include="{94E38DFF-614B-4cbd-B67C-F211BB35CE8B}" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="ExternalRefField.resx">
+    <EmbeddedResource Include="Copy of FieldDecoratorControl.resx">
+      <DependentUpon>Copy of FieldDecoratorControl.cs</DependentUpon>
       <SubType>Designer</SubType>
-      <DependentUpon>ExternalRefField.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="InternalRefField.resx">
-      <DependentUpon>InternalRefField.cs</DependentUpon>
+    <EmbeddedResource Include="EnumFieldControl.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>EnumFieldControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ExternalRefFieldControl.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>ExternalRefFieldControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ResourceFieldsControl.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>ResourceFieldsControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="InternalRefFieldControl.resx">
+      <DependentUpon>InternalRefFieldControl.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="MultiValueField.resx">
@@ -96,14 +147,22 @@
       <SubType>Designer</SubType>
       <DependentUpon>MultiValueFieldElement.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="NumericFieldControl.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>NumericFieldControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FieldDecoratorControl.resx">
+      <DependentUpon>FieldDecoratorControl.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <SubType>Designer</SubType>
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <EmbeddedResource Include="TextField.resx">
+    <EmbeddedResource Include="TextFieldControl.resx">
       <SubType>Designer</SubType>
-      <DependentUpon>TextField.cs</DependentUpon>
+      <DependentUpon>TextFieldControl.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

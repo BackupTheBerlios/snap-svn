@@ -35,6 +35,8 @@ namespace SNAP
 
         #region FieldValue
 
+        #region IScriptableValue
+        /*
         public interface IScriptableValue
         {
             /// <summary>
@@ -46,148 +48,20 @@ namespace SNAP
                 get;
             }
         }
+         */
 
-        public class InternalRefValue : IScriptableValue
-        {
-            public readonly string ResourceName;
+        #endregion IScriptableValue
 
-            /// <summary>
-            /// Initializes a new instance of the <see cref="T:InternalRefScriptableValue"/> class.
-            /// </summary>
-            /// <param name="resourceName">Name of the resource.</param>
-            public InternalRefValue(string resourceName)
-            {
-                ResourceName = resourceName;
-            }
+        
 
-            /// <summary>
-            /// Gets my resource.
-            /// </summary>
-            /// <value>My resource.</value>
-            public SNAP.Resources.Resource MyResource
-            {
-                get
-                {
-                    return SNAP.Controller.CurrentResources.FindResource(ResourceName);                        
-                }
-            }
+        
 
-            /// <summary>
-            /// Implicit operators the specified value.
-            /// </summary>
-            /// <param name="value">The value.</param>
-            /// <returns></returns>
-            public static explicit operator SNAP.Resources.Resource (InternalRefValue value)
-            {
-                return value.MyResource;
-            }
+        
 
-            /// <summary>
-            /// Gets the <see cref="T:FieldValue"/> with the specified variable name.
-            /// </summary>
-            /// <value></value>
-            public IScriptableValue this[string variableName]
-            {
-                get
-                {
-                    return ((Resource) this)[variableName];
-                }
-            }
+        
 
-            /// <summary>
-            /// Returns a <see cref="T:System.String"></see> that represents the current <see cref="T:System.Object"></see>.
-            /// </summary>
-            /// <returns>
-            /// A <see cref="T:System.String"></see> that represents the current <see cref="T:System.Object"></see>.
-            /// </returns>
-            public override string ToString()
-            {
-                return ResourceName;
-            }
-        }
-
-        public class ExternalRefValue : IScriptableValue
-        {
-            public readonly string Path;
-
-            /// <summary>
-            /// Initializes a new instance of the <see cref="T:ExternalRefValue"/> class.
-            /// </summary>
-            /// <param name="path">The path.</param>
-            public ExternalRefValue(string path)
-            {
-                Path = path;
-            }
-
-            /// <summary>
-            /// Gets the <see cref="T:FieldValue"/> with the specified variable name.
-            /// </summary>
-            /// <value></value>
-            public IScriptableValue this[string variableName]
-            {
-                get
-                {
-                    switch (variableName)
-                    {
-                        case "Folder":
-                            return new ExternalRefValue (System.IO.Path.GetDirectoryName (Path));
-
-                        default:
-                            throw new System.ArgumentException ("The variable " + variableName + " is invalid for an ExternalRef Field");
-                    }
-                }
-            }
-
-                /// <summary>
-                /// Returns a <see cref="T:System.String"></see> that represents the current <see cref="T:System.Object"></see>.
-                /// </summary>
-                /// <returns>
-                /// A <see cref="T:System.String"></see> that represents the current <see cref="T:System.Object"></see>.
-                /// </returns>
-            public override string ToString()
-            {
-                return Path;
-            }
-        }
-
-        public class TextValue : IScriptableValue
-        {
-            public readonly string Text;
-
-            /// <summary>
-            /// Initializes a new instance of the <see cref="T:TextFieldValue"/> class.
-            /// </summary>
-            /// <param name="text">The text.</param>
-            public TextValue(string text)
-            {
-                Text = text;
-            }
-
-            /// <summary>
-            /// Gets the <see cref="T:FieldValue"/> with the specified variable name.
-            /// </summary>
-            /// <value></value>
-            public IScriptableValue this[string variableName]
-            {
-                get
-                {
-                    throw new System.ArgumentException ("The variable " + variableName + " is invalid for a Text Field");
-                }
-            }
-
-            /// <summary>
-            /// Returns a <see cref="T:System.String"></see> that represents the current <see cref="T:System.Object"></see>.
-            /// </summary>
-            /// <returns>
-            /// A <see cref="T:System.String"></see> that represents the current <see cref="T:System.Object"></see>.
-            /// </returns>
-            public override string ToString()
-            {
-                return Text;
-            }
-
-        }
- 
+        #region FieldValueList
+        /*
         public class FieldValueList
         {
             public FieldValueList(FieldType type)
@@ -198,15 +72,15 @@ namespace SNAP
             public readonly FieldType Type;
             public readonly List<IScriptableValue> Values = new List<IScriptableValue>();
         }
-
-
+        */
+        #endregion FieldValueList
 
         #endregion FieldValue
 
         #region Resource
 
         #region ResourceChildren
-        
+
         public class ResourceChildren
         {
             #region Privates
@@ -317,7 +191,9 @@ namespace SNAP
 
         #endregion ResourceChildren
 
-        public class Resource : IScriptableValue
+        //public class ResourceFieldList : SortedDictionary<string, FieldValueList>
+
+        public class Resource : IResourceValue
         {
             #region Constructors
 
@@ -330,25 +206,47 @@ namespace SNAP
             public Resource(Guid guid, ResourceType type, string name)
             {
                 _id  = guid;
-                ResourceType = type;
+                _type = type;
                 _name = name;
+
+                foreach (IResourceType fieldType in _type.SubTypes.Values)
+                {
+                    _fields.Add(fieldType.Name, fieldType.CreateDefaultValue());
+                }
             }
 
             #endregion
 
             #region Privates
-
+            
+            private readonly ResourceType _type;
             protected Resource _parent;
             protected string _name;
             protected readonly System.Guid _id;
             internal readonly SortedDictionary<string, Resource> _resourceDictionary = new SortedDictionary<string, Resource>();
-            public readonly SortedDictionary<string, FieldValueList> Fields = new SortedDictionary<string, FieldValueList> ();
+            private readonly ResourceValueList _fields = new ResourceValueList();
 
             #endregion
 
             #region Properties
 
-            public readonly ResourceType ResourceType;
+
+
+            IResourceType IResourceValue.MyType
+            {
+                get
+                {
+                    return _type;
+                }
+            }
+
+            public ResourceType MyType
+            {
+                get
+                {
+                    return _type;
+                }
+            }
 
             /// <summary>
             /// Gets or sets the name.
@@ -458,43 +356,6 @@ namespace SNAP
             #endregion Events
 
             #region Methods
-
-            #region Serialization
-            /// <summary>
-            /// Writes the XML.
-            /// </summary>
-            /// <param name="writer">The writer.</param>
-            public void WriteXML(System.Xml.XmlTextWriter writer)
-            {
-                writer.WriteStartElement("resource");
-                WriteXMLElement(writer);
-                writer.WriteEndElement();
-            }
-
-            /// <summary>
-            /// Writes the XML element.
-            /// </summary>
-            /// <param name="writer">The writer.</param>
-            virtual protected void WriteXMLElement(System.Xml.XmlTextWriter writer)
-            {
-                writer.WriteAttributeString("type", this.ResourceType.Name);
-                writer.WriteAttributeString("name", _name);
-                writer.WriteAttributeString("id", ID.ToString());
-                writer.WriteElementString("family", (Parent != null) ? Parent.QualifiedName : "");
-
-                foreach (FieldValueList fieldValues in this.Fields.Values)
-                {
-                    foreach (object v in fieldValues.Values)
-                    {
-                        writer.WriteStartElement("field");
-                        writer.WriteAttributeString ("name", fieldValues.Type.Name);
-                        writer.WriteValue (v.ToString ());
-                        writer.WriteEndElement ();
-                    }
-                }
-            }
-
-            #endregion Serialization
 
             #region Add/Remove
 
@@ -692,37 +553,67 @@ namespace SNAP
 
             #endregion Methods
 
-            #region IScriptableValue Members
+            #region IResourceValue Members
 
-            public IScriptableValue this[string variableName]
+            public IResourceValue GetDynamicProperty(string variableName)
+            {
+                if (_fields.ContainsKey(variableName))
+                    return _fields[variableName];
+                else
+                {
+                    switch (variableName)
+                    {
+                        case "Name":
+                            /// TODO dynamically generat the resource type
+                            return new TextFieldValue(this.Name, null);
+
+                        case "ID":
+                            /// TODO dynamically generat the resource type
+                            return new TextFieldValue(this.ID.ToString(), null);
+
+                        case "Family":
+                            /// TODO dynamically generat the resource type
+                            return new InternalRefFieldValue(this.Parent.QualifiedName, null);
+
+                        case "Folder":
+                            // TODO: return the folder of the resource
+                            throw new System.NotImplementedException();
+
+                        default:
+                            // TODO: give a more thoughtful error message
+                            throw new System.ArgumentException("the variable " + variableName + " is invalid for a Resource");
+                    }
+                }
+            }
+
+            public ResourceValueList SubValues
             {
                 get
                 {
-                    if (Fields.ContainsKey(variableName))
-                        return Fields[variableName].Values[0];
-                    else
-                    {
-                        switch (variableName)
-                        {
-                            case "Name":
-                                return new TextValue (this.Name);
-
-                            case "ID":
-                                return new TextValue (this.ID.ToString());
-
-                            case "Family":
-                                return new InternalRefValue (this.Parent.QualifiedName);
-
-                            case "Folder":
-                                // TODO: return the folder of the resource
-                                throw new System.NotImplementedException();
-
-                            default:
-                                // TODO: give a more thoughtful error message
-                                throw new System.ArgumentException ("the variable " + variableName + " is invalid for a Resource");
-                        }
-                    }
+                    return this._fields;
                 }
+            }
+
+            public void LoadFromXML(System.Xml.XmlNode node)
+            {
+                throw new Exception("The method or operation is not implemented.");
+            }
+
+            public void SaveToXML(XmlWriter writer)
+            {
+                writer.WriteStartElement("resource");
+
+                writer.WriteAttributeString("type", this.MyType.Name);
+                writer.WriteAttributeString("name", _name);
+                writer.WriteAttributeString("id", ID.ToString());
+                writer.WriteElementString("family", (Parent != null) ? Parent.QualifiedName : "");
+
+                foreach (IResourceValue value in this._fields.Values)
+                {
+                    value.SaveToXML(writer);
+                }
+
+                writer.WriteEndElement();
             }
 
             #endregion
@@ -892,46 +783,20 @@ namespace SNAP
                 Guid guid = (node.Attributes["id"] != null) ?
                     (new Guid(node.Attributes["id"].Value)) : (Guid.NewGuid());
 
-                /// create the new resource
+                /// create the new resource,
+                /// fields are initialized to default values
                 Resource resource = new Resource(guid, resourceType, resourceName);
 
-                /// add field values
+                /// update field values using the information in the file
                 foreach (System.Xml.XmlNode fieldNode in node.SelectNodes("field"))
                 {
                     string fieldName = fieldNode.Attributes["name"].Value;
-                    FieldType fieldType = resource.ResourceType.Fields[fieldName];
-                    FieldValueList fieldValue = null;
-                    if (!resource.Fields.ContainsKey(fieldName))
-                    {
-                        fieldValue = new FieldValueList(fieldType);
-                        resource.Fields.Add(fieldName, fieldValue);
-                    }
-                    else
-                    {
-                        fieldValue = resource.Fields[fieldName];
-                    }
-
-                    IScriptableValue value = null;
-                    switch (fieldType.Type)
-                    {
-                        case "internal_ref":
-                            value = new InternalRefValue (fieldNode.InnerText);
-                            break;
-
-                        case "external_ref":
-                            value = new ExternalRefValue (fieldNode.InnerText);
-                            break;
-
-                        case "text":
-                            value = new TextValue (fieldNode.InnerText);
-                            break;
-
-                        default:
-                            System.Diagnostics.Debug.Fail (fieldType.Type + " is not a recognized field type");
-                            break;
-                    }
-
-                    fieldValue.Values.Add(value);
+                    IResourceType fieldType = resource.MyType.SubTypes [fieldName];
+                    IResourceValue fieldValue = null;
+                    
+                    System.Diagnostics.Debug.Assert (resource.SubValues.ContainsKey(fieldName));
+                    fieldValue = resource.SubValues [fieldName];
+                    fieldValue.LoadFromXML(fieldNode);
                 }
 
                 /// add this node to it's parent
@@ -944,7 +809,7 @@ namespace SNAP
                 return resource;
             }
 
-            private Resource LoadResource(System.Xml.XmlNode node)
+            internal Resource LoadResource(System.Xml.XmlNode node)
             {
                 return LoadResource(node, null);
             }
@@ -965,7 +830,7 @@ namespace SNAP
                     foreach (Resource resource in _resourceList.Values)
                     {
                         if (resource != Root)
-                            resource.WriteXML(writer);
+                            resource.SaveToXML (writer);
                     }
 
                     writer.WriteEndElement();

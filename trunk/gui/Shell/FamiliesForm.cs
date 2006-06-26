@@ -51,7 +51,7 @@ namespace SNAP {
 
         private void btnResourceAdd_Click(object sender, EventArgs e) {
             DynResourceForm resourceForm = new DynResourceForm();
-            resourceForm.Family = ((Resources.Resource)treeView1.SelectedNode.Tag);
+            resourceForm.SelectedResourceParent = ((Resources.Resource)treeView1.SelectedNode.Tag);
             if (resourceForm.ShowDialog() == DialogResult.OK) {
                 Controller.CurrentResources.AddResource(
                     resourceForm.SelectedResourceParent, resourceForm.SelectedResource);

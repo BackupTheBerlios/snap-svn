@@ -37,16 +37,21 @@
   <ItemGroup>
     <Compile Include="Calc.cs" />
     <Compile Include="Controller.cs" />
+    <Compile Include="EnumField.cs" />
+    <Compile Include="Exceptions.cs" />
+    <Compile Include="ExternalRefField.cs" />
+    <Compile Include="InternalRefField.cs" />
     <Compile Include="Jobs.cs" />
+    <Compile Include="NumericField.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources.cs" />
+    <Compile Include="TextField.cs" />
     <Compile Include="XMLResourceType.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="SNAP.RedirectionHelper.bat">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="SNAP.ScriptHelper.bat" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SNAP.Util\SNAP.Util.csproj">

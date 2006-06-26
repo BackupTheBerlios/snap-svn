@@ -8,17 +8,18 @@ using System.Windows.Forms;
 
 namespace SNAP.ResourceFields
 {
-    public partial class MultiValueField : AbstractField
+    public partial class MultiValueField : UserControl //, AbstractField
     {
+#if false
         private List<MultiValueFieldElement> _elements = new List<MultiValueFieldElement>();
-        private Resources.FieldType _fieldType = null;
+        private Resources.IResourceType _fieldType = null;
                 
         public MultiValueField()
         {
             InitializeComponent();
         }
 
-        public Resources.FieldType FieldType
+        public Resources.IResourceType FieldType
         {
             get
             {
@@ -26,6 +27,7 @@ namespace SNAP.ResourceFields
             }
             set
             {
+                /*
                 if (_fieldType != value)
                 {
                     /// remove previous fields
@@ -39,6 +41,7 @@ namespace SNAP.ResourceFields
                         AddElement(false);
                     }
                 }
+                 */
 
             }
         }
@@ -90,8 +93,12 @@ namespace SNAP.ResourceFields
             }
         }
 
-        public override void LoadFromFieldValue(SNAP.Resources.FieldValueList value)
+        public override void LoadFromFieldValue(SNAP.Resources.IResourceValue value)
         {
+            throw new System.NotImplementedException();
+
+            /// TODO: redesign and implement this
+            /*
             for (int i = 0; i < value.Values.Count; ++i)
             {
                 if (i >= _elements.Count)
@@ -102,13 +109,19 @@ namespace SNAP.ResourceFields
                 itemFieldValue.Values.Add(value.Values[i]);
                 _elements[i].LoadFromFieldValue(itemFieldValue);
             }
+             */
         }
 
-        public override void SaveToFieldValue(SNAP.Resources.FieldValueList value)
+        public override void SaveToFieldValue(SNAP.Resources.IResourceValue value)
         {
+            throw new System.NotImplementedException();
+
+            /// TODO: redesign and implement this
+            /*
             foreach (MultiValueFieldElement element in _elements) {
                 element.SaveToFieldValue (value);
             }
+             */
         }
 
         #region Implementation
@@ -243,6 +256,6 @@ namespace SNAP.ResourceFields
 
         #endregion Implementation
 
-
+#endif 
     }
 }

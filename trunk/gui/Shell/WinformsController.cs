@@ -2,11 +2,25 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Windows.Forms;
+using SNAP.Resources;
 
 namespace SNAP
 {
     class WinformsController : SNAP.Controller.Impl 
     {
+        public readonly System.IO.DirectoryInfo _binFolder;
+
+        public WinformsController()
+        {
+            _binFolder = new System.IO.DirectoryInfo (
+                System.IO.Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath)
+                );
+        }
+        public WinformsController(string binFolder)
+        {
+            _binFolder = new System.IO.DirectoryInfo (binFolder);
+        }
+
         public void ShowException(System.Exception x)
         {
             ErrorForm errForm = new ErrorForm(x);
@@ -54,12 +68,45 @@ namespace SNAP
             form.ShowDialog();
             return process.ExitCode;
         }
+        public Resources.IResourceUI CreateResourceUI(Resources.IResourceValue value)
+        {
+            IResourceUI ui = null;
+            switch (value.MyType.Typename)
+            {
+                case "text":
+                    ui = new SNAP.ResourceFields.TextFieldControl();
+                    ui.LoadFromFieldValue(value);
+                    break;
+
+                case "external_ref":
+                    ui = new SNAP.ResourceFields.ExternalRefFieldControl();
+                    ui.LoadFromFieldValue(value);
+                    break;
+
+                case "internal_ref":
+                    ui = new SNAP.ResourceFields.InternalRefFieldControl();
+                    ui.LoadFromFieldValue(value);
+                    break;
+
+                case "numeric":
+                    ui = new SNAP.ResourceFields.NumericFieldControl();
+                    ui.LoadFromFieldValue(value);
+                    break;
+
+                case "enum":
+                    ui = new SNAP.ResourceFields.EnumFieldControl();
+                    ui.LoadFromFieldValue(value);
+                    break;
+            }
+
+            return ui;
+        }
 
         public string BinFolder
         {
             get
             {
-                return System.IO.Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath);
+                return _binFolder.FullName;
             }
         }
 
@@ -74,15 +121,34 @@ namespace SNAP
         {
             get
             {
-                return System.IO.Path.Combine(DataFolder, "MyJobs");
+                return System.IO.Path.Combine(RootFolder, "Data");
+            }
+        }
+        /// <summary>
+        /// Gets the root folder.
+        /// </summary>
+        /// <value>The root folder.</value>
+        public string RootFolder
+        {
+            get 
+            {
+                System.IO.DirectoryInfo parent = _binFolder.Parent;
+                return parent.FullName;
             }
         }
         public string DataFolder
         {
             get
             {
-                /// same location as executable of SNAP
-                return BinFolder;
+                return System.IO.Path.Combine(RootFolder, "Settings");
+                
+            }
+        }
+        public string PluginFolder
+        {
+            get
+            {
+                return System.IO.Path.Combine(RootFolder, "Plugins");
             }
         }
         public string ResourcesFile

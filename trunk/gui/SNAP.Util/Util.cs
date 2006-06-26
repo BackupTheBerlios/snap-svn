@@ -3,7 +3,9 @@ using System.Collections.Generic;
 namespace SNAP.Util {
 
     #region IndexedSortedList
-
+    /// obsolete. use System.Collections.Generic.SortedList instead
+    
+    /*
     /// <summary>
     /// A hashtable usually has no concept of order. this means that traversing a hashtable
     /// with the 'foreach' keyword yields an unpredictable order of elements.
@@ -356,6 +358,7 @@ namespace SNAP.Util {
 
         #endregion
     }
+     */
 
     #endregion IndexedSortedList
 
@@ -375,7 +378,6 @@ namespace SNAP.Util {
         where TParent : class
     {
     }
-
 
     public class ChildList<TChild, TParent> : IChildList<TChild, TParent>
         where TChild : class, IChild<TParent>

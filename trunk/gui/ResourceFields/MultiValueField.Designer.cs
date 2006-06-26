@@ -70,7 +70,7 @@ namespace SNAP.ResourceFields
             this.btnAdd.TabIndex = 20;
             this.btnAdd.Text = "Add";
             this.btnAdd.UseVisualStyleBackColor = false;
-            this.btnAdd.Click += new System.EventHandler(this.btnAdd_Click);
+            //this.btnAdd.Click += new System.EventHandler(this.btnAdd_Click);
             // 
             // panelFields
             // 

@@ -23,6 +23,10 @@ namespace SNAP {
         {
             return Implementation.WaitForExit(process);
         }
+        public static Resources.IResourceUI CreateResourceUI(Resources.IResourceValue value)
+        {
+            return Implementation.CreateResourceUI(value);
+        }
 
 
         public static string BinFolder
@@ -65,6 +69,13 @@ namespace SNAP {
                 return Implementation.DataFolder;
             }
         }
+        public static string PluginFolder
+        {
+            get
+            {
+                return Implementation.PluginFolder;
+            }
+        }
         public static string ResourcesFile
         {
             get
@@ -82,6 +93,7 @@ namespace SNAP {
         }
 
         public static Resources.DB CurrentResources = new Resources.DB();
+        
 
         public interface Impl
         {
@@ -89,6 +101,7 @@ namespace SNAP {
             bool ChooseResource(string mask, out SNAP.Resources.Resource resource);
             bool ChooseFile(string mask, out string path);
             int WaitForExit(System.Diagnostics.Process process);
+            Resources.IResourceUI CreateResourceUI(Resources.IResourceValue value);
 
             string BinFolder
             {
@@ -103,6 +116,10 @@ namespace SNAP {
                 get;
             }
             string DataFolder
+            {
+                get;
+            }
+            string PluginFolder
             {
                 get;
             }

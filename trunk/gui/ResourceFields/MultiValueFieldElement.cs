@@ -10,9 +10,10 @@ namespace SNAP.ResourceFields
 {
     public partial class MultiValueFieldElement : UserControl
     {
+        /*
         #region Privates
 
-        private SNAP.Resources.FieldType _fieldType;
+        private SNAP.Resources.IResourceType _fieldType;
 
         #endregion Privates
 
@@ -33,19 +34,19 @@ namespace SNAP.ResourceFields
 
         #endregion Events
 
-        public void LoadFromFieldValue(SNAP.Resources.FieldValueList value)
+        public void LoadFromFieldValue(SNAP.Resources.IResourceValue value)
         {
             field.LoadFromFieldValue(value);
         }
-        
-        public void SaveToFieldValue(SNAP.Resources.FieldValueList value)
+
+        public void SaveToFieldValue(SNAP.Resources.IResourceValue value)
         {
             field.SaveToFieldValue(value);
         }
 
         #region Properties
         
-        public SNAP.Resources.FieldType FieldType
+        public SNAP.Resources.IResourceType FieldType
         {
             get
             {
@@ -60,22 +61,22 @@ namespace SNAP.ResourceFields
                 Controls.Remove( (Control) this.field);
                 this.field = null;
 
-                switch (_fieldType.Type)
+                switch (_fieldType.Typename)
                 {
                     case "text":
-                        this.field = new SNAP.ResourceFields.TextField();
+                        this.field = new SNAP.ResourceFields.TextFieldControl();
                         break;
 
                     case "internal_ref":
-                        this.field = new SNAP.ResourceFields.InternalRefField();
+                        this.field = new SNAP.ResourceFields.InternalRefFieldControl();
                         break;
 
                     case "external_ref":
-                        this.field = new SNAP.ResourceFields.ExternalRefField();
+                        this.field = new SNAP.ResourceFields.ExternalRefFieldControl();
                         break;
 
                     default:
-                        System.Diagnostics.Trace.Fail("Unknown field type \"" + _fieldType.Type + "\"");
+                        System.Diagnostics.Trace.Fail("Unknown field type \"" + _fieldType.Typename + "\"");
                         break;
                 }
 
@@ -136,5 +137,6 @@ namespace SNAP.ResourceFields
             if (upClick != null)
                 upClick(this, e);
         }
+         */
     }
 }

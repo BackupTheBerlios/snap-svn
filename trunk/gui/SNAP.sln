@@ -47,6 +47,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SNAP.Util", "SNAP.Util\SNAP
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SNAP.ConfEditor.Controls", "SNAP.ConfEditor.Controls\SNAP.ConfEditor.Controls.csproj", "{ABADAA93-F450-4158-87A7-862914C056FA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WindowsApplication1", "WindowsApplication1\WindowsApplication1.csproj", "{77801519-0F4C-4568-9AC6-18E589C57EBF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -240,6 +242,21 @@ Global
 		{ABADAA93-F450-4158-87A7-862914C056FA}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{ABADAA93-F450-4158-87A7-862914C056FA}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{ABADAA93-F450-4158-87A7-862914C056FA}.Release|Win32.ActiveCfg = Release|Any CPU
+		{77801519-0F4C-4568-9AC6-18E589C57EBF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{77801519-0F4C-4568-9AC6-18E589C57EBF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{77801519-0F4C-4568-9AC6-18E589C57EBF}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{77801519-0F4C-4568-9AC6-18E589C57EBF}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{77801519-0F4C-4568-9AC6-18E589C57EBF}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{77801519-0F4C-4568-9AC6-18E589C57EBF}.Optimized Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{77801519-0F4C-4568-9AC6-18E589C57EBF}.Optimized Debug|Any CPU.Build.0 = Debug|Any CPU
+		{77801519-0F4C-4568-9AC6-18E589C57EBF}.Optimized Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{77801519-0F4C-4568-9AC6-18E589C57EBF}.Optimized Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{77801519-0F4C-4568-9AC6-18E589C57EBF}.Optimized Debug|Win32.ActiveCfg = Debug|Any CPU
+		{77801519-0F4C-4568-9AC6-18E589C57EBF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{77801519-0F4C-4568-9AC6-18E589C57EBF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{77801519-0F4C-4568-9AC6-18E589C57EBF}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{77801519-0F4C-4568-9AC6-18E589C57EBF}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{77801519-0F4C-4568-9AC6-18E589C57EBF}.Release|Win32.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -150,7 +150,7 @@ namespace SNAP.ConfEditor {
         {
             try
             {
-                bool firstSection = _conf.Sections.IndexOf (section.Name) == 0;
+                bool firstSection = _conf.Sections.IndexOfKey(section.Name) == 0;
 
                 panelPreprocessingType.Enabled = firstSection;
                 panelPreprocessingDepth.Enabled = firstSection;

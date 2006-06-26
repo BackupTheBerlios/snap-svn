@@ -5,15 +5,178 @@ using System.Xml;
 
 namespace SNAP.Resources
 {
+    public class ResourceTypeList : SortedList<string, IResourceType>
+    {
+    }
+
+    public class ResourceValueList: SortedList<string, IResourceValue>
+    {
+    }
+
+    #region IResourceValue
+
+    public interface IResourceValue
+    {
+        IResourceType MyType
+        {
+            get;
+        }
+
+        /// <summary>
+        /// Gets the dynamic property with the specified name.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <returns></returns>
+        IResourceValue GetDynamicProperty(string name);
+
+        /// <summary>
+        /// Gets the sub values.
+        /// </summary>
+        /// <value>The sub values.</value>
+        ResourceValueList SubValues
+        {
+            get;
+        }
+
+        /// <summary>
+        /// Saves the XML.
+        /// </summary>
+        /// <param name="writer">The writer.</param>
+        void SaveToXML(XmlWriter writer);
+
+        /// <summary>
+        /// Loads from XML.
+        /// </summary>
+        /// <param name="node">The node.</param>
+        void LoadFromXML(XmlNode node);
+    }
+
+    #endregion ResourceValue
+
+    #region inteface IResourceType
+
+    public interface IResourceType
+    {
+        /// <summary>
+        /// Gets the typename of this resource type.
+        /// <example>
+        /// possible values could be
+        /// external_ref, internal_ref, numeric etc
+        /// </example>
+        /// </summary>
+        /// <value>The typename.</value>
+        string Typename
+        {
+            get;
+        }
+
+        /// <summary>
+        /// Gets the name of this resource type instance.
+        /// <example>
+        /// possible values vould be
+        /// Filename, Family, etc
+        /// </example>
+        /// </summary>
+        /// <value>The name.</value>
+        string Name
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets the name to display on GUI.
+        /// </summary>
+        /// <value>The name of the display.</value>
+        string DisplayName
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets the help string associated with this resource type.
+        /// </summary>
+        /// <value>The help.</value>
+        string Help
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets the sub types this resource type is composed of.
+        /// </summary>
+        /// <value>The sub types.</value>
+        ResourceTypeList SubTypes
+        {
+            get;
+        }
+
+        /// <summary>
+        /// Creates the default value.
+        /// </summary>
+        /// <returns></returns>
+        IResourceValue CreateDefaultValue ();
+
+        /// <summary>
+        /// Loads the IResourceType from the specified XmlNode.
+        /// </summary>
+        /// <param name="node">The node.</param>
+        void LoadFromXML(XmlNode node);
+    }
+
+    #endregion inteface IResourceType
+
+    #region Interface IResourceUI
+
+    public interface IResourceUI
+    {
+        /// <summary>
+        /// Gets my value.
+        /// </summary>
+        /// <value>My value.</value>
+        IResourceValue MyValue
+        {
+            get;
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="T:IResourceUI"/> is readonly.
+        /// </summary>
+        /// <value><c>true</c> if readonly; otherwise, <c>false</c>.</value>
+        bool Readonly
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Loads from field value.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        void LoadFromFieldValue (IResourceValue value);
+
+        /// <summary>
+        /// Saves information to field value.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        void SaveToFieldValue(IResourceValue value);
+    }
+
+    #endregion Interface IResourceUI
+
     #region ResourceType
 
-    public class ResourceType
+    public class ResourceType : IResourceType
     {
         #region Privates
 
         private string _name;
         private string _help;
-        private readonly System.Collections.Generic.Dictionary <string, FieldType> _fields = new Dictionary <string, FieldType>();
+        private string _display;
+
+        private readonly ResourceTypeList _fields = new ResourceTypeList();
         private readonly System.Collections.Generic.Dictionary<string, Script> _executions = new Dictionary<string, Script>();
 
         #endregion Privates
@@ -30,12 +193,29 @@ namespace SNAP.Resources
             {
                 return _name;
             }
-            private set
+        }
+
+        /// <summary>
+        /// Gets the name of this resource type instance.
+        /// <example>
+        /// possible values vould be
+        /// Filename, Family, etc
+        /// </example>
+        /// </summary>
+        /// <value>The name.</value>
+        string IResourceType.Name
+        {
+            get
+            {
+                return _name;
+            }
+            set
             {
                 _name = value;
             }
         }
 
+            
 
         /// <summary>
         /// Gets or sets the help.
@@ -47,17 +227,21 @@ namespace SNAP.Resources
             {
                 return _help;
             }
-            private set
-            {
-                _help = value;
-            }
         }
 
-        public IDictionary  <string, FieldType> Fields
+        /// <summary>
+        /// Gets the help string associated with this resource type.
+        /// </summary>
+        /// <value>The help.</value>
+        string IResourceType.Help
         {
             get
             {
-                return _fields;
+                return _help;
+            }
+            set
+            {
+                _help = value;
             }
         }
 
@@ -116,11 +300,17 @@ namespace SNAP.Resources
             }
             return list;
         }
-
-        private static FieldType LoadResourceField (System.Xml.XmlNode fieldNode)
+        private static IResourceType LoadResourceField (System.Xml.XmlNode fieldNode)
         {
+            /*
+            if (fieldNode.Attributes["name"] == null)
+                throw new System.Xml.XmlException("The resource_type node does not contain a 'name' attribute at " + fieldNode.BaseURI);
+            
             string fieldName = fieldNode.Attributes["name"].Value;
-            string fieldHelp = fieldNode.Attributes["help"].Value;
+            
+            string fieldHelp = string.Empty;
+            if (fieldNode.Attributes["help"] != null)
+                fieldHelp = fieldNode.Attributes["help"].Value;
 
             int fieldMinOccurs = 1, fieldMaxOccurs = 1;
             if (fieldNode.Attributes["minOccurs"] != null)
@@ -146,21 +336,49 @@ namespace SNAP.Resources
             }
 
             System.Diagnostics.Trace.Assert(fieldMaxOccurs >= fieldMinOccurs);
-
+            */
             switch (fieldNode.Name)
             {
                 case "text":
-                    return new TextFieldType(fieldName, fieldHelp, fieldMinOccurs, fieldMaxOccurs);
+                    {
+                        TextFieldType field = new TextFieldType();
+                        field.LoadFromXML(fieldNode);
+                        return field;
+                    }
 
                 case "internal_ref":
-                    return new InternalRefFieldType(fieldName, fieldHelp, fieldMinOccurs, fieldMaxOccurs);
+                    {
+                        InternalRefFieldType field = new InternalRefFieldType();
+                        field.LoadFromXML(fieldNode);
+                        return field;
+                    }
 
                 case "external_ref":
-                    string mask = (fieldNode.Attributes["mask"] != null) ? fieldNode.Attributes["mask"].Value : null;
-                    return new ExternalRefFieldType(fieldName, fieldHelp, fieldMinOccurs, fieldMaxOccurs, mask);
+                    {
+                        ExternalRefFieldType field = new ExternalRefFieldType();
+                        field.LoadFromXML(fieldNode);
+                        return field;
+                    }
+
+                case "numeric":
+                    {
+                        NumericFieldType numeric = new NumericFieldType();
+                        numeric.LoadFromXML (fieldNode);
+                        return numeric;
+                    }
+                case "enum":
+                    {
+                        EnumFieldType enumField = new EnumFieldType();
+                        enumField.LoadFromXML (fieldNode);
+                        return enumField;
+                    }
+
+                default:
+                    break;
+                    
             }
 
-            System.Diagnostics.Trace.Fail ("unknown field type");
+            //System.Diagnostics.Trace.Fail ("unknown field type");
             return null;
         }
 
@@ -258,43 +476,104 @@ namespace SNAP.Resources
 
             return execType;
         }
+
+        internal static void LoadResourceFields (IDictionary<string, IResourceType> container, XmlNode fieldParentNode)
+        {
+            foreach (System.Xml.XmlNode node in fieldParentNode.ChildNodes)
+            {
+                IResourceType fieldType = LoadResourceField(node);
+                if (fieldType != null)
+                    container.Add(fieldType.Name, fieldType);
+            }
+        }
         
         private static ResourceType LoadResourceType(System.Xml.XmlNode resourceNode)
         {
             System.Diagnostics.Debug.Assert(resourceNode.Name == "resource_type");
             ResourceType resourceType = new ResourceType();
-            resourceType.Name = resourceNode.Attributes["name"].Value;
-            resourceType.Help = resourceNode.Attributes["help"].Value;
+            resourceType.LoadFromXML(resourceNode);
+            return resourceType;
+        }
 
+        /// <summary>
+        /// Loads from XML, the common properties which all resource types share
+        /// </summary>
+        /// <param name="resourceType">Type of the resource.</param>
+        public static void LoadFromXML (XmlNode node, IResourceType resourceType)
+        {
+            if (node.Attributes["name"] == null)
+                throw new System.Xml.XmlException("The resource_type node does not contain a 'name' attribute at " + node.BaseURI);
+
+            resourceType.Name = node.Attributes["name"].Value;
+
+            if (node.Attributes["help"] != null)
+                resourceType.Help = node.Attributes["help"].Value;
+            else
+            {
+                resourceType.Help = string.Empty;
+            }
+
+            if (node.Attributes["display_name"] != null)
+                resourceType.DisplayName = node.Attributes["display_name"].Value;
+            else
+                resourceType.DisplayName = resourceType.Name;
+        }
+
+        #endregion Save/Load
+
+        #region IResourceType Members
+
+        public string Typename
+        {
+            get {
+                return "resource_type";
+            }
+        }
+
+        public string DisplayName
+        {
+            get {
+                return _display;
+            }
+            set
+            {
+                _display = value;
+            }
+        }
+
+        public ResourceTypeList SubTypes
+        {
+            get {
+                return this._fields;
+            }
+        }
+
+        public IResourceValue CreateDefaultValue()
+        {
+            return new Resource(Guid.NewGuid (), this, "");
+        }
+
+        public void LoadFromXML(XmlNode resourceNode)
+        {
+            ResourceType.LoadFromXML(resourceNode, this);
+
+            LoadResourceFields(this.SubTypes, resourceNode);
             foreach (System.Xml.XmlNode node in resourceNode.ChildNodes)
             {
                 switch (node.Name)
                 {
-                    case "text":
-                    case "internal_ref":
-                    case "external_ref":
-                    {
-                        FieldType fieldType = LoadResourceField (node);
-                        resourceType.Fields.Add (fieldType.Name, fieldType);
-                    }
-                    break;
-
                     case "execute":
-                    {
-                        Script executionType = LoadResourceExecution (node);
-                        resourceType.Executions.Add (executionType.Name, executionType);
-                    }
-                    break;
+                        Script executionType = LoadResourceExecution(node);
+                        this.Executions.Add(executionType.Name, executionType);
+                        break;
 
                     default:
                         continue;
                 }
             }
-
-            return resourceType;
         }
 
-        #endregion Save/Load
+        #endregion
     }
 
     #endregion XMLResourceType
@@ -302,8 +581,8 @@ namespace SNAP.Resources
     #region FieldTypes
 
     #region FieldType
-
-    public class FieldType
+/*
+    public class FieldType : IResourceType
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="T:Field"/> class.
@@ -327,48 +606,60 @@ namespace SNAP.Resources
         public readonly string Help;
         public readonly int MinOccurs;
         public readonly int MaxOccurs;
+
+        #region IResourceType Members
+
+        public string Typename
+        {
+            get { throw new Exception("The method or operation is not implemented."); }
+        }
+
+        string IResourceType.Name
+        {
+            get { throw new Exception("The method or operation is not implemented."); }
+        }
+
+        public string DisplayName
+        {
+            get { throw new Exception("The method or operation is not implemented."); }
+        }
+
+        string IResourceType.Help
+        {
+            get { throw new Exception("The method or operation is not implemented."); }
+        }
+
+        public IDictionary<string, IResourceType> SubTypes
+        {
+            get { throw new Exception("The method or operation is not implemented."); }
+        }
+
+        public IResourceValue CreateDefaultValue()
+        {
+            throw new Exception("The method or operation is not implemented.");
+        }
+
+        public void LoadFromXML(XmlNode node)
+        {
+            throw new Exception("The method or operation is not implemented.");
+        }
+
+        #endregion
     }
+ */
+  
 
     #endregion Field
 
-    #region TextFieldType
+    
 
-    public class TextFieldType : FieldType
-    {
-        public TextFieldType(string name, string help, int minOccurs, int maxOccurs)
-            : base("text", name, help, minOccurs, maxOccurs)
-        {
-        }
-    }
-
-    #endregion TextField
-
-    #region InternalRefFieldType
-
-    public class InternalRefFieldType : FieldType
-    {
-        public InternalRefFieldType(string name, string help, int minOccurs, int maxOccurs)
-            : base("internal_ref", name, help, minOccurs, maxOccurs)
-        {
-        }
-    }
+    
 
     #endregion InternalRefField
 
-    #region ExternalRefFieldType
+    
 
-    public class ExternalRefFieldType : FieldType
-    {
-        public ExternalRefFieldType(string name, string help, int minOccurs, int maxOccurs, string mask)
-            : base("external_ref", name, help, minOccurs, maxOccurs)
-        {
-            Mask = mask;
-        }
 
-        public string Mask;
-    }
 
-    #endregion InternalRefField
 
-    #endregion FieldTypes
 }
