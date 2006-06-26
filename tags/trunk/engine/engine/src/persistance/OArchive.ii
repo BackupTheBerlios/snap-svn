@@ -1,0 +1,42 @@
+#ifndef _Persistance_OArhive_ii
+#define _Persistance_OArhive_ii
+
+
+template <typename PrimType>
+void OArchive::
+   writePrimitiveArray (long n, const PrimType* params)
+{
+   //
+   // make sure PrimType is indeed primitive
+   static_cast <double> (*params);
+
+   writePrimitiveArray (sizeof (PrimType), n, 
+      static_cast <void*> (const_cast <PrimType*>(params)));
+}
+
+
+
+
+
+template <class T>
+void Persistance::OArchive::
+   writeArray(long n , const T* params )
+{
+   // check erroneous states
+   if ( (n < 0) || ( (n > 0) && (params == NULL) ) )   {
+      throw CSZ_Error ( CSZ_ERR_WRITE_ARRAY_BADPRM , CSZ_ARCHIN_TMPL_H , __LINE__ );
+   }
+   else    {
+      prependPrefix (preArray);
+      
+      // Store the number of elements in the array
+      this -> WritePrimitive( n );
+    
+      for (int i = 0 ; i < n ; i++)
+         *this << *(params+i);
+   }
+}
+
+
+
+#endif //_Persistance_OArhive_ii

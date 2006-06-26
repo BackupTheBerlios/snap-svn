@@ -1,0 +1,189 @@
+# Microsoft Developer Studio Generated Dependency File, included by SeedSearcher.mak
+
+.\Alphabet.cpp : \
+	".\Alphabet.h"\
+	".\Core\Compiler.h"\
+	".\Core\Defs.h"\
+	
+
+.\Assignment.cpp : \
+	".\Alphabet.h"\
+	".\Assignment.h"\
+	".\Core\Compiler.h"\
+	".\Core\Defs.h"\
+	".\Core\STLHelper.h"\
+	".\Persistance\Defs.h"\
+	".\Persistance\OutputStream.h"\
+	".\Persistance\StdOutputStream.h"\
+	".\Persistance\StreamBuffer.h"\
+	".\Persistance\TextWriter.h"\
+	
+
+.\DebugLog.cpp : \
+	".\Assignment.h"\
+	".\Core\AutoPtr.h"\
+	".\Core\Compiler.h"\
+	".\Core\Defs.h"\
+	".\Core\STLHelper.h"\
+	".\DebugLog.h"\
+	".\Persistance\AbstractFormat.h"\
+	".\Persistance\Defs.h"\
+	".\Persistance\TextWriter.h"\
+	
+
+.\PrefixTreePreprocessor.cpp : \
+	".\Alphabet.h"\
+	".\Assignment.h"\
+	".\Core\AutoPtr.h"\
+	".\Core\Compiler.h"\
+	".\Core\Defs.h"\
+	".\Core\STLHelper.h"\
+	".\Persistance\Defs.h"\
+	".\PrefixTreePreprocessor.h"\
+	".\PrefixTreeWalker.h"\
+	".\Preprocessor.h"\
+	".\Sequence.h"\
+	".\SequenceDB.h"\
+	
+
+.\PrefixTreeWalker.cpp : \
+	".\Alphabet.h"\
+	".\Assignment.h"\
+	".\Core\AutoPtr.h"\
+	".\Core\Compiler.h"\
+	".\Core\Defs.h"\
+	".\Core\STLHelper.h"\
+	".\Persistance\Defs.h"\
+	".\PrefixTreePreprocessor.h"\
+	".\PrefixTreeWalker.h"\
+	".\Preprocessor.h"\
+	".\Sequence.h"\
+	".\SequenceDB.h"\
+	
+
+.\RandomProjections.cpp : \
+	".\Assignment.h"\
+	".\Core\AutoPtr.h"\
+	".\Core\Compiler.h"\
+	".\Core\Defs.h"\
+	".\Core\STLHelper.h"\
+	".\DebugLog.h"\
+	".\ExtraMath.h"\
+	".\Legacy\MathFunctions.h"\
+	".\Legacy\mathplus.h"\
+	".\Legacy\Multinomial.h"\
+	".\Legacy\RandomGenerator.h"\
+	".\Persistance\AbstractFormat.h"\
+	".\Persistance\Defs.h"\
+	".\Persistance\TextWriter.h"\
+	".\RandomProjections.h"\
+	
+
+.\SeedSearcher.cpp : \
+	".\Alphabet.h"\
+	".\Assignment.h"\
+	".\Core\AutoPtr.h"\
+	".\Core\Compiler.h"\
+	".\Core\Defs.h"\
+	".\Core\STLHelper.h"\
+	".\DebugLog.h"\
+	".\Persistance\AbstractFormat.h"\
+	".\Persistance\Defs.h"\
+	".\Persistance\TextWriter.h"\
+	".\PrefixTreePreprocessor.h"\
+	".\Preprocessor.h"\
+	".\SeedSearcher.h"\
+	".\SequenceDB.h"\
+	
+
+.\SequenceDB.cpp : \
+	".\Alphabet.h"\
+	".\Core\Compiler.h"\
+	".\Core\Defs.h"\
+	".\Core\STLHelper.h"\
+	".\Sequence.h"\
+	".\SequenceDB.h"\
+	
+
+.\StdOptions.cpp : \
+	".\Alphabet.h"\
+	".\Assignment.h"\
+	".\Core\AutoPtr.h"\
+	".\Core\Compiler.h"\
+	".\Core\Defs.h"\
+	".\Core\STLHelper.h"\
+	".\DebugLog.h"\
+	".\ExtraMath.h"\
+	".\HyperGeoCache.h"\
+	".\Legacy\MathFunctions.h"\
+	".\Legacy\mathplus.h"\
+	".\Persistance\AbstractFormat.h"\
+	".\Persistance\Defs.h"\
+	".\Persistance\TextWriter.h"\
+	".\PrefixTreePreprocessor.h"\
+	".\Preprocessor.h"\
+	".\SeedSearcher.h"\
+	".\SequenceDB.h"\
+	".\StdOptions.h"\
+	
+
+.\Legacy\getopt.c : \
+	".\Legacy\Getopt.h"\
+	
+
+.\Legacy\Multinomial.cpp : \
+	".\Core\Compiler.h"\
+	".\Core\Defs.h"\
+	".\ExtraMath.h"\
+	".\Legacy\MathFunctions.h"\
+	".\Legacy\mathplus.h"\
+	".\Legacy\Multinomial.h"\
+	
+
+.\Legacy\RandomGenerator.cpp : \
+	".\Core\Compiler.h"\
+	".\Core\Defs.h"\
+	".\ExtraMath.h"\
+	".\Legacy\MathFunctions.h"\
+	".\Legacy\mathplus.h"\
+	".\Legacy\Multinomial.h"\
+	".\Legacy\RandomGenerator.h"\
+	
+
+.\HyperGeoCache.cpp : \
+	".\Core\Compiler.h"\
+	".\Core\Defs.h"\
+	".\Core\HashTable.h"\
+	".\ExtraMath.h"\
+	".\HyperGeoCache.h"\
+	".\Legacy\MathFunctions.h"\
+	".\Legacy\mathplus.h"\
+	
+
+.\main.cpp : \
+	".\Alphabet.h"\
+	".\Assignment.h"\
+	".\Core\AutoPtr.h"\
+	".\Core\Compiler.h"\
+	".\Core\Defs.h"\
+	".\Core\STLHelper.h"\
+	".\DebugLog.h"\
+	".\ExtraMath.h"\
+	".\HyperGeoCache.h"\
+	".\Legacy\Getopt.h"\
+	".\Legacy\MathFunctions.h"\
+	".\Legacy\mathplus.h"\
+	".\Persistance\AbstractFormat.h"\
+	".\Persistance\Defs.h"\
+	".\Persistance\OutputStream.h"\
+	".\Persistance\StdOutputStream.h"\
+	".\Persistance\StreamBuffer.h"\
+	".\Persistance\TextWriter.h"\
+	".\PrefixTreePreprocessor.h"\
+	".\Preprocessor.h"\
+	".\RandomProjections.h"\
+	".\SeedSearcher.h"\
+	".\Sequence.h"\
+	".\SequenceDB.h"\
+	".\StdOptions.h"\
+	
