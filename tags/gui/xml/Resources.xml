@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <resource type="Notes" name="Yeast" id="1cdaf66e-1751-47fd-a7a0-657fd1dad330">
+    <family>general</family>
+    <field name="Notes">miew?</field>
+  </resource>
+  <resource type="Conf File" name="Nimble Conf" id="7f55b1f0-6671-415d-8a7e-93e911223d7d">
+    <family>general.Yeast</family>
+    <field name="File">D:\Aviad\Dev\SNAP\trunk\engine\src\nimble.conf</field>
+    <field name="Notes" />
+  </resource>
+  <resource type="Ab-inito motif search" name="test1" id="d26bac8a-698c-4e75-bb66-d1eb0c3c0482">
+    <family>general.Yeast</family>
+    <field name="Conf File">general.Yeast.Nimble Conf</field>
+    <field name="Sequence File">general.Yeast.Yeast Seq</field>
+    <field name="Weight File">general.Yeast.Yeast wgt</field>
+  </resource>
+  <resource type="Sequence File" name="Yeast Seq" id="042a5b5c-9adc-40fd-b334-d1874f3fd87a">
+    <family>general.Yeast</family>
+    <field name="File">D:\Aviad\Dev\SNAP\trunk\engine\src\scripts\tests\data\test.seq</field>
+    <field name="Notes" />
+  </resource>
+  <resource type="Weight File" name="Yeast wgt" id="5050bb56-974e-4527-9c50-f933a3a18856">
+    <family>general.Yeast</family>
+    <field name="File">D:\Aviad\Dev\SNAP\trunk\engine\src\scripts\tests\data\test.wgt</field>
+    <field name="Notes" />
+  </resource>
+</resources>
