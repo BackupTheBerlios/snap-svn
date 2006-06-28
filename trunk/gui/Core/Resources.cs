@@ -414,142 +414,22 @@ namespace SNAP
 
             #endregion Add/Remove
 
-            #region IDictionary<string,IResource> Members
-            /*
-            
             /// <summary>
-            /// Adds an element with the provided key and value to the <see cref="T:System.Collections.Generic.IDictionary`2"></see>.
+            /// Returns a <see cref="T:System.String"></see> that represents the current <see cref="T:System.Object"></see>.
             /// </summary>
-            /// <param name="key">The object to use as the key of the element to add.</param>
-            /// <param name="value">The object to use as the value of the element to add.</param>
-            /// <exception cref="T:System.NotSupportedException">The <see cref="T:System.Collections.Generic.IDictionary`2"></see> is read-only.</exception>
-            /// <exception cref="T:System.ArgumentException">An element with the same key already exists in the <see cref="T:System.Collections.Generic.IDictionary`2"></see>.</exception>
-            /// <exception cref="T:System.ArgumentNullException">key is null.</exception>
-            /// <exception cref="T:System.InvalidArgumentException">values's parent is not this object.</exception>
-            public void Add(string key, Resource resource)
-            {
-                System.Diagnostics.Debug.Assert(key.Equals(resource.Name));
-                Add(resource);
-            }
-
-            /// <summary>
-            /// Determines whether the <see cref="T:System.Collections.Generic.IDictionary`2"></see> contains an element with the specified key.
-            /// </summary>
-            /// <param name="key">The key to locate in the <see cref="T:System.Collections.Generic.IDictionary`2"></see>.</param>
             /// <returns>
-            /// true if the <see cref="T:System.Collections.Generic.IDictionary`2"></see> contains an element with the key; otherwise, false.
+            /// A <see cref="T:System.String"></see> that represents the current <see cref="T:System.Object"></see>.
             /// </returns>
-            /// <exception cref="T:System.ArgumentNullException">key is null.</exception>
-            public bool ContainsKey(string key)
+            public override string ToString()
             {
-                return _resourceDictionary.ContainsKey(key);
-            }
-
-            /// <summary>
-            /// Gets an <see cref="T:System.Collections.Generic.ICollection`1"></see> containing the keys of the <see cref="T:System.Collections.Generic.IDictionary`2"></see>.
-            /// </summary>
-            /// <value></value>
-            /// <returns>An <see cref="T:System.Collections.Generic.ICollection`1"></see> containing the keys of the object that implements <see cref="T:System.Collections.Generic.IDictionary`2"></see>.</returns>
-            public ICollection<string> Keys
-            {
-                get
-                {
-                    return this._resourceDictionary.Keys;
+                StringBuilder builder = new StringBuilder ();
+                builder.AppendFormat ("{0} : {1}\n", Name, MyType.DisplayName);
+                foreach (IResourceValue value in this.SubValues.Values) {
+                    builder.AppendFormat ("{0}= {1}\n", value.MyType.DisplayName, value.ToString ());
                 }
+
+                return builder.ToString();
             }
-             */
-
-
-            /*
-
-            /// <summary>
-            /// Tries the get value.
-            /// </summary>
-            /// <param name="key">The key.</param>
-            /// <param name="value">The value.</param>
-            /// <returns></returns>
-            public bool TryGetValue(string key, out Resource value)
-            {
-                return _resourceDictionary.TryGetValue(key, out value);
-            }
-
-            /// <summary>
-            /// Gets an <see cref="T:System.Collections.Generic.ICollection`1"></see> containing the values in the <see cref="T:System.Collections.Generic.IDictionary`2"></see>.
-            /// </summary>
-            /// <value></value>
-            /// <returns>An <see cref="T:System.Collections.Generic.ICollection`1"></see> containing the values in the object that implements <see cref="T:System.Collections.Generic.IDictionary`2"></see>.</returns>
-            public ICollection<Resource> Values
-            {
-                get
-                {
-                    return _resourceDictionary.Values;
-                }
-            }
-
-
-            */
-            #endregion
-
-            #region ICollection<KeyValuePair<string,IResource>> Members
-            /*
-            
-            public void Add(KeyValuePair<string, Resource> item)
-            {
-                Add(item.Key, item.Value);
-            }
-
-            public void Clear()
-            {
-                throw new Exception("The method or operation is not implemented.");
-            }
-
-            public bool Contains(KeyValuePair<string, Resource> item)
-            {
-                throw new Exception("The method or operation is not implemented.");
-            }
-
-            public void CopyTo(KeyValuePair<string, Resource>[] array, int arrayIndex)
-            {
-                _resourceDictionary.CopyTo(array, arrayIndex);
-            }
-
-            public int Count
-            {
-                get
-                {
-                    return _resourceDictionary.Count;
-                }
-            }
-
-            /// <summary>
-            /// Gets a value indicating whether the <see cref="T:System.Collections.Generic.ICollection`1"></see> is read-only.
-            /// </summary>
-            /// <value></value>
-            /// <returns>true if the <see cref="T:System.Collections.Generic.ICollection`1"></see> is read-only; otherwise, false.</returns>
-            public bool IsReadOnly
-            {
-                get
-                {
-                    return false;
-                }
-            }
-
-            public bool Remove(KeyValuePair<string, Resource> item)
-            {
-                throw new Exception("The method or operation is not implemented.");
-            }
-            */
-            #endregion
-
-            #region IEnumerable<KeyValuePair<string,IResource>> Members
-            /*
-
-            public IEnumerator<KeyValuePair<string, Resource>> GetEnumerator()
-            {
-                return _resourceDictionary.GetEnumerator();
-            }
-            */
-            #endregion
 
             #endregion Methods
 

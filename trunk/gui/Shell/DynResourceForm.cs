@@ -19,7 +19,7 @@ namespace SNAP
             InitializeComponent();
             InitStaticFields(string.Empty, string.Empty);
 
-            foreach (ResourceType type in ResourceType.LoadTypes(Controller.ResourceTypesFile).Values)
+            foreach (ResourceType type in Controller.CurrentResources.ResourceTypes.Values)
             {
                 this.cmbResourceType.Items.Add(type);
             }

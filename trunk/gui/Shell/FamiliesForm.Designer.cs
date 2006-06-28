@@ -23,6 +23,7 @@ namespace SNAP {
         /// the contents of this method with the code editor.
         /// </summary>
         private void InitializeComponent() {
+            this.components = new System.ComponentModel.Container();
             System.Windows.Forms.TreeNode treeNode1 = new System.Windows.Forms.TreeNode("Yeast");
             System.Windows.Forms.TreeNode treeNode2 = new System.Windows.Forms.TreeNode("Young Clean");
             System.Windows.Forms.TreeNode treeNode3 = new System.Windows.Forms.TreeNode("Fungi", new System.Windows.Forms.TreeNode[] {
@@ -52,17 +53,20 @@ namespace SNAP {
             this.panel1 = new System.Windows.Forms.Panel();
             this.btnRemove = new System.Windows.Forms.Button();
             this.btnFamilyAdd = new System.Windows.Forms.Button();
+            this.treeView1 = new System.Windows.Forms.TreeView();
+            this.colorDialog1 = new System.Windows.Forms.ColorDialog();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.panelLegend = new System.Windows.Forms.Panel();
             this.lblWeightColor = new System.Windows.Forms.Label();
             this.lblSequenceColor = new System.Windows.Forms.Label();
             this.lblFamilyColor = new System.Windows.Forms.Label();
-            this.treeView1 = new System.Windows.Forms.TreeView();
-            this.colorDialog1 = new System.Windows.Forms.ColorDialog();
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.groupBox1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.panel1.SuspendLayout();
             this.groupBox3.SuspendLayout();
+            this.panelLegend.SuspendLayout();
             this.SuspendLayout();
             // 
             // btnSelect
@@ -86,9 +90,9 @@ namespace SNAP {
             this.groupBox1.Controls.Add(this.linkLabel1);
             this.groupBox1.Controls.Add(this.btnSelect);
             this.groupBox1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.groupBox1.Location = new System.Drawing.Point(0, 242);
+            this.groupBox1.Location = new System.Drawing.Point(0, 298);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(434, 87);
+            this.groupBox1.Size = new System.Drawing.Size(654, 87);
             this.groupBox1.TabIndex = 3;
             this.groupBox1.TabStop = false;
             // 
@@ -104,7 +108,9 @@ namespace SNAP {
             // 
             // comboBox1
             // 
-            this.comboBox1.FormattingEnabled = true;
+            this.comboBox1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBox1.Items.AddRange(new object[] {
+            "All Resource Types"});
             this.comboBox1.Location = new System.Drawing.Point(65, 44);
             this.comboBox1.Name = "comboBox1";
             this.comboBox1.Size = new System.Drawing.Size(214, 21);
@@ -146,7 +152,7 @@ namespace SNAP {
             this.btnResourceAdd.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnResourceAdd.Location = new System.Drawing.Point(0, 40);
             this.btnResourceAdd.Name = "btnResourceAdd";
-            this.btnResourceAdd.Size = new System.Drawing.Size(74, 40);
+            this.btnResourceAdd.Size = new System.Drawing.Size(150, 40);
             this.btnResourceAdd.TabIndex = 2;
             this.btnResourceAdd.Text = "+\nResource";
             this.btnResourceAdd.UseVisualStyleBackColor = false;
@@ -158,7 +164,7 @@ namespace SNAP {
             this.viewToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(434, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(654, 24);
             this.menuStrip1.TabIndex = 5;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -188,15 +194,14 @@ namespace SNAP {
             // 
             // groupBox2
             // 
-            this.groupBox2.AutoSize = true;
             this.groupBox2.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.groupBox2.Controls.Add(this.panel1);
             this.groupBox2.Controls.Add(this.groupBox3);
+            this.groupBox2.Controls.Add(this.panel1);
             this.groupBox2.Dock = System.Windows.Forms.DockStyle.Right;
-            this.groupBox2.Location = new System.Drawing.Point(354, 24);
+            this.groupBox2.Location = new System.Drawing.Point(498, 24);
             this.groupBox2.MinimumSize = new System.Drawing.Size(80, 192);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(80, 218);
+            this.groupBox2.Size = new System.Drawing.Size(156, 274);
             this.groupBox2.TabIndex = 8;
             this.groupBox2.TabStop = false;
             // 
@@ -211,7 +216,7 @@ namespace SNAP {
             this.panel1.Location = new System.Drawing.Point(3, 16);
             this.panel1.MinimumSize = new System.Drawing.Size(74, 108);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(74, 120);
+            this.panel1.Size = new System.Drawing.Size(150, 120);
             this.panel1.TabIndex = 11;
             // 
             // btnRemove
@@ -223,7 +228,7 @@ namespace SNAP {
             this.btnRemove.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnRemove.Location = new System.Drawing.Point(0, 80);
             this.btnRemove.Name = "btnRemove";
-            this.btnRemove.Size = new System.Drawing.Size(74, 40);
+            this.btnRemove.Size = new System.Drawing.Size(150, 40);
             this.btnRemove.TabIndex = 11;
             this.btnRemove.Text = "-\nRemove";
             this.btnRemove.UseVisualStyleBackColor = false;
@@ -238,62 +243,11 @@ namespace SNAP {
             this.btnFamilyAdd.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnFamilyAdd.Location = new System.Drawing.Point(0, 0);
             this.btnFamilyAdd.Name = "btnFamilyAdd";
-            this.btnFamilyAdd.Size = new System.Drawing.Size(74, 40);
+            this.btnFamilyAdd.Size = new System.Drawing.Size(150, 40);
             this.btnFamilyAdd.TabIndex = 9;
             this.btnFamilyAdd.Text = "+\nFamily";
             this.btnFamilyAdd.UseVisualStyleBackColor = false;
             this.btnFamilyAdd.Click += new System.EventHandler(this.button6_Click);
-            // 
-            // groupBox3
-            // 
-            this.groupBox3.AutoSize = true;
-            this.groupBox3.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.groupBox3.Controls.Add(this.lblWeightColor);
-            this.groupBox3.Controls.Add(this.lblSequenceColor);
-            this.groupBox3.Controls.Add(this.lblFamilyColor);
-            this.groupBox3.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.groupBox3.Location = new System.Drawing.Point(3, 151);
-            this.groupBox3.MinimumSize = new System.Drawing.Size(74, 64);
-            this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(74, 64);
-            this.groupBox3.TabIndex = 8;
-            this.groupBox3.TabStop = false;
-            this.groupBox3.Text = "Legend";
-            // 
-            // lblWeightColor
-            // 
-            this.lblWeightColor.BackColor = System.Drawing.Color.LightSkyBlue;
-            this.lblWeightColor.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.lblWeightColor.Dock = System.Windows.Forms.DockStyle.Top;
-            this.lblWeightColor.Location = new System.Drawing.Point(3, 46);
-            this.lblWeightColor.Name = "lblWeightColor";
-            this.lblWeightColor.Size = new System.Drawing.Size(68, 15);
-            this.lblWeightColor.TabIndex = 2;
-            this.lblWeightColor.Text = "Weight Nodes";
-            this.lblWeightColor.Click += new System.EventHandler(this.label3_Click);
-            // 
-            // lblSequenceColor
-            // 
-            this.lblSequenceColor.BackColor = System.Drawing.Color.LightSeaGreen;
-            this.lblSequenceColor.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.lblSequenceColor.Dock = System.Windows.Forms.DockStyle.Top;
-            this.lblSequenceColor.Location = new System.Drawing.Point(3, 31);
-            this.lblSequenceColor.Name = "lblSequenceColor";
-            this.lblSequenceColor.Size = new System.Drawing.Size(68, 15);
-            this.lblSequenceColor.TabIndex = 1;
-            this.lblSequenceColor.Text = "Sequence Nodes";
-            this.lblSequenceColor.Click += new System.EventHandler(this.label2_Click);
-            // 
-            // lblFamilyColor
-            // 
-            this.lblFamilyColor.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.lblFamilyColor.Dock = System.Windows.Forms.DockStyle.Top;
-            this.lblFamilyColor.Location = new System.Drawing.Point(3, 16);
-            this.lblFamilyColor.Name = "lblFamilyColor";
-            this.lblFamilyColor.Size = new System.Drawing.Size(68, 15);
-            this.lblFamilyColor.TabIndex = 0;
-            this.lblFamilyColor.Text = "Family Nodes";
-            this.lblFamilyColor.Click += new System.EventHandler(this.label1_Click);
             // 
             // treeView1
             // 
@@ -321,11 +275,72 @@ namespace SNAP {
             treeNode7.Text = "General";
             this.treeView1.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
             treeNode7});
-            this.treeView1.Size = new System.Drawing.Size(354, 218);
+            this.treeView1.ShowNodeToolTips = true;
+            this.treeView1.Size = new System.Drawing.Size(498, 274);
             this.treeView1.TabIndex = 9;
             this.treeView1.NodeMouseDoubleClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.treeView1_NodeMouseDoubleClick);
             this.treeView1.AfterLabelEdit += new System.Windows.Forms.NodeLabelEditEventHandler(this.treeView1_AfterLabelEdit);
             this.treeView1.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeView1_AfterSelect_1);
+            // 
+            // groupBox3
+            // 
+            this.groupBox3.AutoSize = true;
+            this.groupBox3.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.groupBox3.Controls.Add(this.panelLegend);
+            this.groupBox3.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.groupBox3.Location = new System.Drawing.Point(3, 136);
+            this.groupBox3.MinimumSize = new System.Drawing.Size(74, 64);
+            this.groupBox3.Name = "groupBox3";
+            this.groupBox3.Size = new System.Drawing.Size(150, 135);
+            this.groupBox3.TabIndex = 12;
+            this.groupBox3.TabStop = false;
+            this.groupBox3.Text = "Legend";
+            // 
+            // panelLegend
+            // 
+            this.panelLegend.AutoScroll = true;
+            this.panelLegend.AutoSize = true;
+            this.panelLegend.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.panelLegend.Controls.Add(this.lblWeightColor);
+            this.panelLegend.Controls.Add(this.lblSequenceColor);
+            this.panelLegend.Controls.Add(this.lblFamilyColor);
+            this.panelLegend.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panelLegend.Location = new System.Drawing.Point(3, 16);
+            this.panelLegend.Name = "panelLegend";
+            this.panelLegend.Size = new System.Drawing.Size(144, 116);
+            this.panelLegend.TabIndex = 0;
+            // 
+            // lblWeightColor
+            // 
+            this.lblWeightColor.BackColor = System.Drawing.Color.LightSkyBlue;
+            this.lblWeightColor.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblWeightColor.Dock = System.Windows.Forms.DockStyle.Top;
+            this.lblWeightColor.Location = new System.Drawing.Point(0, 30);
+            this.lblWeightColor.Name = "lblWeightColor";
+            this.lblWeightColor.Size = new System.Drawing.Size(144, 15);
+            this.lblWeightColor.TabIndex = 17;
+            this.lblWeightColor.Text = "Weight Nodes";
+            // 
+            // lblSequenceColor
+            // 
+            this.lblSequenceColor.BackColor = System.Drawing.Color.LightSeaGreen;
+            this.lblSequenceColor.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblSequenceColor.Dock = System.Windows.Forms.DockStyle.Top;
+            this.lblSequenceColor.Location = new System.Drawing.Point(0, 15);
+            this.lblSequenceColor.Name = "lblSequenceColor";
+            this.lblSequenceColor.Size = new System.Drawing.Size(144, 15);
+            this.lblSequenceColor.TabIndex = 16;
+            this.lblSequenceColor.Text = "Sequence Nodes";
+            // 
+            // lblFamilyColor
+            // 
+            this.lblFamilyColor.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblFamilyColor.Dock = System.Windows.Forms.DockStyle.Top;
+            this.lblFamilyColor.Location = new System.Drawing.Point(0, 0);
+            this.lblFamilyColor.Name = "lblFamilyColor";
+            this.lblFamilyColor.Size = new System.Drawing.Size(144, 15);
+            this.lblFamilyColor.TabIndex = 15;
+            this.lblFamilyColor.Text = "Family Nodes";
             // 
             // FamiliesForm
             // 
@@ -334,7 +349,7 @@ namespace SNAP {
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.BackColor = System.Drawing.Color.White;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(434, 329);
+            this.ClientSize = new System.Drawing.Size(654, 385);
             this.Controls.Add(this.treeView1);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
@@ -353,6 +368,8 @@ namespace SNAP {
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
             this.groupBox3.ResumeLayout(false);
+            this.groupBox3.PerformLayout();
+            this.panelLegend.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -370,17 +387,19 @@ namespace SNAP {
         private System.Windows.Forms.ToolStripMenuItem viewToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem showEmptyFamiliesToolStripMenuItem;
         private System.Windows.Forms.GroupBox groupBox2;
-        private System.Windows.Forms.GroupBox groupBox3;
-        private System.Windows.Forms.Label lblSequenceColor;
-        private System.Windows.Forms.Label lblFamilyColor;
         private System.Windows.Forms.TreeView treeView1;
         private System.Windows.Forms.ColorDialog colorDialog1;
-        private System.Windows.Forms.Label lblWeightColor;
         private System.Windows.Forms.Button btnFamilyAdd;
         private System.Windows.Forms.ToolStripMenuItem reloadToolStripMenuItem;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Button btnRemove;
         private System.Windows.Forms.ComboBox comboBox1;
         private System.Windows.Forms.LinkLabel linkLabel2;
+        private System.Windows.Forms.GroupBox groupBox3;
+        private System.Windows.Forms.Panel panelLegend;
+        private System.Windows.Forms.Label lblWeightColor;
+        private System.Windows.Forms.Label lblSequenceColor;
+        private System.Windows.Forms.Label lblFamilyColor;
+        private System.Windows.Forms.ToolTip toolTip1;
     }
 }

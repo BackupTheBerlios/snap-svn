@@ -26,9 +26,16 @@ namespace SNAP
             ErrorForm errForm = new ErrorForm(x);
             errForm.ShowDialog();
         }
-        public bool ChooseResource(string type, out SNAP.Resources.Resource resource)
+        public bool ChooseResource(
+            IEnumerable <SNAP.Resources.InternalRefFieldType.Mask> masks, 
+            out SNAP.Resources.Resource resource)
         {
-            FamiliesForm familiesForm = new FamiliesForm();
+            FamiliesForm familiesForm;
+            if (masks == null)
+                familiesForm = new FamiliesForm();
+            else
+                familiesForm = new FamiliesForm(masks);
+
             if (familiesForm.ShowDialog() == DialogResult.OK)
             {
                 resource = familiesForm.SelectedResource;

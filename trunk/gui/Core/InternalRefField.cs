@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace SNAP.Resources
 {
     #region InternalRefFieldType
@@ -110,9 +112,69 @@ namespace SNAP.Resources
             System.Diagnostics.Debug.Assert(node.Name.Equals(Typename));
             ResourceType.LoadFromXML(node, this);
 
+            if (node.Attributes["mask"] != null)
+            {
+                string maskString = node.Attributes["mask"].Value;
+                string[] parts = maskString.Split ('|');
+                for (int i = 0; i < parts.Length; ++i)
+                {
+                    string name = parts [i];
+                    string resourceTypes = parts [++i];
+                    Masks.Add(new Mask(name, resourceTypes));
+                }
+            }
         }
 
         #endregion
+
+        public readonly List<Mask> Masks = new List<Mask>();
+        
+        #region class Mask
+
+        public class Mask
+        {
+            /// <summary>
+            /// Initializes a new instance of the <see cref="T:Mask"/> class.
+            /// </summary>
+            /// <param name="mask">The mask.</param>
+            public Mask(string name, string resourceTypes)
+            {
+                Name = name.Trim();
+                if (resourceTypes.Equals("*"))
+                    AcceptAll = true;
+                else
+                {
+                    _resourceTypes = new List<string>();
+                    foreach (string resourceType in resourceTypes.Split(','))
+                        _resourceTypes.Add(resourceType.Trim());
+                }
+            }
+
+            public readonly string Name;
+            public readonly bool AcceptAll = false;
+            private readonly List<string> _resourceTypes;
+
+            public bool IsAccepted(ResourceType resourceType)
+            {
+                if (AcceptAll)
+                    return true;
+
+                return _resourceTypes.Contains(resourceType.Name);
+            }
+
+            /// <summary>
+            /// Returns a <see cref="T:System.String"></see> that represents the current <see cref="T:System.Object"></see>.
+            /// </summary>
+            /// <returns>
+            /// A <see cref="T:System.String"></see> that represents the current <see cref="T:System.Object"></see>.
+            /// </returns>
+            public override string ToString()
+            {
+                return Name;// + " (" + _resourceTypes.ToString() + ")";
+            }
+        }
+
+        #endregion class Mask
     }
 
     #endregion InternalRefField
@@ -200,7 +262,23 @@ namespace SNAP.Resources
 
         #endregion
 
-        public IResourceType MyType
+        /// <summary>
+        /// Gets my type.
+        /// </summary>
+        /// <value>My type.</value>
+        IResourceType IResourceValue.MyType
+        {
+            get
+            {
+                return _type;
+            }
+        }
+
+        /// <summary>
+        /// Gets my type.
+        /// </summary>
+        /// <value>My type.</value>
+        public InternalRefFieldType MyType
         {
             get
             {

@@ -174,11 +174,12 @@ namespace SNAP.Resources
 
         private string _name;
         private string _help;
-        private string _display;
+        private string _displayName;
 
         private readonly ResourceTypeList _fields = new ResourceTypeList();
         private readonly System.Collections.Generic.Dictionary<string, Script> _executions = new Dictionary<string, Script>();
 
+        private System.Drawing.Color _displayColor;
         #endregion Privates
 
         #region Properties
@@ -253,6 +254,25 @@ namespace SNAP.Resources
             }
         }
 
+        /// <summary>
+        /// Gets the color of the display.
+        /// </summary>
+        /// <value>The color of the display.</value>
+        public System.Drawing.Color DisplayColor
+        {
+            get
+            {
+                return _displayColor;
+            }
+            set
+            {
+                _displayColor = value;
+            }
+        }
+
+        
+
+
         
 
         #endregion
@@ -302,84 +322,35 @@ namespace SNAP.Resources
         }
         private static IResourceType LoadResourceField (System.Xml.XmlNode fieldNode)
         {
-            /*
-            if (fieldNode.Attributes["name"] == null)
-                throw new System.Xml.XmlException("The resource_type node does not contain a 'name' attribute at " + fieldNode.BaseURI);
-            
-            string fieldName = fieldNode.Attributes["name"].Value;
-            
-            string fieldHelp = string.Empty;
-            if (fieldNode.Attributes["help"] != null)
-                fieldHelp = fieldNode.Attributes["help"].Value;
-
-            int fieldMinOccurs = 1, fieldMaxOccurs = 1;
-            if (fieldNode.Attributes["minOccurs"] != null)
-            {
-                if (fieldNode.Attributes["minOccurs"].Value == "unbounded")
-                    fieldMinOccurs = int.MaxValue;
-                else
-                {
-                    fieldMinOccurs = int.Parse(fieldNode.Attributes["minOccurs"].Value);
-                    if (fieldMinOccurs > fieldMaxOccurs)
-                        fieldMaxOccurs = fieldMinOccurs;
-                }
-            }
-
-            if (fieldNode.Attributes["maxOccurs"] != null)
-            {
-                if (fieldNode.Attributes["maxOccurs"].Value == "unbounded")
-                    fieldMaxOccurs = int.MaxValue;
-                else
-                {
-                    fieldMaxOccurs = int.Parse(fieldNode.Attributes["minOccurs"].Value);
-                }
-            }
-
-            System.Diagnostics.Trace.Assert(fieldMaxOccurs >= fieldMinOccurs);
-            */
+            IResourceType field = null;
             switch (fieldNode.Name)
             {
                 case "text":
-                    {
-                        TextFieldType field = new TextFieldType();
-                        field.LoadFromXML(fieldNode);
-                        return field;
-                    }
+                    field = new TextFieldType();
+                    break;
 
                 case "internal_ref":
-                    {
-                        InternalRefFieldType field = new InternalRefFieldType();
-                        field.LoadFromXML(fieldNode);
-                        return field;
-                    }
+                    field = new InternalRefFieldType();
+                    break;
+
 
                 case "external_ref":
-                    {
-                        ExternalRefFieldType field = new ExternalRefFieldType();
-                        field.LoadFromXML(fieldNode);
-                        return field;
-                    }
+                    field = new ExternalRefFieldType();
+                    break;
 
                 case "numeric":
-                    {
-                        NumericFieldType numeric = new NumericFieldType();
-                        numeric.LoadFromXML (fieldNode);
-                        return numeric;
-                    }
-                case "enum":
-                    {
-                        EnumFieldType enumField = new EnumFieldType();
-                        enumField.LoadFromXML (fieldNode);
-                        return enumField;
-                    }
-
-                default:
+                    field = new NumericFieldType();
                     break;
-                    
+
+                case "enum":
+                    field = new EnumFieldType();
+                    break;
             }
 
-            //System.Diagnostics.Trace.Fail ("unknown field type");
-            return null;
+            if (field != null)
+                field.LoadFromXML(fieldNode);
+
+            return field;
         }
 
         private static Script.IStep LoadExportStep(System.Xml.XmlNode exportNode)
@@ -533,11 +504,11 @@ namespace SNAP.Resources
         public string DisplayName
         {
             get {
-                return _display;
+                return _displayName;
             }
             set
             {
-                _display = value;
+                _displayName = value;
             }
         }
 
@@ -556,6 +527,16 @@ namespace SNAP.Resources
         public void LoadFromXML(XmlNode resourceNode)
         {
             ResourceType.LoadFromXML(resourceNode, this);
+
+            /// if the display color is specified, then load it,
+            /// otherwise use a random color
+            if (resourceNode.Attributes["display_color"] != null)
+                this._displayColor = System.Drawing.Color.FromName(resourceNode.Attributes["display_color"].Value);
+            else
+            {
+                Random random = Controller.Random;
+                this._displayColor = System.Drawing.Color.FromArgb(random.Next(256), random.Next(256), random.Next(256), random.Next(256));
+            }
 
             LoadResourceFields(this.SubTypes, resourceNode);
             foreach (System.Xml.XmlNode node in resourceNode.ChildNodes)

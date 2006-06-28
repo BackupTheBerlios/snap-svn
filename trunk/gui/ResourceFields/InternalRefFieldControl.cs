@@ -93,7 +93,9 @@ namespace SNAP.ResourceFields
         private void button1_Click_1(object sender, EventArgs e)
         {
             SNAP.Resources.Resource resource = null;
-            if (SNAP.Controller.ChooseResource(out resource))
+            if (SNAP.Controller.ChooseResource(
+                this._value.MyType.Masks,
+                out resource))
             {
                 SelectedResource = resource;
             }

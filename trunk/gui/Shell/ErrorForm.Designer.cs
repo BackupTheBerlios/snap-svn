@@ -37,7 +37,6 @@ namespace SNAP {
             // 
             this.txtMain.BackColor = System.Drawing.Color.White;
             this.txtMain.Dock = System.Windows.Forms.DockStyle.Top;
-            this.txtMain.Enabled = false;
             this.txtMain.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtMain.Location = new System.Drawing.Point(0, 0);
             this.txtMain.Multiline = true;
@@ -62,7 +61,6 @@ namespace SNAP {
             // 
             this.txtDetails.BackColor = System.Drawing.Color.White;
             this.txtDetails.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.txtDetails.Enabled = false;
             this.txtDetails.Location = new System.Drawing.Point(3, 16);
             this.txtDetails.Multiline = true;
             this.txtDetails.Name = "txtDetails";

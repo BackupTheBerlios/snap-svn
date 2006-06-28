@@ -37,11 +37,11 @@ namespace SNAP
             this.panelExecutions = new System.Windows.Forms.FlowLayoutPanel();
             this.button1 = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.fieldParent = new SNAP.ResourceFields.FieldDecoratorControl();
-            this.fieldName = new SNAP.ResourceFields.FieldDecoratorControl();
             this.cmbResourceType = new System.Windows.Forms.ComboBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.resourceFieldsControl1 = new SNAP.ResourceFields.ResourceFieldsControl();
+            this.fieldParent = new SNAP.ResourceFields.FieldDecoratorControl();
+            this.fieldName = new SNAP.ResourceFields.FieldDecoratorControl();
             this.panel2.SuspendLayout();
             this.panelExecutions.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -135,33 +135,10 @@ namespace SNAP
             this.groupBox1.TabIndex = 32;
             this.groupBox1.TabStop = false;
             // 
-            // fieldParent
-            // 
-            this.fieldParent.AutoSize = true;
-            this.fieldParent.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.fieldParent.Content = null;
-            this.fieldParent.Dock = System.Windows.Forms.DockStyle.Top;
-            this.fieldParent.Location = new System.Drawing.Point(3, 63);
-            this.fieldParent.Name = "fieldParent";
-            this.fieldParent.Readonly = false;
-            this.fieldParent.Size = new System.Drawing.Size(626, 26);
-            this.fieldParent.TabIndex = 38;
-            // 
-            // fieldName
-            // 
-            this.fieldName.AutoSize = true;
-            this.fieldName.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.fieldName.Content = null;
-            this.fieldName.Dock = System.Windows.Forms.DockStyle.Top;
-            this.fieldName.Location = new System.Drawing.Point(3, 37);
-            this.fieldName.Name = "fieldName";
-            this.fieldName.Readonly = true;
-            this.fieldName.Size = new System.Drawing.Size(626, 26);
-            this.fieldName.TabIndex = 37;
-            // 
             // cmbResourceType
             // 
             this.cmbResourceType.Dock = System.Windows.Forms.DockStyle.Top;
+            this.cmbResourceType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbResourceType.FormattingEnabled = true;
             this.cmbResourceType.Location = new System.Drawing.Point(3, 16);
             this.cmbResourceType.Name = "cmbResourceType";
@@ -178,7 +155,6 @@ namespace SNAP
             this.groupBox2.Size = new System.Drawing.Size(632, 301);
             this.groupBox2.TabIndex = 33;
             this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "groupBox2";
             // 
             // resourceFieldsControl1
             // 
@@ -192,6 +168,30 @@ namespace SNAP
             this.resourceFieldsControl1.SubValues = null;
             this.resourceFieldsControl1.TabIndex = 0;
             this.resourceFieldsControl1.Text = "resourceFieldsControl1";
+            // 
+            // fieldParent
+            // 
+            this.fieldParent.AutoSize = true;
+            this.fieldParent.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.fieldParent.Content = null;
+            this.fieldParent.Dock = System.Windows.Forms.DockStyle.Top;
+            this.fieldParent.Location = new System.Drawing.Point(3, 63);
+            this.fieldParent.Name = "fieldParent";
+            this.fieldParent.Readonly = true;
+            this.fieldParent.Size = new System.Drawing.Size(626, 26);
+            this.fieldParent.TabIndex = 38;
+            // 
+            // fieldName
+            // 
+            this.fieldName.AutoSize = true;
+            this.fieldName.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.fieldName.Content = null;
+            this.fieldName.Dock = System.Windows.Forms.DockStyle.Top;
+            this.fieldName.Location = new System.Drawing.Point(3, 37);
+            this.fieldName.Name = "fieldName";
+            this.fieldName.Readonly = false;
+            this.fieldName.Size = new System.Drawing.Size(626, 26);
+            this.fieldName.TabIndex = 37;
             // 
             // DynResourceForm
             // 

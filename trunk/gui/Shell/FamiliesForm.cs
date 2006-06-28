@@ -6,11 +6,58 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 
+using SNAP.Resources;
+
 namespace SNAP {
     public partial class FamiliesForm : Form {
-        public FamiliesForm() {
+        public FamiliesForm()
+            : this(new InternalRefFieldType.Mask[] { new InternalRefFieldType.Mask("All Resource Types (*)", "*") })
+        {
+        }
+
+        public FamiliesForm(IEnumerable<InternalRefFieldType.Mask> masks)
+        {
             InitializeComponent();
             BuildTree();
+
+            /// setup the mask
+            this.comboBox1.Items.Clear();
+            foreach (InternalRefFieldType.Mask mask in masks)
+                this.comboBox1.Items.Add (mask);
+
+            this.comboBox1.SelectedIndex = 0;
+
+            /// setup the legend
+            panelLegend.Controls.Clear();
+            foreach (ResourceType type in Controller.CurrentResources.ResourceTypes.Values)
+            {
+                Label colorLabel = new Label();
+                colorLabel.Name = type.Name;
+                colorLabel.Text = type.DisplayName;
+                colorLabel.BackColor = type.DisplayColor;
+                //colorLabel.AutoSize = true;
+                colorLabel.Dock = DockStyle.Top;
+                colorLabel.BorderStyle = BorderStyle.FixedSingle;
+                colorLabel.Click += new EventHandler(colorLabel_Click);
+                panelLegend.Controls.Add(colorLabel);
+            }
+        }
+
+        void colorLabel_Click(object sender, EventArgs e)
+        {
+            Label colorLabel = (Label)sender;
+            colorDialog1.AllowFullOpen = true;
+            colorDialog1.AnyColor = true;
+            colorDialog1.Color = colorLabel.BackColor;
+            colorDialog1.FullOpen = true;
+            if (colorDialog1.ShowDialog(this) == DialogResult.OK)
+            {
+                colorLabel.BackColor = colorDialog1.Color;
+                Controller.CurrentResources.ResourceTypes[colorLabel.Name].DisplayColor = colorDialog1.Color;
+                /// TODO: save the change to the XML
+                BuildTree();
+            }
+            
         }
 
         #region public
@@ -19,7 +66,8 @@ namespace SNAP {
         /// Gets the selected resource.
         /// </summary>
         /// <value>The selected resource.</value>
-        internal Resources.Resource SelectedResource {
+        internal Resources.Resource SelectedResource
+        {
             get {
                 if (treeView1.SelectedNode == null)
                     return null;
@@ -45,8 +93,12 @@ namespace SNAP {
                     return;
             }
 
-            this.DialogResult = DialogResult.OK;
-            this.Close();
+            InternalRefFieldType.Mask mask = (InternalRefFieldType.Mask) this.comboBox1.SelectedItem;
+            if (mask.IsAccepted(SelectedResource.MyType))
+            {
+                this.DialogResult = DialogResult.OK;
+                this.Close();
+            }
         }
 
         private void btnResourceAdd_Click(object sender, EventArgs e) {
@@ -82,17 +134,8 @@ namespace SNAP {
             TreeNode treeNode = new TreeNode(resource.Name);
             treeNode.Name = resource.QualifiedName;
             treeNode.Tag = resource;
-            switch (resource.GetType().Name) {
-                case "CompositeResource":
-                    treeNode.BackColor = this.lblFamilyColor.BackColor;
-                    break;
-                case "SeqFileResource":
-                    treeNode.BackColor = this.lblSequenceColor.BackColor;
-                    break;
-                case "WgtFileResource":
-                    treeNode.BackColor = this.lblWeightColor.BackColor;
-                    break;
-            }
+            treeNode.BackColor = resource.MyType.DisplayColor;
+            treeNode.ToolTipText = resource.ToString();
 
             // TODO: change the color of node according to type
             return treeNode;
@@ -113,25 +156,6 @@ namespace SNAP {
         private void button5_Click(object sender, EventArgs e) {
             Controller.CurrentResources.LoadResources();
             BuildTree();
-        }
-
-        private void label2_Click(object sender, EventArgs e) {
-            colorDialog1.ShowDialog();
-            lblSequenceColor.BackColor = colorDialog1.Color;
-            BuildTree();
-        }
-
-        private void label3_Click(object sender, EventArgs e) {
-            colorDialog1.ShowDialog();
-            lblWeightColor.BackColor = colorDialog1.Color;
-            BuildTree();
-        }
-
-        private void label1_Click(object sender, EventArgs e) {
-            colorDialog1.ShowDialog();
-            lblFamilyColor.BackColor = colorDialog1.Color;
-            BuildTree();
-
         }
 
         private void button6_Click(object sender, EventArgs e) {

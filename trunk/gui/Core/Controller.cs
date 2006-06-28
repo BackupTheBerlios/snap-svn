@@ -9,11 +9,13 @@ namespace SNAP {
         }
         public static bool ChooseResource (out SNAP.Resources.Resource resource)
         {
-            return Implementation.ChooseResource("", out resource);
+            return Implementation.ChooseResource(null, out resource);
         }
-        public static bool ChooseResource(string type, out SNAP.Resources.Resource resource)
+        public static bool ChooseResource(
+            IEnumerable <SNAP.Resources.InternalRefFieldType.Mask> masks, 
+            out SNAP.Resources.Resource resource)
         {
-            return Implementation.ChooseResource(type, out resource);
+            return Implementation.ChooseResource(masks, out resource);
         }
         public static bool ChooseFile(string mask, out string path)
         {
@@ -27,6 +29,7 @@ namespace SNAP {
         {
             return Implementation.CreateResourceUI(value);
         }
+        
 
 
         public static string BinFolder
@@ -93,12 +96,16 @@ namespace SNAP {
         }
 
         public static Resources.DB CurrentResources = new Resources.DB();
+        public static System.Random Random = new Random();
         
-
         public interface Impl
         {
             void ShowException(System.Exception x);
-            bool ChooseResource(string mask, out SNAP.Resources.Resource resource);
+            bool ChooseResource(
+                IEnumerable <SNAP.Resources.InternalRefFieldType.Mask> masks, 
+                out SNAP.Resources.Resource resource
+                );
+
             bool ChooseFile(string mask, out string path);
             int WaitForExit(System.Diagnostics.Process process);
             Resources.IResourceUI CreateResourceUI(Resources.IResourceValue value);
