@@ -98,18 +98,6 @@
     <Compile Include="TextFieldControl.Designer.cs">
       <DependentUpon>TextFieldControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="VerticalFlowLayoutGroupBox.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="VerticalFlowLayoutGroupBox.Designer.cs">
-      <DependentUpon>VerticalFlowLayoutGroupBox.cs</DependentUpon>
-    </Compile>
-    <Compile Include="VerticalFlowLayoutPanel.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="VerticalFlowLayoutPanel.Designer.cs">
-      <DependentUpon>VerticalFlowLayoutPanel.cs</DependentUpon>
-    </Compile>
     <Service Include="{94E38DFF-614B-4cbd-B67C-F211BB35CE8B}" />
   </ItemGroup>
   <ItemGroup>

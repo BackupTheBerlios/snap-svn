@@ -21,42 +21,6 @@ namespace SNAP.ResourceFields
             InitializeComponent();
         }
 
-        /*
-        public SNAP.Resources.EnumFieldType FieldType
-        {
-            get
-            {
-                return _fieldType;
-            }
-            private set
-            {
-                if (_fieldType == value)
-                    return;
-
-                _fieldType = value;
-                
-                _radioButtons.Clear();
-                flowLayoutPanel1.Controls.Clear();
-                //fieldPanel1.Controls.Clear();
-
-                foreach (SNAP.Resources.EnumFieldType.EnumValue v in _fieldType.EnumValues.Values)
-                {
-                    RadioButton radioButton = new RadioButton ();
-                    
-                    radioButton.Name = v.Name;
-                    radioButton.Text = v.Name;
-                    /// TODO: handle tool tip
-                    radioButton.CheckedChanged += new EventHandler(radioButton_CheckedChanged);
-
-                    _radioButtons.Add(radioButton.Name, radioButton);
-                    flowLayoutPanel1.Controls.Add(radioButton);
-                }
-                
-                _radioButtons.Values [2].Checked = true;
-            }
-        }
-         */
-
         void radioButton_CheckedChanged(object sender, EventArgs e)
         {
             EnumElementFieldValue selectedEnumElement = null;
@@ -72,12 +36,6 @@ namespace SNAP.ResourceFields
 
             fieldPanel1.SubValues = selectedEnumElement.SubValues;
             fieldPanel1.Visible = (selectedEnumElement.SubValues.Count > 0);
-        }
-
-        public override Size GetPreferredSize(Size proposedSize)
-        {
-            Size result = this.verticalFlowLayoutPanel1.GetPreferredSize (proposedSize);
-            return result;
         }
 
         #region IResourceWinformsUI Members

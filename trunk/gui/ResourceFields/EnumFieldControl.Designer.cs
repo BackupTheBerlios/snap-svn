@@ -28,51 +28,26 @@ namespace SNAP.ResourceFields
         /// </summary>
         private void InitializeComponent()
         {
-            this.verticalFlowLayoutPanel1 = new SNAP.ResourceFields.VerticalFlowLayoutPanel();
-            this.fieldPanel1 = new SNAP.ResourceFields.ResourceFieldsControl();
             this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
             this.radioButton1 = new System.Windows.Forms.RadioButton();
             this.radioButton2 = new System.Windows.Forms.RadioButton();
             this.radioButton3 = new System.Windows.Forms.RadioButton();
-            this.verticalFlowLayoutPanel1.SuspendLayout();
+            this.fieldPanel1 = new SNAP.ResourceFields.ResourceFieldsControl();
             this.flowLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
             // 
-            // verticalFlowLayoutPanel1
-            // 
-            this.verticalFlowLayoutPanel1.AutoSize = true;
-            this.verticalFlowLayoutPanel1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.verticalFlowLayoutPanel1.Controls.Add(this.fieldPanel1);
-            this.verticalFlowLayoutPanel1.Controls.Add(this.flowLayoutPanel1);
-            this.verticalFlowLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.verticalFlowLayoutPanel1.Location = new System.Drawing.Point(0, 0);
-            this.verticalFlowLayoutPanel1.Name = "verticalFlowLayoutPanel1";
-            this.verticalFlowLayoutPanel1.Size = new System.Drawing.Size(433, 128);
-            this.verticalFlowLayoutPanel1.TabIndex = 1;
-            // 
-            // fieldPanel1
-            // 
-            this.fieldPanel1.AutoSize = true;
-            this.fieldPanel1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.fieldPanel1.Location = new System.Drawing.Point(3, 32);
-            this.fieldPanel1.Name = "fieldPanel1";
-            this.fieldPanel1.Size = new System.Drawing.Size(427, 0);
-            this.fieldPanel1.SubValues = null;
-            this.fieldPanel1.TabIndex = 3;
-            this.fieldPanel1.Visible = false;
-            // 
             // flowLayoutPanel1
             // 
-            this.flowLayoutPanel1.AutoScroll = true;
             this.flowLayoutPanel1.AutoSize = true;
             this.flowLayoutPanel1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.flowLayoutPanel1.Controls.Add(this.radioButton1);
             this.flowLayoutPanel1.Controls.Add(this.radioButton2);
             this.flowLayoutPanel1.Controls.Add(this.radioButton3);
-            this.flowLayoutPanel1.Location = new System.Drawing.Point(3, 3);
+            this.flowLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Top;
+            this.flowLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.flowLayoutPanel1.Name = "flowLayoutPanel1";
-            this.flowLayoutPanel1.Size = new System.Drawing.Size(427, 23);
-            this.flowLayoutPanel1.TabIndex = 2;
+            this.flowLayoutPanel1.Size = new System.Drawing.Size(433, 23);
+            this.flowLayoutPanel1.TabIndex = 4;
             // 
             // radioButton1
             // 
@@ -107,15 +82,25 @@ namespace SNAP.ResourceFields
             this.radioButton3.Text = "radioButton3";
             this.radioButton3.UseVisualStyleBackColor = true;
             // 
+            // fieldPanel1
+            // 
+            this.fieldPanel1.AutoSize = true;
+            this.fieldPanel1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.fieldPanel1.Dock = System.Windows.Forms.DockStyle.Top;
+            this.fieldPanel1.Location = new System.Drawing.Point(0, 23);
+            this.fieldPanel1.Name = "fieldPanel1";
+            this.fieldPanel1.Size = new System.Drawing.Size(433, 0);
+            this.fieldPanel1.SubValues = null;
+            this.fieldPanel1.TabIndex = 5;
+            this.fieldPanel1.Visible = false;
+            // 
             // EnumFieldControl
             // 
-            this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.Controls.Add(this.verticalFlowLayoutPanel1);
+            this.Controls.Add(this.fieldPanel1);
+            this.Controls.Add(this.flowLayoutPanel1);
             this.Name = "EnumFieldControl";
             this.Size = new System.Drawing.Size(433, 128);
             this.Load += new System.EventHandler(this.EnumFieldControl_Load);
-            this.verticalFlowLayoutPanel1.ResumeLayout(false);
-            this.verticalFlowLayoutPanel1.PerformLayout();
             this.flowLayoutPanel1.ResumeLayout(false);
             this.flowLayoutPanel1.PerformLayout();
             this.ResumeLayout(false);
@@ -125,12 +110,12 @@ namespace SNAP.ResourceFields
 
         #endregion
 
-        private VerticalFlowLayoutPanel verticalFlowLayoutPanel1;
         private ResourceFieldsControl fieldPanel1;
         private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
         private System.Windows.Forms.RadioButton radioButton1;
         private System.Windows.Forms.RadioButton radioButton2;
         private System.Windows.Forms.RadioButton radioButton3;
+
 
 
 

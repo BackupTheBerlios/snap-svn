@@ -22,26 +22,6 @@ namespace SNAP.ResourceFields
 //            _panels = new Panel[1];
 //            _panels[0] = ContentPanel;
         }
-        /*
-        public override Size GetPreferredSize(Size proposedSize)
-        {
-            Size leftSide = Size.Add (
-                panelLeft.GetPreferredSize(proposedSize),
-                panelLeft.Margin.Size);
-            
-            Size rightSide = Size.Add (
-                panelRight.GetPreferredSize(proposedSize),
-                panelRight.Margin.Size);
-
-            Size result = new Size(
-                Math.Max(leftSide.Width, rightSide.Width), 
-                Math.Max(leftSide.Height, rightSide.Height)
-            );
-
-            result = Size.Add (result, this.Padding.Size);
-            return result;
-        }
-         */
 
         public FieldDecoratorControl(IResourceWinformsUI content)
             : this ()
@@ -69,6 +49,14 @@ namespace SNAP.ResourceFields
                     //value.MyControl.Dock = DockStyle.Fill;
                     value.MyControl.Dock = DockStyle.Top;
                     value.MyControl.AutoSize = true;
+                    
+                    System.Reflection.PropertyInfo autoSizeModeProperty = 
+                        value.MyControl.GetType ().GetProperty ("AutoSizeMode", typeof(AutoSizeMode));
+                    if (autoSizeModeProperty != null)
+                    {
+                        autoSizeModeProperty.SetValue(value.MyControl, AutoSizeMode.GrowAndShrink, null);
+                    }
+
                     //panelRight.Controls.Add(value.MyControl);
                     tableLayoutPanel1.Controls.Add(value.MyControl, 2, 0);
                     /*
@@ -85,35 +73,6 @@ namespace SNAP.ResourceFields
                 }
             }
         }
-
-        protected override void SetClientSizeCore(int x, int y)
-        {
-            System.Diagnostics.Debug.Assert(tableLayoutPanel1.Width == x);
-            if (AutoSize)
-            {
-                int newHeight = tableLayoutPanel1.Height;
-                if (this.Height > newHeight) {
-                    if (AutoSizeMode == AutoSizeMode.GrowOnly) {
-                        /// do not shrink
-                        newHeight = this.Height;
-                    }
-                }
-
-                base.SetClientSizeCore (x, newHeight);
-            }
-            else {
-                base.SetClientSizeCore(x, y);
-            }
-        }
-
-        public override Size GetPreferredSize(Size proposedSize)
-        {
-            //MessageBox.Show(tableLayoutPanel1.Size.ToString());
-            //return base.GetPreferredSize(proposedSize);
-            return SizeFromClientSize (tableLayoutPanel1.Size);
-        }
-
-
 
         #region Designer
         /*
