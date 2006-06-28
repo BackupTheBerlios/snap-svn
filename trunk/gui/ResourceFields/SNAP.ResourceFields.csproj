@@ -36,11 +36,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Copy of FieldDecoratorControl.cs">
+    <Compile Include="FieldDecoratorControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Copy of FieldDecoratorControl.Designer.cs">
-      <DependentUpon>Copy of FieldDecoratorControl.cs</DependentUpon>
+    <Compile Include="FieldDecoratorControl.Designer.cs">
+      <DependentUpon>FieldDecoratorControl.cs</DependentUpon>
     </Compile>
     <Compile Include="Interfaces.cs">
     </Compile>
@@ -86,12 +86,6 @@
     <Compile Include="NumericFieldControl.Designer.cs">
       <DependentUpon>NumericFieldControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="FieldDecoratorControl.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="FieldDecoratorControl.Designer.cs">
-      <DependentUpon>FieldDecoratorControl.cs</DependentUpon>
-    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -119,8 +113,8 @@
     <Service Include="{94E38DFF-614B-4cbd-B67C-F211BB35CE8B}" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Copy of FieldDecoratorControl.resx">
-      <DependentUpon>Copy of FieldDecoratorControl.cs</DependentUpon>
+    <EmbeddedResource Include="FieldDecoratorControl.resx">
+      <DependentUpon>FieldDecoratorControl.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="EnumFieldControl.resx">
@@ -150,10 +144,6 @@
     <EmbeddedResource Include="NumericFieldControl.resx">
       <SubType>Designer</SubType>
       <DependentUpon>NumericFieldControl.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="FieldDecoratorControl.resx">
-      <DependentUpon>FieldDecoratorControl.cs</DependentUpon>
-      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <SubType>Designer</SubType>

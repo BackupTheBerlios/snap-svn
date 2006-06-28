@@ -28,13 +28,6 @@ namespace SNAP.ResourceFields
         /// </summary>
         private void InitializeComponent()
         {
-            this.SuspendLayout();
-            // 
-            // ResourceFieldsControl
-            // 
-            this.Size = new System.Drawing.Size(200, 20);
-            this.ResumeLayout(false);
-
         }
 
         #endregion

@@ -28,59 +28,32 @@ namespace SNAP.ResourceFields
         /// </summary>
         private void InitializeComponent()
         {
-            this.panelRight = new SNAP.ResourceFields.VerticalFlowLayoutPanel();
-            this.panelLeft = new SNAP.ResourceFields.VerticalFlowLayoutPanel();
-            this.labelError = new System.Windows.Forms.Label();
-            this.ContentLabel = new System.Windows.Forms.LinkLabel();
+            this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.checkOverride = new System.Windows.Forms.CheckBox();
-            this.panelLeft.SuspendLayout();
+            this.ContentLabel = new System.Windows.Forms.LinkLabel();
+            this.labelError = new System.Windows.Forms.Label();
+            this.tableLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
             // 
-            // panelRight
+            // tableLayoutPanel1
             // 
-            this.panelRight.AutoSize = true;
-            this.panelRight.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.panelRight.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panelRight.Location = new System.Drawing.Point(100, 0);
-            this.panelRight.Name = "panelRight";
-            this.panelRight.Size = new System.Drawing.Size(360, 13);
-            this.panelRight.TabIndex = 28;
-            // 
-            // panelLeft
-            // 
-            this.panelLeft.AutoSize = true;
-            this.panelLeft.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.panelLeft.Controls.Add(this.labelError);
-            this.panelLeft.Controls.Add(this.ContentLabel);
-            this.panelLeft.Controls.Add(this.checkOverride);
-            this.panelLeft.Dock = System.Windows.Forms.DockStyle.Left;
-            this.panelLeft.Location = new System.Drawing.Point(0, 0);
-            this.panelLeft.Name = "panelLeft";
-            this.panelLeft.Size = new System.Drawing.Size(100, 121);
-            this.panelLeft.TabIndex = 27;
-            // 
-            // labelError
-            // 
-            this.labelError.AutoSize = true;
-            this.labelError.ForeColor = System.Drawing.Color.Red;
-            this.labelError.Location = new System.Drawing.Point(3, 43);
-            this.labelError.MaximumSize = new System.Drawing.Size(150, 0);
-            this.labelError.Name = "labelError";
-            this.labelError.Size = new System.Drawing.Size(94, 65);
-            this.labelError.TabIndex = 39;
-            this.labelError.Text = "Error message goes here: a required field has not been filled out blah blah blaha" +
-                "hah";
-            this.labelError.Visible = false;
-            // 
-            // ContentLabel
-            // 
-            this.ContentLabel.AutoSize = true;
-            this.ContentLabel.Location = new System.Drawing.Point(3, 17);
-            this.ContentLabel.Name = "ContentLabel";
-            this.ContentLabel.Size = new System.Drawing.Size(94, 26);
-            this.ContentLabel.TabIndex = 1;
-            this.ContentLabel.TabStop = true;
-            this.ContentLabel.Text = "This displays the field name";
+            this.tableLayoutPanel1.AutoSize = true;
+            this.tableLayoutPanel1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.tableLayoutPanel1.ColumnCount = 3;
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 100F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel1.Controls.Add(this.checkOverride, 0, 0);
+            this.tableLayoutPanel1.Controls.Add(this.ContentLabel, 1, 0);
+            this.tableLayoutPanel1.Controls.Add(this.labelError, 0, 1);
+            this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Top;
+            this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
+            this.tableLayoutPanel1.Name = "tableLayoutPanel1";
+            this.tableLayoutPanel1.RowCount = 2;
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(559, 39);
+            this.tableLayoutPanel1.TabIndex = 30;
             // 
             // checkOverride
             // 
@@ -88,22 +61,44 @@ namespace SNAP.ResourceFields
             this.checkOverride.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.checkOverride.Location = new System.Drawing.Point(3, 3);
             this.checkOverride.Name = "checkOverride";
-            this.checkOverride.Size = new System.Drawing.Size(94, 11);
-            this.checkOverride.TabIndex = 0;
+            this.checkOverride.Size = new System.Drawing.Size(12, 11);
+            this.checkOverride.TabIndex = 42;
             this.checkOverride.UseVisualStyleBackColor = true;
+            // 
+            // ContentLabel
+            // 
+            this.ContentLabel.AutoSize = true;
+            this.ContentLabel.Location = new System.Drawing.Point(21, 0);
+            this.ContentLabel.Name = "ContentLabel";
+            this.ContentLabel.Size = new System.Drawing.Size(88, 26);
+            this.ContentLabel.TabIndex = 1;
+            this.ContentLabel.TabStop = true;
+            this.ContentLabel.Text = "This displays the field name";
+            // 
+            // labelError
+            // 
+            this.labelError.AutoSize = true;
+            this.tableLayoutPanel1.SetColumnSpan(this.labelError, 3);
+            this.labelError.ForeColor = System.Drawing.Color.Red;
+            this.labelError.Location = new System.Drawing.Point(3, 26);
+            this.labelError.Name = "labelError";
+            this.labelError.Size = new System.Drawing.Size(399, 13);
+            this.labelError.TabIndex = 39;
+            this.labelError.Text = "Error message goes here: a required field has not been filled out blah blah blaha" +
+                "hah";
+            this.labelError.Visible = false;
             // 
             // FieldDecoratorControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.Controls.Add(this.panelRight);
-            this.Controls.Add(this.panelLeft);
+            this.Controls.Add(this.tableLayoutPanel1);
             this.Name = "FieldDecoratorControl";
-            this.Size = new System.Drawing.Size(460, 131);
+            this.Size = new System.Drawing.Size(559, 280);
             this.Click += new System.EventHandler(this.FieldDecoratorControl_Click);
-            this.panelLeft.ResumeLayout(false);
-            this.panelLeft.PerformLayout();
+            this.SizeChanged += new System.EventHandler(this.FieldDecoratorControl_SizeChanged);
+            this.tableLayoutPanel1.ResumeLayout(false);
+            this.tableLayoutPanel1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -111,11 +106,11 @@ namespace SNAP.ResourceFields
 
         #endregion
 
-        private VerticalFlowLayoutPanel panelLeft;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
         private System.Windows.Forms.Label labelError;
-        private System.Windows.Forms.CheckBox checkOverride;
-        private VerticalFlowLayoutPanel panelRight;
         private System.Windows.Forms.LinkLabel ContentLabel;
+        private System.Windows.Forms.CheckBox checkOverride;
+
 
 
 

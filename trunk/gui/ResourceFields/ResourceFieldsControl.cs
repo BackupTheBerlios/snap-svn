@@ -9,7 +9,7 @@ using SNAP.Resources;
 
 namespace SNAP.ResourceFields
 {
-    public partial class ResourceFieldsControl : VerticalFlowLayoutGroupBox
+    public partial class ResourceFieldsControl : Panel
     {
         public ResourceFieldsControl()
         {
@@ -53,7 +53,7 @@ namespace SNAP.ResourceFields
                     /// wrap the field with a decorative panel
                     newField = new FieldDecoratorControl(newField);
 
-                    //newField.MyControl.Dock = DockStyle.Top;
+                    newField.MyControl.Dock = DockStyle.Top;
                     newField.MyControl.AutoSize = true;
                     //this.groupFields.Controls.Add(newField.MyControl);
                     Controls.Add(newField.MyControl);

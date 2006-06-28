@@ -47,7 +47,7 @@ namespace SNAP.ResourceFields
             this.verticalFlowLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.verticalFlowLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.verticalFlowLayoutPanel1.Name = "verticalFlowLayoutPanel1";
-            this.verticalFlowLayoutPanel1.Size = new System.Drawing.Size(433, 67);
+            this.verticalFlowLayoutPanel1.Size = new System.Drawing.Size(433, 128);
             this.verticalFlowLayoutPanel1.TabIndex = 1;
             // 
             // fieldPanel1
@@ -56,10 +56,9 @@ namespace SNAP.ResourceFields
             this.fieldPanel1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.fieldPanel1.Location = new System.Drawing.Point(3, 32);
             this.fieldPanel1.Name = "fieldPanel1";
-            this.fieldPanel1.Size = new System.Drawing.Size(427, 19);
+            this.fieldPanel1.Size = new System.Drawing.Size(427, 0);
             this.fieldPanel1.SubValues = null;
             this.fieldPanel1.TabIndex = 3;
-            this.fieldPanel1.TabStop = false;
             this.fieldPanel1.Visible = false;
             // 
             // flowLayoutPanel1

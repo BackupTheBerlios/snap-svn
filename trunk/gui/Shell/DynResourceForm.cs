@@ -91,7 +91,7 @@ namespace SNAP
             set
             {
                 _resource = value;
-                panelFields.SubValues = _resource.SubValues;
+                resourceFieldsControl1.SubValues = _resource.SubValues;
             }
         }
 
@@ -163,9 +163,9 @@ namespace SNAP
         public void UpdateResource()
         {
             //SelectedResource.Name = fieldName.FieldText;
-            SelectedResource.Name = fieldName.MyValue.ToString();
+            //SelectedResource.Name = fieldName.MyValue.ToString();
 
-            panelFields.UpdateResource();
+            resourceFieldsControl1.UpdateResource();
         }
 
         /// <summary>

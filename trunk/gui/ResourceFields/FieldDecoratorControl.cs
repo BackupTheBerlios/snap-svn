@@ -22,7 +22,7 @@ namespace SNAP.ResourceFields
 //            _panels = new Panel[1];
 //            _panels[0] = ContentPanel;
         }
-
+        /*
         public override Size GetPreferredSize(Size proposedSize)
         {
             Size leftSide = Size.Add (
@@ -41,6 +41,7 @@ namespace SNAP.ResourceFields
             result = Size.Add (result, this.Padding.Size);
             return result;
         }
+         */
 
         public FieldDecoratorControl(IResourceWinformsUI content)
             : this ()
@@ -57,20 +58,62 @@ namespace SNAP.ResourceFields
             set
             {
                 if (_resource != null)
-                    panelRight.Controls.Remove(_resource.MyControl);
+                {
+                    //panelRight.Controls.Remove(
+                    tableLayoutPanel1.Controls.Remove (_resource.MyControl);
+                }
 
                 _resource = value;
                 if (value != null)
                 {
                     //value.MyControl.Dock = DockStyle.Fill;
+                    value.MyControl.Dock = DockStyle.Top;
                     value.MyControl.AutoSize = true;
-                    panelRight.Controls.Add(value.MyControl);
+                    //panelRight.Controls.Add(value.MyControl);
+                    tableLayoutPanel1.Controls.Add(value.MyControl, 2, 0);
+                    /*
+                    value.MyControl.MinimumSize = new Size(
+                        value.MyControl.Parent.Width - value.MyControl.Margin.Horizontal,
+//                        (int)ColumnStyles[2].Width - value.MyControl.Margin.Horizontal,
+                        //value.MyControl.Height
+                        40
+                        );
+                     */
                     ContentLabel.Text = value.MyValue.MyType.DisplayName;
 
                     //DetermineSize();
                 }
             }
         }
+
+        protected override void SetClientSizeCore(int x, int y)
+        {
+            System.Diagnostics.Debug.Assert(tableLayoutPanel1.Width == x);
+            if (AutoSize)
+            {
+                int newHeight = tableLayoutPanel1.Height;
+                if (this.Height > newHeight) {
+                    if (AutoSizeMode == AutoSizeMode.GrowOnly) {
+                        /// do not shrink
+                        newHeight = this.Height;
+                    }
+                }
+
+                base.SetClientSizeCore (x, newHeight);
+            }
+            else {
+                base.SetClientSizeCore(x, y);
+            }
+        }
+
+        public override Size GetPreferredSize(Size proposedSize)
+        {
+            //MessageBox.Show(tableLayoutPanel1.Size.ToString());
+            //return base.GetPreferredSize(proposedSize);
+            return SizeFromClientSize (tableLayoutPanel1.Size);
+        }
+
+
 
         #region Designer
         /*
@@ -216,6 +259,16 @@ namespace SNAP.ResourceFields
             if (!Readonly)
                 this.checkOverride.Checked = true;
 
+        }
+
+        private void FieldDecoratorControl_SizeChanged(object sender, EventArgs e)
+        {
+            SuspendLayout();
+            /// set the table to the required width
+            tableLayoutPanel1.MinimumSize = new Size(this.ClientSize.Width, 0);
+            tableLayoutPanel1.MaximumSize = new Size(this.ClientSize.Width, 0);
+            ResumeLayout();
+            //MessageBox.Show(tableLayoutPanel1.Size.ToString());
         }
     }
     #endregion Designer
