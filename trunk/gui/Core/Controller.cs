@@ -7,6 +7,10 @@ namespace SNAP {
         public static void ShowException(System.Exception x) {
             Implementation.ShowException(x);
         }
+        public static void ShowException(string message, System.Exception x)
+        {
+            Implementation.ShowException(message, x);
+        }
         public static bool ChooseResource (out SNAP.Resources.Resource resource)
         {
             return Implementation.ChooseResource(null, out resource);
@@ -101,6 +105,7 @@ namespace SNAP {
         public interface Impl
         {
             void ShowException(System.Exception x);
+            void ShowException(string message, System.Exception x);
             bool ChooseResource(
                 IEnumerable <SNAP.Resources.InternalRefFieldType.Mask> masks, 
                 out SNAP.Resources.Resource resource

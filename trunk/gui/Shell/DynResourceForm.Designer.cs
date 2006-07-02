@@ -84,15 +84,14 @@ namespace SNAP
             // 
             // btnApply
             // 
-            this.btnApply.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.btnApply.Dock = System.Windows.Forms.DockStyle.Right;
-            this.btnApply.Enabled = false;
             this.btnApply.Location = new System.Drawing.Point(557, 0);
             this.btnApply.Name = "btnApply";
             this.btnApply.Size = new System.Drawing.Size(75, 24);
             this.btnApply.TabIndex = 16;
             this.btnApply.Text = "Apply";
             this.btnApply.UseVisualStyleBackColor = true;
+            this.btnApply.Click += new System.EventHandler(this.btnApply_Click);
             // 
             // panelExecutions
             // 
@@ -175,9 +174,12 @@ namespace SNAP
             this.fieldParent.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.fieldParent.Content = null;
             this.fieldParent.Dock = System.Windows.Forms.DockStyle.Top;
+            this.fieldParent.ErrorText = "Error message goes here: a required field has not been filled out blah blah blaha" +
+                "hah";
+            this.fieldParent.ErrorTextVisible = false;
             this.fieldParent.Location = new System.Drawing.Point(3, 63);
             this.fieldParent.Name = "fieldParent";
-            this.fieldParent.Readonly = true;
+            this.fieldParent.Readonly = false;
             this.fieldParent.Size = new System.Drawing.Size(626, 26);
             this.fieldParent.TabIndex = 38;
             // 
@@ -187,9 +189,12 @@ namespace SNAP
             this.fieldName.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.fieldName.Content = null;
             this.fieldName.Dock = System.Windows.Forms.DockStyle.Top;
+            this.fieldName.ErrorText = "Error message goes here: a required field has not been filled out blah blah blaha" +
+                "hah";
+            this.fieldName.ErrorTextVisible = false;
             this.fieldName.Location = new System.Drawing.Point(3, 37);
             this.fieldName.Name = "fieldName";
-            this.fieldName.Readonly = false;
+            this.fieldName.Readonly = true;
             this.fieldName.Size = new System.Drawing.Size(626, 26);
             this.fieldName.TabIndex = 37;
             // 

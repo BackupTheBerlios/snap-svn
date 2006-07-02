@@ -50,23 +50,23 @@ namespace SNAP {
             this.showEmptyFamiliesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.reloadToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.panel1 = new System.Windows.Forms.Panel();
-            this.btnRemove = new System.Windows.Forms.Button();
-            this.btnFamilyAdd = new System.Windows.Forms.Button();
-            this.treeView1 = new System.Windows.Forms.TreeView();
-            this.colorDialog1 = new System.Windows.Forms.ColorDialog();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.panelLegend = new System.Windows.Forms.Panel();
             this.lblWeightColor = new System.Windows.Forms.Label();
             this.lblSequenceColor = new System.Windows.Forms.Label();
             this.lblFamilyColor = new System.Windows.Forms.Label();
+            this.panel1 = new System.Windows.Forms.Panel();
+            this.btnRemove = new System.Windows.Forms.Button();
+            this.treeView1 = new System.Windows.Forms.TreeView();
+            this.colorDialog1 = new System.Windows.Forms.ColorDialog();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.btnImport = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.groupBox2.SuspendLayout();
-            this.panel1.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.panelLegend.SuspendLayout();
+            this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
             // btnSelect
@@ -150,11 +150,11 @@ namespace SNAP {
             this.btnResourceAdd.BackColor = System.Drawing.Color.Lavender;
             this.btnResourceAdd.Dock = System.Windows.Forms.DockStyle.Top;
             this.btnResourceAdd.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnResourceAdd.Location = new System.Drawing.Point(0, 40);
+            this.btnResourceAdd.Location = new System.Drawing.Point(0, 0);
             this.btnResourceAdd.Name = "btnResourceAdd";
-            this.btnResourceAdd.Size = new System.Drawing.Size(150, 40);
+            this.btnResourceAdd.Size = new System.Drawing.Size(300, 25);
             this.btnResourceAdd.TabIndex = 2;
-            this.btnResourceAdd.Text = "+\nResource";
+            this.btnResourceAdd.Text = "New Resource";
             this.btnResourceAdd.UseVisualStyleBackColor = false;
             this.btnResourceAdd.Click += new System.EventHandler(this.btnResourceAdd_Click);
             // 
@@ -198,25 +198,84 @@ namespace SNAP {
             this.groupBox2.Controls.Add(this.groupBox3);
             this.groupBox2.Controls.Add(this.panel1);
             this.groupBox2.Dock = System.Windows.Forms.DockStyle.Right;
-            this.groupBox2.Location = new System.Drawing.Point(498, 24);
+            this.groupBox2.Location = new System.Drawing.Point(348, 24);
             this.groupBox2.MinimumSize = new System.Drawing.Size(80, 192);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(156, 274);
+            this.groupBox2.Size = new System.Drawing.Size(306, 274);
             this.groupBox2.TabIndex = 8;
             this.groupBox2.TabStop = false;
+            // 
+            // groupBox3
+            // 
+            this.groupBox3.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.groupBox3.Controls.Add(this.panelLegend);
+            this.groupBox3.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.groupBox3.Location = new System.Drawing.Point(3, 91);
+            this.groupBox3.MinimumSize = new System.Drawing.Size(74, 64);
+            this.groupBox3.Name = "groupBox3";
+            this.groupBox3.Size = new System.Drawing.Size(300, 180);
+            this.groupBox3.TabIndex = 12;
+            this.groupBox3.TabStop = false;
+            this.groupBox3.Text = "Legend";
+            // 
+            // panelLegend
+            // 
+            this.panelLegend.AutoScroll = true;
+            this.panelLegend.AutoSize = true;
+            this.panelLegend.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.panelLegend.Controls.Add(this.lblWeightColor);
+            this.panelLegend.Controls.Add(this.lblSequenceColor);
+            this.panelLegend.Controls.Add(this.lblFamilyColor);
+            this.panelLegend.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panelLegend.Location = new System.Drawing.Point(3, 16);
+            this.panelLegend.Name = "panelLegend";
+            this.panelLegend.Size = new System.Drawing.Size(294, 161);
+            this.panelLegend.TabIndex = 0;
+            // 
+            // lblWeightColor
+            // 
+            this.lblWeightColor.BackColor = System.Drawing.Color.LightSkyBlue;
+            this.lblWeightColor.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblWeightColor.Dock = System.Windows.Forms.DockStyle.Top;
+            this.lblWeightColor.Location = new System.Drawing.Point(0, 30);
+            this.lblWeightColor.Name = "lblWeightColor";
+            this.lblWeightColor.Size = new System.Drawing.Size(294, 15);
+            this.lblWeightColor.TabIndex = 17;
+            this.lblWeightColor.Text = "Weight Nodes";
+            // 
+            // lblSequenceColor
+            // 
+            this.lblSequenceColor.BackColor = System.Drawing.Color.LightSeaGreen;
+            this.lblSequenceColor.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblSequenceColor.Dock = System.Windows.Forms.DockStyle.Top;
+            this.lblSequenceColor.Location = new System.Drawing.Point(0, 15);
+            this.lblSequenceColor.Name = "lblSequenceColor";
+            this.lblSequenceColor.Size = new System.Drawing.Size(294, 15);
+            this.lblSequenceColor.TabIndex = 16;
+            this.lblSequenceColor.Text = "Sequence Nodes";
+            // 
+            // lblFamilyColor
+            // 
+            this.lblFamilyColor.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblFamilyColor.Dock = System.Windows.Forms.DockStyle.Top;
+            this.lblFamilyColor.Location = new System.Drawing.Point(0, 0);
+            this.lblFamilyColor.Name = "lblFamilyColor";
+            this.lblFamilyColor.Size = new System.Drawing.Size(294, 15);
+            this.lblFamilyColor.TabIndex = 15;
+            this.lblFamilyColor.Text = "Family Nodes";
             // 
             // panel1
             // 
             this.panel1.AutoSize = true;
             this.panel1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.panel1.Controls.Add(this.btnImport);
             this.panel1.Controls.Add(this.btnRemove);
             this.panel1.Controls.Add(this.btnResourceAdd);
-            this.panel1.Controls.Add(this.btnFamilyAdd);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel1.Location = new System.Drawing.Point(3, 16);
-            this.panel1.MinimumSize = new System.Drawing.Size(74, 108);
+            this.panel1.MinimumSize = new System.Drawing.Size(74, 0);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(150, 120);
+            this.panel1.Size = new System.Drawing.Size(300, 75);
             this.panel1.TabIndex = 11;
             // 
             // btnRemove
@@ -226,32 +285,16 @@ namespace SNAP {
             this.btnRemove.BackColor = System.Drawing.Color.Lavender;
             this.btnRemove.Dock = System.Windows.Forms.DockStyle.Top;
             this.btnRemove.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnRemove.Location = new System.Drawing.Point(0, 80);
+            this.btnRemove.Location = new System.Drawing.Point(0, 25);
             this.btnRemove.Name = "btnRemove";
-            this.btnRemove.Size = new System.Drawing.Size(150, 40);
+            this.btnRemove.Size = new System.Drawing.Size(300, 25);
             this.btnRemove.TabIndex = 11;
-            this.btnRemove.Text = "-\nRemove";
+            this.btnRemove.Text = "Delete Resource";
             this.btnRemove.UseVisualStyleBackColor = false;
             this.btnRemove.Click += new System.EventHandler(this.btnRemove_Click);
             // 
-            // btnFamilyAdd
-            // 
-            this.btnFamilyAdd.AutoSize = true;
-            this.btnFamilyAdd.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.btnFamilyAdd.BackColor = System.Drawing.Color.Lavender;
-            this.btnFamilyAdd.Dock = System.Windows.Forms.DockStyle.Top;
-            this.btnFamilyAdd.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnFamilyAdd.Location = new System.Drawing.Point(0, 0);
-            this.btnFamilyAdd.Name = "btnFamilyAdd";
-            this.btnFamilyAdd.Size = new System.Drawing.Size(150, 40);
-            this.btnFamilyAdd.TabIndex = 9;
-            this.btnFamilyAdd.Text = "+\nFamily";
-            this.btnFamilyAdd.UseVisualStyleBackColor = false;
-            this.btnFamilyAdd.Click += new System.EventHandler(this.button6_Click);
-            // 
             // treeView1
             // 
-            this.treeView1.CheckBoxes = true;
             this.treeView1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.treeView1.LabelEdit = true;
             this.treeView1.Location = new System.Drawing.Point(0, 24);
@@ -276,71 +319,26 @@ namespace SNAP {
             this.treeView1.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
             treeNode7});
             this.treeView1.ShowNodeToolTips = true;
-            this.treeView1.Size = new System.Drawing.Size(498, 274);
+            this.treeView1.Size = new System.Drawing.Size(348, 274);
             this.treeView1.TabIndex = 9;
             this.treeView1.NodeMouseDoubleClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.treeView1_NodeMouseDoubleClick);
             this.treeView1.AfterLabelEdit += new System.Windows.Forms.NodeLabelEditEventHandler(this.treeView1_AfterLabelEdit);
             this.treeView1.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeView1_AfterSelect_1);
             // 
-            // groupBox3
+            // btnImport
             // 
-            this.groupBox3.AutoSize = true;
-            this.groupBox3.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.groupBox3.Controls.Add(this.panelLegend);
-            this.groupBox3.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.groupBox3.Location = new System.Drawing.Point(3, 136);
-            this.groupBox3.MinimumSize = new System.Drawing.Size(74, 64);
-            this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(150, 135);
-            this.groupBox3.TabIndex = 12;
-            this.groupBox3.TabStop = false;
-            this.groupBox3.Text = "Legend";
-            // 
-            // panelLegend
-            // 
-            this.panelLegend.AutoScroll = true;
-            this.panelLegend.AutoSize = true;
-            this.panelLegend.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.panelLegend.Controls.Add(this.lblWeightColor);
-            this.panelLegend.Controls.Add(this.lblSequenceColor);
-            this.panelLegend.Controls.Add(this.lblFamilyColor);
-            this.panelLegend.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panelLegend.Location = new System.Drawing.Point(3, 16);
-            this.panelLegend.Name = "panelLegend";
-            this.panelLegend.Size = new System.Drawing.Size(144, 116);
-            this.panelLegend.TabIndex = 0;
-            // 
-            // lblWeightColor
-            // 
-            this.lblWeightColor.BackColor = System.Drawing.Color.LightSkyBlue;
-            this.lblWeightColor.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.lblWeightColor.Dock = System.Windows.Forms.DockStyle.Top;
-            this.lblWeightColor.Location = new System.Drawing.Point(0, 30);
-            this.lblWeightColor.Name = "lblWeightColor";
-            this.lblWeightColor.Size = new System.Drawing.Size(144, 15);
-            this.lblWeightColor.TabIndex = 17;
-            this.lblWeightColor.Text = "Weight Nodes";
-            // 
-            // lblSequenceColor
-            // 
-            this.lblSequenceColor.BackColor = System.Drawing.Color.LightSeaGreen;
-            this.lblSequenceColor.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.lblSequenceColor.Dock = System.Windows.Forms.DockStyle.Top;
-            this.lblSequenceColor.Location = new System.Drawing.Point(0, 15);
-            this.lblSequenceColor.Name = "lblSequenceColor";
-            this.lblSequenceColor.Size = new System.Drawing.Size(144, 15);
-            this.lblSequenceColor.TabIndex = 16;
-            this.lblSequenceColor.Text = "Sequence Nodes";
-            // 
-            // lblFamilyColor
-            // 
-            this.lblFamilyColor.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.lblFamilyColor.Dock = System.Windows.Forms.DockStyle.Top;
-            this.lblFamilyColor.Location = new System.Drawing.Point(0, 0);
-            this.lblFamilyColor.Name = "lblFamilyColor";
-            this.lblFamilyColor.Size = new System.Drawing.Size(144, 15);
-            this.lblFamilyColor.TabIndex = 15;
-            this.lblFamilyColor.Text = "Family Nodes";
+            this.btnImport.AutoSize = true;
+            this.btnImport.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.btnImport.BackColor = System.Drawing.Color.Lavender;
+            this.btnImport.Dock = System.Windows.Forms.DockStyle.Top;
+            this.btnImport.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnImport.Location = new System.Drawing.Point(0, 50);
+            this.btnImport.Name = "btnImport";
+            this.btnImport.Size = new System.Drawing.Size(300, 25);
+            this.btnImport.TabIndex = 14;
+            this.btnImport.Text = "Import Resources";
+            this.btnImport.UseVisualStyleBackColor = false;
+            this.btnImport.Click += new System.EventHandler(this.btnImport_Click);
             // 
             // FamiliesForm
             // 
@@ -365,11 +363,11 @@ namespace SNAP {
             this.menuStrip1.PerformLayout();
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
-            this.panel1.ResumeLayout(false);
-            this.panel1.PerformLayout();
             this.groupBox3.ResumeLayout(false);
             this.groupBox3.PerformLayout();
             this.panelLegend.ResumeLayout(false);
+            this.panel1.ResumeLayout(false);
+            this.panel1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -389,7 +387,6 @@ namespace SNAP {
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.TreeView treeView1;
         private System.Windows.Forms.ColorDialog colorDialog1;
-        private System.Windows.Forms.Button btnFamilyAdd;
         private System.Windows.Forms.ToolStripMenuItem reloadToolStripMenuItem;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Button btnRemove;
@@ -401,5 +398,6 @@ namespace SNAP {
         private System.Windows.Forms.Label lblSequenceColor;
         private System.Windows.Forms.Label lblFamilyColor;
         private System.Windows.Forms.ToolTip toolTip1;
+        private System.Windows.Forms.Button btnImport;
     }
 }

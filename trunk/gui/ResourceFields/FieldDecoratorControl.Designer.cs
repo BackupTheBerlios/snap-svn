@@ -96,7 +96,6 @@ namespace SNAP.ResourceFields
             this.Name = "FieldDecoratorControl";
             this.Size = new System.Drawing.Size(559, 280);
             this.Click += new System.EventHandler(this.FieldDecoratorControl_Click);
-            this.SizeChanged += new System.EventHandler(this.FieldDecoratorControl_SizeChanged);
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
             this.ResumeLayout(false);

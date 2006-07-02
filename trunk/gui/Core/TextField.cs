@@ -180,10 +180,36 @@ namespace SNAP.Resources
             writer.WriteEndElement();
         }
 
-        public IResourceType MyType {
+        IResourceType IResourceValue.MyType {
             get {
                 return _type;
             }
+        }
+
+        public TextFieldType MyType
+        {
+            get
+            {
+                return _type;
+            }
+        }
+
+        /// <summary>
+        /// Clones this instance.
+        /// </summary>
+        /// <returns></returns>
+        IResourceValue IResourceValue.Clone()
+        {
+            return this.Clone();
+        }
+
+        /// <summary>
+        /// Clones this instance.
+        /// </summary>
+        /// <returns></returns>
+        public TextFieldValue Clone()
+        {
+            return new TextFieldValue(this.Text, this._type);
         }
 
         #endregion

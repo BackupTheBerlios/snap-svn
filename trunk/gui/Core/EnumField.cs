@@ -287,25 +287,38 @@ namespace SNAP.Resources
         #region Privates
 
         private readonly EnumFieldType _type;
-        private readonly ResourceValueList _elements = new ResourceValueList();
+        private readonly ResourceValueList _elements;
         private int _selectedElementIndex;
 
         #endregion Privates
+
+        #region Constructors
 
         /// <summary>
         /// Initializes a new instance of the <see cref="T:EnumFieldValue"/> class.
         /// </summary>
         /// <param name="type">The type.</param>
         public EnumFieldValue(EnumFieldType type)
+            : this (new ResourceValueList (), type)
         {
-            _type = type;
             foreach (EnumElementFieldType elementType in _type.SubTypes.Values)
             {
                 _elements.Add(elementType.Name, elementType.CreateDefaultValue());
             }
 
-            SelectedElementIndex = 0;
+            if (_elements.Count > 0)
+                SelectedElementIndex = 0;
         }
+
+        internal EnumFieldValue(ResourceValueList elements, EnumFieldType type)
+        {
+            _type = type;
+            _elements = elements;
+            if (_elements.Count > 0)
+                SelectedElementIndex = 0;
+        }
+
+        #endregion Constructors
 
         /// <summary>
         /// Gets the selected element.
@@ -383,8 +396,36 @@ namespace SNAP.Resources
         public void LoadFromXML(System.Xml.XmlNode node)
         {
             string selectedElementName = node.Attributes["value"].Value;
-            SelectedElementIndex = _elements.IndexOfKey(selectedElementName);
+            int index = _elements.IndexOfKey(selectedElementName);
+            if (index < 0)
+                throw new FieldException("The enum \"" + this.MyType.DisplayName + "\" does not contain the enum element " + selectedElementName);
+
+            SelectedElementIndex = index;
             SelectedElement.LoadFromXML(node);
+        }
+
+        /// <summary>
+        /// Clones this instance.
+        /// </summary>
+        /// <returns></returns>
+        IResourceValue IResourceValue.Clone()
+        {
+            return this.Clone();
+        }
+
+        /// <summary>
+        /// Clones this instance.
+        /// </summary>
+        /// <returns></returns>
+        public EnumFieldValue Clone()
+        {
+            EnumFieldValue newValue = new EnumFieldValue(
+                this._elements.Clone(),
+                this._type
+            );
+
+            newValue._selectedElementIndex = this._selectedElementIndex;
+            return newValue;
         }
 
         #endregion
@@ -399,22 +440,37 @@ namespace SNAP.Resources
         #region Privates
 
         private readonly EnumElementFieldType _type;
-        private readonly ResourceValueList _fields = new ResourceValueList();
+        private ResourceValueList _fields;
 
         #endregion Privates
+
+        #region Constructor
 
         /// <summary>
         /// Initializes a new instance of the <see cref="T:EnumElementFieldValue"/> class.
         /// </summary>
         /// <param name="type">The type.</param>
         public EnumElementFieldValue(EnumElementFieldType type)
+            : this (new ResourceValueList(), type)
         {
-            _type = type;
             foreach (IResourceType fieldType in type.SubTypes.Values)
             {
                 this.SubValues.Add(fieldType.Name, fieldType.CreateDefaultValue());
             }
         }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="T:EnumElementFieldValue"/> class.
+        /// </summary>
+        /// <param name="fields">The fields.</param>
+        /// <param name="type">The type.</param>
+        internal EnumElementFieldValue(ResourceValueList fields, EnumElementFieldType type)
+        {
+            _type = type;
+            _fields = fields;
+        }
+
+        #endregion Constructor
 
         #region IResourceValue Members
 
@@ -445,6 +501,9 @@ namespace SNAP.Resources
                     return new TextFieldValue(MyType.DisplayName, new TextFieldType("display_name", ""));
 
                 default:
+                    if (SubValues.ContainsKey (name))
+                        return SubValues[name];
+                    
                     throw new System.ArgumentOutOfRangeException();
             }
         }
@@ -457,6 +516,10 @@ namespace SNAP.Resources
         {
             get {
                 return this._fields;
+            }
+            set
+            {
+                this._fields = value;
             }
         }
 
@@ -473,8 +536,31 @@ namespace SNAP.Resources
             foreach (XmlNode fieldNode in node.SelectNodes("field"))
             {
                 string fieldName = fieldNode.Attributes["name"].Value;
-                SubValues["fieldName"].LoadFromXML(fieldNode);
+                SubValues[fieldName].LoadFromXML(fieldNode);
             }
+        }
+
+        /// <summary>
+        /// Clones this instance.
+        /// </summary>
+        /// <returns></returns>
+        IResourceValue IResourceValue.Clone()
+        {
+            return this.Clone();
+        }
+
+        /// <summary>
+        /// Clones this instance.
+        /// </summary>
+        /// <returns></returns>
+        public EnumElementFieldValue Clone()
+        {
+            EnumElementFieldValue newValue = new EnumElementFieldValue(
+                this._fields.Clone(),
+                this._type
+                );
+
+            return newValue;
         }
 
         #endregion

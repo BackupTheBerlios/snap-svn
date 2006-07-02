@@ -30,7 +30,6 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Design" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
@@ -147,6 +146,10 @@
     <ProjectReference Include="..\Core\SNAP.Core.csproj">
       <Project>{A37E3B59-8BA4-4B6E-BB3B-EC0CCF9F1150}</Project>
       <Name>SNAP.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SNAP.Util\SNAP.Util.csproj">
+      <Project>{00616E92-3691-4A53-A7AF-58E81890E7F6}</Project>
+      <Name>SNAP.Util</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

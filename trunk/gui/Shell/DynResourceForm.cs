@@ -23,16 +23,16 @@ namespace SNAP
             {
                 this.cmbResourceType.Items.Add(type);
             }
-
-
-            //textField1.FieldText = Guid.NewGuid().ToString ();
         }
 
 
         public DynResourceForm(Resources.Resource resource)
         {
             InitializeComponent();
-            InitStaticFields(resource.Name, resource.Parent.QualifiedName);
+            InitStaticFields(
+                resource.Name,
+                (resource.MyParent != null) ? resource.MyParent.QualifiedName : string.Empty
+                );
 
             this.cmbResourceType.Items.Add(resource.MyType);
             cmbResourceType.SelectedIndex = 0;
@@ -90,8 +90,17 @@ namespace SNAP
             }
             set
             {
+                if (_resource == value)
+                    return;
+
                 _resource = value;
-                resourceFieldsControl1.SubValues = _resource.SubValues;
+
+                /// we clone the subvalues of the resource
+                /// to avoid partial updates to the resource - 
+                /// e.g. updating only some fields of a resource
+                /// when some fields have errors or are incomplete.
+                /// this allows us to do resource updates transactionally
+                resourceFieldsControl1.SubValues = _resource.SubValues.Clone ();
             }
         }
 
@@ -154,6 +163,10 @@ namespace SNAP
                 execType.Execute(SelectedResource);
                 //SNAP.Resources.Execution.Run(execType.Name, SelectedResource);
             }
+            catch (FieldException)
+            {
+                /// ignore field exceptions, they are handled on a lower level
+            }
             catch (Exception x)
             {
                 Controller.ShowException(x);
@@ -162,10 +175,41 @@ namespace SNAP
 
         public void UpdateResource()
         {
-            //SelectedResource.Name = fieldName.FieldText;
-            //SelectedResource.Name = fieldName.MyValue.ToString();
+            fieldName.SaveToFieldValue(fieldName.MyValue);
+            string name = fieldName.MyValue.ToString();
+            
+            /// check that a name has been specified
+            if (string.IsNullOrEmpty(name))
+            {
+                fieldName.ErrorText = "The name field must be specified";
+                fieldName.ErrorTextVisible = true;
+                throw new FieldException(fieldName.ErrorText);
+            }
+            else if (SelectedResource.MyParent != null)
+            {
+                /// check that the parent doesnt have another resource with the same name
+                if (SelectedResource.MyParent.Children.ContainsKey(name))
+                {
+                    if (SelectedResource.MyParent.Children[name] != SelectedResource)
+                    {
+                        fieldName.ErrorText = "The parent node " + SelectedResource.MyParent.Name + "  already contains a resource named " + name;
+                        fieldName.ErrorTextVisible = true;
+                        throw new FieldException(fieldName.ErrorText);
+                    }
+                }
+            }
 
             resourceFieldsControl1.UpdateResource();
+
+            /// if we got here, it means that all the fields were updated successfully.
+            /// so we can copy back the results to the resource
+            /// (remember: the subvalues were cloned)
+            foreach (IResourceValue value in resourceFieldsControl1.SubValues.Values)
+            {
+                SelectedResource.SubValues[value.MyType.Name] = value;
+            }
+
+            SelectedResource.Name = fieldName.MyValue.ToString();
         }
 
         /// <summary>
@@ -181,11 +225,31 @@ namespace SNAP
                 this.DialogResult = DialogResult.OK;
                 this.Close();
             }
+            catch (SNAP.Resources.FieldException)
+            {
+                /// ignore field exceptions, they are handled in a lower level
+            }
             catch (Exception x)
             {
                 Controller.ShowException(x);
             }
         }
+
+        private void btnApply_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                UpdateResource();
+            }
+            catch (SNAP.Resources.FieldException)
+            {
+            }
+            catch (Exception x)
+            {
+                Controller.ShowException(x);
+            }
+        }
+
         #endregion Implementation
     }
 }

@@ -108,36 +108,49 @@ namespace SNAP {
                 Controller.CurrentResources.AddResource(
                     resourceForm.SelectedResourceParent, resourceForm.SelectedResource);
 
-                // TODO: do this more economically, by adding only the new items
-                BuildTree();
+                /// only rebuild the tree from the parent onwards
+                TreeNode childNode = CreateTreeNode(resourceForm.SelectedResource);
+                BuildTree(childNode);
+                AddNode(treeView1.SelectedNode, childNode);
+                treeView1.SelectedNode.Expand();
+                childNode.Expand();
             }
         }
 
         private void BuildTree() {
             treeView1.Nodes.Clear();
-            BuildTree(null, Controller.CurrentResources.Root);
+            TreeNode rootNode = CreateTreeNode(Controller.CurrentResources.Root);
+            treeView1.Nodes.Add(rootNode);
+            BuildTree(rootNode);
         }
 
-        private void BuildTree(System.Windows.Forms.TreeNode parent, SNAP.Resources.Resource resource) 
+        private void BuildTree(System.Windows.Forms.TreeNode parent)
         {
-            TreeNode treeNode = CreateTreeNode(resource);
+            parent.Nodes.Clear();
 
+            Resource resource = (SNAP.Resources.Resource)parent.Tag;
             /// recursively build the descendants
             foreach (Resources.Resource childResource in resource.Children.Values) {
-                BuildTree(treeNode, childResource);
+                TreeNode childNode = CreateTreeNode(childResource);
+                AddNode(parent, childNode);
+                BuildTree(childNode);
             }
+        }
 
-            AddNode(parent, treeNode);
+        private void SetupNode (TreeNode node)
+        {
+            Resource resource = (SNAP.Resources.Resource) node.Tag;
+            node.Name = resource.QualifiedName;
+            node.Text = resource.Name;
+            node.BackColor = resource.MyType.DisplayColor;
+            node.ToolTipText = resource.ToString();
         }
 
         private TreeNode CreateTreeNode(Resources.Resource resource) {
-            TreeNode treeNode = new TreeNode(resource.Name);
-            treeNode.Name = resource.QualifiedName;
+            TreeNode treeNode = new TreeNode ();
             treeNode.Tag = resource;
-            treeNode.BackColor = resource.MyType.DisplayColor;
-            treeNode.ToolTipText = resource.ToString();
+            SetupNode (treeNode);
 
-            // TODO: change the color of node according to type
             return treeNode;
         }
 
@@ -212,7 +225,7 @@ namespace SNAP {
                 MessageBoxDefaultButton.Button2
             ) == DialogResult.OK)
             {
-                resource.Parent.Children.Remove (resource.Name);
+                resource.MyParent.Children.Remove(resource.Name);
                 treeView1.SelectedNode.Remove();
             }
         }
@@ -229,12 +242,36 @@ namespace SNAP {
             if (form.ShowDialog() == DialogResult.OK)
             {
                 Controller.CurrentResources.SaveResources();
-                
-                // TODO: do this more economically, since only one resource has to be updated
-                BuildTree();
+                SetupNode(e.Node);
+                BuildTree(e.Node);
             }
         }
 
         #endregion Implementation
+
+        private void btnImport_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog dialog = new OpenFileDialog();
+            dialog.AddExtension = true;
+            dialog.CheckFileExists = true;
+            dialog.CheckPathExists = true;
+            dialog.Filter = "SNAP Resources File (*.xml) | *.xml";
+            dialog.Multiselect = false;
+            dialog.DefaultExt = "xml";
+            dialog.DereferenceLinks = true;
+            if (dialog.ShowDialog() == DialogResult.OK)
+            {
+                try
+                {
+                    Controller.CurrentResources.LoadAdditionalResources(
+                        SelectedResource, 
+                        dialog.FileName);
+                }
+                catch (Exception x)
+                {
+                    Controller.ShowException(x);
+                }
+            }
+        }
     }
 }

@@ -11,8 +11,6 @@ namespace SNAP.ResourceFields
 {
     public partial class EnumFieldControl : UserControl, IResourceWinformsUI
     {
-        protected System.Windows.Forms.Layout.LayoutEngine _layoutEngine;
-
         private SNAP.Resources.EnumFieldValue _value;
         private SortedList<string, RadioButton> _radioButtons = new SortedList<string,RadioButton> ();
 
@@ -23,16 +21,12 @@ namespace SNAP.ResourceFields
 
         void radioButton_CheckedChanged(object sender, EventArgs e)
         {
-            EnumElementFieldValue selectedEnumElement = null;
-            foreach (RadioButton radioButton in _radioButtons.Values)
-            {
-                if (radioButton.Checked)
-                {
-                    selectedEnumElement = (EnumElementFieldValue)
-                        _value.SubValues[radioButton.Name];
-                    break;
-                }
-            }
+            RadioButton radioButton = (RadioButton)sender;
+            if (!radioButton.Checked)
+                return;
+
+            EnumElementFieldValue selectedEnumElement = 
+                (EnumElementFieldValue) _value.SubValues[radioButton.Name];
 
             fieldPanel1.SubValues = selectedEnumElement.SubValues;
             fieldPanel1.Visible = (selectedEnumElement.SubValues.Count > 0);
@@ -98,8 +92,15 @@ namespace SNAP.ResourceFields
 
         public void SaveToFieldValue(EnumFieldValue value)
         {
-            /// TODO:
-            //_value.SelectedElement = _value.SubValues[value.MyType.Name];
+            int index = -1;
+            for (int i=0 ; i<_radioButtons.Count ; ++i) {
+                if (_radioButtons.Values[i].Checked)
+                    index = i;
+            }
+            fieldPanel1.UpdateResource();
+
+            _value.SelectedElementIndex = index;
+            _value.SelectedElement.SubValues = fieldPanel1.SubValues.Clone();
         }
 
         #endregion

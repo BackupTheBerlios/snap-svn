@@ -9,8 +9,22 @@ namespace SNAP.Resources
     {
     }
 
-    public class ResourceValueList: SortedList<string, IResourceValue>
+    public class ResourceValueList : SortedList<string, IResourceValue>
     {
+        /// <summary>
+        /// Clones this instance.
+        /// </summary>
+        /// <returns></returns>
+        public ResourceValueList Clone()
+        {
+            ResourceValueList newList = new ResourceValueList();
+            foreach (IResourceValue value in this.Values)
+            {
+                newList.Add(value.MyType.Name, value.Clone());
+            }
+
+            return newList;
+        }
     }
 
     #region IResourceValue
@@ -49,6 +63,12 @@ namespace SNAP.Resources
         /// </summary>
         /// <param name="node">The node.</param>
         void LoadFromXML(XmlNode node);
+
+        /// <summary>
+        /// Clones this instance.
+        /// </summary>
+        /// <returns></returns>
+        IResourceValue Clone();
     }
 
     #endregion ResourceValue
@@ -117,7 +137,7 @@ namespace SNAP.Resources
         /// Creates the default value.
         /// </summary>
         /// <returns></returns>
-        IResourceValue CreateDefaultValue ();
+        IResourceValue CreateDefaultValue();
 
         /// <summary>
         /// Loads the IResourceType from the specified XmlNode.
@@ -155,7 +175,7 @@ namespace SNAP.Resources
         /// Loads from field value.
         /// </summary>
         /// <param name="value">The value.</param>
-        void LoadFromFieldValue (IResourceValue value);
+        void LoadFromFieldValue(IResourceValue value);
 
         /// <summary>
         /// Saves information to field value.
@@ -216,7 +236,7 @@ namespace SNAP.Resources
             }
         }
 
-            
+
 
         /// <summary>
         /// Gets or sets the help.
@@ -270,10 +290,10 @@ namespace SNAP.Resources
             }
         }
 
-        
 
 
-        
+
+
 
         #endregion
 
@@ -295,10 +315,10 @@ namespace SNAP.Resources
         /// </summary>
         /// <param name="filename">The filename.</param>
         /// <returns></returns>
-        public static System.Collections.Generic.SortedDictionary <string, ResourceType> LoadTypes(string filename)
+        public static System.Collections.Generic.SortedDictionary<string, ResourceType> LoadTypes(string filename)
         {
             System.Collections.Generic.SortedDictionary<string, ResourceType> list = new SortedDictionary<string, ResourceType>();
-            
+
             System.Xml.XmlDocument document = new System.Xml.XmlDocument();
             document.Load(filename);
 
@@ -309,7 +329,7 @@ namespace SNAP.Resources
                 {
                     if (resourceNode.Name == "resource_type")
                     {
-                        ResourceType resourceType = LoadResourceType (resourceNode);
+                        ResourceType resourceType = LoadResourceType(resourceNode);
                         list.Add(resourceType.Name, resourceType);
                     }
                 }
@@ -320,7 +340,7 @@ namespace SNAP.Resources
             }
             return list;
         }
-        private static IResourceType LoadResourceField (System.Xml.XmlNode fieldNode)
+        private static IResourceType LoadResourceField(System.Xml.XmlNode fieldNode)
         {
             IResourceType field = null;
             switch (fieldNode.Name)
@@ -358,7 +378,7 @@ namespace SNAP.Resources
             System.Diagnostics.Debug.Assert(exportNode.Name.Equals("export"));
             string type = exportNode.Attributes["type"].Value;
 
-            Script.IExport export = null;
+            Script.IExportStep export = null;
             switch (type)
             {
                 case "params":
@@ -408,6 +428,44 @@ namespace SNAP.Resources
             return export;
         }
 
+        private static Script.ConditionalStep LoadConditionalStep(XmlNode node)
+        {
+            System.Diagnostics.Debug.Assert(node.Name.Equals("conditional"));
+            switch (node.FirstChild.Name)
+            {
+                case "if":
+                    break;
+
+                case "if_not":
+                    break;
+
+                default:
+                    break;
+            }
+
+            switch (node.FirstChild.NextSibling.Name)
+            {
+                case "then":
+                    break;
+
+                default:
+                    break;
+            }
+
+            if (node.FirstChild.NextSibling.NextSibling != null) {
+                switch (node.FirstChild.NextSibling.NextSibling.Name)
+                {
+                    case "else":
+                        break;
+
+                    default:
+                        break;
+                }
+            }
+
+            return null;
+        }
+
         private static Script LoadResourceExecution(System.Xml.XmlNode node)
         {
             System.Diagnostics.Debug.Assert(node.Name == "execute");
@@ -440,6 +498,12 @@ namespace SNAP.Resources
                         }
                         break;
 
+                    case "conditional":
+                        {
+                            execType.Steps.Add(LoadConditionalStep(stepNode));
+                        }
+                        break;
+
                     default:
                         throw new System.ArgumentException("The step type " + stepNode.Name + " is invalid");
                 }
@@ -448,7 +512,7 @@ namespace SNAP.Resources
             return execType;
         }
 
-        internal static void LoadResourceFields (IDictionary<string, IResourceType> container, XmlNode fieldParentNode)
+        internal static void LoadResourceFields(IDictionary<string, IResourceType> container, XmlNode fieldParentNode)
         {
             foreach (System.Xml.XmlNode node in fieldParentNode.ChildNodes)
             {
@@ -457,7 +521,7 @@ namespace SNAP.Resources
                     container.Add(fieldType.Name, fieldType);
             }
         }
-        
+
         private static ResourceType LoadResourceType(System.Xml.XmlNode resourceNode)
         {
             System.Diagnostics.Debug.Assert(resourceNode.Name == "resource_type");
@@ -470,7 +534,7 @@ namespace SNAP.Resources
         /// Loads from XML, the common properties which all resource types share
         /// </summary>
         /// <param name="resourceType">Type of the resource.</param>
-        public static void LoadFromXML (XmlNode node, IResourceType resourceType)
+        public static void LoadFromXML(XmlNode node, IResourceType resourceType)
         {
             if (node.Attributes["name"] == null)
                 throw new System.Xml.XmlException("The resource_type node does not contain a 'name' attribute at " + node.BaseURI);
@@ -496,14 +560,16 @@ namespace SNAP.Resources
 
         public string Typename
         {
-            get {
+            get
+            {
                 return "resource_type";
             }
         }
 
         public string DisplayName
         {
-            get {
+            get
+            {
                 return _displayName;
             }
             set
@@ -514,14 +580,15 @@ namespace SNAP.Resources
 
         public ResourceTypeList SubTypes
         {
-            get {
+            get
+            {
                 return this._fields;
             }
         }
 
         public IResourceValue CreateDefaultValue()
         {
-            return new Resource(Guid.NewGuid (), this, "");
+            return new Resource(Guid.NewGuid(), this, "");
         }
 
         public void LoadFromXML(XmlNode resourceNode)
@@ -558,89 +625,4 @@ namespace SNAP.Resources
     }
 
     #endregion XMLResourceType
-
-    #region FieldTypes
-
-    #region FieldType
-/*
-    public class FieldType : IResourceType
-    {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="T:Field"/> class.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="type">The type.</param>
-        /// <param name="help">The help.</param>
-        /// <param name="minOccurs">The min occurs.</param>
-        /// <param name="maxOccurs">The max occurs.</param>
-        public FieldType(string type, string name, string help, int minOccurs, int maxOccurs)
-        {
-            Type = type;
-            Name = name;
-            Help = help;
-            MinOccurs = minOccurs;
-            MaxOccurs = maxOccurs;
-        }
-
-        public readonly string Type;
-        public readonly string Name;
-        public readonly string Help;
-        public readonly int MinOccurs;
-        public readonly int MaxOccurs;
-
-        #region IResourceType Members
-
-        public string Typename
-        {
-            get { throw new Exception("The method or operation is not implemented."); }
-        }
-
-        string IResourceType.Name
-        {
-            get { throw new Exception("The method or operation is not implemented."); }
-        }
-
-        public string DisplayName
-        {
-            get { throw new Exception("The method or operation is not implemented."); }
-        }
-
-        string IResourceType.Help
-        {
-            get { throw new Exception("The method or operation is not implemented."); }
-        }
-
-        public IDictionary<string, IResourceType> SubTypes
-        {
-            get { throw new Exception("The method or operation is not implemented."); }
-        }
-
-        public IResourceValue CreateDefaultValue()
-        {
-            throw new Exception("The method or operation is not implemented.");
-        }
-
-        public void LoadFromXML(XmlNode node)
-        {
-            throw new Exception("The method or operation is not implemented.");
-        }
-
-        #endregion
-    }
- */
-  
-
-    #endregion Field
-
-    
-
-    
-
-    #endregion InternalRefField
-
-    
-
-
-
-
 }

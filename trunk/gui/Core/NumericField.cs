@@ -158,9 +158,24 @@ namespace SNAP.Resources
             if (node.Attributes["max"] != null)
                 this.MaxValue = decimal.Parse(node.Attributes["max"].Value);
 
-            this.DefaultValue = decimal.Divide((MinValue + MaxValue), 2);
             if (node.Attributes["default"] != null)
                 this.DefaultValue = decimal.Parse(node.Attributes["default"].Value);
+            else
+            {
+                if (node.Attributes["min"] != null)
+                {
+                    if (node.Attributes["max"] != null)
+                    {
+                        this.DefaultValue = decimal.Divide((MinValue + MaxValue), 2);
+                    }
+                    else
+                        this.DefaultValue = this.MinValue;
+                }
+                else if (node.Attributes["max"] != null)
+                    this.DefaultValue = this.MaxValue;
+                else
+                    this.DefaultValue = 0;
+            }
 
             this.Increment = 1;
             if (node.Attributes["increment"] != null)
@@ -241,6 +256,24 @@ namespace SNAP.Resources
             {
                 return _type;
             }
+        }
+
+        /// <summary>
+        /// Clones this instance.
+        /// </summary>
+        /// <returns></returns>
+        IResourceValue IResourceValue.Clone()
+        {
+            return this.Clone();
+        }
+
+        /// <summary>
+        /// Clones this instance.
+        /// </summary>
+        /// <returns></returns>
+        public NumericFieldValue Clone()
+        {
+            return new NumericFieldValue(this.Value, this._type);
         }
 
         #endregion

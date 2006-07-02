@@ -46,7 +46,7 @@ namespace SNAP.Resources
         /// This class implements the functionality offered in the "export" statement
         /// in the resource.types.xml
         /// </summary>
-        internal interface IExport : IStep
+        internal interface IExportStep : IStep
         {
             /// <summary>
             /// Gets the filename.
@@ -61,7 +61,7 @@ namespace SNAP.Resources
             /// Gets the fields.
             /// </summary>
             /// <value>The fields.</value>
-            SNAP.Util.IChildList<IExportField, IExport> Fields
+            SNAP.Util.IChildList<IExportField, IExportStep> Fields
             {
                 get;
             }
@@ -74,7 +74,7 @@ namespace SNAP.Resources
         /// <summary>
         /// 
         /// </summary>
-        internal interface IExportField : SNAP.Util.IChild<IExport>
+        internal interface IExportField : SNAP.Util.IChild<IExportStep>
         {
             /// <summary>
             /// Gets the name.
@@ -104,13 +104,13 @@ namespace SNAP.Resources
         /// <summary>
         /// 
         /// </summary>
-        internal class ParamsExport : IExport
+        internal class ParamsExport : IExportStep
         {
             #region Privates
 
             private Script _script = null;
             private string _filename;
-            protected SNAP.Util.ChildList<IExportField, IExport> _fields;
+            protected SNAP.Util.ChildList<IExportField, IExportStep> _fields;
 
             #endregion Privates
 
@@ -118,7 +118,7 @@ namespace SNAP.Resources
 
             public ParamsExport(string filename)
             {
-                _fields = new SNAP.Util.ChildList<IExportField, IExport>(this);
+                _fields = new SNAP.Util.ChildList<IExportField, IExportStep>(this);
                 _filename = filename;
             }
 
@@ -138,7 +138,7 @@ namespace SNAP.Resources
                 }
             }
 
-            public SNAP.Util.IChildList<IExportField, IExport> Fields
+            public SNAP.Util.IChildList<IExportField, IExportStep> Fields
             {
                 get
                 {
@@ -222,13 +222,15 @@ namespace SNAP.Resources
 
         #endregion ParamsExport
 
+        #region PathExportField
+
         internal class PathExportField : IExportField
         {
             #region Privates
 
             private readonly string _name;
             private readonly string _value;
-            private IExport _parent;
+            private IExportStep _parent;
 
             #endregion Privates
 
@@ -288,7 +290,7 @@ namespace SNAP.Resources
             /// Gets or sets my parent.
             /// </summary>
             /// <value>My parent.</value>
-            IExport SNAP.Util.IChild<IExport>.MyParent
+            IExportStep SNAP.Util.IChild<IExportStep>.MyParent
             {
                 get
                 {
@@ -304,7 +306,7 @@ namespace SNAP.Resources
             /// Gets my parent.
             /// </summary>
             /// <value>My parent.</value>
-            public IExport MyParent
+            public IExportStep MyParent
             {
                 get
                 {
@@ -315,6 +317,8 @@ namespace SNAP.Resources
             #endregion
         }
 
+        #endregion PathExportField
+
         #region TextExportField
 
         internal class TextExportField : IExportField
@@ -323,7 +327,7 @@ namespace SNAP.Resources
 
             private readonly string _name;
             private readonly string _value;
-            private IExport _parent;
+            private IExportStep _parent;
 
             #endregion Privates
 
@@ -373,7 +377,7 @@ namespace SNAP.Resources
             /// Gets or sets my parent.
             /// </summary>
             /// <value>My parent.</value>
-            IExport SNAP.Util.IChild<IExport>.MyParent
+            IExportStep SNAP.Util.IChild<IExportStep>.MyParent
             {
                 get
                 {
@@ -389,7 +393,7 @@ namespace SNAP.Resources
             /// Gets my parent.
             /// </summary>
             /// <value>My parent.</value>
-            public IExport MyParent
+            public IExportStep MyParent
             {
                 get
                 {
@@ -566,6 +570,58 @@ namespace SNAP.Resources
         }
         
         #endregion ImportStep
+
+        internal class ConditionalStep : IStep
+        {
+            private Script _parent;
+            private readonly Conjunction _if;
+            private readonly SNAP.Util.ChildList<IStep, Script> _then;
+            private readonly IStep _else;
+
+            #region IStep Members
+
+            /// <summary>
+            /// Executes the step for the specified resource.
+            /// </summary>
+            /// <param name="resource">The resource.</param>
+            public void Execute(Resource resource)
+            {
+                if (_if.Process (resource)) {
+                    foreach (IStep step in _then)
+                    {
+                        step.Execute(resource);
+                    }
+                }
+                else {
+                    if (_else != null)
+                        _else.Execute (resource);
+                }
+
+                throw new Exception("The method or operation is not implemented.");
+            }
+
+            #endregion
+
+            #region IChild<Script> Members
+
+            /// <summary>
+            /// Gets or sets my parent.
+            /// </summary>
+            /// <value>My parent.</value>
+            public Script MyParent
+            {
+                get
+                {
+                    return _parent;
+                }
+                set
+                {
+                    _parent = value;
+                }
+            }
+
+            #endregion
+        }
 
         #endregion Interface Implementations
 

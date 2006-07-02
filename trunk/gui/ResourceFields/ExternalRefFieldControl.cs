@@ -78,7 +78,7 @@ namespace SNAP.ResourceFields
         public void SaveToFieldValue(SNAP.Resources.ExternalRefFieldValue value)
         {
             if (FieldText == null || FieldText.Length == 0)
-                throw new System.InvalidOperationException("A required field has not been filled out");
+                throw new SNAP.Resources.FieldException("A required field has not been filled out");
 
             value.Path = FieldText;
         }

@@ -7,81 +7,12 @@ namespace SNAP
 {
     namespace Resources
     {
-        #region Events
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public class ResourceEventArgs : System.EventArgs
-        {
-            public ResourceEventArgs(Resource parent, Resource resource)
-            {
-                Parent = parent;
-                Resource = resource;
-            }
-
-            public readonly Resource Parent;
-            public readonly Resource Resource;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="args"></param>
-        public delegate void ResourceEvent(object sender, ResourceEventArgs args);
-
-        #endregion Events
-
-        #region FieldValue
-
-        #region IScriptableValue
-        /*
-        public interface IScriptableValue
-        {
-            /// <summary>
-            /// Gets the <see cref="T:FieldValue"/> with the specified variable name.
-            /// </summary>
-            /// <value></value>
-            IScriptableValue this[string variableName]
-            {
-                get;
-            }
-        }
-         */
-
-        #endregion IScriptableValue
-
-        
-
-        
-
-        
-
-        
-
-        #region FieldValueList
-        /*
-        public class FieldValueList
-        {
-            public FieldValueList(FieldType type)
-            {
-                Type = type;
-            }
-
-            public readonly FieldType Type;
-            public readonly List<IScriptableValue> Values = new List<IScriptableValue>();
-        }
-        */
-        #endregion FieldValueList
-
-        #endregion FieldValue
-
         #region Resource
 
         #region ResourceChildren
-
-        public class ResourceChildren
+        
+        /*
+        public class ResourceChildren : IDictionary <string, Resource>
         {
             #region Privates
             private SortedDictionary<string, Resource> _resourceDictionary
@@ -107,6 +38,8 @@ namespace SNAP
             #endregion Privates
 
             public readonly Resource Resource;
+            
+            #region Useful interface
 
             /// <summary>
             /// Removes the element with the specified key from the <see cref="T:System.Collections.Generic.IDictionary`2"></see>.
@@ -187,13 +120,197 @@ namespace SNAP
                     return _resourceDictionary.Values;
                 }
             }
+
+            #endregion Useful interface
+
+            #region IDictionary<string,Resource> Members
+
+            /// <summary>
+            /// Adds an element with the provided key and value to the <see cref="T:System.Collections.Generic.IDictionary`2"></see>.
+            /// </summary>
+            /// <param name="key">The object to use as the key of the element to add.</param>
+            /// <param name="value">The object to use as the value of the element to add.</param>
+            /// <exception cref="T:System.NotSupportedException">The <see cref="T:System.Collections.Generic.IDictionary`2"></see> is read-only.</exception>
+            /// <exception cref="T:System.ArgumentException">An element with the same key already exists in the <see cref="T:System.Collections.Generic.IDictionary`2"></see>.</exception>
+            /// <exception cref="T:System.ArgumentNullException">key is null.</exception>
+            void IDictionary<string,Resource>.Add(string key, Resource value)
+            {
+                System.Diagnostics.Trace.Assert(value.Name.Equals(key));
+                Add(value);
+            }
+
+            /// <summary>
+            /// Determines whether the <see cref="T:System.Collections.Generic.IDictionary`2"></see> contains an element with the specified key.
+            /// </summary>
+            /// <param name="key">The key to locate in the <see cref="T:System.Collections.Generic.IDictionary`2"></see>.</param>
+            /// <returns>
+            /// true if the <see cref="T:System.Collections.Generic.IDictionary`2"></see> contains an element with the key; otherwise, false.
+            /// </returns>
+            /// <exception cref="T:System.ArgumentNullException">key is null.</exception>
+            public bool ContainsKey(string key)
+            {
+                return _resourceDictionary.ContainsKey(key);
+            }
+
+            /// <summary>
+            /// Gets an <see cref="T:System.Collections.Generic.ICollection`1"></see> containing the keys of the <see cref="T:System.Collections.Generic.IDictionary`2"></see>.
+            /// </summary>
+            /// <value></value>
+            /// <returns>An <see cref="T:System.Collections.Generic.ICollection`1"></see> containing the keys of the object that implements <see cref="T:System.Collections.Generic.IDictionary`2"></see>.</returns>
+            public ICollection<string> Keys
+            {
+                get {
+                    return _resourceDictionary.Keys;
+                }
+            }
+
+            /// <summary>
+            /// Tries the get value.
+            /// </summary>
+            /// <param name="key">The key.</param>
+            /// <param name="value">The value.</param>
+            /// <returns></returns>
+            public bool TryGetValue(string key, out Resource value)
+            {
+                return _resourceDictionary.TryGetValue(key, out value);
+            }
+
+            #endregion
+
+            #region ICollection<KeyValuePair<string,Resource>> Members
+
+            /// <summary>
+            /// Adds an item to the <see cref="T:System.Collections.Generic.ICollection`1"></see>.
+            /// </summary>
+            /// <param name="item">The object to add to the <see cref="T:System.Collections.Generic.ICollection`1"></see>.</param>
+            /// <exception cref="T:System.NotSupportedException">The <see cref="T:System.Collections.Generic.ICollection`1"></see> is read-only.</exception>
+            void ICollection<KeyValuePair<string,Resource>>.Add(KeyValuePair<string, Resource> item)
+            {
+                (this as IDictionary<string,Resource>).Add(item.Key, item.Value);
+            }
+
+            void ICollection<KeyValuePair<string,Resource>>.Clear()
+            {
+                throw new Exception("The method or operation is not implemented.");
+            }
+
+            /// <summary>
+            /// Determines whether the <see cref="T:System.Collections.Generic.ICollection`1"></see> contains a specific value.
+            /// </summary>
+            /// <param name="item">The object to locate in the <see cref="T:System.Collections.Generic.ICollection`1"></see>.</param>
+            /// <returns>
+            /// true if item is found in the <see cref="T:System.Collections.Generic.ICollection`1"></see>; otherwise, false.
+            /// </returns>
+            bool ICollection<KeyValuePair<string, Resource>>.Contains(KeyValuePair<string, Resource> item)
+            {
+                throw new Exception("The method or operation is not implemented.");
+            }
+
+            /// <summary>
+            /// Copies the elements of the <see cref="T:System.Collections.Generic.ICollection`1"></see> to an <see cref="T:System.Array"></see>, starting at a particular <see cref="T:System.Array"></see> index.
+            /// </summary>
+            /// <param name="array">The one-dimensional <see cref="T:System.Array"></see> that is the destination of the elements copied from <see cref="T:System.Collections.Generic.ICollection`1"></see>. The <see cref="T:System.Array"></see> must have zero-based indexing.</param>
+            /// <param name="arrayIndex">The zero-based index in array at which copying begins.</param>
+            /// <exception cref="T:System.ArgumentOutOfRangeException">arrayIndex is less than 0.</exception>
+            /// <exception cref="T:System.ArgumentNullException">array is null.</exception>
+            /// <exception cref="T:System.ArgumentException">array is multidimensional.-or-arrayIndex is equal to or greater than the length of array.-or-The number of elements in the source <see cref="T:System.Collections.Generic.ICollection`1"></see> is greater than the available space from arrayIndex to the end of the destination array.-or-Type T cannot be cast automatically to the type of the destination array.</exception>
+            void ICollection<KeyValuePair<string, Resource>>.CopyTo(KeyValuePair<string, Resource>[] array, int arrayIndex)
+            {
+                _resourceDictionary.CopyTo (array, arrayIndex);
+            }
+
+            /// <summary>
+            /// Gets a value indicating whether the <see cref="T:System.Collections.Generic.ICollection`1"></see> is read-only.
+            /// </summary>
+            /// <value></value>
+            /// <returns>true if the <see cref="T:System.Collections.Generic.ICollection`1"></see> is read-only; otherwise, false.</returns>
+            bool ICollection<KeyValuePair<string, Resource>>.IsReadOnly
+            {
+                get
+                {
+                    throw new Exception("The method or operation is not implemented.");
+                }
+            }
+
+            /// <summary>
+            /// Removes the first occurrence of a specific object from the <see cref="T:System.Collections.Generic.ICollection`1"></see>.
+            /// </summary>
+            /// <param name="item">The object to remove from the <see cref="T:System.Collections.Generic.ICollection`1"></see>.</param>
+            /// <returns>
+            /// true if item was successfully removed from the <see cref="T:System.Collections.Generic.ICollection`1"></see>; otherwise, false. This method also returns false if item is not found in the original <see cref="T:System.Collections.Generic.ICollection`1"></see>.
+            /// </returns>
+            /// <exception cref="T:System.NotSupportedException">The <see cref="T:System.Collections.Generic.ICollection`1"></see> is read-only.</exception>
+            bool ICollection<KeyValuePair<string, Resource>>.Remove(KeyValuePair<string, Resource> item)
+            {
+                throw new Exception("The method or operation is not implemented.");
+            }
+
+            #endregion
+
+            #region IEnumerable<KeyValuePair<string,Resource>> Members
+
+            /// <summary>
+            /// Returns an enumerator that iterates through the collection.
+            /// </summary>
+            /// <returns>
+            /// A <see cref="T:System.Collections.Generic.IEnumerator`1"></see> that can be used to iterate through the collection.
+            /// </returns>
+            public IEnumerator<KeyValuePair<string, Resource>> GetEnumerator()
+            {
+                return _resourceDictionary.GetEnumerator();
+            }
+
+            #endregion
+
+            #region IEnumerable Members
+
+            /// <summary>
+            /// Returns an enumerator that iterates through a collection.
+            /// </summary>
+            /// <returns>
+            /// An <see cref="T:System.Collections.IEnumerator"></see> object that can be used to iterate through the collection.
+            /// </returns>
+            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+            {
+                return _resourceDictionary.GetEnumerator();
+            }
+
+            #endregion
         }
+
+        */
 
         #endregion ResourceChildren
 
-        //public class ResourceFieldList : SortedDictionary<string, FieldValueList>
+        public class ResourceChildren : SNAP.Util.ChildDictionary<string, Resource, Resource>
+        {
+            public ResourceChildren(Resource parent)
+                : base (parent)
+            {
+            }
+            public void Add(Resource resource)
+            {
+                Add(resource.Name, resource);
+            }
 
-        public class Resource : IResourceValue
+            protected override void OnChildAdded(Resource child)
+            {
+                base.OnChildAdded(child);
+                if (MyParent.MyParent != null)
+                    MyParent.MyParent.Children.OnChildAdded(child);
+            }
+
+            protected override void OnChildRemoved(Resource child)
+            {
+                base.OnChildRemoved(child);
+                if (MyParent.MyParent != null)
+                    MyParent.MyParent.Children.OnChildRemoved(child);
+            }
+        }
+
+        #region class Resource
+
+        public class Resource : IResourceValue, SNAP.Util.IChild <Resource>
         {
             #region Constructors
 
@@ -203,17 +320,21 @@ namespace SNAP
             /// <param name="guid">The GUID.</param>
             /// <param name="type">The type.</param>
             /// <param name="name">The name.</param>
-            public Resource(Guid guid, ResourceType type, string name)
+            public Resource(Guid guid, ResourceType type, string name)//, Resource parent)
             {
                 _id  = guid;
                 _type = type;
                 _name = name;
+                this._resourceDictionary = new ResourceChildren (this);
+                //_parent = parent;
 
                 foreach (IResourceType fieldType in _type.SubTypes.Values)
                 {
                     _fields.Add(fieldType.Name, fieldType.CreateDefaultValue());
                 }
             }
+
+            
 
             #endregion
 
@@ -223,14 +344,12 @@ namespace SNAP
             protected Resource _parent;
             protected string _name;
             protected readonly System.Guid _id;
-            internal readonly SortedDictionary<string, Resource> _resourceDictionary = new SortedDictionary<string, Resource>();
+            internal readonly ResourceChildren _resourceDictionary;   
             private readonly ResourceValueList _fields = new ResourceValueList();
 
             #endregion
 
             #region Properties
-
-
 
             IResourceType IResourceValue.MyType
             {
@@ -263,7 +382,7 @@ namespace SNAP
                     if (_name.Equals(value))
                         return;
 
-                    Resource parent = Parent;
+                    Resource parent = MyParent;
                     RemoveFromParent ();
                     _name = value;
                     if (parent != null)
@@ -280,22 +399,6 @@ namespace SNAP
                 get
                 {
                     return _id;
-                }
-            }
-
-            /// <summary>
-            /// Gets or sets the parent.
-            /// </summary>
-            /// <value>The parent.</value>
-            public Resource Parent
-            {
-                get
-                {
-                    return _parent;
-                }
-                internal set
-                {
-                    _parent = value;
                 }
             }
 
@@ -322,38 +425,11 @@ namespace SNAP
             {
                 get
                 {
-                    return new ResourceChildren(this);
+                    return this._resourceDictionary;
                 }
             }
 
             #endregion Properties
-
-            #region Events
-
-            public event ResourceEvent ResourceAdded;
-            public event ResourceEvent ResourceRemoved;
-
-            internal void OnResourceAdded(ResourceEventArgs args)
-            {
-                if (ResourceAdded != null)
-                {
-                    ResourceAdded(this, args);
-                }
-                if (Parent != null)
-                    Parent.OnResourceAdded(args);
-            }
-
-            internal void OnResourceRemoved(ResourceEventArgs args)
-            {
-                if (ResourceRemoved != null)
-                {
-                    ResourceRemoved(this, args);
-                }
-                if (Parent != null)
-                    Parent.OnResourceRemoved(args);
-            }
-
-            #endregion Events
 
             #region Methods
 
@@ -364,53 +440,9 @@ namespace SNAP
             /// </summary>
             public void RemoveFromParent()
             {
-                if (Parent != null)
-                    Parent.Children.Remove(Name);
+                if (MyParent != null)
+                    MyParent.Children.Remove(Name);
             }
-
-
-/*
-            /// <summary>
-            /// Adds the specified resource.
-            /// </summary>
-            /// <param name="resource">The resource.</param>
-            /// <param name="family">The family.</param>
-            public void Add(Resource resource, string absoluteFamily)
-            {
-                string qualifiedName = this.QualifiedName;
-                System.Diagnostics.Debug.Assert(absoluteFamily.StartsWith(qualifiedName));
-                /// remove our qualified name, leaving only the relative path
-                string[] relativeFamily =
-                    absoluteFamily.Substring(qualifiedName.Length).Split(new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries);
-
-                Add(resource, relativeFamily, 0);
-            }
-
-            /// <summary>
-            /// Adds the specified resource.
-            /// </summary>
-            /// <param name="resource">The resource.</param>
-            /// <param name="relativeFamily">The relative family.</param>
-            /// <param name="depth">The depth.</param>
-            private void Add(Resource resource, string[] relativeFamily, int depth)
-            {
-                if (relativeFamily.Length == depth)
-                {
-                    Add(resource);
-                }
-                else
-                {
-                    string childName = relativeFamily[depth];
-                    Resource child = this[childName];
-                    if (child == null)
-                    {
-                        child = new Resource(childName);
-                        Add(child);
-                    }
-                    child.Add(resource, relativeFamily, depth + 1);
-                }
-            }
- */
 
             #endregion Add/Remove
 
@@ -453,7 +485,7 @@ namespace SNAP
 
                         case "Family":
                             /// TODO dynamically generat the resource type
-                            return new InternalRefFieldValue(this.Parent.QualifiedName, null);
+                            return new InternalRefFieldValue(this.MyParent.QualifiedName, null);
 
                         case "Folder":
                             // TODO: return the folder of the resource
@@ -486,7 +518,7 @@ namespace SNAP
                 writer.WriteAttributeString("type", this.MyType.Name);
                 writer.WriteAttributeString("name", _name);
                 writer.WriteAttributeString("id", ID.ToString());
-                writer.WriteElementString("family", (Parent != null) ? Parent.QualifiedName : "");
+                writer.WriteElementString("family", (MyParent != null) ? MyParent.QualifiedName : "");
 
                 foreach (IResourceValue value in this._fields.Values)
                 {
@@ -496,8 +528,35 @@ namespace SNAP
                 writer.WriteEndElement();
             }
 
+            /// <summary>
+            /// Clones this instance.
+            /// </summary>
+            /// <returns></returns>
+            IResourceValue IResourceValue.Clone()
+            {
+                throw new System.Exception("Not implemented");
+            }
+
+            #endregion
+
+            #region IChild<Resource> Members
+
+            public Resource MyParent
+            {
+                get
+                {
+                    return _parent;
+                }
+                set
+                {
+                    _parent = value;
+                }
+            }
+
             #endregion
         }
+
+        #endregion class Resource
 
         #endregion Resource
 
@@ -587,11 +646,24 @@ namespace SNAP
                 _resourceList.Add (Root.QualifiedName, Root);
 
                 /// load the actual resources
-                LoadAdditionalResources(Controller.ResourcesFile, true);
+                if (!System.IO.File.Exists (Controller.ResourcesFile)) 
+                {
+                    /// if the file doesnt exist, create the empty file
+                    SaveResources ();
+                }
+
+                try
+                {
+                    LoadAdditionalResources(Controller.ResourcesFile, true);
+                }
+                catch (Exception x)
+                {
+                    Controller.ShowException("The file " + Controller.ResourcesFile + " could not be loaded. it may be corrupt. we recommend shutting the program down to avoid data loss.", x);
+                }
 
                 ///
-                Root.ResourceAdded += new ResourceEvent(Root_ResourceAdded);
-                Root.ResourceRemoved += new ResourceEvent(Root_ResourceRemoved);
+                Root.Children.ChildAdded += new SNAP.Util.ChildEvent<Resource>(Root_ResourceAdded);
+                Root.Children.ChildRemoved += new SNAP.Util.ChildEvent<Resource>(Root_ResourceRemoved);
             }
 
             /// <summary>
@@ -611,7 +683,7 @@ namespace SNAP
             /// <param name="resource">The resource.</param>
             public void AddResource(Resource parent, Resource resource)
             {
-                System.Diagnostics.Debug.Assert (resource.Parent == null);
+                System.Diagnostics.Debug.Assert(resource.MyParent == null);
                 parent.Children.Add(resource);
 
                 /// no need to add to the _resourceList because the adding to the parent
@@ -631,6 +703,21 @@ namespace SNAP
                 return null;
             }
 
+            public void RemoveResource(string qualifiedName)
+            {
+                RemoveResource  (_resourceList [qualifiedName]);
+                SaveResources();
+            }
+            private void RemoveResource (Resource resource)
+            {
+                foreach (Resource child in resource.Children.Values)
+                {
+                    RemoveResource (child);
+                }
+
+                _resourceList.Remove(resource.QualifiedName);
+            }
+
             #endregion Methods
 
             #region Implementation
@@ -640,9 +727,9 @@ namespace SNAP
             /// </summary>
             /// <param name="sender">The source of the event.</param>
             /// <param name="args">The <see cref="T:SNAP.Resources.CompositeResourceEventArgs"/> instance containing the event data.</param>
-            void Root_ResourceAdded(object sender, Resources.ResourceEventArgs args)
+            void Root_ResourceAdded(object sender, SNAP.Util.ChildEventArgs<Resource> args)
             {
-                _resourceList.Add(args.Resource.QualifiedName, args.Resource);
+                _resourceList.Add(args.Child.QualifiedName, args.Child);
                 SaveResources();
             }
 
@@ -693,11 +780,14 @@ namespace SNAP
             {
                 return LoadResource(node, null);
             }
-            void Root_ResourceRemoved(object sender, Resources.ResourceEventArgs args)
+            void Root_ResourceRemoved(object sender, SNAP.Util.ChildEventArgs<Resource> args)
             {
-                _resourceList.Remove(args.Resource.QualifiedName);
-                SaveResources();
+                System.Diagnostics.Debug.Assert(args.Child.MyParent != null);
+                RemoveResource (args.Child);
             }
+
+
+            
 
             public void SaveResources()
             {

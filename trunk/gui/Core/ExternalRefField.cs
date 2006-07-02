@@ -208,6 +208,24 @@ namespace SNAP.Resources
             }
         }
 
+        /// <summary>
+        /// Clones this instance.
+        /// </summary>
+        /// <returns></returns>
+        IResourceValue IResourceValue.Clone()
+        {
+            return this.Clone();
+        }
+
+        /// <summary>
+        /// Clones this instance.
+        /// </summary>
+        /// <returns></returns>
+        public ExternalRefFieldValue Clone()
+        {
+            return new ExternalRefFieldValue (this.Path, this._type);
+        }
+
         #endregion
     }
 

@@ -26,6 +26,11 @@ namespace SNAP
             ErrorForm errForm = new ErrorForm(x);
             errForm.ShowDialog();
         }
+        public void ShowException(string message, System.Exception x)
+        {
+            ErrorForm errForm = new ErrorForm(message, x);
+            errForm.ShowDialog();
+        }
         public bool ChooseResource(
             IEnumerable <SNAP.Resources.InternalRefFieldType.Mask> masks, 
             out SNAP.Resources.Resource resource)

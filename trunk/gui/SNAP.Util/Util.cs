@@ -364,6 +364,8 @@ namespace SNAP.Util {
 
     #region ChildList
 
+    #region IChild
+
     public interface IChild<TParent> where TParent:class
     {
         TParent MyParent
@@ -373,11 +375,236 @@ namespace SNAP.Util {
         }
     }
 
+    #endregion IChild
+
+    #region Events
+
+    public class ChildEventArgs <TChild>: System.EventArgs
+    {
+        public ChildEventArgs(TChild child)
+        {
+            Child = child;
+        }
+
+        public readonly TChild Child;
+    }
+
+    public delegate void ChildEvent <TChild>(object sender, ChildEventArgs<TChild> args);
+
+    #endregion Events
+
+    #region interface IChildDictionary
+
+    public interface IChildDictionary<TKey, TChild, TParent> : IDictionary<TKey, TChild>, IChild<TParent>
+        where TChild : class, IChild<TParent>
+        where TParent : class
+    {
+        event ChildEvent<TChild> ChildAdded;
+        event ChildEvent<TChild> ChildRemoved;
+    }
+
+    #endregion interface IChildDictionary
+
+    #region class ChildDictionary
+
+    public class ChildDictionary<TKey, TChild, TParent> : IChildDictionary<TKey, TChild, TParent>
+        where TChild : class, IChild<TParent>
+        where TParent : class
+    {
+        #region Privates
+
+        TParent _myParent;
+        IDictionary<TKey, TChild> _dict;
+
+        #endregion Privates
+
+        public ChildDictionary(TParent parent)
+        {
+            _myParent = parent;
+            _dict = new SortedList<TKey, TChild>();
+        }
+
+        #region Implementation
+
+        protected virtual void OnChildAdded(TChild child)
+        {
+            OnChildEvent(ChildAdded, child);
+        }
+
+        protected virtual void OnChildRemoved (TChild child)
+        {
+            OnChildEvent(ChildRemoved, child);
+        }
+        protected void OnChildEvent(ChildEvent<TChild> e, TChild child)
+        {
+            if (e != null)
+                e(this, new ChildEventArgs<TChild> (child));
+        }
+
+        #endregion Implementation
+
+        #region IDictionary<TKey,TChild> Members
+
+        public void Add(TKey key, TChild value)
+        {
+            _dict.Add(key, value);
+            value.MyParent = this.MyParent;
+            OnChildAdded(value);
+        }
+
+        public bool ContainsKey(TKey key)
+        {
+            return _dict.ContainsKey(key);
+        }
+
+        public ICollection<TKey> Keys
+        {
+            get {
+                return _dict.Keys;
+            }
+        }
+
+        public bool Remove(TKey key)
+        {
+            TChild child = null;
+            if (_dict.TryGetValue(key, out child))
+            {
+                _dict.Remove(key);
+                OnChildRemoved(child);
+                child.MyParent = null;
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public bool TryGetValue(TKey key, out TChild value)
+        {
+            return _dict.TryGetValue(key, out value);
+        }
+
+        public ICollection<TChild> Values
+        {
+            get
+            {
+                return _dict.Values;
+            }
+        }
+
+        public TChild this[TKey key]
+        {
+            get
+            {
+                return _dict[key];
+            }
+            set
+            {
+                Remove (key);
+                Add (key, value);
+            }
+        }
+
+        #endregion
+
+        #region ICollection<KeyValuePair<TKey,TChild>> Members
+
+        void ICollection<KeyValuePair<TKey, TChild>>.Add(KeyValuePair<TKey, TChild> item)
+        {
+            throw new System.Exception("The method or operation is not implemented.");
+        }
+
+        void ICollection<KeyValuePair<TKey, TChild>>.Clear()
+        {
+            throw new System.Exception("The method or operation is not implemented.");
+        }
+
+        bool ICollection<KeyValuePair<TKey, TChild>>.Contains(KeyValuePair<TKey, TChild> item)
+        {
+            throw new System.Exception("The method or operation is not implemented.");
+        }
+
+        void ICollection<KeyValuePair<TKey, TChild>>.CopyTo(KeyValuePair<TKey, TChild>[] array, int arrayIndex)
+        {
+            throw new System.Exception("The method or operation is not implemented.");
+        }
+
+        int ICollection<KeyValuePair<TKey, TChild>>.Count
+        {
+            get {
+                return _dict.Count;
+            }
+        }
+
+        bool ICollection<KeyValuePair<TKey, TChild>>.IsReadOnly
+        {
+            get { throw new System.Exception("The method or operation is not implemented."); }
+        }
+
+        bool ICollection<KeyValuePair<TKey, TChild>>.Remove(KeyValuePair<TKey, TChild> item)
+        {
+            throw new System.Exception("The method or operation is not implemented.");
+        }
+
+        #endregion
+
+        #region IEnumerable<KeyValuePair<TKey,TChild>> Members
+
+        public IEnumerator<KeyValuePair<TKey, TChild>> GetEnumerator()
+        {
+            return _dict.GetEnumerator();
+        }
+
+        #endregion
+
+        #region IEnumerable Members
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+        {
+            return _dict.GetEnumerator();
+        }
+
+        #endregion
+
+        #region IChild<TParent> Members
+
+        public TParent MyParent
+        {
+            get
+            {
+                return _myParent;
+                
+            }
+            set
+            {
+                throw new System.Exception("The method or operation is not implemented.");
+            }
+        }
+
+        #endregion
+
+        #region IChildDictionary<TKey,TChild,TParent> Members
+
+        public event ChildEvent<TChild> ChildAdded;
+        public event ChildEvent<TChild> ChildRemoved;
+
+        #endregion
+    }
+
+    #endregion class ChildDictionary
+
+    #region interface IChildList
+
     public interface IChildList<TChild, TParent> : IList<TChild>, IChild<TParent>
         where TChild : class, IChild<TParent>
         where TParent : class
     {
     }
+
+    #endregion interface IChildList
+
+    #region class ChildList
 
     public class ChildList<TChild, TParent> : IChildList<TChild, TParent>
         where TChild : class, IChild<TParent>
@@ -609,5 +836,9 @@ namespace SNAP.Util {
         #endregion
     }
 
+    #endregion class ChildList
+
     #endregion ChildList
+
+
 }

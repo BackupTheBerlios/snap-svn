@@ -75,6 +75,7 @@ namespace SNAP.ResourceFields
         public void LoadFromFieldValue(InternalRefFieldValue value)
         {
             _value = value;
+            this.textBox1.Text = value.ResourceName;
         }
 
         void IResourceUI.SaveToFieldValue(SNAP.Resources.IResourceValue value)
@@ -85,7 +86,7 @@ namespace SNAP.ResourceFields
         public void SaveToFieldValue(InternalRefFieldValue value)
         {
             if (SelectedResource == null)
-                throw new System.InvalidOperationException("A required field has not been filled out");
+                throw new SNAP.Resources.FieldException ("A required field has not been filled out");
 
             ((SNAP.Resources.InternalRefFieldValue) value).ResourceName = SelectedResource.QualifiedName;
         }
