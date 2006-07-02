@@ -1,53 +1,54 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <resource type="Notes" name="Yeast" id="1cdaf66e-1751-47fd-a7a0-657fd1dad330">
+  <resource type="Compute Positional Bias" name="bias" id="2441325d-2a88-4be0-bf27-e3f5fb00e319">
     <family>general</family>
-    <field name="Notes">miew?</field>
+    <field name="MinNegCount" value="0" />
+    <field name="MinPosCount" value="3" />
+    <field name="Outliers" value="30" />
+    <field name="RelPosition" value="S_START">
+      <field name="Reference sequence file" value="" />
+    </field>
+    <field name="Seeds file" value="general.se.se.final.seeds" />
   </resource>
-  <resource type="Conf File" name="Nimble Conf" id="7f55b1f0-6671-415d-8a7e-93e911223d7d">
-    <family>general.Yeast</family>
-    <field name="File">D:\Aviad\Dev\SNAP\trunk\engine\src\nimble.conf</field>
-    <field name="Notes" />
+  <resource type="Conf File" name="conf" id="7b51dc39-f473-4316-b47e-f48c00bafcc7">
+    <family>general</family>
+    <field name="File" value="D:\Aviad\Dev\SNAP\trunk\engine\src\tests\data\nimble.conf" />
+    <field name="Notes" value="" />
   </resource>
-  <resource type="Compute Positional Bias" name="PosBias" id="132496e4-bb80-4304-be76-c0602c415e4f">
-    <family>general.Yeast</family>
-    <field name="Reference sequence file">general.Yeast.Yeast Seq</field>
-    <field name="Seeds file">general.Yeast.test1.test1.final.seeds</field>
+  <resource type="Compute Target Overlap" name="overlap" id="5a009ce6-0990-4638-8cf3-6fe8eea36384">
+    <family>general</family>
+    <field name="Seeds file" value="general.se.se.final.seeds" />
   </resource>
-  <resource type="Compute Target Overlap" name="Test" id="4e9017b0-f6f2-4202-a83b-4d76884a93f5">
-    <family>general.Yeast</family>
-    <field name="Seeds file">general.Yeast.test1.test1.final.seeds</field>
+  <resource type="Ab-inito motif search" name="se" id="58dd8782-7410-4109-b344-efeda6520f87">
+    <family>general</family>
+    <field name="Conf File" value="general.conf" />
+    <field name="Sequence File" value="general.seq" />
+    <field name="Weight File" value="general.wgt" />
   </resource>
-  <resource type="Ab-inito motif search" name="test1" id="d26bac8a-698c-4e75-bb66-d1eb0c3c0482">
-    <family>general.Yeast</family>
-    <field name="Conf File">general.Yeast.Nimble Conf</field>
-    <field name="Sequence File">general.Yeast.Yeast Seq</field>
-    <field name="Weight File">general.Yeast.Yeast wgt</field>
+  <resource type="SNAP Motifs file" name="se.final.1.motifs" id="0f8697ca-cdb2-43c4-a115-2528ae8e3d9e">
+    <family>general.se</family>
+    <field name="File" value="D:\Aviad\Dev\SNAP\trunk\Installation\Data\se.run/se.final.1.motifs" />
   </resource>
-  <resource type="SNAP Motifs file" name="test1.final.1.motifs" id="2c4c64f3-a73e-415c-b307-19f1d0d4394f">
-    <family>general.Yeast.test1</family>
-    <field name="File">D:\Aviad\Dev\SNAP\trunk\gui\Shell\bin\Debug\MyJobs\general.Yeast.test1.run/test1.final.1.motifs</field>
+  <resource type="SNAP PSSM file" name="se.final.1.pssm" id="94943ed1-6ebf-4836-bdcf-3fbbd74f3178">
+    <family>general.se</family>
+    <field name="File" value="D:\Aviad\Dev\SNAP\trunk\Installation\Data\se.run/se.final.1.pssm" />
   </resource>
-  <resource type="SNAP PSSM file" name="test1.final.1.pssm" id="ab9ec652-ba76-45e6-8c85-d585ecee058c">
-    <family>general.Yeast.test1</family>
-    <field name="File">D:\Aviad\Dev\SNAP\trunk\gui\Shell\bin\Debug\MyJobs\general.Yeast.test1.run/test1.final.1.pssm</field>
+  <resource type="SNAP Matrix file" name="se.final.matrix" id="e18644b5-ee2d-4f21-ab3a-9f8a0e0f3fa0">
+    <family>general.se</family>
+    <field name="File" value="D:\Aviad\Dev\SNAP\trunk\Installation\Data\se.run/se.final.matrix" />
   </resource>
-  <resource type="SNAP Matrix file" name="test1.final.matrix" id="19453a42-c0c3-43de-9ddc-f79da24e1535">
-    <family>general.Yeast.test1</family>
-    <field name="File">D:\Aviad\Dev\SNAP\trunk\gui\Shell\bin\Debug\MyJobs\general.Yeast.test1.run/test1.final.matrix</field>
+  <resource type="SNAP Seeds file" name="se.final.seeds" id="402c4840-cce9-4372-9014-8be70a844a9d">
+    <family>general.se</family>
+    <field name="File" value="D:\Aviad\Dev\SNAP\trunk\Installation\Data\se.run/se.final.seeds" />
   </resource>
-  <resource type="SNAP Seeds file" name="test1.final.seeds" id="442606a2-f447-4702-8142-e531d14d5f28">
-    <family>general.Yeast.test1</family>
-    <field name="File">D:\Aviad\Dev\SNAP\trunk\gui\Shell\bin\Debug\MyJobs\general.Yeast.test1.run/test1.final.seeds</field>
+  <resource type="Sequence File" name="seq" id="4216439b-9e83-4e95-8d3b-8a072e9d5a12">
+    <family>general</family>
+    <field name="File" value="D:\Aviad\Dev\SNAP\trunk\engine\src\tests\data\test.seq" />
+    <field name="Notes" value="" />
   </resource>
-  <resource type="Sequence File" name="Yeast Seq" id="042a5b5c-9adc-40fd-b334-d1874f3fd87a">
-    <family>general.Yeast</family>
-    <field name="File">D:\Aviad\Dev\SNAP\trunk\engine\src\scripts\tests\data\test.seq</field>
-    <field name="Notes" />
-  </resource>
-  <resource type="Weight File" name="Yeast wgt" id="5050bb56-974e-4527-9c50-f933a3a18856">
-    <family>general.Yeast</family>
-    <field name="File">D:\Aviad\Dev\SNAP\trunk\engine\src\scripts\tests\data\test.wgt</field>
-    <field name="Notes" />
+  <resource type="Weight File" name="wgt" id="3e8b367b-6791-4ad9-9b5c-7e06c725fb45">
+    <family>general</family>
+    <field name="File" value="D:\Aviad\Dev\SNAP\trunk\engine\src\tests\data\test.wgt" />
+    <field name="Notes" value="" />
   </resource>
 </resources>

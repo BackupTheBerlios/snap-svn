@@ -40,9 +40,9 @@
   </resource_type>
 
   <resource_type name="Ab-inito motif search" help="Uses the seed searcher program to look for...">
-    <internal_ref name="Sequence File" help="" mask="Sequence File"/>
-    <internal_ref name="Weight File" help="" mask="Weight File"/>
-    <internal_ref name="Conf File" help="" mask="Conf File"/>
+    <internal_ref name="Sequence File" help="" mask="Sequence Files | Sequence File"/>
+    <internal_ref name="Weight File" help="" mask="Weight Files | Weight File"/>
+    <internal_ref name="Conf File" help="" mask="Conf Files | Conf File"/>
     <execute name="run" help="">
       <run bin="seed.win32.exe" params="--Sconf $Conf File.File$ $Sequence File.File$ $Weight File.File$ $ExecutionFolder$/$Name$"/>
       <import name="summary.xml"/>
@@ -78,7 +78,7 @@
   </resource_type>
   
   <resource_type name="Compute Target Overlap" help="">
-    <internal_ref name="Seeds file" help="" mask="Seeds File"/>
+    <internal_ref name="Seeds file" help="" mask="SNAP Seeds file | SNAP Seeds file"/>
     <execute name="run" help="">
       <export type="params" name="params/ComputeTargetOverlap.params">
         <path name="-seedsFile" value="$Seeds file.File$"/>
@@ -97,21 +97,54 @@
   </resource_type>
 
   <resource_type name="Compute Positional Bias" help="">
-    <internal_ref name="Seeds file"  help="" mask="Seeds File"/>
-    <internal_ref name="Reference sequence file"  help="" mask="Sequence File"/>
+    <internal_ref name="Seeds file"  help="" mask="SNAP Seeds File | SNAP Seeds file"/>
+    
+    <enum name="RelPosition" display_name="Distance function" help="How we search the cats">
+      <enum_element name="S_END" display_name="From end of sequence" help="Will compute the bias from the end of the sequence">
+        <internal_ref name="Reference sequence file"  display_name="This field is not necessary, but until I allow conditionals in the XML you have to fill it" help="" mask="Sequence File | Sequence File"/>
+      </enum_element>
+
+      <enum_element name="S_START" display_name="From start of sequence" help="Will compute the bias from the beginning of the sequence">
+        <internal_ref name="Reference sequence file"  help="" mask="Sequence File | Sequence File"/>
+      </enum_element>
+      
+      <enum_element name="MINDIST" display_name="Minimize relative distance" help="Computes the bias from either the beginning or end of sequence, favoring the minimal distance">
+        <internal_ref name="Reference sequence file"  help="" mask="Sequence File | Sequence File"/>
+      </enum_element>      
+    </enum>
+    <numeric 
+      name="MinPosCount" 
+      display_name="Minimum number of occurrences in positive group" 
+      Help="Define the minimum number of occurrences in the positive group for the script to create a figure for the distribution"
+      default="3"
+      min="0"/>
+    <numeric
+      name="MinNegCount" 
+      display_name="Minimum number of occurrences in negative group" 
+      help="Define the minimum number of occurrences in the negative group for the script to create a figure for the distribution"
+      min="0"
+      />
+    <numeric
+          name="Outliers" 
+          display_name="Outliers percentage"
+          help="Define the percentage of outliers to remove when computing statistics for the positional bias distribution"
+          min="0"
+          max="100"
+          default="30"
+      />
     <execute name="run" help="">
       <export type="params" name="params/ComputePosBias.params">
         <path name="-seedsFile"         value="$Seeds file.File$"/>
         <path name="-dataDir"           value="$Seeds file.File.Folder$"/>
         <path name="-out"               value="$ExecutionFolder$/ComputePosBias"/>
-        <text name="-outlr"             value="30"/>
-        <text name="-minNegCount"       value="0"/>
-        <text name="-minPosCount"       value="3"/>
+        <text name="-outlr"             value="$Outliers$"/>
+        <text name="-minNegCount"       value="$MinNegCount$"/>
+        <text name="-minPosCount"       value="$MinPosCount$"/>
         <path name="-baseGnuF"          value="$PluginFolder$/ComputePosBias/basicPosBiasPlot.gnu"/>
         <path name="-ksProg"            value="$PluginFolder$/Share/KS.pl"/>
         <path name="-histProg"          value="$PluginFolder$/ComputePosBias/compPosBiasHist.SlidingWindow.awk"/>
-        <text name="-relPosition"       value="S_END"/>
-        <path name="-seqF"              value="$Reference sequence file.File$"/>  
+        <text name="-relPosition"       value="$RelPosition.Selected.Name$"/>
+        <path name="-seqF"              value="$RelPosition.Selected.Reference sequence file.File$"/>
       </export>
       <export type="params" name="params/Bin.params">
         <text name="-awkcom"    value="awk -f"/>
@@ -119,9 +152,6 @@
         <text name="-gnpltcom"  value="gnuplot"/>
       </export>
       <run bin="c:\cygwin\bin\perl.exe" params="$PluginFolder.Unix$/ComputePosBias.pl"/>
-    </execute>
-    <execute name="test" help="">
-      <run bin="test.bat" params=""/>
     </execute>
   </resource_type>
   
