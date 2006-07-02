@@ -83,7 +83,7 @@ public:
 		_xml << prolog ();
 		_xml << tag ("resources");
 	}
-	void seedsOutput (const char* filename)
+	void seedsOutput (const char* filename) 
 	{
 		if (!shouldReport (filename))
 			return;
@@ -93,7 +93,7 @@ public:
 					<< attr ("type") << "SNAP Seeds file"
 					<< tag ("field") 
 						<< attr ("name") << "File"
-						<< chardata () << filename
+						<< attr ("value") << filename
 					<< endtag ()
 				<< endtag ();
 	}
@@ -108,7 +108,7 @@ public:
 				<< attr ("type") << "SNAP Matrix file"
 					<< tag ("field") 
 						<< attr ("name") << "File"
-						<< chardata () << filename
+						<< attr ("value") << filename
 					<< endtag ()
 				<< endtag ();
 	}
@@ -123,7 +123,7 @@ public:
 					<< attr ("type") << "SNAP Log file"
 					<< tag ("field") 
 						<< attr ("name") << "File"
-						<< chardata () << filename
+						<< attr ("value") << filename
 					<< endtag ()
 				<< endtag ();
 	}
@@ -138,7 +138,7 @@ public:
 					<< attr ("type") << "SNAP Samples file"
 					<< tag ("field") 
 						<< attr ("name") << "File"
-						<< chardata () << filename
+						<< attr ("value") << filename
 					<< endtag ()
 				<< endtag ();
 	}
@@ -153,7 +153,7 @@ public:
 					<< attr ("type") << "SNAP PSSM file"
 					<< tag ("field") 
 						<< attr ("name") << "File"
-						<< chardata () << filename
+						<< attr ("value") << filename
 					<< endtag ()
 				<< endtag ();
 	}
@@ -168,7 +168,7 @@ public:
 					<< attr ("type") << "SNAP Motifs file"
 					<< tag ("field") 
 						<< attr ("name") << "File"
-						<< chardata () << filename
+						<< attr ("value") << filename
 					<< endtag ()
 				<< endtag ();
 	}
