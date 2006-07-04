@@ -1,0 +1,307 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <!--                                      -->
+  <!--                                      -->
+  <!--                                      -->
+  <!--                                      -->
+  <!-- this is the main object of the XML   -->
+  <!-- just a collection of resource types  -->
+  <!--                                      -->
+  <!--                                      -->
+  <xs:element name="resource_types" type="resource_types" />
+
+  <!--                              -->
+  <!--                              -->
+  <!-- define the text type -->
+  <!--                              -->
+  <!--                              -->
+  <xs:complexType name="fields-text">
+    <xs:attribute name="name" type="xs:string" use="required" />
+    <xs:attribute name="help" type="xs:string" use="required" />
+  </xs:complexType>
+  <!--                              -->
+  <!--                              -->
+  <!-- define the external_ref type -->
+  <!--                              -->
+  <!--                              -->
+  <xs:complexType name="fields-external_ref">
+    <xs:attribute name="name" type="xs:string" use="required" />
+    <xs:attribute name="help" type="xs:string" use="required" />
+    <xs:attribute name="mask" type="xs:string" use="required" />
+  </xs:complexType>
+  <!--                              -->
+  <!--                              -->
+  <!-- define the internal_ref type -->
+  <!--                              -->
+  <!--                              -->
+  <xs:complexType name="fields-internal_ref">
+    <xs:attribute name="name" type="xs:string" use="required" />
+    <xs:attribute name="help" type="xs:string" use="required" />
+    <xs:attribute name="minOccurs" type="xs:unsignedByte" use="optional" />
+    <xs:attribute name="maxOccurs" type="xs:string" use="optional" />
+    <xs:attribute name="mask" type="xs:string" use="optional" />
+  </xs:complexType>
+  <!--                              -->
+  <!--                              -->
+  <!--                              -->
+  <!-- defines the numeric type     -->
+  <!--                              -->
+  <!--                              -->
+  <xs:complexType name="fields-numeric">
+    <xs:attribute name="name" type="xs:string" use="required" />
+    <xs:attribute name="display_name" type="xs:string" use="required" />
+    <xs:attribute name="help" type="xs:string" use="required" />
+    <xs:attribute name="Help" type="xs:string" use="optional" />
+    <xs:attribute name="default" type="xs:decimal" use="required" />
+    <xs:attribute name="min" type="xs:decimal" use="optional" />
+    <xs:attribute name="max" type="xs:decimal" use="optional" />
+  </xs:complexType>
+  <!--                              -->
+  <!--                              -->
+  <!-- define the enum_element type -->
+  <!--                              -->
+  <!--                              -->
+  <xs:complexType name="fields-enum-element">
+    <xs:sequence>
+      <!-- allow text fields-->
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="text" type="fields-text" />
+      <!-- allow internal refs -->
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="internal_ref" type="fields-internal_ref" />
+      <!-- allow external refs -->
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="external_ref" type="fields-external_ref" />
+      <!-- allow numeric -->
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="numeric" type="fields-numeric" />
+      <!-- allow enums -->
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="enum" type="fields-enum" />
+    </xs:sequence>
+    <!-- attributes must be defined -->
+    <xs:attribute name="name" type="xs:string" use="required" />
+    <xs:attribute name="display_name" type="xs:string" use="required" />
+    <xs:attribute name="help" type="xs:string" use="required" />
+  </xs:complexType>
+  <!--                              -->
+  <!--                              -->
+  <!-- define the enum type         -->
+  <!--                              -->
+  <!--                              -->
+  <xs:complexType name="fields-enum">
+    <xs:sequence>
+      <!-- contains one or more enum_elements-->
+      <xs:element minOccurs="1" maxOccurs="unbounded" name="enum_element" type="fields-enum-element" />
+    </xs:sequence>
+    <!-- attributes must be defined -->
+    <xs:attribute name="name" type="xs:string" use="required" />
+    <xs:attribute name="display_name" type="xs:string" use="required" />
+    <xs:attribute name="help" type="xs:string" use="required" />
+  </xs:complexType>
+  <!--                              -->
+  <!--                              -->
+  <!-- define the import type       -->
+  <!--                              -->
+  <!--                              -->
+  <xs:complexType name="execute-import">
+    <xs:attribute name="name" type="xs:string" use="required" />
+  </xs:complexType>
+  <!--                              -->
+  <!--                              -->
+  <!-- define the path type         -->
+  <!--                              -->
+  <!--                              -->
+  <xs:complexType name="export-path">
+    <xs:attribute name="name" type="xs:string" use="required" />
+    <xs:attribute name="value" type="xs:string" use="required" />
+  </xs:complexType>
+  <!--                              -->
+  <!--                              -->
+  <!-- define the text type         -->
+  <!--                              -->
+  <!--                              -->
+  <xs:complexType name="export-text">
+    <xs:attribute name="name" type="xs:string" use="required" />
+    <xs:attribute name="value" type="xs:string" use="required" />
+  </xs:complexType>
+  <!--                              -->
+  <!--                              -->
+  <!-- define the "and" conditional -->
+  <!--                              -->
+  <!--                              -->
+  <xs:complexType name="and">
+    <xs:sequence>
+      <xs:element name="and" type="and" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="or" type="or" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="not" type="not" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="equals" type="equals" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+  <!--                              -->
+  <!--                              -->
+  <!-- define the "or" conditional  -->
+  <!--                              -->
+  <!--                              -->
+  <xs:complexType name="or">
+    <xs:sequence>
+      <xs:element name="and" type="and" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="or" type="or" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="not" type="not" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="equals" type="equals" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+  <!--                              -->
+  <!--                              -->
+  <!-- define the "not" conditional -->
+  <!--                              -->
+  <!--                              -->
+  <xs:complexType name="not">
+    <xs:choice>
+      <xs:element name="and" type="and" />
+      <xs:element name="or" type="or" />
+      <xs:element name="not" type="not" />
+      <xs:element name="equals" type="equals" />
+    </xs:choice>
+  </xs:complexType>
+  <!--                                -->
+  <!--                                -->
+  <!-- defines the equals conditional -->
+  <!--                                -->
+  <!--                                -->
+  <xs:complexType name="equals">
+    <xs:attribute name="A" type="xs:string" use="required" />
+    <xs:attribute name="B" type="xs:string" use="required" />
+  </xs:complexType>
+  <!--                              -->
+  <!--                              -->
+  <!-- defines the export type      -->
+  <!--                              -->
+  <!--                              -->
+  <xs:complexType name="export">
+    <xs:sequence>
+      <xs:element name="path" type="export-path" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="text" type="export-text" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="export-conditional" type="export-conditional" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string" use="required" />
+    <!-- must specify the type of export. currently only "params" style export is supported -->
+    <xs:attribute name="type" use="required">
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="params" />
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:complexType>
+  <!--                                    -->
+  <!--                                    -->
+  <!-- define the conditional for exports -->
+  <!--                                    -->
+  <!--                                    -->
+  <xs:complexType name="export-conditional">
+    <xs:sequence>
+      <!-- "if" section -->
+      <xs:element name="if" type="and" />
+      <!-- "then" section -->
+      <xs:element name="then">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="path" type="export-path" minOccurs="0" maxOccurs="unbounded" />
+            <xs:element name="text" type="export-text" minOccurs="0" maxOccurs="unbounded" />
+            <xs:element name="export-conditional" type="export-conditional" minOccurs="0" maxOccurs="unbounded" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <!-- "else" optional section -->
+      <xs:element name="else" minOccurs="0" maxOccurs="1">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="path" type="export-path" minOccurs="0" maxOccurs="unbounded" />
+            <xs:element name="text" type="export-text" minOccurs="0" maxOccurs="unbounded" />
+            <xs:element name="export-conditional" type="export-conditional" minOccurs="0" maxOccurs="unbounded" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <!--                                -->
+  <!--                                -->
+  <!-- define the general conditional -->
+  <!--                                -->
+  <!--                                -->
+  <xs:complexType name="execute-conditional">
+    <xs:sequence>
+      <!-- "if" section -->
+      <xs:element name="if" type="and" />
+      <!-- "then" section -->
+      <xs:element name="then">
+        <xs:complexType>
+          <xs:sequence>
+            <!-- allow conditionals -->
+            <xs:element name="conditional" type="execute-conditional" minOccurs="0" maxOccurs="unbounded" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <!-- "else" optional section -->
+      <xs:element name="else" minOccurs="0" maxOccurs="1">
+        <xs:complexType>
+          <xs:sequence>
+            <!-- allow conditionals -->
+            <xs:element name="conditional" type="execute-conditional" minOccurs="0" maxOccurs="unbounded" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <!--                              -->
+  <!--                              -->
+  <!-- define the run type          -->
+  <!--                              -->
+  <!--                              -->
+  <xs:complexType name="execute-run">
+    <xs:attribute name="bin" type="xs:string" use="required" />
+    <xs:attribute name="params" type="xs:string" use="required" />
+  </xs:complexType>
+  <!--                              -->
+  <!--                              -->
+  <!-- define the execute type      -->
+  <!--                              -->
+  <!--                              -->
+  <xs:complexType name="execute">
+    <xs:sequence>
+      <xs:element name="export" type="export" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="run" type="execute-run" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="import" type="execute-import" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="conditional" type="execute-conditional" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string" use="required" />
+    <xs:attribute name="help" type="xs:string" use="required" />
+  </xs:complexType>
+  <!--                              -->
+  <!--                              -->
+  <!-- define the resource_tye type -->
+  <!--                              -->
+  <!--                              -->
+  <xs:complexType name="resource_type">
+    <xs:sequence>
+      <!-- allows all possible fields -->
+      <xs:element name="text" type="fields-text" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="internal_ref" type="fields-internal_ref" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="external_ref" type="fields-external_ref" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="numeric" type="fields-numeric" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="enum" type="fields-enum" minOccurs="0" maxOccurs="unbounded" />
+      <!-- allows executions -->
+      <xs:element name="execute" type="execute" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string" use="required" />
+    <xs:attribute name="help" type="xs:string" use="required" />
+  </xs:complexType>
+  <!--                                -->
+  <!--                                -->
+  <!-- define the resource_types type -->
+  <!--                                -->
+  <!--                                -->
+  <xs:complexType name="resource_types">
+    <xs:sequence>
+      <xs:element name="resource_type" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+
+
+</xs:schema>
