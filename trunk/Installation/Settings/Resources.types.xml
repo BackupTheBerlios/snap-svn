@@ -1,159 +1,163 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 
-<resource_types>
-  <resource_type name="Notes" help="Miscellanious notes">
-    <text name="Notes" help="Free text that the user can maintain"/>
-  </resource_type >
+<resource_types xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="Resource.types.xsd">
 
-  <resource_type name="Sequence File" help="Fasta sequence file">
-    <text name="Notes" help="Free text that the user can maintain"/>
-    <external_ref name="File" help="Path to the sequence on local computer" mask="Sequence Files (*.seq) | *.seq"/>
-    <execute name="View" help="Open the file in notepad">
-      <run bin="notepad.exe" params="$File$"/>
-    </execute>
-  </resource_type>
+	<resource_type name="Notes" help="Miscellanious notes">
+		<text name="Notes" help="Free text that the user can maintain"/>
+	</resource_type>
 
-  <resource_type name="Weight File" help="Weight file">
-    <base name="Notes"/>
-    <text name="Notes" help="Free text that the user can maintain"/>
-    <external_ref name="File" help="Path to the sequence on local computer" mask="Weight Files (*.wgt) | *.wgt"/>
-    <execute name="View" help="Open the file in notepad">
-      <run bin="notepad.exe" params="$File$"/>
-    </execute>
-  </resource_type>
+	<resource_type name="Sequence File" help="Fasta sequence file">
+		<text name="Notes" help="Free text that the user can maintain"/>
+		<external_ref name="File" help="Path to the sequence on local computer"
+			mask="Sequence Files (*.seq) | *.seq"/>
+		<execute name="View" help="Open the file in notepad">
+			<run bin="notepad.exe" params="$File$"/>
+		</execute>
+	</resource_type>
 
-  <resource_type name="Conf File" help="Conf file">
-    <base name="Notes"/>
-    <text name="Notes" help="Free text that the user can maintain"/>
-    <external_ref name="File" help="Path to the conf file on local computer" mask="Conf Files (*.conf) | *.conf"/>
-    <execute name="View" help="Open the file in notepad">
-      <run bin="notepad.exe" params="$File$"/>
-    </execute>
-    <execute name="View/Edit in Conf Editor" help="Open the file in Conf Editor">
-      <run bin="ConfEditor.exe" params="$File$"/>
-    </execute> 
-  </resource_type>
+	<resource_type name="Weight File" help="Weight file">
+		<text name="Notes" help="Free text that the user can maintain"/>
+		<external_ref name="File" help="Path to the sequence on local computer"
+			mask="Weight Files (*.wgt) | *.wgt"/>
+		<execute name="View" help="Open the file in notepad">
+			<run bin="notepad.exe" params="$File$"/>
+		</execute>
+	</resource_type>
 
-  <resource_type name="Family" help="">
-    <text name="Notes" help="Free text that the user can maintain"/>
-    <internal_ref name="Child" help="" minOccurs="0" maxOccurs="unbounded"/>
-  </resource_type>
+	<resource_type name="Conf File" help="Conf file">
+		<text name="Notes" help="Free text that the user can maintain"/>
+		<external_ref name="File" help="Path to the conf file on local computer"
+			mask="Conf Files (*.conf) | *.conf"/>
+		<execute name="View" help="Open the file in notepad">
+			<run bin="notepad.exe" params="$File$"/>
+		</execute>
+		<execute name="View/Edit in Conf Editor" help="Open the file in Conf Editor">
+			<run bin="ConfEditor.exe" params="$File$"/>
+		</execute>
+	</resource_type>
 
-  <resource_type name="Ab-inito motif search" help="Uses the seed searcher program to look for...">
-    <internal_ref name="Sequence File" help="" mask="Sequence Files | Sequence File"/>
-    <internal_ref name="Weight File" help="" mask="Weight Files | Weight File"/>
-    <internal_ref name="Conf File" help="" mask="Conf Files | Conf File"/>
-    <execute name="run" help="">
-      <run bin="seed.win32.exe" params="--Sconf $Conf File.File$ $Sequence File.File$ $Weight File.File$ $ExecutionFolder$/$Name$"/>
-      <import name="summary.xml"/>
-    </execute>
-  </resource_type>
+	<resource_type name="Family" help="">
+		<text name="Notes" help="Free text that the user can maintain"/>
+		<internal_ref name="Child" help="" minOccurs="0" maxOccurs="unbounded"/>
+	</resource_type>
 
-  <resource_type name="SNAP Seeds file" help="">
-    <external_ref name="File" help="" mask="SNAP Seeds file (*.seeds) | *.seeds"/>
-    <execute name="View/Edit in notepad" help="Open the file in notepad">
-      <run bin="notepad.exe" params="$File$"/>
-    </execute> 
-  </resource_type>
+	<resource_type name="Ab-inito motif search" help="Uses the seed searcher program to look for...">
+		<internal_ref name="Sequence File" help="" mask="Sequence Files | Sequence File"/>
+		<internal_ref name="Weight File" help="" mask="Weight Files | Weight File"/>
+		<internal_ref name="Conf File" help="" mask="Conf Files | Conf File"/>
+		<execute name="run" help="">
+			<run bin="seed.win32.exe"
+				params="--Sconf $Conf File.File$ $Sequence File.File$ $Weight File.File$ $ExecutionFolder$/$Name$"/>
+			<import name="summary.xml"/>
+		</execute>
+	</resource_type>
 
-  <resource_type name="SNAP Motifs file" help="">
-    <external_ref name="File" help="" mask="SNAP Motifs file (*.motifs) | *.motifs"/>
-    <execute name="View/Edit in notepad" help="Open the file in notepad">
-      <run bin="notepad.exe" params="$File$"/>
-    </execute>
-  </resource_type>
+	<resource_type name="SNAP Seeds file" help="">
+		<external_ref name="File" help="" mask="SNAP Seeds file (*.seeds) | *.seeds"/>
+		<execute name="View/Edit in notepad" help="Open the file in notepad">
+			<run bin="notepad.exe" params="$File$"/>
+		</execute>
+	</resource_type>
 
-  <resource_type name="SNAP PSSM file" help="">
-    <external_ref name="File" help="" mask="SNAP PSSM file (*.pssm) | *.pssm"/>
-    <execute name="View/Edit in notepad" help="Open the file in notepad">
-      <run bin="notepad.exe" params="$File$"/>
-    </execute>
-  </resource_type>
+	<resource_type name="SNAP Motifs file" help="">
+		<external_ref name="File" help="" mask="SNAP Motifs file (*.motifs) | *.motifs"/>
+		<execute name="View/Edit in notepad" help="Open the file in notepad">
+			<run bin="notepad.exe" params="$File$"/>
+		</execute>
+	</resource_type>
 
-  <resource_type name="SNAP Matrix file" help="">
-    <external_ref name="File" help="" mask="SNAP Matrix file (*.matrix) | *.matrix"/>
-    <execute name="View/Edit in notepad" help="Open the file in notepad">
-      <run bin="notepad.exe" params="$File$"/>
-    </execute>
-  </resource_type>
-  
-  <resource_type name="Compute Target Overlap" help="">
-    <internal_ref name="Seeds file" help="" mask="SNAP Seeds file | SNAP Seeds file"/>
-    <execute name="run" help="">
-      <export type="params" name="params/ComputeTargetOverlap.params">
-        <path name="-seedsFile" value="$Seeds file.File$"/>
-        <path name="-dataDir"   value="$Seeds file.File.Folder$"/>
-        <path name="-out"       value="$ExecutionFolder$/ComputeTargetOverlap"/>
-        <path name="-hgprog"    value="$PluginFolder.Unix$/Share/hgPval.pl"/>
-        <path name="-redprog"   value="$PluginFolder.Unix$/ComputeTargetOverlap/ComputeRedundancy.awk"/>        
-      </export>
-      <export type="params" name="params/Bin.params">
-        <text name="-awkcom"    value="awk -f"/>
-        <text name="-prlcom"    value="perl -I $PluginFolder.Unix$/Share/site_perl"/>
-        <text name="-gnpltcom"  value="gnuplot"/>
-      </export>
-      <run bin="c:\cygwin\bin\perl.exe" params="$PluginFolder.Unix$/ComputeTargetOverlap.pl"/>
-    </execute>
-  </resource_type>
+	<resource_type name="SNAP PSSM file" help="">
+		<external_ref name="File" help="" mask="SNAP PSSM file (*.pssm) | *.pssm"/>
+		<execute name="View/Edit in notepad" help="Open the file in notepad">
+			<run bin="notepad.exe" params="$File$"/>
+		</execute>
+	</resource_type>
 
-  <resource_type name="Compute Positional Bias" help="">
-    <internal_ref name="Seeds file"  help="" mask="SNAP Seeds File | SNAP Seeds file"/>
-    
-    <enum name="RelPosition" display_name="Distance function" help="How we search the cats">
-      <enum_element name="S_END" display_name="From end of sequence" help="Will compute the bias from the end of the sequence">
-        <internal_ref name="Reference sequence file"  display_name="This field is not necessary, but until I allow conditionals in the XML you have to fill it" help="" mask="Sequence File | Sequence File"/>
-      </enum_element>
+	<resource_type name="SNAP Matrix file" help="">
+		<external_ref name="File" help="" mask="SNAP Matrix file (*.matrix) | *.matrix"/>
+		<execute name="View/Edit in notepad" help="Open the file in notepad">
+			<run bin="notepad.exe" params="$File$"/>
+		</execute>
+	</resource_type>
 
-      <enum_element name="S_START" display_name="From start of sequence" help="Will compute the bias from the beginning of the sequence">
-        <internal_ref name="Reference sequence file"  help="" mask="Sequence File | Sequence File"/>
-      </enum_element>
-      
-      <enum_element name="MINDIST" display_name="Minimize relative distance" help="Computes the bias from either the beginning or end of sequence, favoring the minimal distance">
-        <internal_ref name="Reference sequence file"  help="" mask="Sequence File | Sequence File"/>
-      </enum_element>      
-    </enum>
-    <numeric 
-      name="MinPosCount" 
-      display_name="Minimum number of occurrences in positive group" 
-      Help="Define the minimum number of occurrences in the positive group for the script to create a figure for the distribution"
-      default="3"
-      min="0"/>
-    <numeric
-      name="MinNegCount" 
-      display_name="Minimum number of occurrences in negative group" 
-      help="Define the minimum number of occurrences in the negative group for the script to create a figure for the distribution"
-      min="0"
-      />
-    <numeric
-          name="Outliers" 
-          display_name="Outliers percentage"
-          help="Define the percentage of outliers to remove when computing statistics for the positional bias distribution"
-          min="0"
-          max="100"
-          default="30"
-      />
-    <execute name="run" help="">
-      <export type="params" name="params/ComputePosBias.params">
-        <path name="-seedsFile"         value="$Seeds file.File$"/>
-        <path name="-dataDir"           value="$Seeds file.File.Folder$"/>
-        <path name="-out"               value="$ExecutionFolder$/ComputePosBias"/>
-        <text name="-outlr"             value="$Outliers$"/>
-        <text name="-minNegCount"       value="$MinNegCount$"/>
-        <text name="-minPosCount"       value="$MinPosCount$"/>
-        <path name="-baseGnuF"          value="$PluginFolder$/ComputePosBias/basicPosBiasPlot.gnu"/>
-        <path name="-ksProg"            value="$PluginFolder$/Share/KS.pl"/>
-        <path name="-histProg"          value="$PluginFolder$/ComputePosBias/compPosBiasHist.SlidingWindow.awk"/>
-        <text name="-relPosition"       value="$RelPosition.Selected.Name$"/>
-        <path name="-seqF"              value="$RelPosition.Selected.Reference sequence file.File$"/>
-      </export>
-      <export type="params" name="params/Bin.params">
-        <text name="-awkcom"    value="awk -f"/>
-        <text name="-prlcom"    value="perl -I $PluginFolder.Unix$/Share/site_perl"/>
-        <text name="-gnpltcom"  value="gnuplot"/>
-      </export>
-      <run bin="c:\cygwin\bin\perl.exe" params="$PluginFolder.Unix$/ComputePosBias.pl"/>
-    </execute>
-  </resource_type>
-  
+	<resource_type name="Compute Target Overlap" help="">
+		<internal_ref name="Seeds file" help="" mask="SNAP Seeds file | SNAP Seeds file"/>
+		<execute name="run" help="">
+			<export type="params" name="params/ComputeTargetOverlap.params">
+				<path name="-seedsFile" value="$Seeds file.File$"/>
+				<path name="-dataDir" value="$Seeds file.File.Folder$"/>
+				<path name="-out" value="$ExecutionFolder$/ComputeTargetOverlap"/>
+				<path name="-hgprog" value="$PluginFolder.Unix$/Share/hgPval.pl"/>
+				<path name="-redprog" value="$PluginFolder.Unix$/ComputeTargetOverlap/ComputeRedundancy.awk"
+				/>
+			</export>
+			<export type="params" name="params/Bin.params">
+				<text name="-awkcom" value="awk -f"/>
+				<text name="-prlcom" value="perl -I $PluginFolder.Unix$/Share/site_perl"/>
+				<text name="-gnpltcom" value="gnuplot"/>
+			</export>
+			<run bin="c:\cygwin\bin\perl.exe" params="$PluginFolder.Unix$/ComputeTargetOverlap.pl"/>
+		</execute>
+	</resource_type>
+
+	<resource_type name="Compute Positional Bias" help="">
+		<internal_ref name="Seeds file" help="" mask="SNAP Seeds File | SNAP Seeds file"/>
+
+		<enum name="RelPosition" display_name="Distance function" help="How we search the cats">
+			<enum_element name="S_END" display_name="From end of sequence"
+				help="Will compute the bias from the end of the sequence"/>
+
+			<enum_element name="S_START" display_name="From start of sequence"
+				help="Will compute the bias from the beginning of the sequence">
+				<internal_ref name="Reference sequence file" help="" mask="Sequence File | Sequence File"/>
+			</enum_element>
+
+			<enum_element name="MINDIST" display_name="Minimize relative distance"
+				help="Computes the bias from either the beginning or end of sequence, favoring the minimal distance">
+				<internal_ref name="Reference sequence file" help="" mask="Sequence File | Sequence File"/>
+			</enum_element>
+
+		</enum>
+		<numeric name="MinPosCount" display_name="Minimum number of occurrences in positive group"
+			help="Define the minimum number of occurrences in the positive group for the script to create a figure for the distribution"
+			default="3" min="0"/>
+		<numeric name="MinNegCount" display_name="Minimum number of occurrences in negative group"
+			help="Define the minimum number of occurrences in the negative group for the script to create a figure for the distribution"
+			min="0" default="0"/>
+		<numeric name="Outliers" display_name="Outliers percentage"
+			help="Define the percentage of outliers to remove when computing statistics for the positional bias distribution"
+			min="0" max="100" default="30"/>
+		<execute name="run" help="">
+			<export type="params" name="params/ComputePosBias.params">
+				<path name="-seedsFile" value="$Seeds file.File$"/>
+				<path name="-dataDir" value="$Seeds file.File.Folder$"/>
+				<path name="-out" value="$ExecutionFolder$/ComputePosBias"/>
+				<text name="-outlr" value="$Outliers$"/>
+				<text name="-minNegCount" value="$MinNegCount$"/>
+				<text name="-minPosCount" value="$MinPosCount$"/>
+				<path name="-baseGnuF" value="$PluginFolder$/ComputePosBias/basicPosBiasPlot.gnu"/>
+				<path name="-ksProg" value="$PluginFolder$/Share/KS.pl"/>
+				<path name="-histProg"
+					value="$PluginFolder$/ComputePosBias/compPosBiasHist.SlidingWindow.awk"/>
+				<text name="-relPosition" value="$RelPosition.Selected.Name$"/>
+				<conditional>
+					<if>
+						<not>
+							<equals A="$RelPosition.Selected.Name$" B="S_END"/>
+						</not>
+					</if>
+					<then>
+						<path name="-seqF" value="$RelPosition.Selected.Reference sequence file.File$"/>
+					</then>
+				</conditional>
+			</export>
+			<export type="params" name="params/Bin.params">
+				<text name="-awkcom" value="awk -f"/>
+				<text name="-prlcom" value="perl -I $PluginFolder.Unix$/Share/site_perl"/>
+				<text name="-gnpltcom" value="gnuplot"/>
+			</export>
+			<run bin="c:\cygwin\bin\perl.exe" params="$PluginFolder.Unix$/ComputePosBias.pl"/>
+		</execute>
+	</resource_type>
 </resource_types>
-
