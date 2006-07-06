@@ -107,7 +107,7 @@ namespace SNAP.Resources
         {
             System.Diagnostics.Debug.Assert(node.Name.Equals(this.Typename));
 
-            ResourceType.LoadFromXML(node, this);
+            XMLResourceTypeFactory.LoadFromXML(node, this); 
         }
 
         #endregion

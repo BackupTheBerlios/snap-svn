@@ -114,6 +114,12 @@ namespace SNAP.ResourceFields
             }
         }
 
+        public void SetToolTip(ToolTip provider)
+        {
+            provider.SetToolTip(ContentLabel, MyValue.MyType.Help);
+            Content.SetToolTip(provider);
+        }
+
         #endregion
 
         #region IResourceUI Members

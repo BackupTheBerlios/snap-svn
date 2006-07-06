@@ -13,5 +13,11 @@ namespace SNAP.ResourceFields
         {
             get;
         }
+
+        /// <summary>
+        /// Sets the tool tip for this control.
+        /// </summary>
+        /// <param name="provider">The provider.</param>
+        void SetToolTip(ToolTip provider);
     }
 }

@@ -110,6 +110,11 @@ namespace SNAP.ResourceFields
             }
         }
 
+        public void SetToolTip(ToolTip provider)
+        {
+            provider.SetToolTip(this.numericUpDown1, _value.MyType.ToString());
+        }
+
         #endregion
 
         #region IResourceUI Members

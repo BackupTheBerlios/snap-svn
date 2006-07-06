@@ -638,8 +638,9 @@ namespace SNAP
             {
                 /// clear old DB and load resource types
                 _resourceList.Clear();
-                _resourceTypes = SNAP.Resources.ResourceType.LoadTypes(
-                    Controller.ResourceTypesFile);
+
+                XMLResourceTypeFactory factory = new XMLResourceTypeFactory(Controller.ResourceTypesFile);
+                _resourceTypes = factory.CreateResourceTypes();
 
                 /// create the root resource
                 Root = new Resource(new Guid (), _resourceTypes ["Family"], "general");

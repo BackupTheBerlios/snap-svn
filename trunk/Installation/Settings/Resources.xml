@@ -19,6 +19,12 @@
     <family>general</family>
     <field name="Seeds file" value="general.se.se.final.seeds" />
   </resource>
+  <resource type="Compute Relative Distance" name="relDist" id="f7c26c20-4c8a-4e31-acf1-0d0949d91b27">
+    <family>general</family>
+    <field name="MinCount" value="5" />
+    <field name="Outliers" value="40" />
+    <field name="Seeds file" value="general.se.se.final.seeds" />
+  </resource>
   <resource type="Ab-inito motif search" name="se" id="58dd8782-7410-4109-b344-efeda6520f87">
     <family>general</family>
     <field name="Conf File" value="general.conf" />
@@ -50,5 +56,13 @@
     <family>general</family>
     <field name="File" value="D:\Aviad\Dev\SNAP\trunk\engine\src\tests\data\test.wgt" />
     <field name="Notes" value="" />
+  </resource>
+  <resource type="Relative Distance Html Summary" name="ComputeRelDist.html" id="b32983d6-44c5-45e3-ac32-ff5ed0b4fdce">
+    <family>general.wgt</family>
+    <field name="File" value="D:/Aviad/Dev/SNAP/StandAloneNew/Data/MyTestRun3/ComputeRelDist/ComputeRelDist.html" />
+  </resource>
+  <resource type="Relative Distance tab summary" name="ComputeRelDist.rd" id="988cd478-3818-40fd-ac66-d4537d087127">
+    <family>general.wgt</family>
+    <field name="File" value="D:/Aviad/Dev/SNAP/StandAloneNew/Data/MyTestRun3/ComputeRelDist/ComputeRelDist.rd" />
   </resource>
 </resources>

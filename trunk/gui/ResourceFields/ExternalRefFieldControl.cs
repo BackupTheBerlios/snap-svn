@@ -133,6 +133,10 @@ namespace SNAP.ResourceFields
             }
         }
 
+        public void SetToolTip(ToolTip provider)
+        {
+        }
+
         #endregion
     }
 }

@@ -41,6 +41,18 @@ namespace SNAP.ResourceFields
             }
         }
 
+        public void SetToolTip(ToolTip provider)
+        {
+            foreach (RadioButton radioButton in _radioButtons.Values)
+            {
+                IResourceType type = _value.SubValues[radioButton.Name].MyType;
+                provider.SetToolTip(radioButton, type.Help);
+            }
+
+            /// TODO: should the resource panel also use our tooltip
+            /// or is it ok that it has its own tooltip?
+        }
+
         #endregion
 
         #region IResourceUI Members
@@ -80,7 +92,6 @@ namespace SNAP.ResourceFields
                 radioButton.Text = v.MyType.DisplayName;
                 radioButton.AutoSize = true;
 
-                /// TODO: handle tool tip
                 radioButton.CheckedChanged += new EventHandler(radioButton_CheckedChanged);
 
                 _radioButtons.Add(radioButton.Name, radioButton);

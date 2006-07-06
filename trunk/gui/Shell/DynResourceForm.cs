@@ -135,7 +135,7 @@ namespace SNAP
 
             /// display on the gui all the available executions
             panelExecutions.Visible = type.Executions.Count > 0;
-            foreach (SNAP.Resources.Script execType in type.Executions.Values)
+            foreach (SNAP.Scripts.Script execType in type.Executions.Values)
             {
                 Button execButton = new Button();
                 execButton.Name = execType.Name;
@@ -159,9 +159,10 @@ namespace SNAP
                 UpdateResource();
 
                 Button execButton = (Button)sender;
-                Script execType = SelectedResource.MyType.Executions[execButton.Name];
-                execType.Execute(SelectedResource);
-                //SNAP.Resources.Execution.Run(execType.Name, SelectedResource);
+                Scripts.Script execType = SelectedResource.MyType.Executions[execButton.Name];
+                
+                Scripts.StepArgs stepArgs = new SNAP.Scripts.StepArgs(SelectedResource, execType);
+                execType.Execute(stepArgs);
             }
             catch (FieldException)
             {

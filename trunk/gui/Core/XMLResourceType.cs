@@ -5,10 +5,16 @@ using System.Xml;
 
 namespace SNAP.Resources
 {
+    /// <summary>
+    /// TODO: use immutable pattern
+    /// </summary>
     public class ResourceTypeList : SortedList<string, IResourceType>
     {
     }
 
+    /// <summary>
+    /// TODO: use immutable pattern
+    /// </summary>
     public class ResourceValueList : SortedList<string, IResourceValue>
     {
         /// <summary>
@@ -197,7 +203,7 @@ namespace SNAP.Resources
         private string _displayName;
 
         private readonly ResourceTypeList _fields = new ResourceTypeList();
-        private readonly System.Collections.Generic.Dictionary<string, Script> _executions = new Dictionary<string, Script>();
+        private readonly Dictionary<string, Scripts.Script> _executions = new Dictionary<string, Scripts.Script>();
 
         private System.Drawing.Color _displayColor;
         #endregion Privates
@@ -266,7 +272,7 @@ namespace SNAP.Resources
             }
         }
 
-        public IDictionary<string, Script> Executions
+        public IDictionary<string, Scripts.Script> Executions
         {
             get
             {
@@ -308,254 +314,6 @@ namespace SNAP.Resources
             return Name;
         }
 
-        #region Save/Load
-
-        /// <summary>
-        /// Loads the types.
-        /// </summary>
-        /// <param name="filename">The filename.</param>
-        /// <returns></returns>
-        public static System.Collections.Generic.SortedDictionary<string, ResourceType> LoadTypes(string filename)
-        {
-            System.Collections.Generic.SortedDictionary<string, ResourceType> list = new SortedDictionary<string, ResourceType>();
-
-            System.Xml.XmlDocument document = new System.Xml.XmlDocument();
-            document.Load(filename);
-
-            System.Xml.XmlNode rootNode = document.ChildNodes[1];
-            foreach (System.Xml.XmlNode resourceNode in rootNode.ChildNodes)
-            {
-                try
-                {
-                    if (resourceNode.Name == "resource_type")
-                    {
-                        ResourceType resourceType = LoadResourceType(resourceNode);
-                        list.Add(resourceType.Name, resourceType);
-                    }
-                }
-                catch (Exception x)
-                {
-                    SNAP.Controller.ShowException(x);
-                }
-            }
-            return list;
-        }
-        private static IResourceType LoadResourceField(System.Xml.XmlNode fieldNode)
-        {
-            IResourceType field = null;
-            switch (fieldNode.Name)
-            {
-                case "text":
-                    field = new TextFieldType();
-                    break;
-
-                case "internal_ref":
-                    field = new InternalRefFieldType();
-                    break;
-
-
-                case "external_ref":
-                    field = new ExternalRefFieldType();
-                    break;
-
-                case "numeric":
-                    field = new NumericFieldType();
-                    break;
-
-                case "enum":
-                    field = new EnumFieldType();
-                    break;
-            }
-
-            if (field != null)
-                field.LoadFromXML(fieldNode);
-
-            return field;
-        }
-
-        private static Script.IStep LoadExportStep(System.Xml.XmlNode exportNode)
-        {
-            System.Diagnostics.Debug.Assert(exportNode.Name.Equals("export"));
-            string type = exportNode.Attributes["type"].Value;
-
-            Script.IExportStep export = null;
-            switch (type)
-            {
-                case "params":
-                    {
-                        string filename = exportNode.Attributes["name"].Value;
-                        export = new Script.ParamsExport(filename);
-                    }
-                    break;
-
-                default:
-                    throw new System.ArgumentException("The export type " + type + " is invalid");
-            }
-
-            foreach (XmlNode fieldNode in exportNode.ChildNodes)
-            {
-                switch (fieldNode.Name)
-                {
-                    case "path":
-                        {
-                            string name = fieldNode.Attributes["name"].Value;
-                            string value = fieldNode.Attributes["value"].Value;
-                            Script.PathExportField field = new Script.PathExportField(
-                                name,
-                                value);
-
-                            export.Fields.Add(field);
-                        }
-                        break;
-
-                    case "text":
-                        {
-                            string name = fieldNode.Attributes["name"].Value;
-                            string value = fieldNode.Attributes["value"].Value;
-                            Script.TextExportField field = new Script.TextExportField(
-                                name,
-                                value);
-
-                            export.Fields.Add(field);
-                        }
-                        break;
-
-                    default:
-                        throw new System.ArgumentException("The export type " + fieldNode.Name + " is invalid");
-                }
-            }
-
-            return export;
-        }
-
-        private static Script.ConditionalStep LoadConditionalStep(XmlNode node)
-        {
-            System.Diagnostics.Debug.Assert(node.Name.Equals("conditional"));
-            switch (node.FirstChild.Name)
-            {
-                case "if":
-                    break;
-
-                case "if_not":
-                    break;
-
-                default:
-                    break;
-            }
-
-            switch (node.FirstChild.NextSibling.Name)
-            {
-                case "then":
-                    break;
-
-                default:
-                    break;
-            }
-
-            if (node.FirstChild.NextSibling.NextSibling != null) {
-                switch (node.FirstChild.NextSibling.NextSibling.Name)
-                {
-                    case "else":
-                        break;
-
-                    default:
-                        break;
-                }
-            }
-
-            return null;
-        }
-
-        private static Script LoadResourceExecution(System.Xml.XmlNode node)
-        {
-            System.Diagnostics.Debug.Assert(node.Name == "execute");
-            string name = node.Attributes["name"].Value;
-            string help = node.Attributes["help"].Value;
-
-            Script execType = new Script(name, help);
-            foreach (XmlNode stepNode in node.ChildNodes)
-            {
-                switch (stepNode.Name)
-                {
-                    case "run":
-                        {
-                            string bin = stepNode.Attributes["bin"].Value;
-                            string parameters = stepNode.Attributes["params"].Value;
-                            execType.Steps.Add(new Script.ExecuteStep(bin, parameters));
-                        }
-                        break;
-
-                    case "import":
-                        {
-                            string filename = stepNode.Attributes["name"].Value;
-                            execType.Steps.Add(new Script.ImportStep(filename));
-                        }
-                        break;
-
-                    case "export":
-                        {
-                            execType.Steps.Add(LoadExportStep(stepNode));
-                        }
-                        break;
-
-                    case "conditional":
-                        {
-                            execType.Steps.Add(LoadConditionalStep(stepNode));
-                        }
-                        break;
-
-                    default:
-                        throw new System.ArgumentException("The step type " + stepNode.Name + " is invalid");
-                }
-            }
-
-            return execType;
-        }
-
-        internal static void LoadResourceFields(IDictionary<string, IResourceType> container, XmlNode fieldParentNode)
-        {
-            foreach (System.Xml.XmlNode node in fieldParentNode.ChildNodes)
-            {
-                IResourceType fieldType = LoadResourceField(node);
-                if (fieldType != null)
-                    container.Add(fieldType.Name, fieldType);
-            }
-        }
-
-        private static ResourceType LoadResourceType(System.Xml.XmlNode resourceNode)
-        {
-            System.Diagnostics.Debug.Assert(resourceNode.Name == "resource_type");
-            ResourceType resourceType = new ResourceType();
-            resourceType.LoadFromXML(resourceNode);
-            return resourceType;
-        }
-
-        /// <summary>
-        /// Loads from XML, the common properties which all resource types share
-        /// </summary>
-        /// <param name="resourceType">Type of the resource.</param>
-        public static void LoadFromXML(XmlNode node, IResourceType resourceType)
-        {
-            if (node.Attributes["name"] == null)
-                throw new System.Xml.XmlException("The resource_type node does not contain a 'name' attribute at " + node.BaseURI);
-
-            resourceType.Name = node.Attributes["name"].Value;
-
-            if (node.Attributes["help"] != null)
-                resourceType.Help = node.Attributes["help"].Value;
-            else
-            {
-                resourceType.Help = string.Empty;
-            }
-
-            if (node.Attributes["display_name"] != null)
-                resourceType.DisplayName = node.Attributes["display_name"].Value;
-            else
-                resourceType.DisplayName = resourceType.Name;
-        }
-
-        #endregion Save/Load
-
         #region IResourceType Members
 
         public string Typename
@@ -593,7 +351,7 @@ namespace SNAP.Resources
 
         public void LoadFromXML(XmlNode resourceNode)
         {
-            ResourceType.LoadFromXML(resourceNode, this);
+            XMLResourceTypeFactory.LoadFromXML(resourceNode, this);
 
             /// if the display color is specified, then load it,
             /// otherwise use a random color
@@ -605,13 +363,13 @@ namespace SNAP.Resources
                 this._displayColor = System.Drawing.Color.FromArgb(random.Next(256), random.Next(256), random.Next(256), random.Next(256));
             }
 
-            LoadResourceFields(this.SubTypes, resourceNode);
+            XMLResourceTypeFactory.CreateResourceTypeFields (this.SubTypes, resourceNode);
             foreach (System.Xml.XmlNode node in resourceNode.ChildNodes)
             {
                 switch (node.Name)
                 {
                     case "execute":
-                        Script executionType = LoadResourceExecution(node);
+                        Scripts.Script executionType = XMLScriptFactory.CreateScript (node);
                         this.Executions.Add(executionType.Name, executionType);
                         break;
 

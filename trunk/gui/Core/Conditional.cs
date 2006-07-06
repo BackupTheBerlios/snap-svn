@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace SNAP.Resources
+namespace SNAP.Scripts.Logic
 {
     #region Conditional
 
@@ -77,27 +77,6 @@ namespace SNAP.Resources
     }
 
     #endregion Conditional
-
-    #region EqualityConditional
-
-    public class EqualityConditional : Conditional
-    {
-        private readonly object Expected;
-        public EqualityConditional(object expected)
-        {
-            Expected = expected;
-        }
-        public override bool Process(object actual)
-        {
-            return Expected.ToString().Equals(actual.ToString());
-        }
-        public override IList<Conditional>  SubTerms
-        {
-	        get { throw new Exception("The method or operation is not implemented."); }
-        }
-    }
-
-    #endregion EqualityConditional
 
     #region Conjunction
 

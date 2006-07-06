@@ -148,7 +148,7 @@ namespace SNAP.Resources
         {
             System.Diagnostics.Debug.Assert(node.Name.Equals(Typename));
 
-            ResourceType.LoadFromXML(node, this);
+            XMLResourceTypeFactory.LoadFromXML(node, this);
 
             this.MinValue = decimal.MinValue;
             if (node.Attributes["min"] != null)

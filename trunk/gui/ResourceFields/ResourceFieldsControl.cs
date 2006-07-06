@@ -50,16 +50,18 @@ namespace SNAP.ResourceFields
                     IResourceWinformsUI newField = (IResourceWinformsUI)
                         Controller.CreateResourceUI(field);
 
+                    newField.MyControl.Name = field.MyType.Name;
+
                     /// wrap the field with a decorative panel
                     newField = new FieldDecoratorControl(newField);
+                    newField.MyControl.Name = field.MyType.Name + "Decorator";
 
                     newField.MyControl.Dock = DockStyle.Top;
                     newField.MyControl.AutoSize = true;
-                    //this.groupFields.Controls.Add(newField.MyControl);
                     Controls.Add(newField.MyControl);
 
-                    /// TODO: tooltip
-                    //this.toolTip1.SetToolTip((Control)newField, field.Help);
+                    /// tooltip
+                    newField.SetToolTip(toolTip1);
 
                     /// add this field to the list of fields
                     this.UIFields.Add(fieldType.Name, newField);

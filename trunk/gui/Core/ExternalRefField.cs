@@ -120,7 +120,7 @@ namespace SNAP.Resources
 
         public void LoadFromXML(System.Xml.XmlNode node)
         {
-            SNAP.Resources.ResourceType.LoadFromXML (node, this);
+            XMLResourceTypeFactory.LoadFromXML(node, this);
 
             Mask = string.Empty;
             if (node.Attributes["mask"] != null)

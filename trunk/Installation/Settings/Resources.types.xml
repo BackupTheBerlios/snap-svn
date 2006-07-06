@@ -9,7 +9,7 @@
 
 	<resource_type name="Sequence File" help="Fasta sequence file">
 		<text name="Notes" help="Free text that the user can maintain"/>
-		<external_ref name="File" help="Path to the sequence on local computer"
+    <external_ref name="File" help="Path to the sequence on local computer"
 			mask="Sequence Files (*.seq) | *.seq"/>
 		<execute name="View" help="Open the file in notepad">
 			<run bin="notepad.exe" params="$File$"/>
@@ -160,4 +160,58 @@
 			<run bin="c:\cygwin\bin\perl.exe" params="$PluginFolder.Unix$/ComputePosBias.pl"/>
 		</execute>
 	</resource_type>
+
+
+  <!--                          -->
+  <!--                          -->
+  <!-- Compute relative dist    -->
+  <!--                          -->
+  <!--                          -->
+  <resource_type name="Compute Relative Distance" help="">
+    <internal_ref name="Seeds file" help="" mask="SNAP Seeds File | SNAP Seeds file"/>
+
+    <numeric name="MinCount" display_name="Minimum Count"
+			help=""
+			default="5" min="0"/>
+    <numeric name="Outliers" display_name="Outliers"
+			help=""
+			min="0"  default="40"/>
+    
+    <execute name="run" help="">
+      <export type="params" name="params/ComputeRelDist.params">
+        <path name="-seedsFile" value="$Seeds file.File$"/>
+        <path name="-dataDir" value="$Seeds file.File.Folder$"/>
+        <path name="-out" value="$ExecutionFolder$/ComputeRelDist"/>
+        <text name="-outlr" value="$Outliers$"/>
+        <text name="-minCount" value="$MinCount$"/>
+        <path name="-baseGnuF" value="$PluginFolder$/ComputePosBias/basicPosBiasPlot.gnu"/>
+        <path name="-histProg" value="$PluginFolder$/Share/HistSlidingWind.pl" />
+        <path name="-seqlogprg" value="$PluginFolder$/Share/makefig.pl" />
+      </export>
+      <export type="params" name="params/Bin.params">
+        <text name="-awkcom" value="awk -f"/>
+        <text name="-prlcom" value="perl -I $PluginFolder.Unix$/Share/site_perl"/>
+        <text name="-gnpltcom" value="gnuplot"/>
+      </export>
+      <run bin="c:\cygwin\bin\perl.exe" params="$PluginFolder.Unix$/ComputeRelDist.pl"/>
+    </execute>
+  </resource_type>
+
+  <resource_type name="Relative Distance tab summary" help="">
+    <external_ref name="File" help="" mask="*.rd | *.rd"/>
+    <execute name="View in notepad" help ="">
+      <run bin ="notepad" params="$File$"/>
+    </execute>
+  </resource_type>
+  
+  <resource_type name="Relative Distance Html Summary" help="">
+    <external_ref name="File" help="" mask="HTML files (*.htm, *.html) | *.html, *.htm"/>
+    <execute name="View in explorer 7" help ="">
+      <run bin ="C:\Program Files\Internet Explorer\iexplore.exe" params="$File$"/>
+    </execute>
+    <execute name="View in explorer" help ="">
+      <run bin ="iexplore.exe" params="$File$"/>
+    </execute>
+  </resource_type>  
+  
 </resource_types>

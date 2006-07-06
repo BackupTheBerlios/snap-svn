@@ -136,8 +136,8 @@ namespace SNAP.Resources
         public void LoadFromXML(System.Xml.XmlNode node)
         {
             System.Diagnostics.Debug.Assert(node.Name.Equals(Typename));
-            ResourceType.LoadFromXML(node, this);
-            ResourceType.LoadResourceFields(this.SubTypes, node);
+            XMLResourceTypeFactory.LoadFromXML(node, this);
+            XMLResourceTypeFactory.CreateResourceTypeFields (this.SubTypes, node);
         }
 
         #endregion
@@ -264,7 +264,7 @@ namespace SNAP.Resources
         public void LoadFromXML(System.Xml.XmlNode node)
         {
             System.Diagnostics.Debug.Assert(node.Name.Equals(Typename));
-            ResourceType.LoadFromXML(node, this);
+            XMLResourceTypeFactory.LoadFromXML(node, this);
 
             /// add all the elements of the enum
             foreach (XmlNode elementNode in node.SelectNodes ("enum_element"))

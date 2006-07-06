@@ -76,12 +76,6 @@
     <Compile Include="FamiliesForm.Designer.cs">
       <DependentUpon>FamiliesForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Form1.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Form1.Designer.cs">
-      <DependentUpon>Form1.cs</DependentUpon>
-    </Compile>
     <Compile Include="ResourceTypeEditorForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -126,10 +120,6 @@
     <EmbeddedResource Include="FamiliesForm.resx">
       <SubType>Designer</SubType>
       <DependentUpon>FamiliesForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Form1.resx">
-      <SubType>Designer</SubType>
-      <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ResourceTypeEditorForm.resx">
       <SubType>Designer</SubType>
