@@ -426,8 +426,8 @@ DEFINE_SEED_PARSER_OPTION(
 DEFINE_SEED_PARSER_OPTION(
    score_t,
    "Sscore-t",
-   "< hypegeo | exp:<pos_loss>:<neg_loss> > type of score function."
-      " choose between hyper-geometric or exponential scoring function",
+   "< hypegeo | exp:<pos_loss>:<neg_loss> | additive> type of score function."
+      " choose between hyper-geometric, exponential or additive scoring function",
    "hypegeo",
    GetOptWrapper::_required_argument_,
    {
@@ -441,7 +441,9 @@ DEFINE_SEED_PARSER_OPTION(
          if (result != 2) 
             parser->usage (StrBuffer ("Bad exp score format: ", opt));
       }
-      else
+      else if (opt.equalsIgnoreCase ("additive"))
+			parser->__scoreType = _score_additive_;
+		else
          parser->usage (StrBuffer ("Unknown counting type: ", opt));
    },
    {
@@ -451,7 +453,10 @@ DEFINE_SEED_PARSER_OPTION(
             out = FixedStrBuffer <128> ("exp:%f:%f", 
                                         (double) parser->__expLossPos, 
                                         (double) parser->__expLossNeg).getStr ();
+			case _score_additive_:
+				out = "additive";
             break;
+
          default: mustfail ();
       }
    }

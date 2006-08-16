@@ -30,6 +30,7 @@
 //#include "HyperGeoScore.h"
 #include "ExtraMath.h"
 #include "Score.h"
+#include "ScoreFunction.h"
 
 #include "status_reporter/BaseStatusReporter.hpp"
 #include <time.h>
@@ -436,6 +437,17 @@ void SeedSearcherMain::CmdLineParameters::setupScoreFunc ()
 				factory.reset (new Scores::ExplossScoreFactory (weights));
 			}
 			break;
+
+		case _score_additive_:
+			factory.reset (new Scores::HyperGeometricPvalueFactory);
+			
+			/// we must use the InverseSigmoid weigher with the additive function
+			_score = Scores::makeFunction <Scores::detail::InverseSigmoidPositionWeighter> (
+				_parser.__count, 
+				_db, _wf, 
+				factory, 
+				_parser.__seed_l);
+			return;
 	}
 
 	//

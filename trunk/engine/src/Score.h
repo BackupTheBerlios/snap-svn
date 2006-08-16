@@ -112,6 +112,37 @@ namespace Scores {
 		boost::shared_ptr <Factory>& factory,
 		int seedLength);
 
+	//
+	// utility for creating a score function
+	template <class PositionWeighterT>
+	boost::shared_ptr <Scores::Function> makeFunction (
+		CountType countType,
+		boost::shared_ptr <SequenceDB>& db,
+		boost::shared_ptr <SeqWeightFunction>& wf,
+		boost::shared_ptr <Factory>& factory,
+		int seedLength)
+	{
+		switch (countType) {
+			case _count_gene_:
+				return boost::shared_ptr <Scores::Function> (
+					new DiscriminativeFunction <
+						PositionWeighterT, 
+						detail::PositionCounter <_count_gene_>
+					> (db, wf, factory, seedLength)
+				);
+			case _count_total_:
+				return Function_ptr (
+					new DiscriminativeFunction <
+						PositionWeighterT, 
+						detail::PositionCounter <_count_total_>
+					> (db, wf, factory, seedLength)
+				);
+		};
+
+		mustfail ();
+		return boost::shared_ptr <Scores::Function>  ();
+	}
+
 
 
 	//
@@ -216,6 +247,43 @@ namespace Scores {
 		struct Cache;
 	private:
 		boost::shared_ptr <ExplossWeights> _weights;
+	};
+
+
+
+	class ExpAdditiveScore : public Score
+	{
+	public:
+		ExpAdditiveScore (const TFPN& tfpn)
+			: _tfpn (tfpn)
+		{
+			// we do FP - TP so as to get a score we minimize and not maximize along the search
+			_log2Score = tfpn._FP - tfpn._TP;
+		}
+
+		virtual TFPN& parameters(TFPN& tfpn) {
+			tfpn = _tfpn; return tfpn;
+		}
+
+		virtual void writeAsText (Persistance::TextWriter& writer) const {
+			writer << "[FP = " << _tfpn._FP << ", TP=" << _tfpn._TP << ']';
+		}
+
+		virtual void name (StrBuffer& out) const { out = "Exponential Additive Score"; }
+
+	private:
+		TFPN _tfpn;
+	};
+
+
+	//
+	class ExpAdditiveScoreFactory : public Factory {
+	public:
+		virtual boost::shared_ptr <Score> create (const TFPN& tfpn ) const
+		{
+			boost::shared_ptr <Score> result (new ExpAdditiveScore (tfpn));
+			return result;
+		}
 	};
 
 

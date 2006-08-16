@@ -89,6 +89,18 @@ namespace Scores {
 			}
 		};
 
+		struct InverseSigmoidPositionWeighter
+		{
+			typedef double counter;
+			static inline int round (counter c) { return ROUND (c); }
+			static inline counter weigh (const Sequence& s, const SeqWeightFunction& wf) { 
+				/// y = Sigmoid(x) = 1 / (1 + e^-x)
+				/// Inv-Sigmoid(y) = - ln ( [1-y] / y)
+				double y = wf.weight (s.id ()); 
+				return -log ( (1 - y) /y);
+			}
+		};
+
 		//
 		// concept check class for class PositionCounter;
 

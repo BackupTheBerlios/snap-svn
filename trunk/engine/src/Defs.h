@@ -74,8 +74,8 @@ enum CountType {
 
 enum ScoreType {
     _score_hypegeo_,
-    _score_exp_
-
+    _score_exp_,
+	 _score_additive_
 };
 
 enum Strand {

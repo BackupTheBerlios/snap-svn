@@ -194,62 +194,33 @@ Scores::makeFunction (
 {
 	switch (scorePartial) {
 		case _position_weight_discrete_:
-			switch (countType) {
-				case _count_gene_:
-					return boost::shared_ptr <Scores::Function> (
-						new DiscriminativeFunction <
-							detail::PositionWeighter <_position_weight_discrete_>, 
-							detail::PositionCounter <_count_gene_>
-						> (db, wf, factory, seedLength)
-					);
-				case _count_total_:
-					return Function_ptr (
-						new DiscriminativeFunction <
-							detail::PositionWeighter <_position_weight_discrete_>, 
-							detail::PositionCounter <_count_total_>
-						> (db, wf, factory, seedLength)
-					);
-			};
+			return makeFunction <detail::PositionWeighter <_position_weight_discrete_> > (
+				countType,
+				db,
+				wf,
+				factory,
+				seedLength
+				);
 			break;
 
 		case _position_weight_real_:
-			switch (countType) {
-				case _count_gene_:
-					return Function_ptr (
-						new DiscriminativeFunction <
-							detail::PositionWeighter <_position_weight_real_>, 
-							detail::PositionCounter <_count_gene_>
-						> (db, wf, factory, seedLength)
-					);
-
-				case _count_total_:
-					return Function_ptr (
-						new DiscriminativeFunction <
-							detail::PositionWeighter <_position_weight_real_>, 
-							detail::PositionCounter <_count_total_>
-						> (db, wf, factory, seedLength)
-					);
-			};
+			return makeFunction <detail::PositionWeighter <_position_weight_real_> > (
+				countType,
+				db,
+				wf,
+				factory,
+				seedLength
+				);
 			break;
 
 		case _position_weight_hotspots_:
-			switch (countType) {
-				case _count_gene_:
-					return Function_ptr (
-						new DiscriminativeFunction <
-							detail::PositionWeighter <_position_weight_hotspots_>, 
-							detail::PositionCounter <_count_gene_>
-						> (db, wf, factory, seedLength)
-					);
-
-				case _count_total_:
-					return Function_ptr (
-						new DiscriminativeFunction <
-							detail::PositionWeighter <_position_weight_hotspots_>, 
-							detail::PositionCounter <_count_total_>
-						> (db, wf, factory, seedLength)
-					);
-			};
+			return makeFunction <detail::PositionWeighter <_position_weight_hotspots_> > (
+				countType,
+				db,
+				wf,
+				factory,
+				seedLength
+				);
 			break;
 	};
 
