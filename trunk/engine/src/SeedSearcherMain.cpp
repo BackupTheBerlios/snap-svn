@@ -439,7 +439,7 @@ void SeedSearcherMain::CmdLineParameters::setupScoreFunc ()
 			break;
 
 		case _score_additive_:
-			factory.reset (new Scores::HyperGeometricPvalueFactory);
+			factory.reset (new Scores::ExpAdditiveScoreFactory);
 			
 			/// we must use the InverseSigmoid weigher with the additive function
 			_score = Scores::makeFunction <Scores::detail::InverseSigmoidPositionWeighter> (
