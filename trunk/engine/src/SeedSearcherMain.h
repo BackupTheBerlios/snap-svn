@@ -126,8 +126,8 @@ public:
 
    //
    // returns the Sequence DB
-   const SequenceDB& db () const {
-      return *_db;
+	boost::shared_ptr <const SequenceDB> db () const {
+      return _db;
    }
    //
    // returns the randome projections for the search
@@ -368,5 +368,20 @@ struct SeedSearcherMain::FeatureSetManager {
 	//
 	static FeatureSet_ptr removeRedundancies (const FeatureSet&, const CmdLineParameters&);
 };
+/*
+class DNAParameters : SeedSearcherMain::Parameters
+{
+public:
+	/// first stage
+	void setupWeights (const boost::filesystem::path& filename);
+	void setupWeights (std::istream& stream);
+	void setupWeights (const std::string& string);
+
+	/// second stage
+	void setupSequence (const boost::filesystem::path& filename);
+	void setupSequence (std::istream& stream);
+	void setupSequence (const std::string& string);
+}
+*/
 
 #endif

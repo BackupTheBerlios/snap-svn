@@ -10,29 +10,77 @@
 #include <string>
 #include <fstream>
 #include <iostream>
+#include <sstream>
 #include <assert.h>
 
 double SeqWeightDB::PositionalWeight::getPositionWeight (int index) const
 {
+	debug_mustbe (index >= 0);
+	
 	//
 	// we can use find_if because I don't expect more than
 	// 10 hot-spots in a sequence, and in this range 
 	// find_if performs better than binary_search
 	Positions::const_iterator it = _positions.begin ();
 	for (; it != _positions.end () ; ++it) {
-		if (index < (*it)->_startIndex){
+		Entry* entry = (*it);
+		if (index < entry->_startIndex){
 			it = _positions.end ();
 			break;
 		}
-		else if (index <= (*it)->_startIndex + (*it)->_length)
+		else if (index < entry->_startIndex + entry->_length)
 			break;
 	}
 
 	if (it == _positions.end ())
 		return _weight;
 	else {
-		return (*it)->_weight;
+		Entry* entry = (*it);
+		debug_mustbe (entry->_startIndex <= index && index < entry->_startIndex + entry->_length);
+		return entry->_weight;
 	}
+}
+
+double SeqWeightDB::PositionalWeight::getAveragePositionWeight (int index, int length) const
+{
+	if (length <= 0)
+		return 0;
+
+	double weight = 0;
+	PositionalWeight::Iterator it (*this, index);
+	debug_mustbe (it.position ()<= index);
+	debug_mustbe (index <= it.position ()+ length);
+	for (int i=0 ; i<length ; ++i, it.advance (1)) {
+		weight += it.weight();
+	}
+
+	weight = weight / length;
+	return weight;
+}
+
+SeqWeightDB::PositionalWeight::Positions::const_iterator 
+SeqWeightDB::PositionalWeight::find (int position) const
+{
+	if (_positions.size () <= 0)
+		return _positions.end ();
+
+	IndexEntryOrder predicate;
+	Positions::const_iterator result = std::upper_bound(_positions.begin (), _positions.end (), position, predicate);
+	debug_only (
+		if (result != _positions.end ()) {
+			debug_mustbe (!fitsEntry (**result, position));
+			debug_mustbe ((*result)->_startIndex > position);
+		}
+	);
+
+	if (result != _positions.begin ()) {
+		--result;
+		debug_mustbe ((*result)->_startIndex <= position);
+		if (fitsEntry (**result, position))
+			return result;
+	}
+
+	return _positions.end ();
 }
 
 
@@ -144,7 +192,13 @@ SeqWeightDB::computeWeightIndex (
 		debug_mustbe (seq);
 		if (seq) {
 			PositionalWeight_var weight = it->second;
-			(*id2weight) [seq->id ()] = weight;
+			if (seq->id () >= static_cast <Sequence::ID> (id2weight->size ())) {
+				/// make sure capacity is increased at least two fold
+				id2weight->reserve ((seq->id ()+1) * 2);
+				id2weight->resize (seq->id ()+1);
+			}
+
+			(*id2weight)[seq->id ()] = weight;
 		}
 	}
 
@@ -200,7 +254,7 @@ struct PosWeightsReader : public WeightsReader
 			}
 
 			/// this is a new entry
-			_entries.push_back(new SeqWeightDB::PositionalWeight::Entry (i1, i2-i1, seqWeight * w));
+			_entries.push_back(new SeqWeightDB::PositionalWeight::Entry (i1, i2-i1 + 1, seqWeight * w));
 			buffer = buffer.substring (next + 1);
 			buffer = buffer.trimmedSubstring();
 		}
@@ -228,7 +282,7 @@ struct PosWeightsReader : public WeightsReader
 
 
 AutoPtr <SeqWeightDB::Name2Weight> 
-SeqWeightDB::readWgtFile (const char* weightFileName)
+SeqWeightDB::readWgtFromFile (const char* weightFileName)
 {
 	PosWeightsReader reader;
 	reader.read (weightFileName);
@@ -236,9 +290,16 @@ SeqWeightDB::readWgtFile (const char* weightFileName)
 }
 
 AutoPtr <SeqWeightDB::Name2Weight> 
-SeqWeightDB::readWgtFile (std::istream& in)
+SeqWeightDB::readWgtFromStream (std::istream& in)
 {
 	PosWeightsReader reader;
 	reader.read (in);
 	return reader._posweights;
+}
+
+AutoPtr <SeqWeightDB::Name2Weight> 
+SeqWeightDB::readWgtFromString (const std::string& wgtString)
+{
+	std::istringstream stream (wgtString);
+	return readWgtFromStream (stream);
 }

@@ -80,9 +80,16 @@ public:
                                               const char* seqFileName,
                                               SeqWeightDB::Name2Weight&);
 
+		static SequenceDB* loadFastaAndWeightsFromString (
+															const Langauge&,
+															const std::string& seqString,
+                                             SeqWeightDB::Name2Weight&
+															);
+
 		//
 		// for loading a fasta file and a corresponding weight file
-		static SequenceDB* loadFastaAndWeights (const Langauge&,
+		static SequenceDB* loadFastaAndWeightsFromStream (
+			const Langauge&,
 			std::istream& seqFile,
 			SeqWeightDB::Name2Weight&);
    };

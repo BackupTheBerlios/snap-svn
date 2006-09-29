@@ -101,7 +101,7 @@ void FeatureInvestigator::addPositions (
 
    SeqCluster::AddPositions pos(outPositives);
    SeqCluster::AddPositions neg(outNegatives);
-   feature.cluster ().performDivided(_parameters.wf (), pos, neg);
+   feature.cluster ().performDivided(*_parameters.wf (), pos, neg);
 }
 
 void FeatureInvestigator::printMotif (  
@@ -150,7 +150,7 @@ void FeatureInvestigator::printMotifPosition (
    //
    // output sequence weight 
    writer.setStream(data.getOutputStream(fieldIndex++));
-   writer << '[' << _parameters.wf ().weight (position.sequence ()->id ()) << ']';
+   writer << '[' << _parameters.wf ()->weight (position.sequence ()->id ()) << ']';
    
    //
    // output the position information:
@@ -257,7 +257,7 @@ void FeatureInvestigator::createPSSM (PositionWeightType positionWeightType,
 		      seed_length,
 		      _outputLength,
             positions,
-            _parameters.wf ());
+            *_parameters.wf ());
 }
    
 

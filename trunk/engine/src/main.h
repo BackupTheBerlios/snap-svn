@@ -20,6 +20,16 @@ struct main_definitions {
       __stability = _beta_version_
    };
 
+	//
+	//
+	enum {
+		SeqFileIndex = 0,
+		WgtFileIndex = 1,
+		StubFileIndex = 2,
+		RequiredParams = 3,
+		TestWgtFileIndex = 3,
+	};
+
    //
    //
    struct MainError : public BaseException {

@@ -61,18 +61,6 @@ static const char buildComment [] =
 	"\n";
 
 
-//
-//
-enum {
-   SeqFileIndex = 0,
-   WgtFileIndex = 1,
-   StubFileIndex = 2,
-   RequiredParams = 3,
-   TestWgtFileIndex = 3,
-};
-
-
-
 class OutputSummary 
 {
 public:
@@ -550,8 +538,8 @@ void ApplicationMain::printSeqMatrix (FeatureSet& bestFeatures,
 
    //
    // get the seq iterator and the weight function
-   SequenceDB::SequenceIterator it = parameters.db ().sequenceIterator ();
-   const SeqWeightFunction& wf = parameters.wf ();
+   SequenceDB::SequenceIterator it = parameters.db ()->sequenceIterator ();
+	boost::shared_ptr<const SeqWeightFunction> wf = parameters.wf ();
 
    //
    // go over all sequences
@@ -559,7 +547,7 @@ void ApplicationMain::printSeqMatrix (FeatureSet& bestFeatures,
       //
       // skip non positive sequences
       const Sequence* seq = it.get ();
-      if (!wf.isPositive (seq->id ()))
+      if (!wf->isPositive (seq->id ()))
          continue;
 
       Persistance::TextTableReport::Data data (format);
@@ -611,12 +599,13 @@ static void mainRoutine (int argc,
    // check that we have enough arguments
    // needs SeqFile RegFile and output-stub
    int numOfFileArgs = parser.getNumFileArgs ();
-   if(numOfFileArgs < RequiredParams)
+	if(numOfFileArgs < main_definitions::RequiredParams)
       parser.usage ("Missing arguments");
 
 	//
 	// create the parent directory of the stub
-	boost::filesystem::path jobFolder (argv [parser.__firstFileArg + StubFileIndex], boost::filesystem::native);
+	boost::filesystem::path jobFolder (
+		argv [parser.__firstFileArg + main_definitions::StubFileIndex], boost::filesystem::native);
 	
 	if (!jobFolder.branch_path ().empty ()) {
 		if (!boost::filesystem::exists (jobFolder.branch_path ())) {
@@ -629,9 +618,9 @@ static void mainRoutine (int argc,
 
    //
    // create the preprocessor and other initial data
-   confParamaters.setup (  argv [parser.__firstFileArg + SeqFileIndex],
-                           argv [parser.__firstFileArg + WgtFileIndex],
-                           argv [parser.__firstFileArg + StubFileIndex]);
+	confParamaters.setup (  argv [parser.__firstFileArg + main_definitions::SeqFileIndex],
+                           argv [parser.__firstFileArg + main_definitions::WgtFileIndex],
+                           argv [parser.__firstFileArg + main_definitions::StubFileIndex]);
 
    //
    // this takes care of all searching and printing of seeds

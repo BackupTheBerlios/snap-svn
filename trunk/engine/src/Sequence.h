@@ -112,21 +112,39 @@ public:
    Strand strand () const {
       return _strand;
    }
+
+	enum OffsetFrom {
+		_offset_from_beginning_,
+		_offset_from_end_
+	};
+
    //
    // returns the offset from the end of the sequence.
 	// the last character of the sequence is assumed to be -1 upstream
 	// from the TSS of the gene
-   int tssPosition (int seedLength) const {
+   int tssPosition (int motifLength, OffsetFrom offsetFrom = _offset_from_end_) const {
+		debug_mustbe (motifLength >= 0);
+		debug_mustbe (motifLength <= maxLookahead ());
+
 		// ---> strand with gene   TSS 
 		//							 *		|	the motif AACCG lies -5 to 0 upstream
 		//		TGAA...		 ...AACCG| --> the gene
 		//		ACTT...		 ...TTGGC|		the gene complement	<--
 		//								  *|  the motif CGGTT lies 0 to -5 upstream
 		//										<--- reverse of the strand with the gene
-		if (_strand == _strand_pos_)
-			return (- maxLookahead());
-		else
-			return - position ();
+		if (offsetFrom == _offset_from_end_) {
+			if (_strand == _strand_pos_)
+				return (- maxLookahead());
+			else
+				return -position () - motifLength;
+		}
+		else {
+			if (_strand == _strand_pos_)
+				return position ();
+			else {
+				return maxLookahead () - motifLength;
+			}
+		}
 	}
 
 	//

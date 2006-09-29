@@ -97,7 +97,27 @@ namespace Scores {
 				/// y = Sigmoid(x) = 1 / (1 + e^-x)
 				/// Inv-Sigmoid(y) = - ln ( [1-y] / y)
 				double y = wf.weight (s.id ()); 
-				return -log ( (1 - y) /y);
+				return inverse_sigmoid (y);
+			}
+
+			/// sigmoid [-inf, inf] -->> [0, 1]
+			/// see http://mathworld.wolfram.com/SigmoidFunction.html
+			static inline double sigmoid (double x)
+			{
+				return 1 / (1 + exp (-x));
+			}
+
+			///
+			/// the inverse of the sigmoid function
+			static inline double inverse_sigmoid (double y)
+			{
+				mustbe (y>= 0 && y<= 1);
+				if (y == double (1))
+					return HUGE_VAL;
+				else if (y == double (0))
+					return -HUGE_VAL;
+				else
+					return -log ( (1 - y) / y);
 			}
 		};
 
@@ -248,7 +268,8 @@ namespace Scores {
 	// an implementatino of the FunctionBase interface
 
 	template <class PositionWeighterT, class PositionCounterT>
-	class DiscriminativeFunction : public Function {
+	class DiscriminativeFunction : public Function 
+	{
 	public:
 		DiscriminativeFunction (
 			boost::shared_ptr <SequenceDB>& db,
@@ -260,8 +281,10 @@ namespace Scores {
 			//
 			// calculate the total weight of the positive and negative sets
 			SeqWeightFunction::CIterator it (wf->iterator ());
+			
 			for (; it.hasNext() ; it.next ()) {
-				const Sequence& seq = db->getSequence (it->first);
+
+				const Sequence& seq = db->getSequence (it.id ());
 				typename PositionWeighterT::counter seqWeight = _weighter.weigh (seq, *wf);
 				int seqCount = _counter.maximumCount (seq, seedLength);
 				_posSetWeight += seqCount * seqWeight;
@@ -313,6 +336,47 @@ namespace Scores {
 		boost::shared_ptr <SeqWeightFunction> _wf;
 		boost::shared_ptr <Factory> _factory;
 	};
+
+	//
+	// utility for creating a score function
+	boost::shared_ptr <Scores::Function> makeFunction (
+		CountType countType,
+		PositionWeightType scorePartial,
+		boost::shared_ptr <SequenceDB>& db,
+		boost::shared_ptr <SeqWeightFunction>& wf,
+		boost::shared_ptr <Factory>& factory,
+		int seedLength);
+
+	//
+	// utility for creating a score function
+	template <class PositionWeighterT>
+	boost::shared_ptr <Scores::Function> makeFunction (
+		CountType countType,
+		boost::shared_ptr <SequenceDB>& db,
+		boost::shared_ptr <SeqWeightFunction>& wf,
+		boost::shared_ptr <Factory>& factory,
+		int seedLength)
+	{
+		switch (countType) {
+			case _count_gene_:
+				return boost::shared_ptr <Scores::Function> (
+					new DiscriminativeFunction <
+						PositionWeighterT, 
+						detail::PositionCounter <_count_gene_>
+					> (db, wf, factory, seedLength)
+				);
+			case _count_total_:
+				return Function_ptr (
+					new DiscriminativeFunction <
+						PositionWeighterT, 
+						detail::PositionCounter <_count_total_>
+					> (db, wf, factory, seedLength)
+				);
+		};
+
+		mustfail ();
+		return boost::shared_ptr <Scores::Function>  ();
+	}
 };
 
 #endif

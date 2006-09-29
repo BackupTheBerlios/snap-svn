@@ -157,8 +157,8 @@ public:
    void wf (boost::shared_ptr <SeqWeightFunction>& wf) {
       _wf = wf;
    }
-   const SeqWeightFunction& wf () const {
-      return *_wf;
+	boost::shared_ptr <const SeqWeightFunction> wf () const {
+      return _wf;
    }
    //
    // preprocessed data to search over

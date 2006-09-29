@@ -28,6 +28,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <sstream>
 #include <assert.h>
 
 
@@ -128,13 +129,25 @@ SequenceDB*
    if (! in.is_open())
       Err(string("unable to open SeqData file ")+ seqFileName);
 
-	AutoPtr <SequenceDB> db = loadFastaAndWeights(langauge, in, weights);
+	AutoPtr <SequenceDB> db = loadFastaAndWeightsFromStream(langauge, in, weights);
 	checkup (*db, seqFileName);
 	return db.release();
 }
 
 SequenceDB* 
-	SequenceDB::TextFileStorage::loadFastaAndWeights (
+   SequenceDB::TextFileStorage::loadFastaAndWeightsFromString (
+      const Langauge& langauge   ,
+		const std::string& seqString,
+      SeqWeightDB::Name2Weight& weights)
+{
+	std::istringstream in(seqString);
+	AutoPtr <SequenceDB> db = loadFastaAndWeightsFromStream(langauge, in, weights);
+	checkup (*db, "The given string");
+	return db.release();
+}
+
+SequenceDB* 
+	SequenceDB::TextFileStorage::loadFastaAndWeightsFromStream (
 	const Langauge& langauge   ,
 	std::istream& in,
 	SeqWeightDB::Name2Weight& weights)

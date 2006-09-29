@@ -371,7 +371,7 @@ void SeedSearcherMain::CmdLineParameters::setupDB ()
 
 		DLOG.flush ();
 
-		_seqNameWeights.reset ((SeqWeightDB::readWgtFile (_wgtFilename)).release ());
+		_seqNameWeights.reset ((SeqWeightDB::readWgtFromFile (_wgtFilename)).release ());
 	}
 
 	if (!_db) {
@@ -767,8 +767,8 @@ SeedSearcher::FeatureFilter_ptr
 		filter.reset (
 			new FertileFeaturesFilter (
 				filter,			
-				SeqCluster (params.db ()),
-				params.wf (),
+				SeqCluster (*params.db ()),
+				*params.wf (),
 				parser.__score_min_seq,
 				parser.__score_min_seq_per 
 			)

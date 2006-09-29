@@ -4,6 +4,7 @@
 #include "Defs.h"
 #include "SeqWeight.h"
 
+
 #include "persistance/TextWriter.h"
 
 #include "legacy/MathPlus.h"
@@ -101,49 +102,6 @@ namespace Scores {
 			const SeqCluster& containingFeature) const = 0;
 	};
 	typedef boost::shared_ptr <Function> Function_ptr;
-
-	//
-	// utility for creating a score function
-	boost::shared_ptr <Scores::Function> makeFunction (
-		CountType countType,
-		PositionWeightType scorePartial,
-		boost::shared_ptr <SequenceDB>& db,
-		boost::shared_ptr <SeqWeightFunction>& wf,
-		boost::shared_ptr <Factory>& factory,
-		int seedLength);
-
-	//
-	// utility for creating a score function
-	template <class PositionWeighterT>
-	boost::shared_ptr <Scores::Function> makeFunction (
-		CountType countType,
-		boost::shared_ptr <SequenceDB>& db,
-		boost::shared_ptr <SeqWeightFunction>& wf,
-		boost::shared_ptr <Factory>& factory,
-		int seedLength)
-	{
-		switch (countType) {
-			case _count_gene_:
-				return boost::shared_ptr <Scores::Function> (
-					new DiscriminativeFunction <
-						PositionWeighterT, 
-						detail::PositionCounter <_count_gene_>
-					> (db, wf, factory, seedLength)
-				);
-			case _count_total_:
-				return Function_ptr (
-					new DiscriminativeFunction <
-						PositionWeighterT, 
-						detail::PositionCounter <_count_total_>
-					> (db, wf, factory, seedLength)
-				);
-		};
-
-		mustfail ();
-		return boost::shared_ptr <Scores::Function>  ();
-	}
-
-
 
 	//
 	// 
