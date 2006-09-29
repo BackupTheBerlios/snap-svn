@@ -49,6 +49,7 @@
 				BasicRuntimeChecks="3"
 				SmallerTypeCheck="true"
 				RuntimeLibrary="1"
+				EnableEnhancedInstructionSet="0"
 				DisableLanguageExtensions="false"
 				ForceConformanceInForLoopScope="true"
 				RuntimeTypeInfo="true"
@@ -285,10 +286,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Parser.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\PrefixTreePreprocessor.cpp"
 				>
 			</File>
@@ -322,10 +319,6 @@
 			</File>
 			<File
 				RelativePath="..\SeedSearcher.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\SeedSearcherMain.cpp"
 				>
 			</File>
 			<File
@@ -389,10 +382,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Parser.h"
-				>
-			</File>
-			<File
 				RelativePath="..\PrefixTreePreprocessor.h"
 				>
 			</File>
@@ -426,10 +415,6 @@
 			</File>
 			<File
 				RelativePath="..\SeedSearcher.h"
-				>
-			</File>
-			<File
-				RelativePath="..\SeedSearcherMain.h"
 				>
 			</File>
 			<File
@@ -493,14 +478,6 @@
 				>
 			</File>
 		</Filter>
-		<File
-			RelativePath="..\main.cpp"
-			>
-		</File>
-		<File
-			RelativePath="..\main.h"
-			>
-		</File>
 	</Files>
 	<Globals>
 	</Globals>
