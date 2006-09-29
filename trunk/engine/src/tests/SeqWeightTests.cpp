@@ -41,7 +41,7 @@ BOOST_AUTO_UNIT_TEST(test_WeightDB_repetitive_sequence_name)
 
 	/// read the weight file
 	AutoPtr <SeqWeightDB::Name2Weight> weights;
-	BOOST_CHECK_THROW (weights = SeqWeightDB::readWgtFile (wgtTmpFilename.c_str ()), BaseException);
+	BOOST_CHECK_THROW (weights = SeqWeightDB::readWgtFromFile (wgtTmpFilename.c_str ()), BaseException);
 }
 
 
@@ -53,7 +53,7 @@ BOOST_AUTO_UNIT_TEST(test_readPosWgtFile)
    );
 
    AutoPtr <SeqWeightDB::Name2Weight> pWeights (
-      SeqWeightDB::readWgtFile (stream)
+      SeqWeightDB::readWgtFromStream (stream)
    );
    SeqWeightDB::Name2Weight& weights = *pWeights;
 

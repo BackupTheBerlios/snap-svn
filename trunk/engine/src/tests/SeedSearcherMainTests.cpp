@@ -30,13 +30,15 @@
 
 #include "Tests.h"
 
+#include "Main.h"
 #include "Parser.h"
 #include "SeqWeight.h"
 #include "StdOptions.h"
 #include "SeqWeight.h"
 #include "SeedSearcherMain.h"
+#include "SeedConf.h"
 
-
+#include <boost/filesystem/operations.hpp>
 #include <boost/test/auto_unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
 
@@ -101,12 +103,12 @@ BOOST_AUTO_UNIT_TEST(test_SeedSearcherMain)
 	params->setup(Str (seqTmpFilename), Str (wgtTmpFilename));
 	
 	/// check that we have the 7 sequences
-	BOOST_REQUIRE (params->db ().size () == 8);
+	BOOST_REQUIRE (params->db ()->size () == 8);
 	/// check that the sequences have correct IDs and names
-	for (int i=0 ; i<params->db ().size () ; ++i) {
+	for (int i=0 ; i<params->db ()->size () ; ++i) {
 		char *names [] = { "Positive1", "Positive2", "Positive3", "Negative1", "Negative2", "Negative3", "Negative4", "Negative5" };
-		BOOST_REQUIRE (params->db ().sequences () [i]->name ().equals (names [i]));
-		BOOST_REQUIRE (params->db ().sequences () [i]->id () == i);
+		BOOST_REQUIRE (params->db ()->sequences () [i]->name ().equals (names [i]));
+		BOOST_REQUIRE (params->db ()->sequences () [i]->id () == i);
 	}
 
 	SeedSearcherMain appmain;
@@ -136,7 +138,7 @@ BOOST_AUTO_UNIT_TEST(test_SeedSearcherMain)
 	const PosCluster* cluster = NULL;
 	/// since we are using gene counts, the positions will not be available "out-of-the-box"
 	/// we shall have to ask for them explicitly
-	cluster = acgt->cluster (true).getPositions (params->db ().getSequence ("Positive1"));
+	cluster = acgt->cluster (true).getPositions (params->db ()->getSequence ("Positive1"));
 	BOOST_REQUIRE (cluster);
 	BOOST_REQUIRE (cluster->size() == 1);
 	BOOST_CHECK (cluster->iterator ().get()->strand () == _strand_pos_);
@@ -144,7 +146,7 @@ BOOST_AUTO_UNIT_TEST(test_SeedSearcherMain)
 	BOOST_CHECK (cluster->iterator ().get()->getData (0) == 'A');
 	BOOST_CHECK (cluster->iterator ().get()->getSeedString (4, 0).equals ("ACGT"));
 
-	cluster = acgt->cluster (true).getPositions (params->db ().getSequence ("Positive2"));
+	cluster = acgt->cluster (true).getPositions (params->db ()->getSequence ("Positive2"));
 	BOOST_REQUIRE (cluster);
 	BOOST_REQUIRE (cluster->size() == 1);
 	BOOST_CHECK (cluster->iterator ().get()->strand () == _strand_pos_);
@@ -152,7 +154,7 @@ BOOST_AUTO_UNIT_TEST(test_SeedSearcherMain)
 	BOOST_CHECK (cluster->iterator ().get()->getData (0) == 'A');
 	BOOST_CHECK (cluster->iterator ().get()->getSeedString (4, 0).equals ("ACGT"));
 
-	cluster = acgt->cluster (true).getPositions (params->db ().getSequence ("Positive3"));
+	cluster = acgt->cluster (true).getPositions (params->db ()->getSequence ("Positive3"));
 	BOOST_REQUIRE (cluster);
 	BOOST_REQUIRE (cluster->size() == 1);
 	BOOST_CHECK (cluster->iterator ().get()->strand () == _strand_pos_);
@@ -180,7 +182,48 @@ extern int cpp_main(int argc, char* argv []);
 
 BOOST_AUTO_UNIT_TEST(test_cpp_main)
 {
+	/// if the --no_long_tests is specified, then this test is skipped
+	boost::unit_test::auto_unit_test_suite_t* master_test_suite = boost::unit_test::auto_unit_test_suite();
+	for (int i=1 ; i<master_test_suite->argc ; ++i) {
+		if (strcmp (master_test_suite->argv [i], "--no_long_tests") == 0) {
+			BOOST_WARN_MESSAGE (false, "the test_cpp_main test is ignored");
+			return;
+		}
+	}
+
 	int argc = 6;
 	char* argv [] = { "seed.test", "--Sconf", "tests/data/nimble.conf", "tests/data/test.seq", "tests/data/test.wgt", "tests/output/test_cpp_main" };
 	cpp_main (argc, argv);
+}
+
+BOOST_AUTO_UNIT_TEST(test_exaustive_logging)
+{
+	/// if the --no_long_tests is specified, then this test is skipped
+	boost::unit_test::auto_unit_test_suite_t* master_test_suite = boost::unit_test::auto_unit_test_suite();
+	for (int i=1 ; i<master_test_suite->argc ; ++i) {
+		if (strcmp (master_test_suite->argv [i], "--no_long_tests") == 0) {
+			BOOST_WARN_MESSAGE (false, "the test_cpp_main test is ignored");
+			return;
+		}
+	}
+
+	int argc = 7;
+	char* argv [] = { "seed.test", "--Sseedlog=on", "--Sconf", "tests/data/nimble.conf", "tests/data/test.seq", "tests/data/test.wgt", "tests/output/test_exaustive_logging" };
+	cpp_main (argc, argv);
+
+	/// check that every section in the conf file has a non-empty .exaustive file
+	SeedConfList conf (argc, argv);
+	SeedConf::read ("tests/data/nimble.conf", conf);
+
+
+
+	StrBuffer base_name = conf.getInitParser ().__argv [conf.getInitParser ().__firstFileArg + main_definitions::StubFileIndex];
+	for (SeedConfList::COptionIterator it = conf.const_iterator () ; it.hasNext () ; it.next ())
+	{
+		StrBuffer name = base_name; 
+		name += (*it)->_name;
+		name += ".exaustive";
+		BOOST_REQUIRE (boost::filesystem::exists (boost::filesystem::path (name)));
+		BOOST_REQUIRE (!boost::filesystem::_is_empty (boost::filesystem::path (name)));
+	}
 }

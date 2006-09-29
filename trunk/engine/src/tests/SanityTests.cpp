@@ -34,6 +34,7 @@
 #include "DebugLog.h"
 #include "SeqWeight.h"
 #include "SeedSearcherMain.h"
+#include "ScoreFunction.h"
 
 
 #include <boost/test/auto_unit_test.hpp>
@@ -64,12 +65,12 @@ BOOST_AUTO_UNIT_TEST(test_motifInSeqOuterPositions)
 	//
 	// create weights
 	AutoPtr <SeqWeightDB::Name2Weight> pWeights (
-		SeqWeightDB::readWgtFile (wgt_stream)
+		SeqWeightDB::readWgtFromStream (wgt_stream)
 	);
 
 	//
 	// create DB
-	boost::shared_ptr <SequenceDB> pDB (SequenceDB::TextFileStorage::loadFastaAndWeights(
+	boost::shared_ptr <SequenceDB> pDB (SequenceDB::TextFileStorage::loadFastaAndWeightsFromStream(
 		*langauge, seq_stream, *pWeights)
 	);
 
@@ -157,3 +158,89 @@ BOOST_AUTO_UNIT_TEST(test_motifInSeqOuterPositions)
 		}
 	}
 }
+
+BOOST_AUTO_UNIT_TEST(test_SeqPosition)
+{
+	//                    0123456789
+	Sequence sequence (1, "AAAACCCGGT", "seq1", "ACCGGGTTTT");
+	//                   -9876543210 
+	SeqPosition position (&sequence, 0);
+
+	BOOST_CHECK (position.getData (0) == 'A');
+	BOOST_CHECK (position.getData (1) == 'A');
+	BOOST_CHECK (position.getData (8) == 'G');
+	BOOST_CHECK (position.getData (9) == 'T');
+	BOOST_CHECK (position.maxLookahead () == 10);
+	BOOST_CHECK (position.sequence () == &sequence);
+	BOOST_CHECK (position.position () == 0);
+	BOOST_CHECK (position.strand () == _strand_pos_);
+	
+	/// if the motif is on the positive strand and at position 0
+	// it doesnt matter how long it is, it always stays at position 0 from the beginning
+	BOOST_CHECK (position.tssPosition (0, SeqPosition::_offset_from_beginning_) == 0);
+	BOOST_CHECK (position.tssPosition (1, SeqPosition::_offset_from_beginning_) == 0);
+	BOOST_CHECK (position.tssPosition (2, SeqPosition::_offset_from_beginning_) == 0);
+	BOOST_CHECK (position.tssPosition (3, SeqPosition::_offset_from_beginning_) == 0);
+	BOOST_CHECK (position.tssPosition (4, SeqPosition::_offset_from_beginning_) == 0);
+	BOOST_CHECK (position.tssPosition (5, SeqPosition::_offset_from_beginning_) == 0);
+	BOOST_CHECK (position.tssPosition (6, SeqPosition::_offset_from_beginning_) == 0);
+	BOOST_CHECK (position.tssPosition (7, SeqPosition::_offset_from_beginning_) == 0);
+	BOOST_CHECK (position.tssPosition (8, SeqPosition::_offset_from_beginning_) == 0);
+	BOOST_CHECK (position.tssPosition (9, SeqPosition::_offset_from_beginning_) == 0);
+	
+	/// a motif on the positive strand always starts from its position
+	BOOST_CHECK (position.tssPosition (0, SeqPosition::_offset_from_end_) == -10);
+	BOOST_CHECK (position.tssPosition (1, SeqPosition::_offset_from_end_) == -10);
+	BOOST_CHECK (position.tssPosition (2, SeqPosition::_offset_from_end_) == -10);
+	BOOST_CHECK (position.tssPosition (3, SeqPosition::_offset_from_end_) == -10);
+	BOOST_CHECK (position.tssPosition (4, SeqPosition::_offset_from_end_) == -10);
+	BOOST_CHECK (position.tssPosition (5, SeqPosition::_offset_from_end_) == -10);
+	BOOST_CHECK (position.tssPosition (6, SeqPosition::_offset_from_end_) == -10);
+	BOOST_CHECK (position.tssPosition (7, SeqPosition::_offset_from_end_) == -10);
+	BOOST_CHECK (position.tssPosition (8, SeqPosition::_offset_from_end_) == -10);
+	BOOST_CHECK (position.tssPosition (9, SeqPosition::_offset_from_end_) == -10);
+
+	// a position on the reverse strand
+	// seq			= AAAACCCGGT -->
+	// reverse seq = TTTTGGGCCA <--
+	//             = ACCGGGTTTT -->
+	SeqPosition rev_position (&sequence, 0, _strand_neg_);
+	
+	BOOST_CHECK (rev_position.getData (0) == 'A');
+	BOOST_CHECK (rev_position.getData (1) == 'C');
+	BOOST_CHECK (rev_position.getData (8) == 'T');
+	BOOST_CHECK (rev_position.getData (9) == 'T');
+	BOOST_CHECK (rev_position.maxLookahead () == 10);
+	BOOST_CHECK (rev_position.sequence () == &sequence);
+	BOOST_CHECK (rev_position.position () == 0);
+	BOOST_CHECK (rev_position.strand () == _strand_neg_);
+	
+	/// a motif of length 0 starting on rev_position 0 on the negative strand
+	/// is actually at the end of the positive strand
+	BOOST_CHECK_EQUAL (rev_position.tssPosition (0, SeqPosition::_offset_from_beginning_), 10);
+	BOOST_CHECK_EQUAL (rev_position.tssPosition (1, SeqPosition::_offset_from_beginning_), 9);
+	BOOST_CHECK_EQUAL (rev_position.tssPosition (2, SeqPosition::_offset_from_beginning_), 8);
+	BOOST_CHECK_EQUAL (rev_position.tssPosition (3, SeqPosition::_offset_from_beginning_), 7);
+	BOOST_CHECK_EQUAL (rev_position.tssPosition (4, SeqPosition::_offset_from_beginning_), 6);
+	BOOST_CHECK_EQUAL (rev_position.tssPosition (5, SeqPosition::_offset_from_beginning_), 5);
+	BOOST_CHECK_EQUAL (rev_position.tssPosition (6, SeqPosition::_offset_from_beginning_), 4);
+	BOOST_CHECK_EQUAL (rev_position.tssPosition (7, SeqPosition::_offset_from_beginning_), 3);
+	BOOST_CHECK_EQUAL (rev_position.tssPosition (8, SeqPosition::_offset_from_beginning_), 2);
+	BOOST_CHECK_EQUAL (rev_position.tssPosition (9, SeqPosition::_offset_from_beginning_), 1);
+	BOOST_CHECK_EQUAL (rev_position.tssPosition (10, SeqPosition::_offset_from_beginning_), 0);
+	
+	/// a motif of length 0 starting at rev_position 0 on the negative strand
+	/// is at the end of the positive strand. the length is irrelevant.
+	BOOST_CHECK_EQUAL (rev_position.tssPosition (0, SeqPosition::_offset_from_end_),  0);
+	BOOST_CHECK_EQUAL (rev_position.tssPosition (1, SeqPosition::_offset_from_end_), -1);
+	BOOST_CHECK_EQUAL (rev_position.tssPosition (2, SeqPosition::_offset_from_end_), -2);
+	BOOST_CHECK_EQUAL (rev_position.tssPosition (3, SeqPosition::_offset_from_end_), -3);
+	BOOST_CHECK_EQUAL (rev_position.tssPosition (4, SeqPosition::_offset_from_end_), -4);
+	BOOST_CHECK_EQUAL (rev_position.tssPosition (5, SeqPosition::_offset_from_end_), -5);
+	BOOST_CHECK_EQUAL (rev_position.tssPosition (6, SeqPosition::_offset_from_end_), -6);
+	BOOST_CHECK_EQUAL (rev_position.tssPosition (7, SeqPosition::_offset_from_end_), -7);
+	BOOST_CHECK_EQUAL (rev_position.tssPosition (8, SeqPosition::_offset_from_end_), -8);
+	BOOST_CHECK_EQUAL (rev_position.tssPosition (9, SeqPosition::_offset_from_end_), -9);
+	BOOST_CHECK_EQUAL (rev_position.tssPosition (10, SeqPosition::_offset_from_end_), -10);
+}
+

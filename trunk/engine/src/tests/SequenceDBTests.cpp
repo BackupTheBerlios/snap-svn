@@ -40,7 +40,7 @@ BOOST_AUTO_UNIT_TEST(test_SequenceDB_repetitive_sequence_name)
 		);
 
 	/// read the weight file
-	AutoPtr <SeqWeightDB::Name2Weight> weights = SeqWeightDB::readWgtFile (wgtTmpFilename.c_str ());
+	AutoPtr <SeqWeightDB::Name2Weight> weights = SeqWeightDB::readWgtFromFile (wgtTmpFilename.c_str ());
 
 	/// write a simple seq file with a repetitive sequence
 	std::string seqTmpFilename;
