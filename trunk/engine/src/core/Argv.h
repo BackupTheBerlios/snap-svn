@@ -94,7 +94,11 @@ public:
    bool empty () const {
       return _argc == 0;
    }
-
+	const char* operator [] (int index) const {
+		debug_mustbe (index >= 0);
+		debug_mustbe (index < _argc);
+		return _argv [index];
+	}
 
    template <typename StringT>
       static char* dup (StringT& s)   {
