@@ -30,7 +30,7 @@
 
 #include "Tests.h"
 
-#include "Main.h"
+#include "main.h"
 #include "Parser.h"
 #include "SeqWeight.h"
 #include "StdOptions.h"
@@ -221,8 +221,10 @@ BOOST_AUTO_UNIT_TEST(test_exaustive_logging)
 	for (SeedConfList::COptionIterator it = conf.const_iterator () ; it.hasNext () ; it.next ())
 	{
 		StrBuffer name = base_name; 
-		name += (*it)->_name;
-		name += ".exaustive";
+		name += ".";
+                name += (*it)->_name;
+		name += ".exhaustive";
+                std::cerr << name << std::endl;
 		BOOST_REQUIRE (boost::filesystem::exists (boost::filesystem::path (name)));
 		BOOST_REQUIRE (!boost::filesystem::_is_empty (boost::filesystem::path (name)));
 	}

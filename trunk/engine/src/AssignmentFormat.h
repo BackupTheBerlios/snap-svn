@@ -35,6 +35,9 @@
 //
 class Langauge {
 public:
+   virtual ~Langauge () {
+   }
+
    //
    // return the code of the langauge
    virtual const AlphabetCode& code () const = 0;

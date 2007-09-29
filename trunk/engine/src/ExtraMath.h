@@ -29,7 +29,7 @@
 #include "core/Defs.h"
 
 #  include "legacy/MathFunctions.h"
-#  include "legacy/MathPlus.h"
+#  include "legacy/mathplus.h"
 #  include <math.h>
 
 

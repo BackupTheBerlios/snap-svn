@@ -21,7 +21,7 @@
 // see http://www.cs.huji.ac.il/labs/compbio/LibB/LICENSE
 //
 
-#include "tests.h"
+#include "Tests.h"
 #include "Parser.h"
 
 #include "persistance/StrOutputStream.h"

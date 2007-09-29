@@ -27,7 +27,7 @@
 #include "Preprocessor.h"
 #include "AssignmentFormat.h"
 #include "Sequence.h"
-#include "PSSM.h"
+#include "pssm.h"
 
 #include "legacy/MathFunctions.h"
 #include "ExtraMath.h"

@@ -26,7 +26,7 @@
 
 #include "Sequence.h"
 #include "SeqWeight.h"
-#include "legacy/MathPlus.h"
+#include "legacy/mathplus.h"
 
 #include "core/AutoPtr.h"
 #include "core/STLHelper.h"

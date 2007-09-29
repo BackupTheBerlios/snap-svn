@@ -29,7 +29,7 @@
 #include "Cluster.h"
 #include "Sequence.h"
 #include "AssignmentFormat.h"
-#include "PSSM.h"
+#include "pssm.h"
 #include "DebugLog.h"
 #include "Preprocessor.h"
 

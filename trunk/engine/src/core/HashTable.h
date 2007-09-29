@@ -7,6 +7,8 @@
 template<class Parm, class Result>
 class Functor1R {
  public:
+        virtual ~Functor1R () {}
+
 	Result operator()(Parm inParm) {
 		return call(inParm);
 	}

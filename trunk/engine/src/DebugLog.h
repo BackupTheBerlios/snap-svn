@@ -55,16 +55,6 @@ public:
       return (*__langauge);
    }
 
-   friend Persistance::AbstractFormat::Owner 
-      Format (const AssignmentBase& assg) {
-      return new AssignmentFormat (assg, *__langauge);
-   }
-
-   friend Persistance::AbstractFormat::Owner 
-      Format (const Assignment::Position& pos) {
-      return new PositionFormat (pos, *__langauge);
-   }
-
    //
    // this method setups a default logger.
    // if suppress==true the logger is null and no logging is performed
@@ -81,6 +71,17 @@ private:
    static boost::shared_ptr <Persistance::TextWriter> __textWriter;
    static boost::shared_ptr <Langauge> __langauge;
 };
+
+static inline Persistance::AbstractFormat::Owner 
+Format (const AssignmentBase& assg) {
+  return new AssignmentFormat (assg, SeedSearcherLog::assgWriter ());
+}
+
+static inline Persistance::AbstractFormat::Owner 
+Format (const Assignment::Position& pos) {
+  return new PositionFormat (pos, SeedSearcherLog::assgWriter ());
+}
+
 
 
 #endif

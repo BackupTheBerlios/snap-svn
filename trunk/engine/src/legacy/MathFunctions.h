@@ -3,7 +3,7 @@
 
 #include <math.h>
 #include <assert.h>
-#include "MathPlus.h"
+#include "mathplus.h"
 
 inline double exp2(double x) 
 { 

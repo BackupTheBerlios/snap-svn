@@ -23,7 +23,7 @@
 
 #include "Cluster.h"
 #include "SequenceDB.h"
-#include "legacy/MathPlus.h"
+#include "legacy/mathplus.h"
 
 #include <limits.h>
 

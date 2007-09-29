@@ -295,7 +295,7 @@ public:
    }
    //
    // create assignment from a string and the alphabet that codes the string
-   Assignment::Assignment (const Str&, const AlphabetCode&);
+   Assignment (const Str&, const AlphabetCode&);
 
    Assignment& operator = (const Assignment& o) {
       _positions = o._positions;

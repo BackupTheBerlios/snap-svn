@@ -28,7 +28,7 @@
 #include "Sequence.h"
 #include "RandomProjections.h"
 #include "SeedSearcher.h"
-#include "PSSM.h"
+#include "pssm.h"
 #include "SeedSearcherMain.h"
 
 #include "StdOptions.h"
@@ -37,7 +37,7 @@
 #include "core/AutoPtr.h"
 #include "persistance/StdInputStream.h"
 #include "persistance/StrOutputStream.h"
-#include "Persistance/xmlwriter.h"
+#include "persistance/xmlwriter.h"
 
 #include "status_reporter/BaseStatusReporter.hpp"
 
@@ -56,8 +56,7 @@ using namespace Persistance;
 
 static const char buildComment [] =
 	"Release notes: \n"
-	"Build was not regression tested\n"
-	"Major fix: FDR works correctly\n"
+	"Built with gcc 4.1.2\n"
 	"\n";
 
 

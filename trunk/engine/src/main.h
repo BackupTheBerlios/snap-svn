@@ -16,8 +16,8 @@ struct main_definitions {
       _stable_version_,
 
       __versionMajor = 2,
-      __versionMinor = 42,
-      __stability = _beta_version_
+      __versionMinor = 43,
+      __stability = _stable_version_
    };
 
 	//

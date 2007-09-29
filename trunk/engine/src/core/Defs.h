@@ -200,9 +200,9 @@ protected:
 		if (!cond) ProgramException::raise(lineNo, file, err);
 	}
 	
-	#define mustbe(cond)		pexifnot_((cond), __LINE__)
-	#define mustnot(cond)		pexifnot_(!(cond), __LINE__)
-	#define mustfail()		pexifnot_(bool(false), __LINE__)
+	#define mustbe(cond)		pexifnot_((cond), __LINE__, __FILE__)
+	#define mustnot(cond)		pexifnot_(!(cond), __LINE__, __FILE__)
+	#define mustfail()		pexifnot_(bool(false), __LINE__, __FILE__)
 
    //
    // with message 

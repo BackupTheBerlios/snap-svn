@@ -128,6 +128,7 @@ class GetOptParser {
 public:
    class OptionBase {
    public:
+      virtual ~OptionBase () {}
       virtual const char* name ()   const	{ return NULL; }
       virtual const char* desc ()   const	{ return NULL; }
       virtual const char* def ()    const	{ return NULL; }

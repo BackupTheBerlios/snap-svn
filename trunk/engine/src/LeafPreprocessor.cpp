@@ -200,7 +200,7 @@ LeafPreprocessor::Rep* LeafPreprocessor::buildNoNegatives (
    struct NegativeNodeRemover : public LeafPreprocessor::Rep::Visitor {
       NegativeNodeRemover (const SeqWeightFunction& wf) : _wf (wf) {
       }
-
+      virtual ~NegativeNodeRemover () {}
       virtual bool call (LeafPreprocessor::Rep::NodeType* inParm) {
          if (!inParm->hasSequence (_wf)) {
             //

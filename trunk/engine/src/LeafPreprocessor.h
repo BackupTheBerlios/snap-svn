@@ -95,14 +95,14 @@ public:
    LeafPreprocessor (Rep*);
    ~LeafPreprocessor ();
 
-   static LeafPreprocessor::Rep* LeafPreprocessor::build (
+   static LeafPreprocessor::Rep* build (
                      int seedLength       ,
                      const SequenceDB&    , 
                      const Langauge&      );
 
    //
    // includes negative-node-removal optimization
-   static LeafPreprocessor::Rep* LeafPreprocessor::buildNoNegatives (
+   static LeafPreprocessor::Rep* buildNoNegatives (
                      int seedLength       ,
                      const SequenceDB&    , 
                      const Langauge&      ,

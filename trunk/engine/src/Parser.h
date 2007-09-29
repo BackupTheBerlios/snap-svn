@@ -193,7 +193,7 @@ public:
    //
    int __firstFileArg;
 
-   bool Parser::getOptBoolean (const char* in, bool* optUnknown = NULL);
+   bool getOptBoolean (const char* in, bool* optUnknown = NULL);
    OutputType getOptOutputType(const char*);
    int getInt (const char* in, const char* ctx);
    static GetOptParser::OptionList& getOptions ();

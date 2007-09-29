@@ -21,7 +21,7 @@
 // see http://www.cs.huji.ac.il/labs/compbio/LibB/LICENSE
 //
 
-#include "PSSM.h"
+#include "pssm.h"
 
 //#include <MainLib.h>
 //#include <Multinomial.h>
