@@ -2,9 +2,10 @@
 #include "OutputStream.h"
 #include "core/Str.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cassert>
 
 using namespace Persistance;
 
@@ -139,15 +140,13 @@ void TextWriter::write(const void* inPtr) {
   char buffer[16];
   size_t ptr_val = (size_t) inPtr;
 # if ENV_IS_64BIT
-    const char* format = "0x%016lx";
     assert (sizeof (void*) == 8);
-    #pragma warning ("kuku");
+    size_t printSize= ::sprintf(buffer, "0x%016lx", ptr_val);
 # else
-    const char* format = "0x%08x";
+   size_t printSize= ::sprintf(buffer, "0x%08x", ptr_val);
     assert (sizeof (void*) == 4);
-   #pragma warning ("lulu");
 # endif
-  size_t printSize= ::sprintf(buffer, format, ptr_val);
+  
   stream->write(buffer, printSize);
 }
 

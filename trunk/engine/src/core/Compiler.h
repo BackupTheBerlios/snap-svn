@@ -107,9 +107,15 @@
 #       define ENV_IS_64BIT 1
 #   endif
 #elif ENV_COMPILER & ENV_GCC
-#   ifdef _64_BIT
+#   ifdef __LP64__
 #       define ENV_IS_64BIT 1
 #   endif
+#endif
+
+#ifdef ENV_IS_64BIT
+// #  warning "INFO: compiling with 64bit environment"
+#else
+// #  warning "INFO: compiling with 32bit environment"
 #endif
 
 
