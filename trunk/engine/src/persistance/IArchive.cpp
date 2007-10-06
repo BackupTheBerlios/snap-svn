@@ -7,6 +7,8 @@
 #include "core/AutoPtr.h"
 #include "core/Str.h"
 
+#include <sstream>
+
 using namespace Persistance;
 
 static void throwTypeNotMatchedException (bool strict, 
@@ -90,7 +92,9 @@ static TFactoryBase* readClass (IArchive& in)
    in >> id;
    TFactoryBase* factory = in.factories ().getFactory (id);
    if (!factory) {
-      RaisePersistanceError2 ("Unknown factory id %d", id);
+      std::ostringstream str;
+      str << "Unknown factory id " << id;    
+      RaisePersistanceError (str.str ().c_str());
    }
    return factory;
 }

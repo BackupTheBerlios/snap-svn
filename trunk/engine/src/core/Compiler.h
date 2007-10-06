@@ -102,6 +102,16 @@
 #  endif
 #endif
 
+#if ENV_COMPILER & ENV_MICROSOFT
+#   ifdef _M_IA64
+#       define ENV_IS_64BIT 1
+#   endif
+#elif ENV_COMPILER & ENV_GCC
+#   ifdef _64_BIT
+#       define ENV_IS_64BIT 1
+#   endif
+#endif
+
 
 /*
 Compiler-dependent definitions

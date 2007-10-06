@@ -137,8 +137,17 @@ void TextWriter::write(const char* in, size_t inSize) {
 
 void TextWriter::write(const void* inPtr) {
   char buffer[16];
-  unsigned int ptr_val = (unsigned int) inPtr;
-  size_t printSize= ::sprintf(buffer, "0x%08x", ptr_val);
+  size_t ptr_val = (size_t) inPtr;
+# if ENV_IS_64BIT
+    const char* format = "0x%016lx";
+    assert (sizeof (void*) == 8);
+    #pragma warning ("kuku");
+# else
+    const char* format = "0x%08x";
+    assert (sizeof (void*) == 4);
+   #pragma warning ("lulu");
+# endif
+  size_t printSize= ::sprintf(buffer, format, ptr_val);
   stream->write(buffer, printSize);
 }
 

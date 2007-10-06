@@ -14,15 +14,16 @@ class FixedStr  {
 public:
     class VAList   {
     public:
-        explicit VAList (va_list inMarker) : marker (inMarker)  {
+        explicit VAList (va_list inMarker) {
+        	va_copy(_marker, inMarker); 
         }
 
-        va_list get () const {
-            return marker;
+        void get(va_list& out) const {
+            va_copy (out, *const_cast <va_list*> (&_marker));
         }
 
     private:
-        va_list marker;
+        va_list _marker;
     };
 
 

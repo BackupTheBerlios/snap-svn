@@ -99,7 +99,9 @@ void FixedStr::set_va (const char* format, ...)
 
 void FixedStr::set_va (VAList marker, const char* format)
 {
-    int written = VSNPRINT (_buffer, _capacity, format, marker.get ());
+    va_list vamarker;
+    marker.get (vamarker);
+    int written = VSNPRINT (_buffer, _capacity, format, vamarker);
     if (written == -1)  {
         //
         // not enough place in the _buffer for the entire string
@@ -159,7 +161,9 @@ void FixedStr::append_va (const char* format, ...)
 
 void FixedStr::append_va (VAList marker, const char* format)
 {
-   int written = VSNPRINT (_buffer + _length, _capacity - _length, format, marker.get ());
+   va_list vamarker;
+   marker.get (vamarker);
+   int written = VSNPRINT(_buffer + _length, _capacity - _length, format, vamarker);
    if (written == -1)  {
       //
       // not enough place in the _buffer for the entire string

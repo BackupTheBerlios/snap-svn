@@ -36,7 +36,7 @@ public:
    TFactoryList ();
    ~TFactoryList ();
 
-   typedef int FactoryID;
+   typedef size_t FactoryID;
 
    bool add (TFactoryBase*);
    bool remove (const char*);

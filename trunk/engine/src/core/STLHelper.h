@@ -127,7 +127,7 @@ public:
    // how many iteration steps maximally allowed
    void allowNext (int length) {
       iterator temp = _current;
-      std::advance (temp, tmin (length, _end - _current));
+      std::advance (temp, tmin<int32_t> (length, _end - _current));
       // for (; (temp != _end) && (length > 0) ; --length, ++temp);
       _end = temp;
    };
