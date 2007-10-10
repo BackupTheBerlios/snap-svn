@@ -71,13 +71,6 @@ clean:
 	rm -r -f */*#
 	rm -r -f seed
 	rm -r -f *.exe
-	rm -r -f Debug
-	rm -r -f */Debug
-	rm -r -f Release
-	rm -r -f */Release
-	rm -r -f boost/test/*.o
-	rm -r -f boost/filesystem/*.o
-	rm -r -f boost/regex/*.o	
 
 tags:
 	etags --language=c++ *.h *.cpp
