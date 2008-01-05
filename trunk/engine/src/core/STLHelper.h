@@ -4,7 +4,6 @@
 #include "core/Defs.h"
 #include <vector>
 
-
 //
 // choose between wrapper or standard vector
 #define USE_VECTOR_WRAPPER BASE_DEBUG
@@ -127,7 +126,7 @@ public:
    // how many iteration steps maximally allowed
    void allowNext (int length) {
       iterator temp = _current;
-      std::advance (temp, tmin<int32_t> (length, _end - _current));
+      std::advance (temp, tmin<ptrdiff_t> (length, _end - _current));
       // for (; (temp != _end) && (length > 0) ; --length, ++temp);
       _end = temp;
    };
