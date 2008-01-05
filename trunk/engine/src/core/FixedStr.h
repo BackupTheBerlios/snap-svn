@@ -12,19 +12,31 @@ class FixedStr  {
     //
     // the last 4 characters are resereved
 public:
-    class VAList   {
-    public:
-        explicit VAList (va_list inMarker) {
-        	va_copy(_marker, inMarker); 
-        }
+	class VAList   {
+	public:
+		explicit VAList (va_list inMarker) {
+			copy (_marker, inMarker);
+		}
 
-        void get(va_list& out) const {
-            va_copy (out, *const_cast <va_list*> (&_marker));
-        }
+		void get(va_list& out) const {
+			copy (out, _marker);
+		}
 
-    private:
-        va_list _marker;
-    };
+		static void copy (va_list& out, const va_list& in) {
+#			ifdef _MSC_VER
+			{
+				out = in;
+			}
+#			else
+			{
+				va_copy(out, *const_cast <va_list*>(&in)); 
+			}
+#			endif
+		}
+
+		private:
+			va_list _marker;
+		};
 
 
     FixedStr (char*, Str::Size, bool initialized = false);
