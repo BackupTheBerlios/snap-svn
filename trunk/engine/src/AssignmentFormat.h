@@ -31,6 +31,8 @@
 
 #include "core/Str.h"
 
+namespace seed {
+
 //
 //
 class Langauge {
@@ -136,6 +138,8 @@ inline Persistance::AbstractFormat::Owner
 inline Persistance::AbstractFormat::Owner 
    Langauge::format (const Assignment::Position& pos) const {
       return new PositionFormat (pos, *this);
+}
+
 }
 
 #endif // _SeedSearcher_AssignmentFormat_h

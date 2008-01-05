@@ -32,8 +32,11 @@
 #include "Cluster.h"
 #include "SeedSearcher.h"
 #include "RandomProjections.h"
+#include "SeedConf.h"
 
-#include "boost/shared_ptr.hpp"
+#include <boost/shared_ptr.hpp>
+
+namespace seed {
 
 
 class SeedSearcherMain {
@@ -383,5 +386,7 @@ public:
 	void setupSequence (const std::string& string);
 }
 */
+
+}
 
 #endif

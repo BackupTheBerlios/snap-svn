@@ -27,6 +27,8 @@
 #include "Preprocessor.h"
 #include "boost/checked_delete.hpp"
 
+namespace seed {
+
 class PrefixTreePreprocessor : public Preprocessor {
    //
    // interface inherited from Preprocessor
@@ -213,6 +215,8 @@ private:
    bool _owner;
    TreeRep* _rep;
 };
+
+}
 
 #endif // _SeedSearcher_PrefixTreePreprocessor_h
 

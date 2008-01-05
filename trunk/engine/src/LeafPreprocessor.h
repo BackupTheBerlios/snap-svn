@@ -27,6 +27,8 @@
 #include "Preprocessor.h"
 #include "SeedHash.h"
 
+namespace seed {
+
 class LeafPreprocessor : public Preprocessor {
 public:
    struct Rep;
@@ -124,6 +126,8 @@ public:
 protected:
    Rep* _rep;
 };
+
+}
 
 #endif
 

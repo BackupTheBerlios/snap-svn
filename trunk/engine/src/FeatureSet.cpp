@@ -24,6 +24,8 @@
 
 #include "FeatureSet.h"
 
+using namespace seed;
+
 bool FeatureSet::ASymmetricOffsetRedundancyCheck::
    check (  int offset,
             const AssignmentBase& a, const AssignmentBase& b)

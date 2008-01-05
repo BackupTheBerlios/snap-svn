@@ -28,6 +28,7 @@
 #include "persistance/StrOutputStream.h"
 
 using namespace Persistance;
+using namespace seed;
 
 
 //

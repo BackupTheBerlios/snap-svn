@@ -39,7 +39,7 @@
 #include <time.h>
 
 using namespace std;
-
+using namespace seed;
 
 //
 // debug: cross-reference tree-search model with prefix-tree-walk model (safer)

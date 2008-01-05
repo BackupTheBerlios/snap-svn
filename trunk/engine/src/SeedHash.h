@@ -30,6 +30,8 @@
 
 #include "core/HashTable.h"
 
+namespace seed {
+
 //
 //
 class SeedHash {
@@ -133,6 +135,8 @@ public:
       const Langauge& _langauge;
    };
 };
+
+}
 
 
 #endif

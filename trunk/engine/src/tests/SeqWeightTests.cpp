@@ -24,10 +24,13 @@
 #include "Tests.h"
 #include "SeqWeight.h"
 
+#include <boost/test/unit_test.hpp>
 #include <boost/test/auto_unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
 
-BOOST_AUTO_UNIT_TEST(test_WeightDB_repetitive_sequence_name)
+using namespace seed;
+
+BOOST_AUTO_TEST_CASE(test_WeightDB_repetitive_sequence_name)
 {
 	/// write a simple weight file
 	std::string wgtTmpFilename;
@@ -45,7 +48,7 @@ BOOST_AUTO_UNIT_TEST(test_WeightDB_repetitive_sequence_name)
 }
 
 
-BOOST_AUTO_UNIT_TEST(test_readPosWgtFile)
+BOOST_AUTO_TEST_CASE(test_readPosWgtFile)
 {
    std::istringstream stream (
       ">seq1 0.1 0.5 = [0,4]\t2.4 =[ 6, 7]\t0.2 = [9,11 ]\r\n"

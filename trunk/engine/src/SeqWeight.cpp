@@ -11,7 +11,9 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
-#include <assert.h>
+#include <cassert>
+
+using namespace seed;
 
 double SeqWeightDB::PositionalWeight::getPositionWeight (int index) const
 {

@@ -30,11 +30,13 @@
 #include "persistance/StdOutputStream.h"
 #include <fstream>
 
+using namespace Persistance;
+using namespace std;
+using namespace seed;
+
 boost::shared_ptr <Persistance::TextWriter> SeedSearcherLog::__textWriter;
 boost::shared_ptr <Langauge> SeedSearcherLog::__langauge;
 
-using namespace Persistance;
-using namespace std;
 
 
 void SeedSearcherLog::setupConsoleLogging (bool supress)

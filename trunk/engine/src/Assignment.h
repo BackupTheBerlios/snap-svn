@@ -34,8 +34,10 @@
 
 #include <bitset>
 
-
 class Str;
+
+namespace seed {
+
 class AlphabetCode;
 class AssgPosition;
 class AssgPositionIterator;
@@ -495,6 +497,8 @@ private:
    int _length;
    bool _const;
 };
+
+}
 
 #endif // _SeedSearcher_Assignment_h
 

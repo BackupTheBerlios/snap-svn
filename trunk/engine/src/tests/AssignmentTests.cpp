@@ -36,6 +36,7 @@
 
 #include <boost/test/auto_unit_test.hpp>
 
+using namespace seed;
 
 /// this test also has the desired side-effect that DLOG is initialized
 BOOST_AUTO_TEST_CASE ( test_DLOG )

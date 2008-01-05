@@ -28,6 +28,8 @@
 #include "core/Defs.h"
 #include <boost/shared_ptr.hpp>
 
+namespace seed {
+
 class AlphabetCode;
 
 class Assignment;
@@ -98,6 +100,8 @@ enum StatFixType {
 	_statfix_bonf_,// use Bonferroni statistical fix
 	_statfix_fdr_	// use FDR statistical fix
 };
+
+}
 
 
 //

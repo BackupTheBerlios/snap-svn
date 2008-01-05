@@ -40,6 +40,8 @@
 
 #include "boost/shared_ptr.hpp"
 
+namespace seed {
+
 class Feature;
 class FeatureParameters;
 class FeatureInvestigator;
@@ -316,6 +318,8 @@ protected:
    Persistance::TextTableReport::Format _motifPositionFormat;
    Persistance::TextTableReport::Format _seedFormat;
 };
+
+}
 
 
 

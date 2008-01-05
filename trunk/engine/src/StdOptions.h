@@ -28,70 +28,14 @@
 #include "SequenceDB.h"
 #include "SeedSearcher.h"
 #include "AssignmentFormat.h"
+#include "FeatureSet.h"
 
 #include "core/AutoPtr.h"
 
 #include "persistance/Defs.h"
 #include "persistance/TextWriter.h"
 
-//#include <boost/cast.hpp>
-
-//
-// this header contains the standard definitions used for SeedSearcher
-//
-/*
-class ExpScore : public Scores::Function {
-public:
-   virtual ~ExpScore () {
-   }
-   ExpScore(double alpha, double beta, const SeqWeightFunction& wf)
-      :  _log2alpha(log2(alpha)),
-         _log2beta(log2(beta)),
-         _wf(wf)
-   {
-   }
-
-    struct ExpParameters : public ScoreParameters {
-       ExpParameters (int pos, int neg)
-          : _pos (pos), _neg (neg) {
-       }
-       virtual ~ExpParameters () {
-       }
-
-       int _pos, _neg;
-    };
-
-
-   //
-   // if 'parameters' is NULL, do not return ScoreParameters.
-    virtual double log2score (  const Assignment& feature,
-                           const Assignment& projection,
-                           const SeqCluster& containingFeature, // k
-                           ScoreParameters** parameters
-                           ) const
-   {
-       SeqCluster::CountSequences pos_cs,neg_cs;
-       containingFeature.performDivided(_wf,pos_cs,neg_cs);
-
-       *parameters = new ExpParameters (pos_cs.result(), neg_cs.result());
-       return (neg_cs.result()*_log2beta - pos_cs.result()*_log2alpha);
-   }
-
-   //
-   // print the score parameters
-   virtual void writeAsText ( Persistance::TextWriter& writer,
-                              const ScoreParameters* params) const
-   {
-      const ExpParameters* p = boost::polymorphic_downcast<const ExpParameters*> (params);
-      writer << "beta^" << p->_neg << "/alpha^" << p->_pos;
-   }
-
-private:
-    double _log2alpha, _log2beta;
-    const SeqWeightFunction & _wf;
-};
-*/
-
+namespace seed {
 
 class ACGTLangauge : public Langauge{
    //
@@ -517,6 +461,8 @@ struct StatFix {
    // TODO: is this correct?
    static int bonferroni (SeedSearcher::FeatureFilter&, int N, double P);
 };
+
+}
 
 #endif // _SeedSearcher_StdOption_h
 

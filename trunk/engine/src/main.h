@@ -3,11 +3,14 @@
 
 #include "Feature.h"
 #include "Parser.h"
+#include "Defs.h"
 
 #include "persistance/TextWriter.h"
 #include "persistance/StdOutputStream.h"
 
 #include <fstream>
+
+namespace seed {
 
 struct main_definitions {
    enum {
@@ -181,5 +184,7 @@ struct main_definitions {
    }
 
 };
+
+}
 
 #endif

@@ -33,6 +33,8 @@
 
 #include <list>
 
+namespace seed {
+
 class Preprocessor {
 public:
    //
@@ -268,6 +270,8 @@ public:
    // add nodes that match the given assignment to a given NodeCluster
    virtual void add2Cluster (NodeCluster&, const AssignmentBase&) const= 0;
 };
+
+}
 
 
 #endif // _SeedSearcher_Preprocessor_h

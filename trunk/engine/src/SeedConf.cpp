@@ -26,6 +26,8 @@
 #include "persistance/TextWriter.h"
 #include "persistance/StrOutputStream.h"
 
+using namespace seed;
+
 //
 //
 void SeedConf::read (const Str& inConfFileName, SeedConf& in)

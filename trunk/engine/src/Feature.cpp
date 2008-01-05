@@ -36,6 +36,7 @@
 #include "core/Str.h"
 
 USING_TYPE (Persistance, TextWriter);
+using namespace seed;
 
 FeatureInvestigator::FeatureInvestigator (const FeatureParameters& in,
 														StatFixType statfixType,

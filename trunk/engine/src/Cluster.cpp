@@ -25,8 +25,10 @@
 #include "SequenceDB.h"
 #include "legacy/mathplus.h"
 
-#include <limits.h>
+#include <climits>
 
+
+using namespace seed;
 
 //
 // SequenceComparator

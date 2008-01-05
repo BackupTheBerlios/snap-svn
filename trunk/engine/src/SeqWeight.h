@@ -26,10 +26,12 @@
 #include "Sequence.h"
 #include "core/HashTable.h"
 #include "core/AutoPtr.h"
-#include <core/STLHelper.h>
-#include "boost/shared_ptr.hpp"
+#include "core/STLHelper.h"
+#include <boost/shared_ptr.hpp>
 
 #include <map>
+
+namespace seed {
 
 class SequenceDB;
 
@@ -316,5 +318,7 @@ protected:
    bool _invert;
    boost::shared_ptr <SeqWeightDB::ID2Weight> _weights;
 };
+
+}
 
 #endif

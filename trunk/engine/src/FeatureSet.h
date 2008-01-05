@@ -29,6 +29,8 @@
 #include <set>
 //#include <boost/functional.hpp>
 
+namespace seed {
+
 //
 // does looks at the value at it1
 // does not look at the value at it2
@@ -357,5 +359,7 @@ public:
 private:
    Features _features;
 };
+
+}
 
 #endif

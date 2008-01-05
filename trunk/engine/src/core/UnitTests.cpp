@@ -1,3 +1,4 @@
+#include <boost/test/unit_test.hpp>
 #include <boost/test/auto_unit_test.hpp>
 #include "core/Str.h"
 #include "core/Argv.h"
@@ -6,7 +7,7 @@ static char charFor(int i) {
 	return 'a' + i % 26;
 }
 
-BOOST_AUTO_UNIT_TEST (testStr)
+BOOST_AUTO_TEST_CASE (testStr)
 {
 	StrBuffer a("123"), b;
 	a+="456";
@@ -59,7 +60,7 @@ namespace StrTest{
 }
 
 
-BOOST_AUTO_UNIT_TEST (testStr_basic_string_integration)
+BOOST_AUTO_TEST_CASE (testStr_basic_string_integration)
 {
 	std::string s ("hello world");
 	std::string buffer;
@@ -80,7 +81,7 @@ BOOST_AUTO_UNIT_TEST (testStr_basic_string_integration)
 // Argv Unit test
 //
 // most frequently you implement test cases as a free functions
-BOOST_AUTO_UNIT_TEST(test_Argv)
+BOOST_AUTO_TEST_CASE(test_Argv)
 {
    StrBuffer options ("Option1", " Option2=Value2\t", "Option3\r\n");
    Argv argv[2];

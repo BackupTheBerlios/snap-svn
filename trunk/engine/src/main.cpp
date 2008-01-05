@@ -52,6 +52,7 @@
 
 using namespace std;
 using namespace Persistance;
+using namespace seed;
 
 
 static const char buildComment [] =

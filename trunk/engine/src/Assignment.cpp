@@ -34,6 +34,7 @@
 #include "core/Str.h"
 
 using namespace Persistance;
+using namespace seed;
 
 #define DEBUG_ASSIGNMENT 0
 

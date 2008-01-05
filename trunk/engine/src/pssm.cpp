@@ -29,6 +29,8 @@
 #include <math.h>
 #include <assert.h>
 
+using namespace seed;
+
 //int Multinomial::MaxN = 4;
 
 // void

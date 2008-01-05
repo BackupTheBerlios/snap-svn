@@ -36,10 +36,11 @@
 #include "SeedSearcherMain.h"
 #include "ScoreFunction.h"
 
-
 #include <boost/test/auto_unit_test.hpp>
 
-BOOST_AUTO_UNIT_TEST(test_motifInSeqOuterPositions)
+using namespace seed;
+
+BOOST_AUTO_TEST_CASE(test_motifInSeqOuterPositions)
 {
 	std::istringstream wgt_stream (
 		">seq1	0.9\r\n"
@@ -159,7 +160,7 @@ BOOST_AUTO_UNIT_TEST(test_motifInSeqOuterPositions)
 	}
 }
 
-BOOST_AUTO_UNIT_TEST(test_SeqPosition)
+BOOST_AUTO_TEST_CASE(test_SeqPosition)
 {
 	//                    0123456789
 	Sequence sequence (1, "AAAACCCGGT", "seq1", "ACCGGGTTTT");

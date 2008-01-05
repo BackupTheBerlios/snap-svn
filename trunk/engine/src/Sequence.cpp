@@ -27,7 +27,7 @@
 #include "persistance/IArchive.h"
 #include "persistance/STLPersist.h"
 
-
+using namespace seed;
 
 Str SeqPosition::getSeedString (int length, int offset) const {
    //

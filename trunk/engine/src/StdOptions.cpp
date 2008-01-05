@@ -61,6 +61,7 @@
 
 
 using namespace std;
+using namespace seed;
 
 static AlphabetCode::Code __acgt;
 static AutoPtr <AlphabetCode> __ACGTN;

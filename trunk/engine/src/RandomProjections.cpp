@@ -33,6 +33,7 @@
 #include <iostream>
 
 using namespace std;
+using namespace seed;
 
 //
 // adapted from pattFind_general.h

@@ -34,6 +34,8 @@
 
 #define DLOG SeedSearcherLog::writer ()
 
+namespace seed {
+
 class SeedSearcherLog {
 public:
    //
@@ -82,6 +84,7 @@ Format (const Assignment::Position& pos) {
   return new PositionFormat (pos, SeedSearcherLog::assgWriter ());
 }
 
+}
 
 
 #endif

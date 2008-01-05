@@ -28,6 +28,8 @@
 #include "core/Defs.h"
 #include "core/Str.h"
 
+namespace seed {
+
 //
 // Codes each letter in an alphabet with a non-negative integer
 class AlphabetCode   {
@@ -94,6 +96,8 @@ private:
    int _cardinality;
    StrBuffer _characters;
 };
+
+}
 
 #endif
 

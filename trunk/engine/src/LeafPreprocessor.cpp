@@ -26,7 +26,7 @@
 #include "DebugLog.h"
 #include <time.h>
 
-
+using namespace seed;
 USING_TYPE (LeafPreprocessor, LeafNode);
 USING_TYPE (LeafPreprocessor, Rep);
 

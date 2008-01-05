@@ -8,8 +8,9 @@
 #include "persistance/TextWriter.h"
 
 #include "legacy/mathplus.h"
-#include <boost/concept_check.hpp>
 #include <boost/shared_ptr.hpp>
+
+namespace seed {
 
 //Scores 
 namespace Scores {
@@ -312,5 +313,7 @@ namespace Scores {
 		int _k;
 	};
 };
+
+}
 
 #endif

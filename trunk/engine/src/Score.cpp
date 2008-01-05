@@ -126,8 +126,8 @@ public:
 };
 
 
-
-using namespace Scores;
+using namespace seed;
+using namespace seed::Scores;
 
 
 Scores::HyperGeometricPvalue::HyperGeometricPvalue (const TFPN& tfpn)

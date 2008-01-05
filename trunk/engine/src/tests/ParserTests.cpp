@@ -28,6 +28,7 @@
 
 #include <boost/test/auto_unit_test.hpp>
 
+using namespace seed;
 
 /// this test makes sure that after importing an empty string
 /// the parser is able to generate a log line of the default values

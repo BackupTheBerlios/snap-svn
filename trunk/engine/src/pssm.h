@@ -30,6 +30,8 @@
 #include "Sequence.h"
 #include "SeqWeight.h"
 
+namespace seed {
+
 //
 // Adapted from Legacy SeedSearcher
 class Multinomial {
@@ -226,6 +228,8 @@ int Multinomial::size() const { return _n;}
 inline
 //void Multinomial::getParams(int & n , double const * & p ) const { n=_n;p=_PR;}
 double const * Multinomial::getParams(int & n ) const { n=_n;return _PR;}
+
+}
 
 
 #endif // _SeedSearcher_PSSM_h

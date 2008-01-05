@@ -28,6 +28,7 @@
 #include "core/STLHelper.h"
 #include <list>
 
+namespace seed {
 
 struct SeedConf {
    //
@@ -100,6 +101,8 @@ private:
 	std::auto_ptr <Options> _init;
    OptionList _optionList;
 };
+
+}
 
 
 #endif

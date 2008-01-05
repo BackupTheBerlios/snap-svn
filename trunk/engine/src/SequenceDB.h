@@ -37,7 +37,7 @@
 #include <algorithm>
 
 
-
+namespace seed {
 
 class SequenceDB  {
 public:
@@ -101,6 +101,8 @@ private:
    SequenceVector _sequences;
    Name2ID _name2ID;
 };
+
+}
 
 #endif // _SeedSearcher_SequenceDB_h
 

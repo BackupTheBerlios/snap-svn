@@ -28,6 +28,8 @@
 #include "core/STLHelper.h"
 #include "core/Str.h"
 
+namespace seed {
+
 class Sequence {
 public:
    typedef int ID;
@@ -223,7 +225,7 @@ typedef IteratorWrapper <SequenceVector> SequenceIterator;
 typedef CIteratorWrapper <PositionVector> CPositionIterator;
 typedef CIteratorWrapper <SequenceVector> CSequenceIterator;
 
-
+}
 
 
 #endif // _SeedSearcher_Sequence_h

@@ -34,7 +34,7 @@
 #include <algorithm>
 #include <time.h>
 
-
+using namespace seed;
 USING_TYPE (PrefixTreePreprocessor, TreeRep);
 USING_TYPE (PrefixTreePreprocessor, TreeNode);
 USING_TYPE (PrefixTreePreprocessor, TreeNodeRep);

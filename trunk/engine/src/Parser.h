@@ -31,6 +31,8 @@
 #include "core/GetOptParser.h"
 #include "persistance/TextWriter.h"
 
+namespace seed {
+
 class Parser {
 public:
    Parser ();
@@ -203,6 +205,8 @@ public:
 private:
    void internalParse ();
 };
+
+}
 
 #endif
 

@@ -29,6 +29,8 @@
 #include "AssignmentFormat.h"
 #include "PrefixTreePreprocessor.h"
 
+namespace seed {
+
 class SeedSearcher {
 public:
    class FeatureFilter;
@@ -166,6 +168,8 @@ public:
 		return currentSeedsFound;
 	}
 };
+
+}
 
 #endif // _SeedSearcher_SeedSeacher_h
 

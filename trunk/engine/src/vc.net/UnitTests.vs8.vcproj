@@ -70,7 +70,6 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libboost_unit_test_framework-vc80-mt-sgd-1_33_1.lib   libboost_test_exec_monitor-vc80-mt-sgd-1_33_1.lib"
 				OutputFile="$(OutDir)/winseed.testd.exe"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"

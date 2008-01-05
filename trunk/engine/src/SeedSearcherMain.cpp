@@ -37,6 +37,7 @@
 #include <boost/cast.hpp>
 
 
+using namespace seed;
 USING_TYPE (SeedSearcherMain, CmdLineParameters);
 
 

@@ -25,10 +25,11 @@
 #include "SequenceDB.h"
 #include "StdOptions.h"
 
-
 #include <boost/test/auto_unit_test.hpp>
 
-BOOST_AUTO_UNIT_TEST(test_SequenceDB_repetitive_sequence_name)
+using namespace seed;
+
+BOOST_AUTO_TEST_CASE(test_SequenceDB_repetitive_sequence_name)
 {
 	/// write a simple weight file
 	std::string wgtTmpFilename;

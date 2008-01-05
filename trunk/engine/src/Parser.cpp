@@ -25,19 +25,17 @@
 #include "Parser.h"
 #include "core/Str.h"
 
-#include <time.h>
+#include <ctime>
 #include <iostream>
-#include <math.h>
+#include <cmath>
 
 #include <boost/regex.hpp>
 
 #include "core/GetOptParser.h"
 #include "DebugLog.h"
+
 using namespace std;
-
-
-
-
+using namespace seed;
 
 
 struct ParserError : public BaseException {

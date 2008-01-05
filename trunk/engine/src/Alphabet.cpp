@@ -26,6 +26,8 @@
 
 #include <memory>
 
+using namespace seed;
+
 //
 // this is a little leak, but it is constant
 // and using auto_ptr is just too much hassle.

@@ -29,6 +29,8 @@
 #include "AssignmentFormat.h"
 #include <boost/shared_ptr.hpp>
 
+namespace seed {
+
 class ProjectionGenerator {
 public:
    virtual ~ProjectionGenerator () {
@@ -214,6 +216,8 @@ protected:
 protected:
    Assignment _base;
 };
+
+}
 
 
 #endif // _SeedSearcher_RandomProjections_h

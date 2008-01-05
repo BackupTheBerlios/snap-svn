@@ -31,9 +31,10 @@
 #include "core/AutoPtr.h"
 #include "core/STLHelper.h"
 
-
 #include <map>
 #include <set>
+
+namespace seed {
 
 class SequenceDB;
 
@@ -597,16 +598,7 @@ private:
    SequenceSet _set;
 };
 
+}
+
 
 #endif // _SeedSearcher_Cluster_h
-
-
-
-
-
-
-
-
-
-
-

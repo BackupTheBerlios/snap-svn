@@ -23,6 +23,7 @@
 
 #include "Preprocessor.h"
 
+using namespace seed;
 USING_TYPE (Preprocessor, Node);
 USING_TYPE (Preprocessor, NodeCluster);
 
@@ -64,6 +65,7 @@ AutoPtr <PositionVector> NodeCluster::positions (SequenceDB::ID id)
    cluster.add2Vector (*positions);
    return positions;
 }
+
 
 //
 // updates two vectors with (unique) positions, the first contains

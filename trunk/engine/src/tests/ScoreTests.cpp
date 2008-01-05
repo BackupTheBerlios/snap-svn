@@ -37,7 +37,9 @@
 #include <boost/test/auto_unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
 
-BOOST_AUTO_UNIT_TEST(test_FDR_score)
+using namespace seed;
+
+BOOST_AUTO_TEST_CASE(test_FDR_score)
 {
 	/// create an exploss score
 	Scores::TFPN tfpn (4, 3, 2, 1);
@@ -136,7 +138,7 @@ public:
 	}
 };
 
-BOOST_AUTO_UNIT_TEST(test_discrete_counts)
+BOOST_AUTO_TEST_CASE(test_discrete_counts)
 {
 	DNAParameterBuilder parameters;
 	

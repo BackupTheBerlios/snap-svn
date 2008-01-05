@@ -42,8 +42,9 @@
 #include <boost/test/auto_unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
 
+using namespace seed;
 
-BOOST_AUTO_UNIT_TEST(test_SeedSearcherMain)
+BOOST_AUTO_TEST_CASE(test_SeedSearcherMain)
 {
 	/// look for seeds with length=4 distance=0
 	Argv argv ("test", "--Sseed-l 4 --Sproj-d 0 --Sscore-min -10");
@@ -180,12 +181,12 @@ BOOST_AUTO_UNIT_TEST(test_SeedSearcherMain)
 
 extern int cpp_main(int argc, char* argv []);
 
-BOOST_AUTO_UNIT_TEST(test_cpp_main)
+BOOST_AUTO_TEST_CASE(test_cpp_main)
 {
 	/// if the --no_long_tests is specified, then this test is skipped
-	boost::unit_test::auto_unit_test_suite_t* master_test_suite = boost::unit_test::auto_unit_test_suite();
-	for (int i=1 ; i<master_test_suite->argc ; ++i) {
-		if (strcmp (master_test_suite->argv [i], "--no_long_tests") == 0) {
+	boost::unit_test::master_test_suite_t& master_test_suite = boost::unit_test::framework::master_test_suite();
+	for (int i=1 ; i<master_test_suite.argc ; ++i) {
+		if (strcmp (master_test_suite.argv [i], "--no_long_tests") == 0) {
 			BOOST_WARN_MESSAGE (false, "the test_cpp_main test is ignored");
 			return;
 		}
@@ -196,10 +197,10 @@ BOOST_AUTO_UNIT_TEST(test_cpp_main)
 	cpp_main (argc, argv);
 }
 
-BOOST_AUTO_UNIT_TEST(test_exaustive_logging)
+BOOST_AUTO_TEST_CASE(test_exaustive_logging)
 {
 	/// if the --no_long_tests is specified, then this test is skipped
-	boost::unit_test::auto_unit_test_suite_t* master_test_suite = boost::unit_test::auto_unit_test_suite();
+	boost::unit_test::master_test_suite_t* master_test_suite = &boost::unit_test::framework::master_test_suite();
 	for (int i=1 ; i<master_test_suite->argc ; ++i) {
 		if (strcmp (master_test_suite->argv [i], "--no_long_tests") == 0) {
 			BOOST_WARN_MESSAGE (false, "the test_cpp_main test is ignored");
@@ -226,6 +227,22 @@ BOOST_AUTO_UNIT_TEST(test_exaustive_logging)
 		name += ".exhaustive";
                 std::cerr << name << std::endl;
 		BOOST_REQUIRE (boost::filesystem::exists (boost::filesystem::path (name)));
-		BOOST_REQUIRE (!boost::filesystem::_is_empty (boost::filesystem::path (name)));
+		BOOST_REQUIRE (!boost::filesystem::is_empty (boost::filesystem::path (name)));
 	}
+}
+
+BOOST_AUTO_TEST_CASE(real_data_cpp_main_test)
+{
+	/// if the --no_long_tests is specified, then this test is skipped
+	boost::unit_test::master_test_suite_t* master_test_suite = &boost::unit_test::framework::master_test_suite();
+	for (int i=1 ; i<master_test_suite->argc ; ++i) {
+		if (strcmp (master_test_suite->argv [i], "--no_long_tests") == 0) {
+			BOOST_WARN_MESSAGE (false, "the test_cpp_main test is ignored");
+			return;
+		}
+	}
+
+	int argc = 6;
+	char* argv [] = { "seed.test", "--Sconf", "tests/data/real.conf", "tests/data/real.fa", "tests/data/real.wgt", "tests/output/real_data_cpp_main_test" };
+	cpp_main (argc, argv);
 }

@@ -264,6 +264,14 @@
 			<File
 				RelativePath="..\Cluster.cpp"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ShowIncludes="false"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\DebugLog.cpp"
@@ -282,7 +290,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\main.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\Legacy\Multinomial.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\Parser.cpp"
 				>
 			</File>
 			<File
@@ -319,6 +335,10 @@
 			</File>
 			<File
 				RelativePath="..\SeedSearcher.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\SeedSearcherMain.cpp"
 				>
 			</File>
 			<File
@@ -382,6 +402,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\main.h"
+				>
+			</File>
+			<File
+				RelativePath="..\parser.h"
+				>
+			</File>
+			<File
 				RelativePath="..\PrefixTreePreprocessor.h"
 				>
 			</File>
@@ -402,6 +430,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\ScoreConcepts.h"
+				>
+			</File>
+			<File
 				RelativePath="..\ScoreFunction.h"
 				>
 			</File>
@@ -415,6 +447,10 @@
 			</File>
 			<File
 				RelativePath="..\SeedSearcher.h"
+				>
+			</File>
+			<File
+				RelativePath="..\SeedSearcherMain.h"
 				>
 			</File>
 			<File
