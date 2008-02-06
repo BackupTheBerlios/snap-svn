@@ -46,6 +46,8 @@ using namespace seed;
 
 BOOST_AUTO_TEST_CASE(test_SeedSearcherMain)
 {
+	SeedSearcherLog::setupConsoleLogging (true);
+	
 	/// look for seeds with length=4 distance=0
 	Argv argv ("test", "--Sseed-l 4 --Sproj-d 0 --Sscore-min -10");
 	Parser parser (argv);
