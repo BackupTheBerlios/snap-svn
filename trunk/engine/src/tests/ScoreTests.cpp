@@ -143,17 +143,17 @@ BOOST_AUTO_TEST_CASE(test_discrete_counts)
 	DNAParameterBuilder parameters;
 	
 	parameters.setupWeights (
-		">Pos1\t 1		\t 0.7=[0, 2] 0.7=[4,7]\n"
-		">Pos2\t 0.901 \t 0.7=[0, 2] 0.7=[4,7]\n"
-		">Pos3\t 0.802 \t 0.7=[0, 2] 0.7=[4,7]\n"
-		">Pos4\t 0.703 \t 0.7=[0, 2] 0.7=[4,7]\n"
-		">Pos5\t 0.604 \t 0.7=[0, 2] 0.7=[4,7]\n"
-		">Pos6\t 0.505 \t 0.7=[0, 2] 0.7=[4,7]\n"
-		">Neg1\t 0.406 \t 0.7=[0, 2] 0.7=[4,7]\n"
-		">Neg2\t 0.307 \t 0.7=[0, 2] 0.7=[4,7]\n"
-		">Neg3\t 0.208 \t 0.7=[0, 2] 0.7=[4,7]\n"
-		">Neg4\t 0.109 \t 0.7=[0, 2] 0.7=[4,7]\n"
-		">Neg5\t 0.010 \t 0.7=[0, 2] 0.7=[4,7]\n"
+		">Pos1\t 1	\t 0.7=[0, 2] 0.7=[4,7]\n"
+		">Pos2\t 0.901	\t 0.7=[0, 2] 0.7=[4,7]\n"
+		">Pos3\t 0.802	\t 0.7=[0, 2] 0.7=[4,7]\n"
+		">Pos4\t 0.703	\t 0.7=[0, 2] 0.7=[4,7]\n"
+		">Pos5\t 0.604	\t 0.7=[0, 2] 0.7=[4,7]\n"
+		">Pos6\t 0.505	\t 0.7=[0, 2] 0.7=[4,7]\n"
+		">Neg1\t 0.406	\t 0.7=[0, 2] 0.7=[4,7]\n"
+		">Neg2\t 0.307	\t 0.7=[0, 2] 0.7=[4,7]\n"
+		">Neg3\t 0.208	\t 0.7=[0, 2] 0.7=[4,7]\n"
+		">Neg4\t 0.109	\t 0.7=[0, 2] 0.7=[4,7]\n"
+		">Neg5\t 0.010	\t 0.7=[0, 2] 0.7=[4,7]\n"
 		);
 
 	parameters.setupSequences (
@@ -270,3 +270,94 @@ BOOST_AUTO_TEST_CASE(test_discrete_counts)
 
 
 }
+
+
+
+BOOST_AUTO_TEST_CASE(test_scores)
+{
+	seed::Scores::TFPN tpfn_10_8_6_4 (
+		/* TP = */ 10,
+		/* TN = */ 8,
+		/* FP = */ 6,
+		/* FN = */ 4
+	);
+	
+	seed::Scores::TFPN tpfn_3_11_7_19 (
+		/* TP = */ 3,
+		/* TN = */ 11,
+		/* FP = */ 7,
+		/* FN = */ 19
+	);
+	
+	seed::Scores::TFPN tpfn_0_0_0_0 (
+		/* TP = */ 0,
+		/* TN = */ 0,
+		/* FP = */ 0,
+		/* FN = */ 0
+	);
+	
+	seed::Scores::TFPN tpfn_1_1_1_1 (
+		/* TP = */ 1,
+		/* TN = */ 1,
+		/* FP = */ 1,
+		/* FN = */ 1
+	);
+	
+	
+
+	/// test exponential scores
+	{
+	
+		boost::shared_ptr<seed::Scores::ExplossWeights> weights_4_2;
+		weights_4_2.reset(
+			new seed::Scores::ExplossWeights(
+			/* positive weight = */ log2(4),
+			/* negative weight = */ log2(2)
+			)
+		);
+		
+		BOOST_REQUIRE_EQUAL(log2(2), weights_4_2->log2HitNegativeWeight ());
+		BOOST_REQUIRE_EQUAL(log2(4), weights_4_2->log2HitPositiveWeight ());	
+			
+		/// the smaller the score, the "better" it is, so the formula is: 
+		/// 	exploss = pow (FP, beta) / pow(TP, alpha)
+		{
+			seed::Scores::ExplossScore score_10_8_6_4 (weights_4_2, tpfn_10_8_6_4);
+			BOOST_CHECK_CLOSE(
+				log2(pow (2,6) / pow (4, 10)),
+				score_10_8_6_4.log2Score(),
+				/* % difference = */ 0.01
+			);
+		}
+			
+		{
+			seed::Scores::ExplossScore score_3_11_7_19 (weights_4_2, tpfn_3_11_7_19);
+			BOOST_CHECK_CLOSE(
+				log2(pow (2,7) / pow (4, 3)),
+				score_3_11_7_19.log2Score(),
+				/* % difference = */ 0.01
+			);
+		}
+			
+		{
+			seed::Scores::ExplossScore score_0_0_0_0 (weights_4_2, tpfn_0_0_0_0);
+			BOOST_CHECK_CLOSE(
+				log2(pow (4, 0) / pow (2,0)),
+				score_0_0_0_0.log2Score(),
+				/* % difference = */ 0.01
+				);
+		}
+			
+		{
+			seed::Scores::ExplossScore score_1_1_1_1 (weights_4_2, tpfn_1_1_1_1);
+			BOOST_CHECK_CLOSE(
+				log2(pow (2,1) / pow (4, 1)),
+				score_1_1_1_1.log2Score(),
+				/* % difference = */ 0.01
+				);
+		}
+	}
+		
+}
+	
+	
