@@ -138,7 +138,7 @@ public:
 	}
 };
 
-BOOST_AUTO_TEST_CASE(test_discrete_counts)
+BOOST_AUTO_TEST_CASE(test_weighters)
 {
 	DNAParameterBuilder parameters;
 	
@@ -195,14 +195,14 @@ BOOST_AUTO_TEST_CASE(test_discrete_counts)
 		for (int i=0 ; i<6 ; ++i) {
 			double expectedWeight = 1;
 			const Sequence& sequence = db->getSequence (i);
-			double actualWeight = discrete_weighter::weigh (sequence, *weightFunc);
+			double actualWeight = discrete_weighter::weigh (sequence, *weightFunc).first;
 			BOOST_REQUIRE (actualWeight == expectedWeight);
 		}
 
 		for (int i=6 ; i<db->size () ; ++i) {
 			double expectedWeight = 0;
 			const Sequence& sequence = db->getSequence (i);
-			double actualWeight = discrete_weighter::weigh (sequence, *weightFunc);
+			double actualWeight = discrete_weighter::weigh (sequence, *weightFunc).first;
 			BOOST_REQUIRE (actualWeight == expectedWeight);
 		}
 	}
@@ -212,7 +212,7 @@ BOOST_AUTO_TEST_CASE(test_discrete_counts)
 		for (int i=0 ; i <db->size () ; ++i) {
 			double expectedWeight = double(1) - (double (0.099) * i);
 			const Sequence& sequence = db->getSequence (i);
-			double actualWeight = real_weighter::weigh (sequence, *weightFunc);
+			double actualWeight = real_weighter::weigh (sequence, *weightFunc).first;
 			BOOST_REQUIRE_CLOSE (actualWeight, expectedWeight, 1);
 		}
 	}
@@ -225,32 +225,32 @@ BOOST_AUTO_TEST_CASE(test_discrete_counts)
 
 			/// check with motif length=1
 			double expectedWeight1 = double(1) - (double (0.099) * i);
-			double actualWeight = hotspot_weighter:: weigh (position3, 1, *weightFunc);
+			double actualWeight = hotspot_weighter:: weigh (position3, 1, *weightFunc).first;
 			BOOST_REQUIRE_CLOSE (actualWeight, expectedWeight1, 1);
 
 			/// with motif length = 2 should be same result
 			double expectedWeight2 = (expectedWeight1 + 0.7*expectedWeight1) /2;
-			actualWeight = hotspot_weighter:: weigh (position3, 2, *weightFunc);
+			actualWeight = hotspot_weighter:: weigh (position3, 2, *weightFunc).first;
 			BOOST_REQUIRE_CLOSE (actualWeight, expectedWeight2, 1);
 
 			/// with motif length = 3
 			double expectedWeight3 = (expectedWeight1  + 2 * 0.7 * expectedWeight1)/3;
-			actualWeight = hotspot_weighter:: weigh (position3, 3, *weightFunc);
+			actualWeight = hotspot_weighter:: weigh (position3, 3, *weightFunc).first;
 			BOOST_REQUIRE_CLOSE (actualWeight, expectedWeight3, 1);
 
 			/// with motif length = 4
 			double expectedWeight4 = (expectedWeight1  + 3 * 0.7 * expectedWeight1)/4;
-			actualWeight = hotspot_weighter:: weigh (position3, 4, *weightFunc);
+			actualWeight = hotspot_weighter:: weigh (position3, 4, *weightFunc).first;
 			BOOST_REQUIRE_CLOSE (actualWeight, expectedWeight4, 1);
 
 			/// with motif length = 5
 			double expectedWeight5 = (expectedWeight1  + 4 * 0.7 * expectedWeight1)/5;
-			actualWeight = hotspot_weighter:: weigh (position3, 5, *weightFunc);
+			actualWeight = hotspot_weighter:: weigh (position3, 5, *weightFunc).first;
 			BOOST_REQUIRE_CLOSE (actualWeight, expectedWeight5, 1);
 
 			/// with motif length = 6
 			double expectedWeight6 = (2 * expectedWeight1  + 4 * 0.7 * expectedWeight1)/6;
-			actualWeight = hotspot_weighter:: weigh (position3, 6, *weightFunc);
+			actualWeight = hotspot_weighter:: weigh (position3, 6, *weightFunc).first;
 			BOOST_REQUIRE_CLOSE (actualWeight, expectedWeight6, 1);
 		}
 	}
@@ -260,14 +260,97 @@ BOOST_AUTO_TEST_CASE(test_discrete_counts)
 		for (int i=0 ; i <db->size () ; ++i) {
 			double expectedWeight = double(1) - (double (0.099) * i);
 			const Sequence& sequence = db->getSequence (i);
-			double inverseSigmoidWeight = sigmoid_weighter::weigh (sequence, *weightFunc);
+			double inverseSigmoidWeight = sigmoid_weighter::weigh (sequence, *weightFunc).first;
 			double actualWeight = sigmoid_weighter::sigmoid (inverseSigmoidWeight);
 
 			BOOST_REQUIRE_CLOSE (expectedWeight, actualWeight, 1);
 		}
 	}
+}
 
 
+
+BOOST_AUTO_TEST_CASE(test_counts)
+{
+	DNAParameterBuilder parameters;
+	
+	parameters.setupWeights (
+		">PosACGT0\t 1	\t 0.7=[0, 2] 0.7=[4,7]\n"
+		">PosACGT1\t 0.901	\t 0.7=[0, 2] 0.7=[4,7]\n"
+		">PosACGT2\t 0.802	\t 0.7=[0, 2] 0.7=[4,7]\n"
+		">PosACGT3\t 0.703	\t 0.7=[0, 2] 0.7=[4,7]\n"
+		">NegACGT4\t 0.406	\t 0.7=[0, 2] 0.7=[4,7]\n"
+		">NegACGT5\t 0.307	\t 0.7=[0, 2] 0.7=[4,7]\n"
+		);
+
+	// number of occurances of acgt grows from sequence to sequence
+	parameters.setupSequences (
+		">PosACGT0\n"
+			"aacgaattcgtatatatcgt\n"
+		">PosACGT1\n"
+			"aaACGTaa\n"
+		">PosACGT2\n"
+			"ACGTACGT\n"
+		">PosACGT3\n"
+			"tttACGTtACGTaaACGT\n"
+	
+		">NegACGT4\n"
+			"aACGTcACGTgACGTtACGT\n"
+		">NegACGT5\n"
+			"aACGTccACGTgggACGTttttACGTaaaaaACGT\n"
+		);
+
+	boost::shared_ptr <const SequenceDB> db = parameters.db ();	
+	BOOST_REQUIRE (db);
+	BOOST_REQUIRE_EQUAL (6, db->size ());
+
+	boost::shared_ptr <const SeqWeightFunction> weightFunc = parameters.wf();
+	BOOST_REQUIRE (weightFunc);
+	
+	typedef Scores::detail::PositionCounter <_count_total_> total_counter_t;
+	typedef Scores::detail::PositionCounter <_count_total_> gene_counter_t;
+	
+	total_counter_t total_counter;
+	gene_counter_t gene_counter;
+		
+	// create a preprocessor for the data
+	boost::shared_ptr <seed::Preprocessor> prep;
+	prep.reset ( 
+		seed::SeedSearcherMain::PreprocessorFactory::createPreprocessor(
+		_prep_leaf_,
+		*db,
+		*weightFunc,
+		parameters.langauge(),
+		/* feature length = */ 10,
+		/* use reverse = */ false
+		));
+		
+	// now search for ACGT
+	seed::Preprocessor::NodeCluster node;
+	seed::Assignment acgt("acgt", parameters.langauge().code());
+	prep->add2Cluster(node, acgt);
+
+	{	/// test counts with the discrete_weighter
+		typedef Scores::detail::PositionWeighter <_position_weight_discrete_> discrete_weighter_t;
+		discrete_weighter_t discrete_weighter;
+		
+		for (int i=0 ; i<6 ; ++i) {
+			// get the positions of acgt in this sequence
+			PosCluster positions;
+			node.add2PosCluster(positions, i);
+			
+			BOOST_REQUIRE_EQUAL(i, positions.size());
+			
+			discrete_weighter_t::counter_pair discrete_gene_count = gene_counter.count(
+				acgt.length(), 
+				db->getSequence(i),
+				&positions,
+				*parameters.wf (),
+				discrete_weighter);
+				
+			BOOST_CHECK_EQUAL(i, discrete_gene_count.first);
+		}
+	}
 
 }
 

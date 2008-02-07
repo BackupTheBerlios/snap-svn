@@ -216,8 +216,8 @@ namespace Scores {
 		ExpAdditiveScore (const TFPN& tfpn)
 			: _tfpn (tfpn)
 		{
-			// we do FP - TP so as to get a score we minimize and not maximize along the search
-			_log2Score = tfpn._FP - tfpn._TP;
+			/// hitting many positives or hitting many negatives is equally informative
+			_log2Score = std::abs (tfpn._TP - tfpn._FP);
 		}
 
 		virtual TFPN& parameters(TFPN& tfpn) {

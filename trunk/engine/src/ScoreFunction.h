@@ -20,7 +20,7 @@ namespace Scores {
 	public:
 		DiscriminativeFunction (
 			boost::shared_ptr <SequenceDB>& db,
-         boost::shared_ptr <SeqWeightFunction>& wf,
+			boost::shared_ptr <SeqWeightFunction>& wf,
 			boost::shared_ptr <Factory>& factory,
 			int seedLength)
 		: _posSetWeight(0), _negSetWeight (0), _db (db), _wf (wf), _factory (factory)
@@ -32,10 +32,10 @@ namespace Scores {
 			for (; it.hasNext() ; it.next ()) {
 
 				const Sequence& seq = db->getSequence (it.id ());
-				typename PositionWeighterT::counter seqWeight = _weighter.weigh (seq, *wf);
+				typename PositionWeighterT::counter_pair seqWeight = _weighter.weigh (seq, *wf);
 				int seqCount = _counter.maximumCount (seq, seedLength);
-				_posSetWeight += seqCount * seqWeight;
-				_negSetWeight += seqCount * (1 - seqWeight);
+				_posSetWeight += seqCount * seqWeight.first;
+				_negSetWeight += seqCount * seqWeight.second;
 			}
 		}
 
@@ -50,17 +50,14 @@ namespace Scores {
 			typename PositionWeighterT::counter TP = 0;
 			typename PositionWeighterT::counter FP = 0;
 			for (; it.hasNext() ; it.next()) {
-				typename PositionWeighterT::counter posCount;
-				typename PositionWeighterT::counter negCount;
-				_counter.count(feature.length (),
-									*(*it),
-									containingFeature.getPositions (it),
-									*_wf,
-									_weighter,
-									posCount,
-									negCount);
-				TP += posCount;
-				FP += negCount;
+				typename PositionWeighterT::counter_pair counts =
+					_counter.count(		feature.length (),
+								*(*it),
+								containingFeature.getPositions (it),
+								*_wf,
+								_weighter);
+				TP += counts.first;
+				FP += counts.second;
 			}
 
 			int FN = _weighter.round (_posSetWeight - TP);

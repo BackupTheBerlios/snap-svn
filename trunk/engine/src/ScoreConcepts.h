@@ -40,11 +40,20 @@ namespace detail{
 			// must support a round method
 			int i = _weighter.round (a);
 			a = a * i;
+			
+			// must support a counting_pair type
 			// must be able to weigh a sequence (gene-counts)
-			a = _weighter.weigh (*(Sequence*) NULL, *(SeqWeightFunction*) NULL);
+			typename PositionWeighterT::counter_pair a_pair = 
+				_weighter.weigh (_sequence, *_wf);
+				
+			// the pair must look like an std::pair<counter, counter>
+			a = a_pair.first;
+			a = a_pair.second;
 		}
 
 		PositionWeighterT _weighter;
+		SeqWeightFunction* _wf;
+		Sequence _sequence;
 	};
 
 	//
@@ -53,49 +62,57 @@ namespace detail{
 	template <> 
 	struct PositionWeighter <_position_weight_discrete_>{
 		typedef int counter;
+		typedef std::pair<counter, counter> counter_pair;
 		static inline int round (counter c) { return c; }
-		static inline counter weigh (const Sequence& s, const SeqWeightFunction& wf) {
-			return wf.isPositive (s.id ())? 1 : 0;
+		static inline counter_pair weigh (const Sequence& s, const SeqWeightFunction& wf) {
+			counter posWeight = wf.isPositive (s.id ())? 1 : 0;
+			return counter_pair(posWeight, 1 - posWeight);
 		}
 	};
 
 	template <> 
 	struct PositionWeighter <_position_weight_real_>{
 		typedef double counter;
+		typedef std::pair<counter, counter> counter_pair;
 		static inline int round (counter c) { return ROUND (c); }
-		static inline counter weigh (const Sequence& s, const SeqWeightFunction& wf) { 
-			return wf.weight (s.id ()); 
+		static inline counter_pair weigh (const Sequence& s, const SeqWeightFunction& wf) { 
+			counter posWeight = wf.weight (s.id ()); 
+			return counter_pair(posWeight, 1 - posWeight);
 		}
 	};
 
 	template <> 
 	struct PositionWeighter <_position_weight_hotspots_> {
 		typedef double counter;
+		typedef std::pair<counter, counter> counter_pair;
 		static inline int round (counter in) {return ROUND (in); }
-		static inline counter weigh (const Sequence& s, const SeqWeightFunction& wf) { 
-			return wf.weight (s.id ()); 
+		static inline counter_pair weigh (const Sequence& s, const SeqWeightFunction& wf) { 
+			counter posWeight = wf.weight (s.id ());
+			return counter_pair(posWeight, 1 - posWeight);
 		}
 
 		//
 		// this is an extra function, required only with conjunction
 		// with total counts.
-		static inline counter weigh (	
-								const SeqPosition& p, 
-								int seedLength, 
-								const SeqWeightFunction& wf) { 
-			return wf.weight (p, seedLength);
+		static inline counter_pair weigh (	const SeqPosition& p, 
+							int seedLength, 
+							const SeqWeightFunction& wf) { 
+			counter posWeight = wf.weight (p, seedLength);
+			return counter_pair(posWeight, 1 - posWeight);
 		}
 	};
 
 	struct InverseSigmoidPositionWeighter
 	{
 		typedef double counter;
+		typedef std::pair<counter, counter> counter_pair;
 		static inline int round (counter c) { return ROUND (c); }
-		static inline counter weigh (const Sequence& s, const SeqWeightFunction& wf) { 
+		static inline counter_pair weigh (const Sequence& s, const SeqWeightFunction& wf) { 
 			/// y = Sigmoid(x) = 1 / (1 + e^-x)
 			/// Inv-Sigmoid(y) = - ln ( [1-y] / y)
 			double y = wf.weight (s.id ()); 
-			return inverse_sigmoid (y);
+			counter posWeight = inverse_sigmoid (y);
+			return counter_pair(posWeight, 1 - posWeight);
 		}
 
 		/// sigmoid [-inf, inf] -->> [0, 1]
@@ -127,21 +144,24 @@ namespace detail{
 		void constraints () {
 			// must support a maximumCount method
 			// that returns the maximum number of positions in a sequence
-			int count = _counter.maximumCount (*(Sequence*)NULL, /*seedLength */ 0);
+			int count = _counter.maximumCount (_sequence, _seedLength);
 			// must support a count method
-			typename PositionWeighterT::counter a;
-			_counter.count (	/* _seedLength */ 0,
-									*(Sequence*)NULL,
-									(PosCluster*)NULL, 
-									*(SeqWeightFunction*) NULL,
-									*(PositionWeighterT*) NULL,
-									a,
-									a);
+			typename PositionWeighterT::counter_pair a_pair =
+				_counter.count(	_seedLength,
+						_sequence,
+						_posCluster, 
+						*_wf,
+						_weighter);
 			count++;
 
 		}
 
+		int _seedLength;
 		PositionCounterT _counter;
+		Sequence _sequence;
+		PosCluster* _posCluster;
+		SeqWeightFunction* _wf;
+		PositionWeighterT _weighter;
 	};
 
 
@@ -154,29 +174,27 @@ namespace detail{
 		int maximumCount (const Sequence&, int) const { return 1; }
 
 		template <class PositionWeighterT>
-		void count(	int seedLength,
-			const Sequence& seq,
-			const PosCluster* cluster,
-			const SeqWeightFunction& wf,
-			const PositionWeighterT& weight, 
-			typename PositionWeighterT::counter& outPositiveCount,
-			typename PositionWeighterT::counter& outNegativeCount) const {
-			//
-			// we return the average weight of a position in this sequence
-			outPositiveCount = weight.weigh (seq, wf);
-			outNegativeCount = 1 - outPositiveCount;
-		}
-
-		//
-		// specialization for hotspots
-		void count (
+		typename PositionWeighterT::counter_pair count(	
 			int seedLength,
 			const Sequence& seq,
 			const PosCluster* cluster,
 			const SeqWeightFunction& wf,
-			const HotspotsPositionWeighter& weight, 
-			HotspotsPositionWeighter::counter& outPositiveCount,
-			HotspotsPositionWeighter::counter& outNegativeCount
+			const PositionWeighterT& weight
+			) const 
+		{
+			//
+			// we return the average weight of a position in this sequence
+			return weight.weigh (seq, wf);
+		}
+
+		//
+		// specialization for hotspots
+		HotspotsPositionWeighter::counter_pair count (
+			int seedLength,
+			const Sequence& seq,
+			const PosCluster* cluster,
+			const SeqWeightFunction& wf,
+			const HotspotsPositionWeighter& weight
 			) const 
 		{
 			//
@@ -185,19 +203,23 @@ namespace detail{
 			debug_mustbe (cluster);
 			debug_mustbe (!cluster->empty ());
 			PosCluster::CIterator it = cluster->iterator ();
-			HotspotsPositionWeighter::counter bestWeight = 0;
+			HotspotsPositionWeighter::counter_pair bestWeight;
 			for (; it.hasNext() ; it.next()) {
 				//
 				// here we use a special function available only on 
 				// _position_weight_hotspots_ Weighter
-				HotspotsPositionWeighter::counter posWeight = 
+				HotspotsPositionWeighter::counter_pair posWeight = 
 					weight.weigh (*it.get (), seedLength, wf);
 
-				if (posWeight > bestWeight) bestWeight = posWeight;
+				// TODO: this doesn't work if you are trying to find a hotspot
+				// in a negative sequence
+				if (posWeight.first > bestWeight.first) {
+					bestWeight = posWeight;
+					
+				}
 			}
 
-			outPositiveCount = bestWeight;
-			outNegativeCount = 1 - bestWeight;
+			return bestWeight;
 		}
 	};
 
@@ -211,50 +233,51 @@ namespace detail{
 		}
 
 		template <class PositionWeighterT>
-		void count(	int seedLength,
+		typename PositionWeighterT::counter_pair count(	
+			int seedLength,
 			const Sequence& seq,
 			const PosCluster* cluster,
 			const SeqWeightFunction& wf,
-			const PositionWeighterT& weight, 
-			typename PositionWeighterT::counter& outPositiveCount,
-			typename PositionWeighterT::counter& outNegativeCount) const {
+			const PositionWeighterT& weight) const {
 			//
 			// all individual positions in the same sequence
 			// have the same weight
 			debug_mustbe (cluster);
 			int sizeNoOverlaps = cluster->sizeNoOverlaps(seedLength);
-			typename PositionWeighterT::counter seqWeight = weight.weigh (seq, wf);
-			outPositiveCount = sizeNoOverlaps * seqWeight;
-			outNegativeCount = sizeNoOverlaps * (1 - seqWeight);
+			typename PositionWeighterT::counter_pair outCounts = weight.weigh (seq, wf);
+			outCounts.first *= sizeNoOverlaps;
+			outCounts.second *= sizeNoOverlaps;
+			return outCounts;
 		}
 
-		void count (
+		HotspotsPositionWeighter::counter_pair count (
 			int seedLength,
 			const Sequence& seq,
 			const PosCluster* cluster,
 			const SeqWeightFunction& wf,
-			const HotspotsPositionWeighter& weight, 
-			HotspotsPositionWeighter::counter& outPositiveCount,
-			HotspotsPositionWeighter::counter& outNegativeCount
+			const HotspotsPositionWeighter& weight
 			) const 
 		{
 			//
 			// hotspots means that different positions in the same sequence
 			// might have different weights
-			outPositiveCount = 0;
-			outNegativeCount = 0;
+			HotspotsPositionWeighter::counter_pair outCounts;
+			outCounts.first = 0;
+			outCounts.second = 0;
 			PosCluster::NoOverlapsIterator it = 
 				const_cast <PosCluster&> (*cluster).iteratorNoOverlaps (seedLength);
 			for (; it.hasNext() ; it.next()) {
 				//
 				// here we use a special function available only on 
 				// _position_weight_hotspots_ Weighter
-				HotspotsPositionWeighter::counter posWeight = 
+				HotspotsPositionWeighter::counter_pair posWeight = 
 					weight.weigh (it.get (), seedLength, wf);
 
-				outPositiveCount += posWeight;
-				outNegativeCount += 1 - posWeight;
+				outCounts.first += posWeight.first;
+				outCounts.second += posWeight.second;
 			}
+			
+			return outCounts;
 		}
 	};
 
