@@ -275,29 +275,29 @@ BOOST_AUTO_TEST_CASE(test_counts)
 	DNAParameterBuilder parameters;
 	
 	parameters.setupWeights (
-		">PosACGT0\t 1	\t 0.7=[0, 2] 0.7=[4,7]\n"
-		">PosACGT1\t 0.901	\t 0.7=[0, 2] 0.7=[4,7]\n"
-		">PosACGT2\t 0.802	\t 0.7=[0, 2] 0.7=[4,7]\n"
-		">PosACGT3\t 0.703	\t 0.7=[0, 2] 0.7=[4,7]\n"
-		">NegACGT4\t 0.406	\t 0.7=[0, 2] 0.7=[4,7]\n"
-		">NegACGT5\t 0.307	\t 0.7=[0, 2] 0.7=[4,7]\n"
+		">PosACGG0\t 1		\t 0.7=[0, 2] 0.7=[4,7]\n"
+		">PosACGG1\t 0.901	\t 0.7=[0, 2] 0.7=[4,7]\n"
+		">PosACGG2\t 0.802	\t 0.7=[0, 2] 0.7=[4,7]\n"
+		">PosACGG3\t 0.703	\t 0.7=[0, 2] 0.7=[4,7]\n"
+		">NegACGG4\t 0.406	\t 0.7=[0, 2] 0.7=[4,7]\n"
+		">NegACGG5\t 0.307	\t 0.7=[0, 2] 0.7=[4,7]\n"
 		);
 
 	// number of occurances of acgt grows from sequence to sequence
 	parameters.setupSequences (
-		">PosACGT0\n"
+		">PosACGG0\n"
 			"aacgaattcgtatatatcgt\n"
-		">PosACGT1\n"
-			"aaACGTaa\n"
-		">PosACGT2\n"
-			"ACGTACGT\n"
-		">PosACGT3\n"
-			"tttACGTtACGTaaACGT\n"
+		">PosACGG1\n"
+			"aaACGGaa\n"
+		">PosACGG2\n"
+			"ACGGACGG\n"
+		">PosACGG3\n"
+			"tttACGGtACGGaaACGG\n"
 	
-		">NegACGT4\n"
-			"aACGTcACGTgACGTtACGT\n"
-		">NegACGT5\n"
-			"aACGTccACGTgggACGTttttACGTaaaaaACGT\n"
+		">NegACGG4\n"
+			"aACGGcACGGgACGGtACGG\n"
+		">NegACGG5\n"
+			"aACGGccACGGgggACGGttttACGGaaaaaACGG\n"
 		);
 
 	boost::shared_ptr <const SequenceDB> db = parameters.db ();	
@@ -308,7 +308,7 @@ BOOST_AUTO_TEST_CASE(test_counts)
 	BOOST_REQUIRE (weightFunc);
 	
 	typedef Scores::detail::PositionCounter <_count_total_> total_counter_t;
-	typedef Scores::detail::PositionCounter <_count_total_> gene_counter_t;
+	typedef Scores::detail::PositionCounter <_count_gene_> gene_counter_t;
 	
 	total_counter_t total_counter;
 	gene_counter_t gene_counter;
@@ -327,9 +327,34 @@ BOOST_AUTO_TEST_CASE(test_counts)
 		
 	// now search for ACGT
 	seed::Preprocessor::NodeCluster node;
-	seed::Assignment acgt("acgt", parameters.langauge().code());
-	prep->add2Cluster(node, acgt);
-
+	seed::Assignment acgg("acgg", parameters.langauge().code());
+	prep->add2Cluster(node, acgg);
+	
+	{	/// sanity check positions
+		SequenceDB::Cluster allPositions;
+		node.add2SeqClusterPositions(allPositions);
+		
+		/// all sequences, except the first which has no ACGG
+		BOOST_CHECK_EQUAL(5, allPositions.size());
+		BOOST_CHECK(NULL == allPositions.getPositions(0));
+		for(int i=1 ; i<6 ; ++i) {
+			PosCluster* posCluster = allPositions.getPositions(i);
+			BOOST_REQUIRE(posCluster != NULL);
+			for(PosCluster::Iterator it=posCluster->iterator() ; it.hasNext() ; it.next()) {
+				std::string buffer;
+				BOOST_CHECK_EQUAL("ACGG", (*it)->getSeedString(acgg.length()).getCString(buffer));
+				
+				/// the number of appearances of the AGCC motif equals the sequence id
+				BOOST_CHECK_EQUAL(i, posCluster->size());
+				
+				/// there should be no overlaps
+				BOOST_CHECK_EQUAL(posCluster->size(), posCluster->sizeNoOverlaps(acgg.length()));
+			}
+		}
+	}
+				
+	boost::shared_ptr<const SeqWeightFunction> wf = parameters.wf ();
+	
 	{	/// test counts with the discrete_weighter
 		typedef Scores::detail::PositionWeighter <_position_weight_discrete_> discrete_weighter_t;
 		discrete_weighter_t discrete_weighter;
@@ -338,18 +363,42 @@ BOOST_AUTO_TEST_CASE(test_counts)
 			// get the positions of acgt in this sequence
 			PosCluster positions;
 			node.add2PosCluster(positions, i);
+			const Sequence& seq = db->getSequence(i);
 			
 			BOOST_REQUIRE_EQUAL(i, positions.size());
 			
-			discrete_weighter_t::counter_pair discrete_gene_count = gene_counter.count(
-				acgt.length(), 
-				db->getSequence(i),
-				&positions,
-				*parameters.wf (),
-				discrete_weighter);
-				
-			BOOST_CHECK_EQUAL(i, discrete_gene_count.first);
-		}
+			{ /// check gene counts
+				discrete_weighter_t::counter_pair discrete_gene_count = gene_counter.count(
+					acgg.length(), 
+					seq,
+					&positions,
+					*wf,
+					discrete_weighter);
+					
+				/// with discrete gene counts counting positions in a sequence
+				/// is either 1 or 0: depending on the weight of the sequence.
+				/// positions are ignored
+				BOOST_CHECK_EQUAL(
+					1 * wf->isPositive(wf->weight(i)), 
+					discrete_gene_count.first
+					);
+			}
+			
+			{ /// check total counts
+				discrete_weighter_t::counter_pair discrete_total_count = total_counter.count(
+					acgg.length(), 
+					seq,
+					&positions,
+					*wf,
+					discrete_weighter);
+					
+				/// with total counts, we count the number of appearances
+				BOOST_CHECK_EQUAL(
+					i * wf->isPositive(wf->weight(i)), 
+					discrete_total_count.first
+					);
+			}
+		}	
 	}
 
 }
